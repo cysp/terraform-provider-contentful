@@ -7,6 +7,9 @@ import (
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,14 +30,14 @@ func TestAccAppDefinitionDataSourceRead(t *testing.T) {
 		Bundle: cm.NewOptAppBundleLink(cm.NewAppBundleLink("app-bundle-id")),
 	})
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.contentful_app_definition.test", "id", "2zuSjSO4A0e6GKBrhJRe2m/2fxGxOcam8Fo5m1wC11fhn"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("data.contentful_app_definition.test", tfjsonpath.New("id"), knownvalue.StringExact("2zuSjSO4A0e6GKBrhJRe2m/2fxGxOcam8Fo5m1wC11fhn")),
+				},
 			},
 		},
 	})

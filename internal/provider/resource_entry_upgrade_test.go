@@ -53,7 +53,7 @@ func TestAccEntryResourceLegacyStateDoesNotAuthorizePublication(t *testing.T) {
 
 	testserver := httptest.NewServer(recorder)
 	t.Cleanup(testserver.Close)
-	options := ContentfulProviderOptionsWithHTTPTestServer(testserver)
+	options := testProviderOptionsWithHTTPServer(testserver)
 	additionalCLIOptions := &testingresource.AdditionalCLIOptions{
 		Plan: testingresource.PlanOptions{NoRefresh: true},
 	}

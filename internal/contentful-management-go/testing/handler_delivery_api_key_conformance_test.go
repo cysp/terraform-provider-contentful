@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -17,7 +16,7 @@ func TestDeliveryAPIKeyVersionAndConflictSemantics(t *testing.T) {
 	handler := cmt.NewHandler()
 	handler.RegisterSpaceEnvironment("space", "master", "ready")
 
-	createdResponse, err := handler.CreateDeliveryAPIKey(context.Background(), &cm.ApiKeyRequestData{Name: "key"}, cm.CreateDeliveryAPIKeyParams{
+	createdResponse, err := handler.CreateDeliveryAPIKey(t.Context(), &cm.ApiKeyRequestData{Name: "key"}, cm.CreateDeliveryAPIKeyParams{
 		SpaceID: "space",
 	})
 	require.NoError(t, err)
@@ -27,7 +26,7 @@ func TestDeliveryAPIKeyVersionAndConflictSemantics(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, createdStatus.StatusCode)
 	assert.Equal(t, 0, createdStatus.Response.Sys.Version)
 
-	updatedResponse, err := handler.UpdateDeliveryAPIKey(context.Background(), &cm.ApiKeyRequestData{Name: "updated"}, cm.UpdateDeliveryAPIKeyParams{
+	updatedResponse, err := handler.UpdateDeliveryAPIKey(t.Context(), &cm.ApiKeyRequestData{Name: "updated"}, cm.UpdateDeliveryAPIKeyParams{
 		SpaceID:            "space",
 		APIKeyID:           createdStatus.Response.Sys.ID,
 		XContentfulVersion: createdStatus.Response.Sys.Version,
@@ -39,7 +38,7 @@ func TestDeliveryAPIKeyVersionAndConflictSemantics(t *testing.T) {
 	assert.Equal(t, http.StatusOK, updatedStatus.StatusCode)
 	assert.Equal(t, 1, updatedStatus.Response.Sys.Version)
 
-	staleResponse, err := handler.UpdateDeliveryAPIKey(context.Background(), &cm.ApiKeyRequestData{Name: "stale"}, cm.UpdateDeliveryAPIKeyParams{
+	staleResponse, err := handler.UpdateDeliveryAPIKey(t.Context(), &cm.ApiKeyRequestData{Name: "stale"}, cm.UpdateDeliveryAPIKeyParams{
 		SpaceID:            "space",
 		APIKeyID:           createdStatus.Response.Sys.ID,
 		XContentfulVersion: createdStatus.Response.Sys.Version,
@@ -48,7 +47,7 @@ func TestDeliveryAPIKeyVersionAndConflictSemantics(t *testing.T) {
 
 	requireContentfulConflictWithNonemptyMessage(t, staleResponse, cm.ErrorSysIDConflict)
 
-	storedResponse, err := handler.GetDeliveryAPIKey(context.Background(), cm.GetDeliveryAPIKeyParams{
+	storedResponse, err := handler.GetDeliveryAPIKey(t.Context(), cm.GetDeliveryAPIKeyParams{
 		SpaceID:  "space",
 		APIKeyID: createdStatus.Response.Sys.ID,
 	})

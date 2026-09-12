@@ -44,7 +44,7 @@ func TestContentTypeMetadataTaxonomyResponsePreservesUnknownLinkTypeAsKnownSenti
 
 	_, requestDiags := actual.Value().ToContentTypeMetadataTaxonomyItem(itemPath)
 	assert.True(t, requestDiags.HasError())
-	assert.Equal(t, []string{itemPath.String()}, diagnosticPaths(t, requestDiags))
+	assert.Equal(t, []string{itemPath.String()}, attributeDiagnosticPaths(t, requestDiags))
 }
 
 func TestContentTypeMetadataTaxonomyResponseUnknownLinkTypeIsRejectedAtHTTPBoundary(t *testing.T) {

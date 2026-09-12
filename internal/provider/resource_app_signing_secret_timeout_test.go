@@ -36,7 +36,9 @@ func TestAccAppSigningSecretResourceTimeoutUpdatesPreserveRemoteRotation(t *test
 
 	steps := []resource.TestStep{{
 		Config: appSigningSecretTimeoutConfig(initialValue, ""),
-		Check:  resource.TestCheckResourceAttr("contentful_app_signing_secret.test", "value", initialValue),
+		ConfigStateChecks: []statecheck.StateCheck{
+			statecheck.ExpectKnownValue("contentful_app_signing_secret.test", tfjsonpath.New("value"), knownvalue.StringExact(initialValue)),
+		},
 	}}
 
 	for _, change := range []struct {
@@ -87,20 +89,20 @@ lifecycle { ignore_changes = [value] }
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_app_signing_secret.test", plancheck.ResourceActionUpdate),
 			}},
-			Check: resource.ComposeAggregateTestCheckFunc(
-				resource.TestCheckResourceAttr("contentful_app_signing_secret.test", "value", rotatedValue),
-				resource.TestCheckResourceAttr("contentful_app_signing_secret.test", "timeouts.read", "4m"),
-				func(_ *terraform.State) error {
-					recorder.requireValues(t, initialValue, rotatedValue)
-					requireAppSigningSecretRedactedValue(t, server, "bbbb")
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_app_signing_secret.test", tfjsonpath.New("value"), knownvalue.StringExact(rotatedValue)),
+				statecheck.ExpectKnownValue("contentful_app_signing_secret.test", tfjsonpath.New("timeouts").AtMapKey("read"), knownvalue.StringExact("4m")),
+			},
+			Check: func(_ *terraform.State) error {
+				recorder.requireValues(t, initialValue, rotatedValue)
+				requireAppSigningSecretRedactedValue(t, server, "bbbb")
 
-					return nil
-				},
-			),
+				return nil
+			},
 		},
 	)
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: steps})
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: steps})
 }
 
 func TestAccAppSigningSecretResourceImportedTimeoutUpdatePreservesNullValue(t *testing.T) {
@@ -133,7 +135,7 @@ import {
 		})
 	}
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: steps})
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: steps})
 }
 
 func appSigningSecretTimeoutConfig(value, settings string) string {

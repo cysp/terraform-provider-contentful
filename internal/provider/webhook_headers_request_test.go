@@ -38,7 +38,7 @@ func TestWebhookHeadersRejectNullAndUnknownObjects(t *testing.T) {
 			result, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers, headers)
 			assert.Nil(t, result)
 			require.True(t, diags.HasError())
-			assert.Equal(t, []string{`headers["authorization"]`}, diagnosticPaths(t, diags))
+			assert.Equal(t, []string{`headers["authorization"]`}, attributeDiagnosticPaths(t, diags))
 		})
 	}
 }
@@ -65,7 +65,7 @@ func TestWebhookHeadersFailWithoutPartialOutputAndSortKeys(t *testing.T) {
 	result, diags = ToWebhookDefinitionHeaders(path.Root("headers"), headers, headers)
 	assert.Nil(t, result)
 	require.True(t, diags.HasError())
-	assert.Equal(t, []string{`headers["broken"].value`}, diagnosticPaths(t, diags))
+	assert.Equal(t, []string{`headers["broken"].value`}, attributeDiagnosticPaths(t, diags))
 }
 
 func TestWebhookRequestPreservesResponseOwnedSecretWithoutSendingAValue(t *testing.T) {

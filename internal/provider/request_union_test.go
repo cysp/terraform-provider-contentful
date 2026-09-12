@@ -103,7 +103,7 @@ func TestConvertExactlyOneKnownAlternative(t *testing.T) {
 			)
 
 			assert.Equal(t, test.expected, actual)
-			assert.Equal(t, test.expectedPaths, diagnosticPathStrings(t, diags))
+			assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, diags))
 			assert.Equal(t, test.expectedCalls, calls)
 		})
 	}

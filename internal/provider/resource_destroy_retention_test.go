@@ -49,7 +49,7 @@ resource "contentful_space_enablements" "test" {
 
 				return nil
 			}
-			ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.config, Check: func(_ *terraform.State) error {
 					before = remoteDeleteGet(t, server, test.path, http.StatusOK)
 

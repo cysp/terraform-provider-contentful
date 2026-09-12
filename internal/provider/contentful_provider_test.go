@@ -6,21 +6,12 @@ import (
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	frameworkprovider "github.com/hashicorp/terraform-plugin-framework/provider"
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func makeTestAccProtoV6ProviderFactories(options ...Option) map[string]func() (tfprotov6.ProviderServer, error) {
-	return map[string]func() (tfprotov6.ProviderServer, error){
-		"contentful": providerserver.NewProtocol6WithError(Factory("test", options...)()),
-	}
-}
-
-var testAccProtoV6ProviderFactories = makeTestAccProtoV6ProviderFactories()
 
 var providerConfigType = tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 	"url":          tftypes.String,
@@ -72,8 +63,8 @@ func TestProtocol6ProviderServerSchemaVersion(t *testing.T) {
 	t.Parallel()
 
 	providerServer, err := testAccProtoV6ProviderFactories["contentful"]()
-	require.NotNil(t, providerServer)
 	require.NoError(t, err)
+	require.NotNil(t, providerServer)
 
 	resp, err := providerServer.GetProviderSchema(t.Context(), &tfprotov6.GetProviderSchemaRequest{})
 	require.NoError(t, err)
@@ -88,14 +79,15 @@ func TestProtocol6ProviderServerSchemaDocumentsProviderConfiguration(t *testing.
 	t.Parallel()
 
 	providerServer, err := testAccProtoV6ProviderFactories["contentful"]()
-	require.NotNil(t, providerServer)
 	require.NoError(t, err)
+	require.NotNil(t, providerServer)
 
 	resp, err := providerServer.GetProviderSchema(t.Context(), &tfprotov6.GetProviderSchemaRequest{})
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	require.NotNil(t, resp.Provider)
 	require.Empty(t, resp.Diagnostics)
+	require.NotNil(t, resp.Provider.Block)
 
 	attributes := map[string]*tfprotov6.SchemaAttribute{}
 	for _, attribute := range resp.Provider.Block.Attributes {
@@ -292,18 +284,17 @@ func TestProtocol6ProviderServerConfigure(t *testing.T) {
 			}
 
 			providerServer, err := makeTestAccProtoV6ProviderFactories(test.options...)["contentful"]()
-			require.NotNil(t, providerServer)
 			require.NoError(t, err)
+			require.NotNil(t, providerServer)
 
 			providerConfigValue, err := providerConfigDynamicValue(test.config)
-			require.NotNil(t, providerConfigValue)
 			require.NoError(t, err)
 
 			resp, err := providerServer.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{
 				Config: &providerConfigValue,
 			})
-			require.NotNil(t, resp)
 			require.NoError(t, err)
+			require.NotNil(t, resp)
 
 			require.Len(t, resp.Diagnostics, len(test.expectedDiagnostics))
 

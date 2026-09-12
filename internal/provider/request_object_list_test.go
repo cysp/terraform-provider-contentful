@@ -51,7 +51,7 @@ func TestConvertKnownObjectListElements(t *testing.T) {
 		)
 
 		assert.Nil(t, actual)
-		assert.Equal(t, []string{"items[1]", "items[2]"}, diagnosticPathStrings(t, diags))
+		assert.Equal(t, []string{"items[1]", "items[2]"}, attributeDiagnosticPaths(t, diags))
 	})
 
 	t.Run("discards converted values after a child conversion error", func(t *testing.T) {
@@ -71,21 +71,6 @@ func TestConvertKnownObjectListElements(t *testing.T) {
 		)
 
 		assert.Nil(t, actual)
-		assert.Equal(t, []string{"items[1]"}, diagnosticPathStrings(t, diags))
+		assert.Equal(t, []string{"items[1]"}, attributeDiagnosticPaths(t, diags))
 	})
-}
-
-func diagnosticPathStrings(t *testing.T, diags diag.Diagnostics) []string {
-	t.Helper()
-
-	paths := make([]string, 0, len(diags.Errors()))
-
-	for _, diagnostic := range diags.Errors() {
-		withPath, ok := diagnostic.(diag.DiagnosticWithPath)
-		require.True(t, ok)
-
-		paths = append(paths, withPath.Path().String())
-	}
-
-	return paths
 }

@@ -1,9 +1,9 @@
 package cmtesting_test
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"testing"
@@ -55,7 +55,8 @@ func appKeyRequest(t *testing.T) *cm.AppKeyRequestData {
 }
 
 func appKeyRequestFromDER(publicKeyDER []byte) *cm.AppKeyRequestData {
-	keyID := cm.AppKeyJWKFingerprint(publicKeyDER)
+	fingerprint := sha256.Sum256(publicKeyDER)
+	keyID := base64.RawURLEncoding.EncodeToString(fingerprint[:])
 
 	request := cm.NewAppKeyRequestData(cm.AppKeyJWK{
 		Alg: cm.AppKeyJWKAlgRS256,
@@ -72,7 +73,7 @@ func appKeyRequestFromDER(publicKeyDER []byte) *cm.AppKeyRequestData {
 func createAppKey(t *testing.T, handler *cmt.Handler, request *cm.AppKeyRequestData) cm.AppKey {
 	t.Helper()
 
-	response, err := handler.CreateAppKey(context.Background(), request, appKeyCreateParams())
+	response, err := handler.CreateAppKey(t.Context(), request, appKeyCreateParams())
 	require.NoError(t, err)
 
 	appKey, ok := response.(*cm.AppKey)

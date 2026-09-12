@@ -5,8 +5,13 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +21,9 @@ func TestAccTeamResourceLifecycle(t *testing.T) {
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	identity := statecheck.CompareValue(compare.ValuesSame())
+
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -24,7 +31,16 @@ func TestAccTeamResourceLifecycle(t *testing.T) {
 					"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
 					"team_name":       config.StringVariable("Test Team"),
 				},
-				Check: resource.TestCheckResourceAttr("contentful_team.test", "description", ""),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_team.test", plancheck.ResourceActionCreate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_team.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("name"), knownvalue.StringExact("Test Team")),
+					statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("description"), knownvalue.StringExact("")),
+				},
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -32,7 +48,16 @@ func TestAccTeamResourceLifecycle(t *testing.T) {
 					"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
 					"team_name":       config.StringVariable("Test Team Updated"),
 				},
-				Check: resource.TestCheckResourceAttr("contentful_team.test", "description", ""),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_team.test", plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_team.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("name"), knownvalue.StringExact("Test Team Updated")),
+					statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("description"), knownvalue.StringExact("")),
+				},
 			},
 		},
 	})
@@ -49,7 +74,7 @@ func TestAccTeamResourceImport(t *testing.T) {
 		Description: cm.NewNilString(""),
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config:             testAccTeamResourceImportConfig(),
@@ -94,7 +119,7 @@ func TestAccTeamResourceImportUpdateUsesDefaultDescription(t *testing.T) {
 		Description: cm.NewNilString("Existing description"),
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -117,7 +142,9 @@ resource "contentful_team" "test" {
   name = "Test Team Updated"
 }
 `,
-				Check: resource.TestCheckResourceAttr("contentful_team.test", "description", ""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("description"), knownvalue.StringExact("")),
+				},
 			},
 		},
 	})
@@ -134,7 +161,7 @@ func TestAccTeamResourceImportNullDescriptionUsesDefault(t *testing.T) {
 		Description: cm.NewNilStringNull(),
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -157,7 +184,9 @@ resource "contentful_team" "test" {
   name = "Test Team"
 }
 `,
-				Check: resource.TestCheckResourceAttr("contentful_team.test", "description", ""),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("description"), knownvalue.StringExact("")),
+				},
 			},
 		},
 	})

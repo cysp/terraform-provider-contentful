@@ -28,7 +28,7 @@ func TestAccContentTypeResourceIgnoreChangesDoesNotAuthorizeExternalDraft(t *tes
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	contentTypeID := "ignore-changes-activation-authority"
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 		{Config: contentTypeIgnoreChangesConfig(contentTypeID, "Managed one")},
 		{
 			PreConfig: func() {

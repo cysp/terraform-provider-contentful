@@ -30,12 +30,11 @@ func previewEnvironmentConfiguration(contentTypeID, url string, enabled bool) cm
 func TestPreviewEnvironmentLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, testserver := testContentfulManagementHTTPTestServer(t, cmt.WithRateLimitPerSecond(100))
-	defer testserver.Close()
+	server, testServer := testContentfulManagementHTTPTestServer(t, cmt.WithRateLimitPerSecond(100))
 
 	server.RegisterSpaceEnvironment("space", "master")
 
-	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+	client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
 	createResponse, err := client.CreatePreviewEnvironment(t.Context(), new(previewEnvironmentData(
 		"preview",
@@ -46,6 +45,7 @@ func TestPreviewEnvironmentLifecycle(t *testing.T) {
 	created, ok := createResponse.(*cm.PreviewEnvironment)
 	require.True(t, ok)
 	require.Equal(t, 0, created.Sys.Version)
+	require.Len(t, created.Configurations, 1)
 	require.Equal(t, "page", created.Configurations[0].ContentType.Or(""))
 	require.Equal(t, "ContentType", created.Configurations[0].EntityType.Or(""))
 
@@ -63,6 +63,7 @@ func TestPreviewEnvironmentLifecycle(t *testing.T) {
 	updated, ok := updateResponse.(*cm.PreviewEnvironment)
 	require.True(t, ok)
 	require.Equal(t, 1, updated.Sys.Version)
+	require.Len(t, updated.Configurations, 2)
 	require.Equal(t, []string{"page", "author"}, []string{
 		updated.Configurations[0].EntityId.Or(""),
 		updated.Configurations[1].EntityId.Or(""),
@@ -81,7 +82,7 @@ func TestPreviewEnvironmentLifecycle(t *testing.T) {
 
 	staleError, ok := staleResponse.(cm.ErrorStatusCodeResponse)
 	require.True(t, ok)
-	require.Equal(t, 409, staleError.GetStatusCode())
+	require.Equal(t, http.StatusConflict, staleError.GetStatusCode())
 	staleErrorBody, ok := staleError.GetError()
 	require.True(t, ok)
 	require.Equal(t, "Conflict", staleErrorBody.Sys.ID)
@@ -103,18 +104,17 @@ func TestPreviewEnvironmentLifecycle(t *testing.T) {
 
 	notFound, ok := getResponse.(*cm.ErrorStatusCode)
 	require.True(t, ok)
-	require.Equal(t, 404, notFound.StatusCode)
+	require.Equal(t, http.StatusNotFound, notFound.StatusCode)
 }
 
 func TestPreviewEnvironmentConfigurationSemantics(t *testing.T) {
 	t.Parallel()
 
-	server, testserver := testContentfulManagementHTTPTestServer(t, cmt.WithRateLimitPerSecond(100))
-	defer testserver.Close()
+	server, testServer := testContentfulManagementHTTPTestServer(t, cmt.WithRateLimitPerSecond(100))
 
 	server.RegisterSpaceEnvironment("space", "master")
 
-	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+	client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
 	createResponse, err := client.CreatePreviewEnvironment(t.Context(), new(previewEnvironmentData(
 		"preview",
@@ -139,6 +139,7 @@ func TestPreviewEnvironmentConfigurationSemantics(t *testing.T) {
 	updated, ok := updateResponse.(*cm.PreviewEnvironment)
 	require.True(t, ok)
 	require.Equal(t, 0, updated.Sys.Version, "configuration-only updates do not increment the live API version")
+	require.Len(t, updated.Configurations, 2)
 	require.Equal(t, []string{"page", "author"}, []string{
 		updated.Configurations[0].EntityId.Or(""),
 		updated.Configurations[1].EntityId.Or(""),
@@ -155,7 +156,7 @@ func TestPreviewEnvironmentConfigurationSemantics(t *testing.T) {
 
 	duplicateError, ok := duplicateResponse.(*cm.ErrorStatusCode)
 	require.True(t, ok)
-	require.Equal(t, 400, duplicateError.StatusCode)
+	require.Equal(t, http.StatusBadRequest, duplicateError.StatusCode)
 
 	requestBody := `{
 		"name":"unsafe update response round-trip",
@@ -172,7 +173,7 @@ func TestPreviewEnvironmentConfigurationSemantics(t *testing.T) {
 	request, err := http.NewRequestWithContext(
 		t.Context(),
 		http.MethodPut,
-		testserver.URL+"/spaces/space/preview_environments/"+created.Sys.ID,
+		testServer.URL+"/spaces/space/preview_environments/"+created.Sys.ID,
 		strings.NewReader(requestBody),
 	)
 	require.NoError(t, err)
@@ -180,10 +181,10 @@ func TestPreviewEnvironmentConfigurationSemantics(t *testing.T) {
 	request.Header.Set("Content-Type", "application/vnd.contentful.management.v1+json")
 	request.Header.Set("X-Contentful-Version", "0")
 
-	rawUpdateResponse, err := testserver.Client().Do(request)
+	rawUpdateResponse, err := testServer.Client().Do(request)
 	require.NoError(t, err)
 
-	defer rawUpdateResponse.Body.Close()
+	t.Cleanup(func() { require.NoError(t, rawUpdateResponse.Body.Close()) })
 
 	require.Equal(t, http.StatusBadRequest, rawUpdateResponse.StatusCode)
 }

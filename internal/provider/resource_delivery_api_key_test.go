@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
@@ -35,15 +36,25 @@ func TestAccDeliveryAPIKeyResourceLifecycle(t *testing.T) {
 	updatedVariables := maps.Clone(configVariables)
 	updatedVariables["test_delivery_api_key_name"] = config.StringVariable(apiKeyName + " updated")
 
+	identity := statecheck.CompareValue(compare.ValuesSame())
 	deliveryToken := statecheck.CompareValue(compare.ValuesSame())
 	previewToken := statecheck.CompareValue(compare.ValuesSame())
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_delivery_api_key.test", plancheck.ResourceActionCreate),
+					},
+				},
 				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_delivery_api_key.test", tfjsonpath.New("id")),
+					statecheck.ExpectSensitiveValue("contentful_delivery_api_key.test", tfjsonpath.New("access_token")),
+					statecheck.ExpectSensitiveValue("data.contentful_preview_api_key.test", tfjsonpath.New("access_token")),
+					statecheck.CompareValuePairs("contentful_delivery_api_key.test", tfjsonpath.New("preview_api_key_id"), "data.contentful_preview_api_key.test", tfjsonpath.New("preview_api_key_id"), compare.ValuesSame()),
 					statecheck.ExpectKnownValue("contentful_delivery_api_key.test", tfjsonpath.New("access_token"), knownvalue.StringRegexp(regexp.MustCompile(`.+`))),
 					statecheck.ExpectKnownValue("data.contentful_preview_api_key.test", tfjsonpath.New("access_token"), knownvalue.StringRegexp(regexp.MustCompile(`.+`))),
 					deliveryToken.AddStateValue("contentful_delivery_api_key.test", tfjsonpath.New("access_token")),
@@ -60,7 +71,16 @@ func TestAccDeliveryAPIKeyResourceLifecycle(t *testing.T) {
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: updatedVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_delivery_api_key.test", plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_delivery_api_key.test", tfjsonpath.New("id")),
+					statecheck.ExpectSensitiveValue("contentful_delivery_api_key.test", tfjsonpath.New("access_token")),
+					statecheck.ExpectSensitiveValue("data.contentful_preview_api_key.test", tfjsonpath.New("access_token")),
+					statecheck.CompareValuePairs("contentful_delivery_api_key.test", tfjsonpath.New("preview_api_key_id"), "data.contentful_preview_api_key.test", tfjsonpath.New("preview_api_key_id"), compare.ValuesSame()),
 					statecheck.ExpectKnownValue("contentful_delivery_api_key.test", tfjsonpath.New("name"), knownvalue.StringExact(apiKeyName+" updated")),
 					deliveryToken.AddStateValue("contentful_delivery_api_key.test", tfjsonpath.New("access_token")),
 					previewToken.AddStateValue("data.contentful_preview_api_key.test", tfjsonpath.New("access_token")),
@@ -84,7 +104,7 @@ func TestAccDeliveryAPIKeyResourceImportNotFound(t *testing.T) {
 		"test_delivery_api_key_name": config.StringVariable(apiKeyName),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

@@ -8,6 +8,7 @@ import (
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type privateProviderData struct {
@@ -41,7 +42,7 @@ func (p *privateProviderData) SetKey(_ context.Context, key string, value []byte
 
 var _ PrivateProviderData = &privateProviderData{}
 
-func TestPrivateDataSetInt(t *testing.T) {
+func TestSetPrivateProviderDataWritesJSON(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -50,18 +51,29 @@ func TestPrivateDataSetInt(t *testing.T) {
 
 	diags := SetPrivateProviderData(ctx, privateData, "key", 42)
 
-	assert.Equal(t, []byte{'4', '2'}, privateData.data["key"])
-	assert.Empty(t, diags)
+	require.Empty(t, diags)
+	assert.Equal(t, []byte("42"), privateData.data["key"])
 }
 
-func TestPrivateDataSetInf(t *testing.T) {
+func TestSetPrivateProviderDataRejectsUnsupportedJSONWithoutMutation(t *testing.T) {
 	t.Parallel()
 
-	ctx := t.Context()
+	for name, value := range map[string]float64{
+		"positive infinity": math.Inf(1),
+		"negative infinity": math.Inf(-1),
+		"NaN":               math.NaN(),
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-	privateData := newProviderPrivateData()
+			privateData := newProviderPrivateData()
+			privateData.data["key"] = []byte("42")
 
-	diags := SetPrivateProviderData(ctx, privateData, "key", math.Inf(1))
+			diags := SetPrivateProviderData(t.Context(), privateData, "key", value)
 
-	assert.NotEmpty(t, diags)
+			require.Len(t, diags.Errors(), 1)
+			assert.Equal(t, "Failed to marshal value", diags.Errors()[0].Summary())
+			assert.Equal(t, []byte("42"), privateData.data["key"])
+		})
+	}
 }

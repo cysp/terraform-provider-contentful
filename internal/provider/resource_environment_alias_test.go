@@ -40,7 +40,7 @@ func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 	configVariables2 := maps.Clone(configVariables)
 	configVariables2["target_environment_id"] = config.StringVariable("master")
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		CheckDestroy: func(_ *terraform.State) error {
 			response, err := server.Handler().GetEnvironmentAlias(t.Context(), cm.GetEnvironmentAliasParams{SpaceID: "space-id", EnvironmentAliasID: environmentAliasID})
 			require.NoError(t, err)
@@ -94,17 +94,17 @@ func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 		"target_environment_id":     config.StringVariable("master-1970-01-01"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
 				ConfigVariables: configVariables,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_environment_alias.test", "id", "space-id/master"),
-					resource.TestCheckResourceAttr("contentful_environment_alias.test", "space_id", "space-id"),
-					resource.TestCheckResourceAttr("contentful_environment_alias.test", "environment_alias_id", "master"),
-					resource.TestCheckResourceAttr("contentful_environment_alias.test", "target_environment_id", "master-1970-01-01"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/master")),
+					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("space_id"), knownvalue.StringExact("space-id")),
+					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("environment_alias_id"), knownvalue.StringExact("master")),
+					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("target_environment_id"), knownvalue.StringExact("master-1970-01-01")),
+				},
 			},
 			{
 				ConfigDirectory:   config.TestNameDirectory(),

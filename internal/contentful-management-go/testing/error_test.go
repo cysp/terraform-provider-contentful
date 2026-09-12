@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -15,7 +14,7 @@ func TestCreatePersonalAccessTokenReturnsBadRequestForInvalidRequest(t *testing.
 	t.Parallel()
 
 	handler := cmt.NewHandler()
-	response, err := handler.CreatePersonalAccessToken(context.Background(), &cm.PersonalAccessTokenRequestData{})
+	response, err := handler.CreatePersonalAccessToken(t.Context(), &cm.PersonalAccessTokenRequestData{})
 
 	require.NoError(t, err)
 
@@ -31,7 +30,7 @@ func TestPutTeamReturnsVersionMismatchForStaleVersion(t *testing.T) {
 	t.Parallel()
 
 	handler := cmt.NewHandler()
-	_, err := handler.PutTeam(context.Background(), &cm.TeamData{
+	_, err := handler.PutTeam(t.Context(), &cm.TeamData{
 		Name:        "Test Team",
 		Description: cm.NewNilString(""),
 	}, cm.PutTeamParams{
@@ -41,7 +40,7 @@ func TestPutTeamReturnsVersionMismatchForStaleVersion(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	response, err := handler.PutTeam(context.Background(), &cm.TeamData{
+	response, err := handler.PutTeam(t.Context(), &cm.TeamData{
 		Name:        "Updated Test Team",
 		Description: cm.NewNilString(""),
 	}, cm.PutTeamParams{
@@ -94,4 +93,29 @@ func TestErrorHelpersAlwaysReturnMessages(t *testing.T) {
 			assert.NotEmpty(t, errorResponse.Message.Or(""))
 		})
 	}
+}
+
+func requireContentfulError(t *testing.T, response any, expectedStatus int, expectedID, expectedMessage string) {
+	t.Helper()
+
+	statusCode, ok := response.(*cm.ErrorStatusCode)
+	require.True(t, ok)
+	assert.Equal(t, expectedStatus, statusCode.StatusCode)
+	errorResponse, ok := statusCode.Response.GetError()
+	require.True(t, ok)
+	assert.Equal(t, expectedID, errorResponse.Sys.ID)
+	assert.Equal(t, expectedMessage, errorResponse.Message.Or(""))
+}
+
+func requireContentfulConflictWithNonemptyMessage(t *testing.T, response any, expectedID string) {
+	t.Helper()
+
+	statusCode, ok := response.(*cm.ErrorStatusCode)
+	require.True(t, ok)
+	assert.Equal(t, http.StatusConflict, statusCode.StatusCode)
+	errorResponse, ok := statusCode.Response.GetError()
+	require.True(t, ok)
+	assert.Equal(t, cm.ErrorSysTypeError, errorResponse.Sys.Type)
+	assert.Equal(t, expectedID, errorResponse.Sys.ID)
+	assert.NotEmpty(t, errorResponse.Message.Or(""))
 }

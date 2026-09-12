@@ -48,7 +48,7 @@ func TestAccWebhookResourceConsistencyErrorsRetainResponseState(t *testing.T) {
 	adapter := &mutationJSONResponseAdapter{delegate: server}
 	filterValuePath := tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value")
 
-	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
+	testAccMockedResource(t, adapter, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
@@ -102,7 +102,7 @@ func TestAccWebhookResourceUnsupportedResponsePropertiesPreventFalseConvergence(
 	filterValuePath := tfjsonpath.New("filters").AtSliceIndex(0).AtMapKey("equals").AtMapKey("value")
 	webhookIDPath := tfjsonpath.New("webhook_id")
 
-	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
+	testAccMockedResource(t, adapter, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
@@ -142,7 +142,7 @@ func TestAccWebhookResourceMutationReconciliationUsesEffectivePlanWithIgnoreChan
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config: webhookMutationConfig("Initial webhook", "Asset", false),
 		},
@@ -176,7 +176,7 @@ func TestAccWebhookResourceKnownDefaultContradictionRetainsResponseState(t *test
 	server.RegisterSpaceEnvironment("space", "master")
 
 	adapter := &mutationJSONResponseAdapter{delegate: server}
-	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
+	testAccMockedResource(t, adapter, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{

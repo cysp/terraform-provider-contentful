@@ -38,9 +38,7 @@ func TestAccTaxonomyResourcesLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	suffix := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 	ids := taxonomyLifecycleIDs{
@@ -51,7 +49,7 @@ func TestAccTaxonomyResourcesLifecycle(t *testing.T) {
 		scheme:  "acctest_scheme_" + suffix,
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockableResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config: taxonomyLifecycleConfig(ids, taxonomyLifecycleCreate),
 			ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -370,9 +368,7 @@ func TestAccTaxonomyResourcesRecoverFromDeletion(t *testing.T) {
 	parallelWhenMocked(t)
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	base := config.Variables{
 		"organization_id":   config.StringVariable("organization-id"),
@@ -385,22 +381,22 @@ func TestAccTaxonomyResourcesRecoverFromDeletion(t *testing.T) {
 	updated["concept_label"] = config.StringVariable("Home furniture")
 	updated["scheme_label"] = config.StringVariable("Home products")
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{
 			ConfigDirectory: config.StaticDirectory("testdata/TestAccTaxonomyResourcesCreateUpdate"), ConfigVariables: base,
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_taxonomy_concept.test", plancheck.ResourceActionCreate),
 				plancheck.ExpectResourceAction("contentful_taxonomy_concept_scheme.test", plancheck.ResourceActionCreate),
 			}},
-			Check: resource.ComposeAggregateTestCheckFunc(
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "id", "organization-id/furniture"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "pref_label.en-US", "Furniture"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "1"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.en-US.0", "Furniture"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "1"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.en-US.0", "Furnishings"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "total_concepts", "1"),
-			),
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("id"), knownvalue.StringExact("organization-id/furniture")),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("pref_label").AtMapKey("en-US"), knownvalue.StringExact("Furniture")),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("alt_labels"), knownvalue.MapSizeExact(1)),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("alt_labels").AtMapKey("en-US").AtSliceIndex(0), knownvalue.StringExact("Furniture")),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("hidden_labels"), knownvalue.MapSizeExact(1)),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("hidden_labels").AtMapKey("en-US").AtSliceIndex(0), knownvalue.StringExact("Furnishings")),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept_scheme.test", tfjsonpath.New("total_concepts"), knownvalue.Int64Exact(1)),
+			},
 		},
 		{
 			ConfigDirectory: config.StaticDirectory("testdata/TestAccTaxonomyResourcesCreateUpdate"), ConfigVariables: updated,
@@ -453,9 +449,7 @@ func TestAccTaxonomyResourcesRecoverFromUnexpectedResponses(t *testing.T) {
 			parallelWhenMocked(t)
 
 			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			mutator := &taxonomyResponseMutator{next: server}
 			recorder := &taxonomyRequestBodyRecorder{next: mutator}
@@ -489,7 +483,7 @@ func TestAccTaxonomyResourcesRecoverFromUnexpectedResponses(t *testing.T) {
 				ConfigVariables: updated,
 			})
 
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+			testAccMockedResource(t, recorder, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 				Steps:                steps,
 			})
@@ -528,8 +522,8 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 		seed          func(*cmt.Server) error
 		attach        func(*cmt.Server) error
 		delete        func(*cmt.Server) error
-		refreshed     resource.TestCheckFunc
-		checks        resource.TestCheckFunc
+		refreshed     []statecheck.StateCheck
+		checks        []statecheck.StateCheck
 	}{
 		"concept": {
 			path: "/taxonomy/concepts/furniture", initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"),
@@ -548,8 +542,12 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 			attach: attachRemoteConceptToConcept, delete: func(server *cmt.Server) error {
 				return deleteTaxonomyConceptRemote(server, "organization-id", "remote")
 			},
-			refreshed: resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "broader_concept_ids.0", "remote"),
-			checks:    resource.ComposeAggregateTestCheckFunc(resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "pref_label.en-US", "Home furniture"), resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "broader_concept_ids.#", "0"), resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "related_concept_ids.#", "0")),
+			refreshed: []statecheck.StateCheck{statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("broader_concept_ids"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("remote")}))},
+			checks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("pref_label").AtMapKey("en-US"), knownvalue.StringExact("Home furniture")),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("broader_concept_ids"), knownvalue.ListSizeExact(0)),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("related_concept_ids"), knownvalue.ListSizeExact(0)),
+			},
 		},
 		"scheme": {
 			path: "/taxonomy/concept-schemes/products", initialConfig: taxonomyConceptSchemeOmittedCollectionsConfig("Products"), changedConfig: taxonomyConceptSchemeOmittedCollectionsConfig("Home products"),
@@ -568,8 +566,12 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 			attach: attachRemoteConceptToScheme, delete: func(server *cmt.Server) error {
 				return deleteTaxonomyConceptRemote(server, "organization-id", "remote")
 			},
-			refreshed: resource.ComposeAggregateTestCheckFunc(resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "concept_ids.0", "remote"), resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "top_concept_ids.0", "remote")),
-			checks:    resource.ComposeAggregateTestCheckFunc(resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "pref_label.en-US", "Home products"), resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "concept_ids.#", "0"), resource.TestCheckResourceAttr("contentful_taxonomy_concept_scheme.test", "top_concept_ids.#", "0")),
+			refreshed: []statecheck.StateCheck{statecheck.ExpectKnownValue("contentful_taxonomy_concept_scheme.test", tfjsonpath.New("concept_ids"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("remote")})), statecheck.ExpectKnownValue("contentful_taxonomy_concept_scheme.test", tfjsonpath.New("top_concept_ids"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("remote")}))},
+			checks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept_scheme.test", tfjsonpath.New("pref_label").AtMapKey("en-US"), knownvalue.StringExact("Home products")),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept_scheme.test", tfjsonpath.New("concept_ids"), knownvalue.ListSizeExact(0)),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept_scheme.test", tfjsonpath.New("top_concept_ids"), knownvalue.ListSizeExact(0)),
+			},
 		},
 	}
 	for name, test := range tests {
@@ -581,13 +583,13 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 
 			hook := &taxonomyRequestHook{next: server}
 			recorder := &taxonomyRequestBodyRecorder{next: hook}
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.initialConfig},
-				{PreConfig: func() { require.NoError(t, test.seed(server)); require.NoError(t, test.attach(server)) }, Config: test.initialConfig, Check: test.refreshed},
+				{PreConfig: func() { require.NoError(t, test.seed(server)); require.NoError(t, test.attach(server)) }, Config: test.initialConfig, ConfigStateChecks: test.refreshed},
 				{PreConfig: func() {
 					recorder.reset()
 					hook.runOnce(http.MethodPatch, test.path, func() error { return test.delete(server) })
-				}, Config: test.changedConfig, Check: test.checks},
+				}, Config: test.changedConfig, ConfigStateChecks: test.checks},
 			}})
 			require.True(t, hook.wasCalled())
 
@@ -679,7 +681,7 @@ func TestAccTaxonomyResourcesRejectResponseIdentityRetargeting(t *testing.T) {
 				steps = append(steps, resource.TestStep{Config: test.changedConfig})
 			}
 
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+			testAccMockedResource(t, recorder, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 				Steps:                steps,
 			})
@@ -718,9 +720,7 @@ func TestAccTaxonomyConceptResourcePreservesExplicitEmptyLabelMapsAgainstCanonic
 			parallelWhenMocked(t)
 
 			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 			base := taxonomyConceptEmptyLabelMapsConfig("Chair")
@@ -735,10 +735,10 @@ func TestAccTaxonomyConceptResourcePreservesExplicitEmptyLabelMapsAgainstCanonic
 				steps,
 				resource.TestStep{
 					Config: updated,
-					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "0"),
-						resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "0"),
-					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("alt_labels"), knownvalue.MapSizeExact(0)),
+						statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("hidden_labels"), knownvalue.MapSizeExact(0)),
+					},
 				},
 				resource.TestStep{
 					Config: updated,
@@ -748,7 +748,7 @@ func TestAccTaxonomyConceptResourcePreservesExplicitEmptyLabelMapsAgainstCanonic
 				},
 			)
 
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: steps})
+			testAccMockedResource(t, recorder, resource.TestCase{Steps: steps})
 
 			if !test.update {
 				return
@@ -775,33 +775,33 @@ func TestAccTaxonomyConceptResourceProjectsOutOfBandLabelLocalesByOwnership(t *t
 	tests := map[string]struct {
 		config         string
 		expectedAction plancheck.ResourceActionType
-		check          resource.TestCheckFunc
+		check          []statecheck.StateCheck
 	}{
 		"configured maps remove drift": {
 			config:         taxonomyConceptConfiguredLabelMapsConfig("Furniture"),
 			expectedAction: plancheck.ResourceActionUpdate,
-			check: resource.ComposeAggregateTestCheckFunc(
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "1"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.en-US.0", "Furniture"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "1"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.en-US.0", "Furnishings"),
-			),
+			check: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("alt_labels"), knownvalue.MapSizeExact(1)),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("alt_labels").AtMapKey("en-US").AtSliceIndex(0), knownvalue.StringExact("Furniture")),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("hidden_labels"), knownvalue.MapSizeExact(1)),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("hidden_labels").AtMapKey("en-US").AtSliceIndex(0), knownvalue.StringExact("Furnishings")),
+			},
 		},
 		"explicit empty maps remove drift": {
 			config:         taxonomyConceptEmptyLabelMapsConfig("Furniture"),
 			expectedAction: plancheck.ResourceActionUpdate,
-			check: resource.ComposeAggregateTestCheckFunc(
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.%", "0"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.%", "0"),
-			),
+			check: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("alt_labels"), knownvalue.MapSizeExact(0)),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("hidden_labels"), knownvalue.MapSizeExact(0)),
+			},
 		},
 		"omitted maps retain drift": {
 			config:         taxonomyConceptConfig("Furniture"),
 			expectedAction: plancheck.ResourceActionNoop,
-			check: resource.ComposeAggregateTestCheckFunc(
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "alt_labels.fr-FR.0", "Fauteuil"),
-				resource.TestCheckResourceAttr("contentful_taxonomy_concept.test", "hidden_labels.fr-FR.0", "Siege"),
-			),
+			check: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("alt_labels").AtMapKey("fr-FR").AtSliceIndex(0), knownvalue.StringExact("Fauteuil")),
+				statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("hidden_labels").AtMapKey("fr-FR").AtSliceIndex(0), knownvalue.StringExact("Siege")),
+			},
 		},
 	}
 
@@ -810,11 +810,9 @@ func TestAccTaxonomyConceptResourceProjectsOutOfBandLabelLocalesByOwnership(t *t
 			parallelWhenMocked(t)
 
 			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
-			ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.config},
 				{
 					PreConfig: func() {
@@ -824,7 +822,7 @@ func TestAccTaxonomyConceptResourceProjectsOutOfBandLabelLocalesByOwnership(t *t
 					ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_taxonomy_concept.test", test.expectedAction),
 					}},
-					Check: test.check,
+					ConfigStateChecks: test.check,
 				},
 			}})
 		})
@@ -870,12 +868,10 @@ func TestAccTaxonomyResourcesSurfaceVersionConflicts(t *testing.T) {
 			parallelWhenMocked(t)
 
 			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			hook := &taxonomyRequestHook{next: server}
-			ContentfulProviderMockedResourceTest(t, hook, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, hook, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.initialConfig},
 				{
 					PreConfig: func() {
@@ -969,7 +965,7 @@ func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+			testAccMockedResource(t, recorder, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 				Steps: []resource.TestStep{
 					{Config: test.initialConfig},
@@ -1026,12 +1022,10 @@ func TestAccTaxonomyResourcesAllowConcurrentDeletion(t *testing.T) {
 			parallelWhenMocked(t)
 
 			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			hook := &taxonomyRequestHook{next: server}
-			ContentfulProviderMockedResourceTest(t, hook, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, hook, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.initialConfig},
 				{
 					PreConfig: func() {
@@ -1073,12 +1067,10 @@ func TestAccTaxonomyResourcesSurfaceReadFailures(t *testing.T) {
 			parallelWhenMocked(t)
 
 			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			failer := &taxonomyResponseFailure{next: server}
-			ContentfulProviderMockedResourceTest(t, failer, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, failer, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.config},
 				{
 					PreConfig:   func() { failer.failOnce(http.MethodGet, test.path, 1) },
@@ -1124,12 +1116,10 @@ func TestAccTaxonomyResourcesDoNotGETInsideUpdate(t *testing.T) {
 			parallelWhenMocked(t)
 
 			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			recorder := &taxonomyRequestRecorder{next: server}
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.initialConfig},
 				{
 					PreConfig: recorder.reset,
@@ -1176,7 +1166,7 @@ func TestAccTaxonomyTaintedReplacementFetchesMissingDeleteVersion(t *testing.T) 
 			require.NoError(t, err)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+			testAccMockedResource(t, recorder, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 				Steps: []resource.TestStep{
 					{Config: test.config},
@@ -1230,7 +1220,7 @@ func TestAccTaxonomyTaintedReplacementPreservesDeleteVersionLock(t *testing.T) {
 
 			hook := &taxonomyRequestHook{next: server}
 			recorder := &taxonomyRequestBodyRecorder{next: hook}
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+			testAccMockedResource(t, recorder, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 				Steps: []resource.TestStep{
 					{Config: test.config},
@@ -1295,7 +1285,7 @@ func TestAccTaxonomyTaintedReplacementHandlesMissingResource(t *testing.T) {
 			require.NoError(t, err)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+			testAccMockedResource(t, recorder, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 				Steps: []resource.TestStep{
 					{Config: test.config},
@@ -1346,7 +1336,7 @@ func TestAccTaxonomyResourcesUseImportedVersion(t *testing.T) {
 			require.NoError(t, err)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+			testAccMockedResource(t, recorder, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 				Steps: []resource.TestStep{
 					{Config: test.initialConfig},
@@ -1427,7 +1417,7 @@ func TestAccTaxonomyCreateRequestPreservesCollectionOwnership(t *testing.T) {
 			require.NoError(t, err)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{{Config: test.config}}})
+			testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{{Config: test.config}}})
 
 			fields, ok := recorder.request(http.MethodPut, test.path)
 			require.True(t, ok, "missing PUT request for %s", test.path)
@@ -1460,7 +1450,7 @@ func TestAccTaxonomyConceptResourceImportProjectsNonemptyLabelMaps(t *testing.T)
 	_, err = server.Handler().PutTaxonomyConcept(t.Context(), &request, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture"})
 	require.NoError(t, err)
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{{
+	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{{
 		Config: taxonomyConceptConfig("Furniture"), ResourceName: "contentful_taxonomy_concept.test", ImportState: true, ImportStateId: "organization-id/furniture", ImportStateCheck: taxonomyConceptImportLabelMapsCheck(),
 	}}})
 }
@@ -1793,7 +1783,7 @@ func TestAccTaxonomyReadIdentityFailuresRetainPriorState(t *testing.T) {
 
 			mutator := &taxonomyResponseMutator{next: server}
 
-			ContentfulProviderMockedResourceTest(t, mutator, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, mutator, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.initialConfig},
 				{PreConfig: func() { test.mutate(mutator, test.path) }, Config: test.initialConfig, ExpectError: test.expectError},
 				{Config: test.initialConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionNoop)}}},
@@ -1856,7 +1846,7 @@ func TestAccTaxonomyExplicitEmptyLocalizedMapsRemainStable(t *testing.T) {
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
 				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionNoop)}}},
 				{PreConfig: func() { require.NoError(t, test.seedDrift(server)) }, Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionUpdate)}, PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
@@ -1927,7 +1917,7 @@ func TestAccTaxonomyImportRemoteNullThenConfiguresEmptyLocalizedMap(t *testing.T
 			require.NoError(t, test.seed(server))
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.config, ResourceName: test.resourceName, ImportState: true, ImportStateId: test.importID, ImportStatePersist: true},
 				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionUpdate)}, PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
 				{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(test.resourceName, plancheck.ResourceActionNoop)}}},

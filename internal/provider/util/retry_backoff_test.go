@@ -11,19 +11,23 @@ import (
 func TestContentfulRateLimitContentionWindowWidensAndCaps(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
+	tests := map[string]struct {
 		attemptNum int
 		window     time.Duration
 	}{
-		{attemptNum: 0, window: 500 * time.Millisecond},
-		{attemptNum: 1, window: time.Second},
-		{attemptNum: 2, window: 2 * time.Second},
-		{attemptNum: 3, window: 4 * time.Second},
-		{attemptNum: 20, window: 4 * time.Second},
+		"initial attempt": {attemptNum: 0, window: 500 * time.Millisecond},
+		"second attempt":  {attemptNum: 1, window: time.Second},
+		"third attempt":   {attemptNum: 2, window: 2 * time.Second},
+		"cap reached":     {attemptNum: 3, window: 4 * time.Second},
+		"cap retained":    {attemptNum: 20, window: 4 * time.Second},
 	}
 
-	for _, test := range tests {
-		assert.Equal(t, test.window, contentfulRateLimitContentionWindow(test.attemptNum))
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, test.window, contentfulRateLimitContentionWindow(test.attemptNum))
+		})
 	}
 }
 

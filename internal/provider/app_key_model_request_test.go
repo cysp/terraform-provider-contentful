@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -30,7 +29,7 @@ func TestAppKeyRequestAggregatesRequiredStringDiagnostics(t *testing.T) {
 		}),
 	}
 
-	request, diags := model.ToAppKeyRequestData(context.Background())
+	request, diags := model.ToAppKeyRequestData(t.Context())
 
 	assert.Equal(t, cm.AppKeyRequestData{}, request)
 	require.True(t, diags.HasError())
@@ -60,7 +59,7 @@ func TestValidateAppKeyJWKMaterialAcceptsFingerprintableMaterial(t *testing.T) {
 			X5t: types.StringValue(x5t),
 		}),
 	}
-	_, diags := model.ToAppKeyRequestData(context.Background())
+	_, diags := model.ToAppKeyRequestData(t.Context())
 
 	assert.False(t, diags.HasError(), diags)
 }
@@ -89,6 +88,6 @@ func TestValidateAppKeyJWKMaterialDoesNotEnforceUndocumentedContentfulSizeBounds
 		}),
 	}
 
-	_, diags := model.ToAppKeyRequestData(context.Background())
+	_, diags := model.ToAppKeyRequestData(t.Context())
 	assert.False(t, diags.HasError(), diags)
 }

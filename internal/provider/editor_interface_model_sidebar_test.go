@@ -34,7 +34,7 @@ func TestSidebarValueToEditorInterfaceDataSidebarItem(t *testing.T) {
 	assert.Empty(t, diags)
 }
 
-func TestSidebarValueToEditorInterfaceDataSidebarItemInvalidSettings(t *testing.T) {
+func TestSidebarValueToEditorInterfaceDataSidebarItemPreservesOpaqueSettings(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -49,7 +49,7 @@ func TestSidebarValueToEditorInterfaceDataSidebarItemInvalidSettings(t *testing.
 
 	sidebarItem, diags := model.Value().ToEditorInterfaceDataSidebarItem(path)
 
-	assert.NotNil(t, sidebarItem)
+	assert.Equal(t, "invalid json", string(sidebarItem.Settings))
 	assert.Empty(t, diags)
 }
 

@@ -18,13 +18,14 @@ func TestContentfulManagementServerGetAuthenticatedUserFound(t *testing.T) {
 	require.NoError(t, err)
 
 	hts := httptest.NewServer(server)
-	defer hts.Close()
+	t.Cleanup(hts.Close)
 
-	client, _ := cm.NewClient(
+	client, err := cm.NewClient(
 		hts.URL,
 		cm.NewAccessTokenSecuritySource(cmt.ValidAccessToken),
 		cm.WithClient(hts.Client()),
 	)
+	require.NoError(t, err)
 
 	server.SetMe(cm.NewUser("user123"))
 
@@ -46,13 +47,14 @@ func TestContentfulManagementServerGetAuthenticatedUserNotFound(t *testing.T) {
 	require.NoError(t, err)
 
 	hts := httptest.NewServer(server)
-	defer hts.Close()
+	t.Cleanup(hts.Close)
 
-	client, _ := cm.NewClient(
+	client, err := cm.NewClient(
 		hts.URL,
 		cm.NewAccessTokenSecuritySource(cmt.ValidAccessToken),
 		cm.WithClient(hts.Client()),
 	)
+	require.NoError(t, err)
 
 	res, err := client.GetAuthenticatedUser(t.Context())
 	assert.NotNil(t, res)

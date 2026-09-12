@@ -21,7 +21,7 @@ func TestAccPreviewAPIKeyDataSourceNotFound(t *testing.T) {
 		"preview_api_key_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

@@ -6,6 +6,7 @@ import (
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -94,38 +95,38 @@ func TestWebhookHeaderValueConversion(t *testing.T) {
 
 	ctx := t.Context()
 
-	values := []AttrValueWithToObjectValue{
-		NewTypedObject(WebhookHeaderValue{}),
-		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
+	values := map[string]basetypes.ObjectValuable{
+		"zero value": NewTypedObject(WebhookHeaderValue{}),
+		"unknown attributes": DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
 			"value":  types.StringUnknown(),
 			"secret": types.BoolUnknown(),
 		})),
-		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
+		"null attributes": DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
 			"value":  types.StringNull(),
 			"secret": types.BoolNull(),
 		})),
-		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
+		"plain value": DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
 			"value":  types.StringValue("value"),
 			"secret": types.BoolValue(false),
 		})),
-		DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
+		"secret value": DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
 			"value":  types.StringValue("value"),
 			"secret": types.BoolValue(true),
 		})),
 	}
 
-	for _, value := range values {
-		t.Run("ToObjectValue: "+value.String(), func(t *testing.T) {
+	for name, value := range values {
+		t.Run(name+"/ToObjectValue", func(t *testing.T) {
 			t.Parallel()
 
 			objectValue, objectValueDiags := value.ToObjectValue(ctx)
-			assert.Empty(t, objectValueDiags)
+			require.Empty(t, objectValueDiags)
 
 			assert.False(t, objectValue.IsUnknown())
 			assert.False(t, objectValue.IsNull())
 		})
 
-		t.Run("ToTerraformValue: "+value.String(), func(t *testing.T) {
+		t.Run(name+"/ToTerraformValue", func(t *testing.T) {
 			t.Parallel()
 
 			tfvalue, tfvalueErr := value.ToTerraformValue(ctx)
@@ -173,16 +174,16 @@ func TestWebhookHeaderTypeValueFromObject(t *testing.T) {
 			"value":  types.StringValue("value"),
 			"secret": types.BoolValue(true),
 		})
-		assert.False(t, diags.HasError())
+		require.False(t, diags.HasError(), diags)
 
 		object, diags := typ.ValueFromObject(ctx, value)
 
-		assert.False(t, diags.HasError())
+		require.False(t, diags.HasError(), diags)
 		assert.False(t, object.IsNull())
 		assert.False(t, object.IsUnknown())
 
 		header, headerOk := object.(TypedObject[WebhookHeaderValue])
-		assert.True(t, headerOk)
+		require.True(t, headerOk)
 		assert.Equal(t, "value", header.Value().Value.ValueString())
 		assert.True(t, header.Value().Secret.ValueBool())
 	})
