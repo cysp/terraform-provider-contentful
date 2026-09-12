@@ -40,7 +40,7 @@ jobs:
 
       - run: go mod download
 
-      - run: go test -race -shuffle=on -count=1 -timeout=10m -coverprofile=coverage.txt -covermode=atomic . ./internal/provider/... ./internal/terraform-plugin-framework-reflection/...
+      - run: go test -race -shuffle=on -count=1 -timeout=10m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
         timeout-minutes: 12
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0

@@ -128,7 +128,7 @@ topics = ["Entry.publish"]`, remotePath: "/spaces/space/webhook_definitions/{web
 
 			keys := map[string]testAccAppKeyJWKData{}
 			if test.resourceType == "app_key" {
-				keys["target"], keys["sibling"] = testAccAppKeyJWK(t), testAccAppKeyJWK(t)
+				keys["target"], keys["sibling"] = testAccAppKeyJWK(t, 0), testAccAppKeyJWK(t, 1)
 			}
 
 			configFor := func(name string) string {

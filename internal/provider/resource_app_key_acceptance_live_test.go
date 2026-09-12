@@ -2,6 +2,9 @@ package provider_test
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
 	"net/http"
 	"os"
 	"testing"
@@ -14,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/stretchr/testify/require"
 )
 
 //nolint:paralleltest
@@ -26,8 +30,8 @@ func TestAccAppKeyResourceLiveLifecycle(t *testing.T) {
 		t.Skip("live App Key lifecycle is covered by the equal mock acceptance sibling")
 	}
 
-	jwk := testAccAppKeyJWK(t)
-	replacementJWK := testAccAppKeyJWK(t)
+	jwk := testAccAppKeyLiveJWK(t)
+	replacementJWK := testAccAppKeyLiveJWK(t)
 
 	cleanupLiveAppKeyFixture(t, jwk.kid, replacementJWK.kid)
 	client := newLiveAppKeyClient(t)
@@ -73,6 +77,18 @@ func TestAccAppKeyResourceLiveLifecycle(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccAppKeyLiveJWK(t *testing.T) testAccAppKeyJWKData {
+	t.Helper()
+
+	key, err := rsa.GenerateKey(rand.Reader, 4096)
+	require.NoError(t, err)
+
+	publicKeyDER, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
+	require.NoError(t, err)
+
+	return testAccAppKeyJWKFromDER(publicKeyDER)
 }
 
 func cleanupLiveAppKeyFixture(t *testing.T, ownedKeyIDs ...string) {

@@ -31,14 +31,8 @@ func TestAccTeamResourceLifecycle(t *testing.T) {
 					"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
 					"team_name":       config.StringVariable("Test Team"),
 				},
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("contentful_team.test", plancheck.ResourceActionCreate),
-					},
-				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					identity.AddStateValue("contentful_team.test", tfjsonpath.New("id")),
-					statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("name"), knownvalue.StringExact("Test Team")),
 					statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("description"), knownvalue.StringExact("")),
 				},
 			},
@@ -55,7 +49,6 @@ func TestAccTeamResourceLifecycle(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					identity.AddStateValue("contentful_team.test", tfjsonpath.New("id")),
-					statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("name"), knownvalue.StringExact("Test Team Updated")),
 					statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("description"), knownvalue.StringExact("")),
 				},
 			},

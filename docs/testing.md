@@ -27,11 +27,13 @@ table fields for behavior; do not branch on the case name or derive expected
 results from the implementation being tested.
 
 Use the external `provider_test` or client test package when testing exported
-behavior. Use the implementation package in `*_internal_test.go` when a test
-needs unexported behavior. Do not export production symbols solely for tests.
-The `_internal` suffix denotes access to unexported implementation. Ordinary
-tests of exported behavior can remain in `*_test.go` or focused `*_unit_test.go`
-files in the external test package. Keep focused helpers near their tests.
+behavior. Use the implementation package when a test needs unexported behavior,
+and document that need where the package choice is not evident. The
+`*_internal_test.go` suffix makes this access explicit; existing same-package
+`*_test.go` files can keep their names. Do not export production symbols solely
+for tests. Ordinary tests of exported behavior can remain in `*_test.go` or
+focused `*_unit_test.go` files in the external test package. Keep focused helpers
+near their tests.
 Group shared setup in a corresponding `*_support_test.go` file; keep substantial
 fixtures, fault injection, and HTTP recorders in clearly named `*_fixture_test.go`,
 `*_faults_test.go`, and `*_recorder_test.go` files. The provider acceptance harness

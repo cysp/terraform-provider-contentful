@@ -35,8 +35,8 @@ func TestAccAppKeyResourceMockLifecycle(t *testing.T) {
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
-	jwk := testAccAppKeyJWK(t)
-	replacementJWK := testAccAppKeyJWK(t)
+	jwk := testAccAppKeyJWK(t, 0)
+	replacementJWK := testAccAppKeyJWK(t, 1)
 
 	testAccMockedResource(t, server, resource.TestCase{
 		CheckDestroy: testAccAppKeyDestroyCheck(server.Handler().GetAppKey, jwk.kid, replacementJWK.kid),
@@ -77,7 +77,7 @@ func TestAccAppKeyResourceMockParentReplacement(t *testing.T) {
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
-	jwk := testAccAppKeyJWK(t)
+	jwk := testAccAppKeyJWK(t, 0)
 
 	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
@@ -111,7 +111,7 @@ func TestAccAppKeyResourceMockTimeoutUpdate(t *testing.T) {
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 	counter := &appKeyMutationCounter{handler: server}
-	jwk := testAccAppKeyJWK(t)
+	jwk := testAccAppKeyJWK(t, 0)
 
 	testAccMockedResource(t, counter, resource.TestCase{
 		Steps: []resource.TestStep{
@@ -168,7 +168,7 @@ func TestAccAppKeyResourceMockImport(t *testing.T) {
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
-	jwk := testAccAppKeyJWK(t)
+	jwk := testAccAppKeyJWK(t, 0)
 	resourceConfig := testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, jwk, "")
 
 	testAccMockedResource(t, server, resource.TestCase{
@@ -197,7 +197,7 @@ func TestAccAppKeyResourceMockExternalDeletion(t *testing.T) {
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
-	jwk := testAccAppKeyJWK(t)
+	jwk := testAccAppKeyJWK(t, 0)
 	resourceConfig := testAccAppKeyConfig(testAccAppKeyOrganizationID, testAccAppKeyAppDefinitionID, jwk, "")
 
 	testAccMockedResource(t, server, resource.TestCase{
@@ -236,7 +236,7 @@ func TestAccAppKeyResourceMockCreateBeforeDestroyRejectsReusedKey(t *testing.T) 
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
-	jwk := testAccAppKeyJWK(t)
+	jwk := testAccAppKeyJWK(t, 0)
 
 	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
@@ -254,13 +254,13 @@ func TestAccAppKeyResourceMockCreateBeforeDestroyRejectsReusedKey(t *testing.T) 
 func TestAccAppKeyResourceMockInvalidJWKMaterial(t *testing.T) {
 	t.Parallel()
 
-	invalidX5T := testAccAppKeyJWK(t)
+	invalidX5T := testAccAppKeyJWK(t, 0)
 	invalidX5T.x5t = "invalid-thumbprint"
 
-	invalidKID := testAccAppKeyJWK(t)
+	invalidKID := testAccAppKeyJWK(t, 0)
 	invalidKID.kid = "invalid-key-id"
 
-	whitespace := testAccAppKeyJWK(t)
+	whitespace := testAccAppKeyJWK(t, 0)
 	whitespace.x5c = whitespace.x5c[:100] + "\n" + whitespace.x5c[100:]
 
 	for name, test := range map[string]struct {
@@ -367,7 +367,7 @@ func TestAccAppKeyResourceMockDefersUnknownJWKValidation(t *testing.T) {
 	require.NoError(t, err)
 	setTestAccAppKeyAppDefinitions(server)
 
-	jwk := testAccAppKeyJWK(t)
+	jwk := testAccAppKeyJWK(t, 0)
 
 	resourceConfig := fmt.Sprintf(`
 resource "terraform_data" "key" {
