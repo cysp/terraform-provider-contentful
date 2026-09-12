@@ -206,7 +206,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Required:    true,
 		},
 		"disabled": schema.BoolAttribute{
-			Description: "Whether editing the field is disabled in the Contentful web app. Defaults to `false`.",
+			Description: "Whether the field is hidden in the entry editor. Editors can still reveal and edit a hidden field; use role permissions to restrict editing. Defaults to `false`. See [Contentful field visibility](https://www.contentful.com/developers/changelog/hidden-entry-editor-fields/).",
 			Optional:    true,
 			Computed:    true,
 			Default:     booldefault.StaticBool(false),

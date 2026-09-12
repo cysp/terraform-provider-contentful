@@ -18,7 +18,7 @@ implementation uses the Framework version pinned in [`go.mod`](../../go.mod).
 | Other resource contracts | [Webhook password](#webhook-basic-password), [Delivery API key environments](#delivery-api-key-environments), [Extension sources](#extension-sources), [Space Enablements](#space-enablements), and [Live Preview variables](#live-preview-variables) |
 
 `Config`, `Plan`, and `State` in the tables refer to Terraform configuration, the
-effective plan after lifecycle processing, and prior state. A known plan is
+effective plan after lifecycle processing, and prior state. A known planned value is
 **plan-constrained**: the provider must return an equivalent value after apply.
 A value is **response-owned** only where the effective plan permits Contentful's
 response to supply it. See the [evidence boundaries](README.md#evidence-boundaries)
@@ -26,9 +26,11 @@ before treating a service observation as a permanent API guarantee.
 
 ## Value states
 
-Terraform values have three states: known, null, and unknown. A known empty
-string, list, set, or map is known and non-null; it is not omission and must not
-be rewritten as null or unknown.
+Provider conversion distinguishes known non-null values, null, and unknown.
+Null is itself known in Terraform; it represents absence. A known empty string,
+list, set, or map is non-null. Conversion must not rewrite it as null or
+unknown. The response-reconciliation rules below define when API
+canonicalization permits restoration of the exact planned or prior value.
 
 | Value state | Boundary meaning |
 | --- | --- |
@@ -238,7 +240,9 @@ including attributes nested inside known objects:
   response-owned only while its effective Plan remains unknown. A known value
   supplied by a default, a plan modifier, prior state, or `ignore_changes` is
   Plan-constrained for that apply.
-- Computed-only values are response-owned.
+- Computed-only values are response-owned while their effective Plan is unknown.
+  A known computed-only Plan value is constrained in the same way as any other
+  known Plan value.
 - Plan modifiers may preserve prior state for unknown computed plans. Once they
   do, the resulting known Plan value is constrained and must not be replaced by
   a different response value.
@@ -273,10 +277,12 @@ The tables below use these common rules:
   overlay. Endpoint identity remains the mutation target; `timeouts` has no CMA
   projection and always retains its effective Plan representation.
 
-The production callers differ only where the endpoint supplies identity or the
-request needs Config to decide omission. All six publish response-derived state
-and private version before appending consistency diagnostics, allowing
-Terraform to retain recovery state when apply reports the error.
+The six Role, Editor Interface, and Webhook callers below differ where the
+endpoint supplies identity or the request needs Config to decide omission.
+Each publishes response-derived state and private version before appending
+consistency diagnostics, allowing Terraform to retain recovery state when apply
+reports the error. Other resources have the separate contracts named in the
+[reading map](#reading-map).
 
 | Resource caller | Mutation and identity | Inputs to request conversion | Reconciliation boundary |
 | --- | --- | --- | --- |
@@ -455,7 +461,7 @@ Content Type. Editor Interface Delete only relinquishes Terraform ownership.
 | `filters[].in.values`, `filters[].not.in.values` | Required lists | Must be known; `[]` is distinct from null. | Unordered string comparison preserving duplicate multiplicity. | Participates in `filters`; equivalent response restores the exact Plan order. |
 | `filters[].regexp.doc`, `filters[].regexp.pattern`, `filters[].not.regexp.doc`, `filters[].not.regexp.pattern` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `filters`. |
 | `http_basic_username` | Optional string | Omitted is null; empty is known. Effective Plan, including `ignore_changes`, is authoritative. | Exact nullable scalar comparison. | Equivalent response restores Plan. Difference retains response and adds an `http_basic_username` error. |
-| `http_basic_password` | Optional sensitive write-only API value | Omitted and explicit null remain null; configured, rotated, prior-State, and `ignore_changes` cases use the effective Plan. Unknown configured input fails before mutation. | Apply the established password table above: only property absence permits the narrow known non-null Plan fallback; explicit null or a returned value is response truth. | Absent property restores the known non-null Plan even when another attribute mismatches. Explicit contradiction retains response and adds an `http_basic_password` error. Read continues to use prior-state preservation without claiming remote equality. |
+| `http_basic_password` | Optional sensitive string; the API omits it from responses | Omitted and explicit null remain null; configured, rotated, prior-State, and `ignore_changes` cases use the effective Plan. Unknown configured input fails before mutation. | Apply the established password table above: only property absence permits the narrow known non-null Plan fallback; explicit null or a returned value is response truth. | Absent property restores the known non-null Plan even when another attribute mismatches. Explicit contradiction retains response and adds an `http_basic_password` error. Read continues to use prior-state preservation without claiming remote equality. |
 | `headers` | Optional+Computed map | Omitted Create commonly leaves Plan unknown and therefore response-owned. On Update, `UseStateForUnknown`, explicit Config, or `ignore_changes` may make Plan known and constrained. Preserving a known prior value avoids CMA's observed behavior of clearing headers when an Update omits the member; `{}` remains the explicit clear operation. Known null and `{}` remain distinct. | Map keys and complete header objects compare exactly after the established secret-value fallback. CMA has returned `[]` for omitted raw Create and Update members. | Unknown Plan takes response. Equivalent known Plan restores its exact representation. Difference adds a `headers` error. |
 | `headers[*].value` | Required string | Must be known for configured headers. Prior State may supply a secret value through the known `headers` Plan. | Exact comparison when CMA returns it. For a secret header whose value CMA omits, response projection uses only the corresponding Plan value as the established narrow fallback. | Fallback value is retained even during another contradiction because CMA supplies no competing value. A returned different value causes the parent `headers` error. |
 | `headers[*].secret` | Optional+Computed with static `false` default and `UseStateForUnknown` | Omission inside a configured header normally yields known `false`; prior State may be preserved when planning leaves it unknown. Any known effective Plan is constrained. | Exact boolean comparison; response projection treats an absent flag as `false`. CMA has returned an ordinary header value with the flag absent and has echoed explicit `false`. | Difference causes the parent `headers` error; equivalence restores exact Plan. |
@@ -500,8 +506,10 @@ are recorded in
 `contentful_entry` publishes only the exact draft returned by the same Create or
 Terraform-managed Update. It checkpoints a successful, plan-consistent draft
 response and its `sys.version` before sending that version to Publish. Import,
-Read, refresh, an external draft, external unpublish, and prior Terraform state
-are observations only and never grant publication authority.
+Read, refresh, an external draft, external unpublish, and Terraform resource state
+are observations only and never grant publication authority. A previously
+recorded private pending-version marker can retain authority under the recovery
+rules below.
 
 After the complete truthful draft state and optimistic-lock version are
 checkpointed and the response identity, positive version, draft tuple, and
@@ -518,9 +526,9 @@ failures before that boundary remain errors and grant no publication authority.
 Read preserves the marker only while current `sys.version` exactly equals the
 marker and the observed publication tuple exactly equals the checkpointed draft
 tuple. Observing the marker as published clears it without replay. A different
-current version or publication state revokes authority without mutation. With refresh disabled, recovery sends
-only the marker version; `VersionMismatch` revokes it and never causes a fetch
-and publication of a newer version.
+current version or publication state revokes authority without mutation. With
+refresh disabled, recovery sends only the marker version; `VersionMismatch`
+revokes it and never causes a fetch and publication of a newer version.
 
 An ambiguous draft-mutation failure likewise grants no publication authority.
 The client does not replay the mutation automatically, and the provider does not
@@ -703,7 +711,8 @@ established `version` and `sys.version` terminology.
 
 ### Delivery API key environments
 
-`delivery_api_key.environments` has a deliberate forward-compatibility policy:
+The `environments` attribute on `contentful_delivery_api_key` has a deliberate
+forward-compatibility policy:
 
 - Config null with a null or unknown Plan omits the request member and asks
   Contentful to choose its default;

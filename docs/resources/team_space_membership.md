@@ -3,12 +3,12 @@
 page_title: "contentful_team_space_membership Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Team Space Membership.
+  Manages a Contentful Team Space Membership, assigning an existing team admin access or roles in a space.
 ---
 
 # contentful_team_space_membership (Resource)
 
-Manages a Contentful Team Space Membership.
+Manages a Contentful Team Space Membership, assigning an existing team admin access or roles in a space.
 
 ## Example Usage
 

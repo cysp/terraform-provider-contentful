@@ -3,12 +3,12 @@
 page_title: "contentful_role Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Role.
+  Manages a Contentful Role in a space, including permissions and policies that allow or deny access to content and settings.
 ---
 
 # contentful_role (Resource)
 
-Manages a Contentful Role.
+Manages a Contentful Role in a space, including permissions and policies that allow or deny access to content and settings.
 
 ## Example Usage
 

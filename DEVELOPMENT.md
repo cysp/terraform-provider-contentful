@@ -64,8 +64,9 @@ does not establish that remote CI passed.
 
 Practitioner-facing Registry documentation is generated with
 `terraform-plugin-docs`. The [documentation practices and provider examples](docs/design/provider-documentation.md)
-record the external guidance behind this authoring workflow. Change the authoritative input for the kind of
-information being documented, then regenerate and review the rendered output:
+record the external guidance behind this authoring workflow. Change the
+authoritative input for the information being documented, then regenerate and
+review the rendered output:
 
 | Documentation concern | Authoritative input |
 | --- | --- |
@@ -87,6 +88,12 @@ Resource examples are reference snippets. Keep configuration, identity import,
 string-ID import, and CLI import addresses consistent within each resource
 directory; explain any intentional difference and required context. Put complete
 setup and multi-step examples in workflow guides.
+
+Registry pages use extensionless relative links, such as `../resources/entry`,
+to stay within the selected provider version. Check those links against the
+corresponding generated `.md` files. Handwritten repository documentation uses
+file links with extensions so that navigation works on GitHub. Check template
+links from the generated page's location, not from `templates/`.
 
 Write about the resource's capability and practitioner consequences. Keep short
 attribute contracts in schemas, workflows in templates/guides, and algorithms
@@ -185,8 +192,11 @@ go test ./...
 Run a focused package or test while iterating:
 
 ```sh
-go test ./internal/provider -run TestContentTypeModelRoundTrip -count=1
+go test ./internal/provider -run '^TestContentTypeFieldValueToTerraformValueRoundTrip$' -count=1
 ```
+
+Use the current test name from the source. A successful command with
+`[no tests to run]` has not checked the intended behavior.
 
 ### Mocked acceptance tests
 

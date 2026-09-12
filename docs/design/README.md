@@ -6,6 +6,10 @@ practitioner documentation, start with the [provider page](../index.md).
 Contentful's independent API contracts and observations are indexed in
 [Contentful API research](../research/README.md).
 
+Start with the contract for the behavior you are changing. Follow its links to
+implementation and evidence, and preserve its documented lifecycle boundaries
+when simplifying code or tests.
+
 ## Design contracts
 
 | Change | Read |
@@ -13,7 +17,7 @@ Contentful's independent API contracts and observations are indexed in
 | Schemas, planning, request conversion, response projection, or state publication | [Terraform value semantics](terraform-value-semantics.md) |
 | HTTP retries, deadlines, or mutation recovery | [Contentful HTTP retry policy](contentful-http-retry-policy.md) |
 | Entry publication recovery | [Entry publication contract](terraform-value-semantics.md#entry-publication-ownership-and-partial-field-ownership) and [Terraform lifecycle evidence](entry-publication-evidence.md) |
-| Preview environment representation and requests | [Configuration and reconciliation](content-preview-environments.md) |
+| Content preview platform representation and requests (`contentful_preview_environment`) | [Configuration and reconciliation](content-preview-environments.md) |
 | CMA test-server behavior or tests that rely on its defaults | [CMA test-server conformance boundaries](cma-test-server-conformance.md) |
 | Practitioner and contributor documentation | [Provider documentation practices](provider-documentation.md) |
 

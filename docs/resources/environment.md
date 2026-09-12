@@ -18,6 +18,8 @@ Use the [`contentful_environment_status_ready` data source](../data-sources/envi
 
 ## Example Usage
 
+This example clones `master`, waits for the new environment, and points the `staging` alias at it. Use an unused environment ID for each new copy. Import an existing alias before managing it.
+
 ```terraform
 resource "contentful_environment" "staging" {
   space_id              = var.contentful_space_id
@@ -51,13 +53,13 @@ resource "contentful_environment_alias" "staging" {
 
 ### Optional
 
-- `source_environment_id` (String) ID of the existing environment to clone when creating this environment. Omitted or empty selects Contentful's default source, master. Changing this value replaces the environment. Contentful does not return the original clone source; import leaves it unset.
+- `source_environment_id` (String) ID of the existing environment to clone when creating this environment. Omitted or empty selects Contentful's default source, `master`. Changing this value replaces the environment. Contentful does not return the original clone source; import leaves it unset.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
 - `id` (String) Composite Terraform resource identifier in space_id/environment_id form.
-- `status` (String) Latest environment status returned by the resource operation. This status may not be ready after a successful Create.
+- `status` (String) Latest environment status returned by Contentful. It may not be `ready` when creation finishes.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -71,7 +73,7 @@ Optional:
 
 ## Import
 
-Import is supported using the following syntax:
+Import an existing environment using its space and environment IDs. Set `environment_id` in the resource to the imported ID. Contentful does not return the original clone source, so import leaves `source_environment_id` unset. Remove it from the configuration when adopting an existing environment to avoid a planned replacement.
 
 In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `identity` attribute, for example:
 
@@ -79,7 +81,7 @@ In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp
 import {
   identity = {
     space_id       = var.contentful_space_id
-    environment_id = var.contentful_environment_id
+    environment_id = "staging-yyyy-mm-dd"
   }
   to = contentful_environment.staging
 }
@@ -97,7 +99,13 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_space_id}/${var.contentful_environment_id}"
+  id = "${var.contentful_space_id}/staging-yyyy-mm-dd"
   to = contentful_environment.staging
 }
+```
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+terraform import contentful_environment.staging "$CONTENTFUL_SPACE_ID/staging-yyyy-mm-dd"
 ```

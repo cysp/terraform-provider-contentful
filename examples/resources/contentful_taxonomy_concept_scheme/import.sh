@@ -1,0 +1,1 @@
+terraform import contentful_taxonomy_concept_scheme.products "$CONTENTFUL_ORGANIZATION_ID/products"

@@ -25,7 +25,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 	}).ToObjectValue(ctx)
 
 	return schema.Schema{
-		Description: "Manages a Contentful Entry.",
+		Description: "Manages a Contentful Entry in an environment. Creating an Entry or changing its managed fields or metadata writes and publishes a draft. Import and refresh do not publish drafts written outside Terraform.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in space_id/environment_id/entry_id form.",
@@ -99,7 +99,7 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 
 	return map[string]schema.Attribute{
 		"concepts": schema.ListAttribute{
-			Description: "IDs of Contentful taxonomy concepts attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.",
+			Description: "IDs of Contentful taxonomy concepts attached to the Entry. Configured IDs must be unique. Reordering alone may update Terraform state but does not write or publish the Entry.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Optional:    true,
@@ -114,7 +114,7 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 			},
 		},
 		"tags": schema.ListAttribute{
-			Description: "IDs of Contentful tags attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.",
+			Description: "IDs of Contentful tags attached to the Entry. Configured IDs must be unique. Reordering alone may update Terraform state but does not write or publish the Entry.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Optional:    true,

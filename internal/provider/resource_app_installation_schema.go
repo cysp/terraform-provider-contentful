@@ -15,7 +15,7 @@ import (
 
 func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Installation.",
+		Description: "Installs a Contentful app in an environment and manages its installation parameters. The App Definition must already exist; use `contentful_app_definition` to manage a custom app definition.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in space_id/environment_id/app_definition_id form.",
@@ -54,7 +54,7 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"parameters": schema.StringAttribute{
-				Description: "Values for the app installation parameters as a JSON-encoded object. Use `jsonencode(...)` to encode Terraform values.",
+				Description: "Values for the app installation parameters as a JSON-encoded object. Use `jsonencode(...)` to encode Terraform values and sensitive Terraform expressions for any secrets. The values are stored in Terraform state.",
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 			},

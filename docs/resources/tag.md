@@ -3,12 +3,12 @@
 page_title: "contentful_tag Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Tag.
+  Manages a Contentful Tag in an environment. Assign it to Entries through their metadata.tags attribute.
 ---
 
 # contentful_tag (Resource)
 
-Manages a Contentful Tag.
+Manages a Contentful Tag in an environment. Assign it to Entries through their `metadata.tags` attribute.
 
 ## Example Usage
 
@@ -63,7 +63,7 @@ import {
   identity = {
     space_id       = var.contentful_space_id
     environment_id = var.contentful_environment_id
-    tag_id         = var.tag_id
+    tag_id         = "example"
   }
   to = contentful_tag.example
 }
@@ -82,7 +82,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.tag_id}"
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/example"
   to = contentful_tag.example
 }
 ```
@@ -90,5 +90,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_tag.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_TAG_ID"
+terraform import contentful_tag.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/example"
 ```

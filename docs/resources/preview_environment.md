@@ -28,6 +28,8 @@ When replacing a platform that has had configurations, choose a new selected ID.
 
 ## Example Usage
 
+These examples show two alternatives: a Contentful-generated ID and an ID you select. Choose the one you need. The referenced Content Types and the preview website must already exist.
+
 ```terraform
 resource "contentful_preview_environment" "this" {
   space_id    = var.contentful_space_id

@@ -12,7 +12,7 @@ import (
 
 func TeamResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Team.",
+		Description: "Manages a Contentful Team in an organization. Use `contentful_team_space_membership` to give the team access to a space.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in organization_id/team_id form.",

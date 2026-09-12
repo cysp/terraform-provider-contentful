@@ -11,7 +11,7 @@ import (
 
 func EnvironmentAliasResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Environment Alias.",
+		Description: "Manages a Contentful Environment Alias, which routes requests from a stable alias ID to a selected environment. The target environment must already exist. Use `contentful_environment_status_ready` to wait for a newly copied environment before directing requests to it.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in space_id/environment_alias_id form.",

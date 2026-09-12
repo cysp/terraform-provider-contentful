@@ -3,16 +3,18 @@
 page_title: "contentful_app_key Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource.
+  Manages a Contentful App Key from public key material you supply. The corresponding private key is not sent to Contentful or stored by this resource.
 ---
 
 # contentful_app_key (Resource)
 
-Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource.
+Manages a Contentful App Key from public key material you supply. The corresponding private key is not sent to Contentful or stored by this resource.
 
 ## Example Usage
 
 ```terraform
+# Supply public JWK material for an existing App Definition.
+# kid and x5t must match the SHA-256 fingerprint of the decoded x5c value.
 resource "contentful_app_key" "this" {
   organization_id   = var.contentful_organization_id
   app_definition_id = var.app_definition_id

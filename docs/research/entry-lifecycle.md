@@ -1,7 +1,7 @@
 # Entry lifecycle: publication, versions, and deletion
 
-An Entry is created as a draft. Full-body update changes its draft, publishing is a
-separate versioned operation, and an Entry must be unpublished before it can be deleted.
+An Entry is created as a draft. A full-body update changes its draft; publishing is a
+separate versioned operation. Deleting a published Entry requires unpublishing it first.
 `sys.version` identifies the current Entry version; `sys.publishedVersion` records the
 version published. Exact increments observed in experiments are distinct from documented
 optimistic-locking requirements.
@@ -142,7 +142,7 @@ and
 | Delete published Entry | none | 400 `BadRequest`, `Cannot delete published`; Entry remained |
 | Unpublish or delete absent Entry | version header present | 404 `NotFound`, `The resource could not be found.` |
 
-The probes establish that neither header provides a mutation precondition for these
+In the tested requests, neither header enforced a mutation precondition for these
 whole-Entry endpoints. Successful unpublish returned the resulting Entry; its version
 transition is recorded separately in [publish, update, and
 unpublish](#publish-update-and-unpublish).

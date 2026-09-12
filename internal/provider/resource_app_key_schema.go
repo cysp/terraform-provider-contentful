@@ -18,7 +18,7 @@ import (
 func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description:         "Manages a Contentful App Key.",
-		MarkdownDescription: "Manages a Contentful App Key from caller-supplied public key material. The corresponding private key is not sent to Contentful or stored by this resource.",
+		MarkdownDescription: "Manages a Contentful App Key from public key material you supply. The corresponding private key is not sent to Contentful or stored by this resource.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in organization_id/app_definition_id/key_kid form.",

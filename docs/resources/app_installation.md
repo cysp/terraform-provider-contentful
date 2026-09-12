@@ -3,16 +3,18 @@
 page_title: "contentful_app_installation Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Installation.
+  Installs a Contentful app in an environment and manages its installation parameters. The App Definition must already exist; use contentful_app_definition to manage a custom app definition.
 ---
 
 # contentful_app_installation (Resource)
 
-Manages a Contentful App Installation.
+Installs a Contentful app in an environment and manages its installation parameters. The App Definition must already exist; use `contentful_app_definition` to manage a custom app definition.
 
 ## Example Usage
 
 ```terraform
+# The custom and Marketplace examples install two different apps.
+# Use existing App Definition IDs and the agreements required by the Marketplace app.
 resource "contentful_app_installation" "custom" {
   space_id       = var.contentful_space_id
   environment_id = var.contentful_environment_id
@@ -46,7 +48,7 @@ resource "contentful_app_installation" "marketplace" {
 ### Optional
 
 - `marketplace` (Set of String) Marketplace agreement acknowledgments sent to Contentful when installing the app. Use the acknowledgment strings required by the selected Marketplace app.
-- `parameters` (String) Values for the app installation parameters as a JSON-encoded object. Use `jsonencode(...)` to encode Terraform values.
+- `parameters` (String) Values for the app installation parameters as a JSON-encoded object. Use `jsonencode(...)` to encode Terraform values and sensitive Terraform expressions for any secrets. The values are stored in Terraform state.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

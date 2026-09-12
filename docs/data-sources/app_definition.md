@@ -3,12 +3,12 @@
 page_title: "contentful_app_definition Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves a Contentful App Definition.
+  Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration.
 ---
 
 # contentful_app_definition (Data Source)
 
-Retrieves a Contentful App Definition.
+Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration.
 
 ## Example Usage
 

@@ -3,22 +3,24 @@
 page_title: "contentful_resource_type Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Resource Type.
+  Manages a Contentful App Resource Type and the field mappings used to display external resources in the web app. Create its App Resource Provider before configuring the type. See Contentful resource entities https://www.contentful.com/developers/docs/extensibility/app-framework/resource-entities/ for the relationship between providers, types, and functions.
 ---
 
 # contentful_resource_type (Resource)
 
-Manages a Contentful App Resource Type.
+Manages a Contentful App Resource Type and the field mappings used to display external resources in the web app. Create its App Resource Provider before configuring the type. See [Contentful resource entities](https://www.contentful.com/developers/docs/extensibility/app-framework/resource-entities/) for the relationship between providers, types, and functions.
 
 ## Example Usage
 
 ```terraform
+# The app must already have a Resource Provider with ID Catalog.
+# The resource_provider example creates that provider; deploy its function separately.
 resource "contentful_resource_type" "this" {
   organization_id   = var.contentful_organization_id
   app_definition_id = var.app_definition_id
-  resource_type_id  = "ResourceProvider:resourceType"
+  resource_type_id  = "Catalog:Product"
 
-  name = "Resource"
+  name = "Product"
 
   default_field_mapping = {
     title    = "{ /title }"
@@ -36,7 +38,7 @@ resource "contentful_resource_type" "this" {
 - `default_field_mapping` (Attributes) Maps external resource data to the values displayed in the Contentful web app. Use JSON-pointer templates such as `{ /title }`. (see [below for nested schema](#nestedatt--default_field_mapping))
 - `name` (String) Name of the resource type.
 - `organization_id` (String) ID of the organization. Changing this value replaces the resource.
-- `resource_type_id` (String) ID of the resource type. Changing this value replaces the resource.
+- `resource_type_id` (String) ID of the resource type in `ResourceProvider:ResourceType` form, for example `Catalog:Product`. The prefix must identify the app's Resource Provider. Changing this value replaces the resource.
 
 ### Optional
 
@@ -105,7 +107,7 @@ import {
   identity = {
     organization_id   = var.contentful_organization_id
     app_definition_id = var.app_definition_id
-    resource_type_id  = var.resource_type_id
+    resource_type_id  = "Catalog:Product"
   }
   to = contentful_resource_type.this
 }
@@ -124,7 +126,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_organization_id}/${var.app_definition_id}/${var.resource_type_id}"
+  id = "${var.contentful_organization_id}/${var.app_definition_id}/Catalog:Product"
   to = contentful_resource_type.this
 }
 ```
@@ -132,5 +134,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_resource_type.this "$CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID/$CONTENTFUL_RESOURCE_TYPE_ID"
+terraform import contentful_resource_type.this "$CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID/Catalog:Product"
 ```

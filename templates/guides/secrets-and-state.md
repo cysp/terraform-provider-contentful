@@ -47,6 +47,10 @@ After import, choose how Terraform should manage headers:
 - Configure `headers` with values for every header you want to manage.
 - Set `headers = {}` to clear all custom headers.
 
+## App and extension parameters
+
+The `parameters` values on [`contentful_app_installation`](../resources/app_installation) and [`contentful_extension`](../resources/extension) can contain both ordinary configuration and secrets. Defining a Contentful parameter as type `Secret` does not mark its Terraform value sensitive. Supply secrets through sensitive Terraform expressions to redact normal output; the values are still stored in state and saved plans.
+
 ## Personal access tokens
 
 [`contentful_personal_access_token`](../resources/personal_access_token) stores the secret `token` returned at creation. Contentful does not return that value again, so refresh preserves the known value and import leaves it null.
@@ -55,6 +59,6 @@ Changing `name`, `scopes`, or `expires_in` replaces the token and revokes the ol
 
 ## App keys
 
-[`contentful_app_key`](../resources/app_key) manages caller-supplied public JWK material. The corresponding private key is not sent to Contentful and is not stored by this resource.
+[`contentful_app_key`](../resources/app_key) manages public JWK material that you supply. The corresponding private key is not sent to Contentful and is not stored by this resource.
 
 Unlike the redacted secrets above, the public JWK is readable: import and refresh populate it from Contentful. Changing configured JWK material replaces the App Key rather than updating it in place; importing the public key cannot recover its corresponding private key.

@@ -3,12 +3,12 @@
 page_title: "contentful_team Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Team.
+  Manages a Contentful Team in an organization. Use contentful_team_space_membership to give the team access to a space.
 ---
 
 # contentful_team (Resource)
 
-Manages a Contentful Team.
+Manages a Contentful Team in an organization. Use `contentful_team_space_membership` to give the team access to a space.
 
 ## Example Usage
 

@@ -3,12 +3,12 @@
 page_title: "contentful_webhook Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Webhook.
+  Manages a Contentful Webhook that sends HTTP requests when events match its topics and filters. Configure the receiving endpoint separately.
 ---
 
 # contentful_webhook (Resource)
 
-Manages a Contentful Webhook.
+Manages a Contentful Webhook that sends HTTP requests when events match its topics and filters. Configure the receiving endpoint separately.
 
 ## Example Usage
 

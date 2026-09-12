@@ -13,7 +13,7 @@ import (
 
 func TagResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Tag.",
+		Description: "Manages a Contentful Tag in an environment. Assign it to Entries through their `metadata.tags` attribute.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in space_id/environment_id/tag_id form.",

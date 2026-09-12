@@ -3,23 +3,24 @@
 page_title: "contentful_editor_interface Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Content Type's Editor Interface. Contentful creates it at version 1 on first activation. Terraform can manage that initial interface without import, including after Content Type updates earlier in the same apply through the same provider configuration. Import an existing modified interface to adopt it.
-  Use the same provider configuration and a reference to the Content Type resource when changing both resources together. Version offsets are not shared across aliases. Updates use the previously observed version plus activation offsets and fail on conflict without fetching a newer version or retrying. Review a refreshed plan before applying again.
-  Destroying this resource removes it from Terraform state without deleting or resetting the remote Editor Interface. Import the existing interface to resume management. This does not prevent deletion of the parent Content Type or environment.
+  Configures the field controls, layout, and sidebar of a Content Type's Editor Interface. Terraform can manage the initial interface created by Contentful on first activation without import. Import an existing modified interface to adopt it.
+  When changing a Content Type and its Editor Interface together, use the same provider configuration and reference the Content Type resource as shown below. This lets the provider account for its own activations during the apply. Separate provider aliases do not share that coordination. If another edit causes a version conflict, the update stops; review a refreshed plan before applying again.
+  Destroying this resource removes it from Terraform state without deleting or resetting the remote Editor Interface. Import the existing interface to resume management. Deleting its parent Content Type or environment can still delete the interface.
 ---
 
 # contentful_editor_interface (Resource)
 
-Manages a Content Type's Editor Interface. Contentful creates it at version 1 on first activation. Terraform can manage that initial interface without import, including after Content Type updates earlier in the same apply through the same provider configuration. Import an existing modified interface to adopt it.
+Configures the field controls, layout, and sidebar of a Content Type's Editor Interface. Terraform can manage the initial interface created by Contentful on first activation without import. Import an existing modified interface to adopt it.
 
-Use the same provider configuration and a reference to the Content Type resource when changing both resources together. Version offsets are not shared across aliases. Updates use the previously observed version plus activation offsets and fail on conflict without fetching a newer version or retrying. Review a refreshed plan before applying again.
+When changing a Content Type and its Editor Interface together, use the same provider configuration and reference the Content Type resource as shown below. This lets the provider account for its own activations during the apply. Separate provider aliases do not share that coordination. If another edit causes a version conflict, the update stops; review a refreshed plan before applying again.
 
-Destroying this resource removes it from Terraform state without deleting or resetting the remote Editor Interface. Import the existing interface to resume management. This does not prevent deletion of the parent Content Type or environment.
+Destroying this resource removes it from Terraform state without deleting or resetting the remote Editor Interface. Import the existing interface to resume management. Deleting its parent Content Type or environment can still delete the interface.
 
 ## Example Usage
 
 ```terraform
 # This snippet uses contentful_content_type.author from the Content Type example.
+# The sidebar app must already be installed in that environment.
 resource "contentful_editor_interface" "author" {
   space_id        = contentful_content_type.author.space_id
   environment_id  = contentful_content_type.author.environment_id
@@ -218,7 +219,7 @@ import {
   identity = {
     space_id        = var.contentful_space_id
     environment_id  = var.contentful_environment_id
-    content_type_id = var.content_type_id
+    content_type_id = "author"
   }
   to = contentful_editor_interface.author
 }
@@ -237,7 +238,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 
 ```terraform
 import {
-  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.content_type_id}"
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/author"
   to = contentful_editor_interface.author
 }
 ```
@@ -245,5 +246,5 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import contentful_editor_interface.author "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_CONTENT_TYPE_ID"
+terraform import contentful_editor_interface.author "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/author"
 ```

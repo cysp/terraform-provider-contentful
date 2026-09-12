@@ -11,7 +11,7 @@ import (
 
 func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Resource Type.",
+		Description: "Manages a Contentful App Resource Type and the field mappings used to display external resources in the web app. Create its App Resource Provider before configuring the type. See [Contentful resource entities](https://www.contentful.com/developers/docs/extensibility/app-framework/resource-entities/) for the relationship between providers, types, and functions.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in organization_id/app_definition_id/resource_type_id form.",
@@ -42,7 +42,7 @@ func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"resource_type_id": schema.StringAttribute{
-				Description: "ID of the resource type. Changing this value replaces the resource.",
+				Description: "ID of the resource type in `ResourceProvider:ResourceType` form, for example `Catalog:Product`. The prefix must identify the app's Resource Provider. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
