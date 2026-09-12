@@ -4,7 +4,7 @@ page_title: "contentful_editor_interface Resource - terraform-provider-contentfu
 subcategory: ""
 description: |-
   Configures the field controls, layout, and sidebar of a Content Type's Editor Interface. Terraform can manage the initial interface created by Contentful on first activation without import. Import an existing modified interface to adopt it.
-  When changing a Content Type and its Editor Interface together, use the same provider configuration and reference the Content Type resource as shown below. This lets the provider account for its own activations during the apply. Separate provider aliases do not share that coordination. If another edit causes a version conflict, the update stops; review a refreshed plan before applying again.
+  When changing a Content Type and its Editor Interface together, use the same provider configuration and reference the Content Type resource. This lets the provider account for its own activations during the apply. Separate provider aliases do not share that coordination. If another edit causes a version conflict, the update stops; review a refreshed plan before applying again.
   Destroying this resource removes it from Terraform state without deleting or resetting the remote Editor Interface. Import the existing interface to resume management. Deleting its parent Content Type or environment can still delete the interface.
 ---
 
@@ -12,7 +12,7 @@ description: |-
 
 Configures the field controls, layout, and sidebar of a Content Type's Editor Interface. Terraform can manage the initial interface created by Contentful on first activation without import. Import an existing modified interface to adopt it.
 
-When changing a Content Type and its Editor Interface together, use the same provider configuration and reference the Content Type resource as shown below. This lets the provider account for its own activations during the apply. Separate provider aliases do not share that coordination. If another edit causes a version conflict, the update stops; review a refreshed plan before applying again.
+When changing a Content Type and its Editor Interface together, use the same provider configuration and reference the Content Type resource. This lets the provider account for its own activations during the apply. Separate provider aliases do not share that coordination. If another edit causes a version conflict, the update stops; review a refreshed plan before applying again.
 
 Destroying this resource removes it from Terraform state without deleting or resetting the remote Editor Interface. Import the existing interface to resume management. Deleting its parent Content Type or environment can still delete the interface.
 

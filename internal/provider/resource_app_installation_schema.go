@@ -54,7 +54,7 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"parameters": schema.StringAttribute{
-				Description: "Values for the app installation parameters as a JSON-encoded object. Use `jsonencode(...)` to encode Terraform values and sensitive Terraform expressions for any secrets. The values are stored in Terraform state.",
+				Description: "Complete object of installation parameter values, encoded as JSON with `jsonencode(...)`. Configure every value you want to retain when updating or adopting an installation. Omitting this attribute sends no parameter object and can clear existing values on apply, including after import. Use sensitive Terraform expressions for secrets. See [Secrets and Terraform state](../guides/secrets-and-state#app-and-extension-parameters) for storage, refresh, and import limitations.",
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 			},

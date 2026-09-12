@@ -28,7 +28,9 @@ Keep each contract in its authoritative source and link to it when another page
 needs more detail. Practitioner pages should explain the consequence without
 requiring readers to understand the implementation. Design notes should state
 current invariants and limitations; research notes should distinguish published
-contracts from dated observations and interpretations.
+contracts from dated observations and interpretations. Follow the terminology
+and evidence rules in [AGENTS.md](../../AGENTS.md) and the
+[design evidence boundaries](README.md#evidence-boundaries).
 
 ## Make setup and authentication explicit
 
@@ -70,16 +72,16 @@ without the surrounding generated page.
 ## Make examples usable
 
 Name prerequisites such as an existing space, enabled locales, or an activated
-Content Type. Keep resource addresses and IDs consistent with the corresponding
-import examples. Label alternative import forms so readers do not combine them
-into one configuration. Prefer `jsonencode` for structured JSON strings when
-that matches the schema.
+Content Type. Keep addresses, variables, and IDs consistent across configuration,
+identity import, string-ID import, and CLI import examples within each resource
+directory; explain any intentional difference and required context. Label
+alternative import forms so readers do not combine them into one configuration.
+Prefer `jsonencode` for structured JSON strings when that matches the schema.
 
-Distinguish a reference snippet from a complete workflow. A complete workflow
-needs provider setup, variables, commands, and an expected outcome. A reference
-snippet needs enough context to fit it into an existing configuration. The
-repository's example conventions are in
-[Documentation authoring](../../DEVELOPMENT.md#documentation-authoring);
+Resource examples in this repository are reference snippets. Include enough
+context to fit a snippet into an existing configuration. Put complete setup and
+multi-step examples in workflow guides, including provider setup, variables,
+commands, and an expected outcome.
 HashiCorp's [provider overview format](https://developer.hashicorp.com/terraform/registry/providers/docs#index-headers)
 expects a provider configuration example.
 
@@ -87,7 +89,8 @@ expects a provider configuration example.
 
 For publication, activation, cloning, drift, import, and destroy, state the
 triggering condition, remote effect, Terraform state result, and available
-recovery action. When an operation may have committed despite an ambiguous
+recovery action. Cover warnings as well as successful operations. When an
+operation may have committed despite an ambiguous
 response, explain how to inspect and recover the object. Keep the actionable
 consequence on the resource page and link to design evidence for the underlying
 retry or reconciliation behavior.
@@ -101,7 +104,7 @@ Terraform version requirements next to version-dependent syntax.
 
 Edit descriptions, examples, or templates according to the
 [authoritative-input map](../../DEVELOPMENT.md#documentation-authoring), then
-regenerate. Preserve handwritten design and research files. Do not copy
+follow [Code generation](../../DEVELOPMENT.md#code-generation). Do not copy
 generated attribute lists into manual prose or add an override template when
 the default page already expresses the contract.
 
@@ -115,14 +118,26 @@ guide titles come from front matter; use `subcategory` only when grouping makes
 the navigation easier to scan.
 See [Registry navigation](https://developer.hashicorp.com/terraform/registry/providers/docs#navigation-hierarchy).
 
+Registry pages use extensionless relative links, such as `../resources/entry`,
+to stay within the selected provider version. Check those links against the
+corresponding generated `.md` files. Handwritten repository documentation uses
+file links with extensions so that navigation works on GitHub. Check template
+links from the generated page's location, not from `templates/`.
+
 ## Verify the claims and the rendered result
 
 [tfplugindocs validation](https://github.com/hashicorp/terraform-plugin-docs/blob/v0.25.0/README.md#validate-subcommand)
-checks publication structure and agreement with the provider schema. It does
-not establish prose accuracy, working examples, or generation freshness.
-Review links and rendered pages, validate complete configurations with Terraform,
-and use focused behavior tests when a documentation claim needs verification.
-Follow the [documentation verification workflow](../../DEVELOPMENT.md#documentation-verification).
+checks Registry filenames, front matter, and agreement with the provider schema.
+Handwritten design, research, and release documentation are excluded. The
+validator does not establish prose accuracy, working examples, or generation
+freshness.
+
+Review rendered pages for usable links and navigation. Check their claims
+against provider behavior and primary Contentful evidence, and their examples
+against the [example conventions](#make-examples-usable). Use focused behavior tests when a
+documentation claim needs verification. Follow the
+[documentation verification workflow](../../DEVELOPMENT.md#documentation-verification)
+for validator commands, generation reproducibility, and runnable example checks.
 
 Registry documentation is versioned with the provider. Updates to a released
 page require another release; the Registry preview tool can check rendering
