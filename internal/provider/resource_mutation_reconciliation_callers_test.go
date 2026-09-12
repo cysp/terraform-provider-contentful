@@ -65,7 +65,7 @@ func TestAccEditorInterfaceResourceUpdateConsistencyErrorRetainsResponseState(t 
 	adapter := &mutationJSONResponseAdapter{delegate: server}
 	groupIDPath := tfjsonpath.New("editor_layout").AtSliceIndex(0).AtMapKey("group").AtMapKey("group_id")
 
-	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
+	testAccMockedResource(t, adapter, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
@@ -109,7 +109,7 @@ func TestAccEditorInterfaceResourceCreateConsistencyErrorRetainsStateAndRequires
 	handler := &editorInterfaceRequestRecorder{next: adapter}
 	groupIDPath := tfjsonpath.New("editor_layout").AtSliceIndex(0).AtMapKey("group").AtMapKey("group_id")
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
@@ -159,7 +159,7 @@ resource "contentful_role" "test" {
 	}
 	permissionPath := tfjsonpath.New("permissions").AtMapKey("Entry").AtSliceIndex(0)
 
-	ContentfulProviderMockedResourceTest(t, adapter, resource.TestCase{
+	testAccMockedResource(t, adapter, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{

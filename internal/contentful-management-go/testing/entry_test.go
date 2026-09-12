@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -109,7 +108,7 @@ func storeEntryAndGetField(t *testing.T, request cm.EntryRequest, fieldID string
 
 	server.SetEntry("space", "environment", "content-type", "entry", request)
 
-	response, err := server.Handler().GetEntry(context.Background(), cm.GetEntryParams{
+	response, err := server.Handler().GetEntry(t.Context(), cm.GetEntryParams{
 		SpaceID:       "space",
 		EnvironmentID: "environment",
 		EntryID:       "entry",

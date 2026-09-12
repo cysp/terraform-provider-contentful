@@ -2,6 +2,7 @@ package provider_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http/httptest"
 	"os"
@@ -209,7 +210,7 @@ func newTerraformTestRuntime(t *testing.T) *terraformTestRuntime {
 	t.Helper()
 
 	if os.Getenv("TF_ACC") == "" {
-		t.Skip("TF_ACC must be set for Terraform CLI tests")
+		t.Skip("TF_ACC must be set for Terraform acceptance tests")
 	}
 
 	terraformPath := os.Getenv("TF_ACC_TERRAFORM_PATH")
@@ -217,7 +218,23 @@ func newTerraformTestRuntime(t *testing.T) *terraformTestRuntime {
 		var err error
 
 		terraformPath, err = exec.LookPath("terraform")
-		require.NoError(t, err, "Terraform CLI is required for acceptance tests")
+		require.NoError(t, err, "Terraform CLI must be on PATH or set with TF_ACC_TERRAFORM_PATH")
+	}
+
+	// These tests inspect actual CLI output and provider logs, which are not
+	// exposed by resource.Test. Honor its executable override and reject a
+	// mismatched version instead of silently testing another installed CLI.
+	if version := os.Getenv("TF_ACC_TERRAFORM_VERSION"); version != "" {
+		//nolint:gosec // Same explicit test-only executable override as resource.Test.
+		command := exec.CommandContext(t.Context(), terraformPath, "version", "-json")
+		output, err := command.Output()
+		require.NoError(t, err)
+
+		var result struct {
+			Version string `json:"terraform_version"` //nolint:tagliatelle // Terraform CLI JSON field.
+		}
+		require.NoError(t, json.Unmarshal(output, &result))
+		require.Equal(t, version, result.Version, "set TF_ACC_TERRAFORM_PATH to the requested Terraform CLI")
 	}
 
 	_, filename, _, ok := runtime.Caller(0)

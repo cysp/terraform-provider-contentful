@@ -78,6 +78,8 @@ func TestEntrySpecifiedIDPutHeaderMatrix(t *testing.T) {
 		"without content type": {entryID: "existing-without-content-type"},
 	} {
 		t.Run("existing exact update "+name, func(t *testing.T) {
+			t.Parallel()
+
 			created := putRawEntry(
 				t, testServer, test.entryID, "article", "",
 				`{"fields":{"marker":{"en-US":"created"}}}`,

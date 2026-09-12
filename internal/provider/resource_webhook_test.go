@@ -67,7 +67,7 @@ resource "contentful_webhook" "test" {
 }
 `, test.topics)
 
-			ContentfulProviderMockedResourceTest(t, counter, resource.TestCase{Steps: []resource.TestStep{{
+			testAccMockedResource(t, counter, resource.TestCase{Steps: []resource.TestStep{{
 				Config:      configuration,
 				ExpectError: test.expectError,
 			}}})
@@ -118,7 +118,7 @@ func TestAccWebhookResourceImport(t *testing.T) {
 		Topics: []string{"Entry.publish"},
 	})
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -167,7 +167,7 @@ resource "contentful_webhook" "test" {
 `, name, headers)
 	}
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config:             config("Imported webhook", ""),
@@ -327,7 +327,7 @@ func TestAccWebhookResourceImportNotFound(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -362,7 +362,7 @@ func TestAccWebhookResourceCreate(t *testing.T) {
 		"webhook_id": config.StringVariable(webhookID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -387,7 +387,7 @@ func TestAccWebhookResourceUpdate(t *testing.T) {
 		"webhook_id": config.StringVariable(webhookID),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),

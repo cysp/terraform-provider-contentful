@@ -54,7 +54,7 @@ resource "contentful_entry" "test" {
 }
 `
 
-	ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{AdditionalCLIOptions: additionalCLIOptions, Steps: []resource.TestStep{
+	testAccMockedResource(t, recorder, resource.TestCase{AdditionalCLIOptions: additionalCLIOptions, Steps: []resource.TestStep{
 		{
 			Config:             config,
 			ResourceName:       "contentful_entry.test",

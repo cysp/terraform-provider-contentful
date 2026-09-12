@@ -50,7 +50,7 @@ func TestAccCompleteMutationConfigurationsPlan(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			ContentfulProviderMockedResourceTest(t, http.NotFoundHandler(), resource.TestCase{Steps: []resource.TestStep{{
+			testAccMockedResource(t, http.NotFoundHandler(), resource.TestCase{Steps: []resource.TestStep{{
 				Config:             config,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,

@@ -87,7 +87,7 @@ func TestAccPersonalAccessTokenResourceMockTimeoutUpdate(t *testing.T) {
 		})
 	}
 
-	ContentfulProviderMockedResourceTest(t, counter, resource.TestCase{
+	testAccMockedResource(t, counter, resource.TestCase{
 		Steps: steps,
 	})
 
@@ -114,7 +114,7 @@ func TestAccPersonalAccessTokenResourceMockImportedTimeoutUpdate(t *testing.T) {
 
 	counter := &personalAccessTokenMutationCounter{handler: server}
 
-	ContentfulProviderMockedResourceTest(t, counter, resource.TestCase{
+	testAccMockedResource(t, counter, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImportedPersonalAccessTokenConfig(created.Response.Sys.ID, importedResourceName, ""),

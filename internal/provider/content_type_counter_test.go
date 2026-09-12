@@ -7,7 +7,6 @@ import (
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/sync/errgroup"
 )
 
 func TestContentfulContentTypeCounterUnknown(t *testing.T) {
@@ -42,25 +41,20 @@ func TestContentfulContentTypeCounterConcurrent(t *testing.T) {
 	counter := ContentfulContentTypeCounter{}
 	contentTypeID := "test-id"
 
-	var errGroup errgroup.Group
+	var waitGroup sync.WaitGroup
 
 	numGoroutines := 100
 	incrementsPerGoroutine := 1000
 
 	for range numGoroutines {
-		errGroup.Go(func() error {
+		waitGroup.Go(func() {
 			for range incrementsPerGoroutine {
 				counter.Increment("spaceID", "environmentID", contentTypeID)
 			}
-
-			return nil
 		})
 	}
 
-	err := errGroup.Wait()
-	if err != nil {
-		t.Fatal(err)
-	}
+	waitGroup.Wait()
 
 	expected := numGoroutines * incrementsPerGoroutine
 

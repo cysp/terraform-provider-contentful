@@ -74,7 +74,7 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 
 	server.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceData{})
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -131,7 +131,7 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -164,7 +164,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -188,7 +188,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 		"content_type_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -209,7 +209,7 @@ func TestAccEditorInterfaceResourceCreateManagesInitialInterface(t *testing.T) {
 	server.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceData{})
 
 	handler := &editorInterfaceRequestRecorder{next: server}
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: editorInterfaceInitialConfig,
@@ -234,7 +234,7 @@ func TestAccEditorInterfaceResourceCreateAfterContentTypeUpdateUsesVersionOffset
 		"content_type_id": config.StringVariable("author"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
@@ -269,7 +269,7 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 
 	server.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceData{})
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestStepDirectory(),
@@ -350,7 +350,7 @@ func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 		config.StringVariable("b"),
 	)
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -409,7 +409,7 @@ func TestAccEditorInterfaceResourceUpdateWithContentTypeMultipleSpaceEnvironment
 		config.StringVariable("b"),
 	)
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

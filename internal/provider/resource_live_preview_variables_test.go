@@ -84,7 +84,7 @@ func TestAccLivePreviewVariablesResource(t *testing.T) {
 	destroy.Destroy = true
 	destroy.ConfigStateChecks = nil
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{
+	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		livePreviewVariablesStep(initial),
 		// Import has no configured timeouts; lifecycle state checks verify their preservation separately.
 		{ConfigDirectory: config.StaticDirectory("testdata/TestAccLivePreviewVariablesResource"), ConfigVariables: config.Variables{"variables": config.StringVariable(initial)}, ResourceName: livePreviewVariablesAddress, ImportState: true, ImportStateVerify: true, ImportStateVerifyIgnore: []string{"timeouts"}},
@@ -139,7 +139,7 @@ func TestAccLivePreviewVariablesResourceIgnoreChanges(t *testing.T) {
 		statecheck.ExpectKnownValue(livePreviewVariablesAddress, tfjsonpath.New("timeouts").AtMapKey("read"), knownvalue.StringExact("4m")),
 	}
 	ignored.ConfigPlanChecks = resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(livePreviewVariablesAddress, plancheck.ResourceActionUpdate)}}
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{initial, ignored}})
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{initial, ignored}})
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -166,7 +166,7 @@ func TestAccLivePreviewVariablesResourceIdentityReplacement(t *testing.T) {
 	changedSpace.ConfigVariables["environment_id"] = config.StringVariable("other")
 	changedSpace.ConfigVariables["space_id"] = config.StringVariable("other-space")
 	changedSpace.ConfigPlanChecks = changedEnvironment.ConfigPlanChecks
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{livePreviewVariablesStep(`{}`), changedEnvironment, changedSpace}})
+	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{livePreviewVariablesStep(`{}`), changedEnvironment, changedSpace}})
 }
 
 func TestAccLivePreviewVariablesResourceRefusesExistingDocument(t *testing.T) {
@@ -187,7 +187,7 @@ func TestAccLivePreviewVariablesResourceRefusesExistingDocument(t *testing.T) {
 			step := livePreviewVariablesStep(`{"replacement":"must-not-be-sent"}`)
 			step.ConfigStateChecks = nil
 			step.ExpectError = regexp.MustCompile("existing live preview variables document cannot be overwritten")
-			ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{step}})
+			testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{step}})
 			read, err := client.GetLivePreviewVariables(t.Context(), cm.GetLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "environment"})
 			require.NoError(t, err)
 
@@ -225,7 +225,7 @@ func TestAccLivePreviewVariablesResourceInvalidConfigurationAndImport(t *testing
 				step.ImportStateId = test.importID
 			}
 
-			ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{step}})
+			testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{step}})
 		})
 	}
 }
@@ -262,7 +262,7 @@ func TestAccLivePreviewVariablesResourceServiceValidation(t *testing.T) {
 				require.Equal(t, 1, document.Sys.Version)
 				require.JSONEq(t, initial, string(document.Variables))
 			}
-			ContentfulProviderMockedResourceTest(t, server, resource.TestCase{Steps: []resource.TestStep{livePreviewVariablesStep(initial), rejected, recovered}})
+			testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{livePreviewVariablesStep(initial), rejected, recovered}})
 		})
 	}
 }

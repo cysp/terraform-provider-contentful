@@ -39,7 +39,7 @@ func TestAccAppSigningSecretResourceLifecycle(t *testing.T) {
 		Name: "Test App",
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -51,7 +51,10 @@ func TestAccAppSigningSecretResourceLifecycle(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: resource.TestCheckResourceAttr("contentful_app_signing_secret.test", "value", testAppSigningSecretValue),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectSensitiveValue("contentful_app_signing_secret.test", tfjsonpath.New("value")),
+					statecheck.ExpectKnownValue("contentful_app_signing_secret.test", tfjsonpath.New("value"), knownvalue.StringExact(testAppSigningSecretValue)),
+				},
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -63,7 +66,10 @@ func TestAccAppSigningSecretResourceLifecycle(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: resource.TestCheckResourceAttr("contentful_app_signing_secret.test", "value", testAppSigningSecretUpdatedValue),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectSensitiveValue("contentful_app_signing_secret.test", tfjsonpath.New("value")),
+					statecheck.ExpectKnownValue("contentful_app_signing_secret.test", tfjsonpath.New("value"), knownvalue.StringExact(testAppSigningSecretUpdatedValue)),
+				},
 			},
 			{
 				PreConfig: func() {
@@ -82,7 +88,10 @@ func TestAccAppSigningSecretResourceLifecycle(t *testing.T) {
 						plancheck.ExpectResourceAction("contentful_app_signing_secret.test", plancheck.ResourceActionNoop),
 					},
 				},
-				Check: resource.TestCheckResourceAttr("contentful_app_signing_secret.test", "value", testAppSigningSecretUpdatedValue),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectSensitiveValue("contentful_app_signing_secret.test", tfjsonpath.New("value")),
+					statecheck.ExpectKnownValue("contentful_app_signing_secret.test", tfjsonpath.New("value"), knownvalue.StringExact(testAppSigningSecretUpdatedValue)),
+				},
 			},
 		},
 	})
@@ -123,7 +132,7 @@ resource "contentful_app_signing_secret" "test" {
 }
 `, value)
 
-			ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{Steps: []resource.TestStep{{
+			testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{{
 				Config:      resourceConfig,
 				ExpectError: regexp.MustCompile(`Invalid app signing secret value`),
 			}}})
@@ -163,7 +172,7 @@ func TestAccAppSigningSecretResourceImport(t *testing.T) {
 		server.ServeHTTP(responseWriter, request)
 	})
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -191,10 +200,10 @@ func TestAccAppSigningSecretResourceImport(t *testing.T) {
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("contentful_app_signing_secret.test", "id", "organization-id/app-definition-id"),
-					resource.TestCheckResourceAttr("contentful_app_signing_secret.test", "value", testAppSigningSecretValue),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("contentful_app_signing_secret.test", tfjsonpath.New("id"), knownvalue.StringExact("organization-id/app-definition-id")),
+					statecheck.ExpectKnownValue("contentful_app_signing_secret.test", tfjsonpath.New("value"), knownvalue.StringExact(testAppSigningSecretValue)),
+				},
 			},
 			{
 				ConfigDirectory: config.TestNameDirectory(),
@@ -249,7 +258,7 @@ func TestAccAppSigningSecretResourceImportBlockWritesConfiguredValue(t *testing.
 		server.ServeHTTP(responseWriter, request)
 	})
 
-	ContentfulProviderMockedResourceTest(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{{
 			Config: fmt.Sprintf(`
 import {
@@ -269,7 +278,9 @@ resource "contentful_app_signing_secret" "test" {
 				},
 				PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 			},
-			Check: resource.TestCheckResourceAttr("contentful_app_signing_secret.test", "value", testAppSigningSecretValue),
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_app_signing_secret.test", tfjsonpath.New("value"), knownvalue.StringExact(testAppSigningSecretValue)),
+			},
 		}},
 	})
 

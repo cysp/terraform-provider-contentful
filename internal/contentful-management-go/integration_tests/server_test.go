@@ -15,7 +15,8 @@ func testContentfulManagementHTTPTestServer(t *testing.T, opts ...cmt.ServerOpti
 	require.NoError(t, err)
 	require.NotNil(t, server)
 
-	testserver := httptest.NewServer(server)
+	testServer := httptest.NewServer(server)
+	t.Cleanup(testServer.Close)
 
-	return server, testserver
+	return server, testServer
 }

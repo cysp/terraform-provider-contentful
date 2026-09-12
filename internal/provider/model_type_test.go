@@ -17,7 +17,7 @@ func TestModelType(t *testing.T) {
 
 	ctx := t.Context()
 
-	types := []attr.Type{
+	modelTypes := []attr.Type{
 		NewTypedListNull[types.String]().Type(ctx),
 		NewTypedMapNull[types.String]().Type(ctx),
 		NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue]().Type(ctx),
@@ -49,210 +49,187 @@ func TestModelType(t *testing.T) {
 		NewTypedObjectNull[WebhookTransformationValue]().Type(ctx),
 	}
 
-	t.Run("Equal", func(t *testing.T) {
-		t.Parallel()
+	type differentType struct {
+		attr.Type
+	}
 
-		type InequalType struct {
-			attr.Type
-		}
+	for index, typ := range modelTypes {
+		t.Run(typ.String(), func(t *testing.T) {
+			t.Parallel()
 
-		for aIndex, aType := range types {
-			t.Run(aType.String(), func(t *testing.T) {
+			t.Run("Equal/different Go type", func(t *testing.T) {
 				t.Parallel()
 
-				t.Run(aType.String(), func(t *testing.T) {
+				assert.False(t, typ.Equal(differentType{typ}))
+			})
+
+			for otherIndex, otherType := range modelTypes {
+				t.Run("Equal/"+otherType.String(), func(t *testing.T) {
 					t.Parallel()
 
-					assert.True(t, aType.Equal(aType)) //nolint:gocritic
+					assert.Equal(t, index == otherIndex, typ.Equal(otherType))
 				})
+			}
 
-				t.Run("inequal", func(t *testing.T) {
+			for name, test := range map[string]struct {
+				value   tftypes.Value
+				unknown bool
+				null    bool
+			}{
+				"unknown": {
+					value:   tftypes.NewValue(typ.TerraformType(t.Context()), tftypes.UnknownValue),
+					unknown: true,
+				},
+				"null type": {
+					value: tftypes.NewValue(nil, nil),
+					null:  true,
+				},
+				"null": {
+					value: tftypes.NewValue(typ.TerraformType(t.Context()), nil),
+					null:  true,
+				},
+			} {
+				t.Run("ValueFromTerraform/"+name, func(t *testing.T) {
 					t.Parallel()
 
-					assert.False(t, aType.Equal(InequalType{aType}))
+					value, err := typ.ValueFromTerraform(t.Context(), test.value)
+					require.NoError(t, err)
+
+					assert.Equal(t, test.unknown, value.IsUnknown())
+					assert.Equal(t, test.null, value.IsNull())
 				})
-
-				for bIndex, bType := range types {
-					if aIndex == bIndex {
-						continue
-					}
-
-					t.Run(bType.String(), func(t *testing.T) {
-						t.Parallel()
-
-						assert.False(t, aType.Equal(InequalType{aType}))
-					})
-				}
-			})
-		}
-	})
-
-	t.Run("ValueFromTerraform", func(t *testing.T) {
-		t.Parallel()
-
-		ctx := t.Context()
-
-		tfvalniltype := tftypes.NewValue(nil, nil)
-
-		for _, typ := range types {
-			tftyp := typ.TerraformType(ctx)
-
-			t.Run("unknown", func(t *testing.T) {
-				t.Parallel()
-
-				tfvalunknown := tftypes.NewValue(tftyp, tftypes.UnknownValue)
-				valueUnknown, err := typ.ValueFromTerraform(ctx, tfvalunknown)
-				require.NoError(t, err)
-				assert.True(t, valueUnknown.IsUnknown())
-			})
-
-			t.Run("nil", func(t *testing.T) {
-				t.Parallel()
-
-				valueNil, err := typ.ValueFromTerraform(ctx, tfvalniltype)
-				require.NoError(t, err)
-				assert.True(t, valueNil.IsNull())
-			})
-
-			t.Run("null", func(t *testing.T) {
-				t.Parallel()
-
-				tfvalnull := tftypes.NewValue(tftyp, nil)
-				valueNull, err := typ.ValueFromTerraform(ctx, tfvalnull)
-				require.NoError(t, err)
-				assert.True(t, valueNull.IsNull())
-			})
-		}
-	})
+			}
+		})
+	}
 }
 
 func TestModelTypeValueFromObject(t *testing.T) {
 	t.Parallel()
 
 	testcases := map[string]struct {
-		NullValue    attr.Value
-		UnknownValue attr.Value
+		nullValue    attr.Value
+		unknownValue attr.Value
 	}{
 		"ContentTypeField": {
-			NullValue:    NewTypedObjectNull[ContentTypeFieldValue](),
-			UnknownValue: NewTypedObjectUnknown[ContentTypeFieldValue](),
+			nullValue:    NewTypedObjectNull[ContentTypeFieldValue](),
+			unknownValue: NewTypedObjectUnknown[ContentTypeFieldValue](),
 		},
 		"ContentTypeFieldItems": {
-			NullValue:    NewTypedObjectNull[ContentTypeFieldItemsValue](),
-			UnknownValue: NewTypedObjectUnknown[ContentTypeFieldItemsValue](),
+			nullValue:    NewTypedObjectNull[ContentTypeFieldItemsValue](),
+			unknownValue: NewTypedObjectUnknown[ContentTypeFieldItemsValue](),
 		},
 		"ContentTypeFieldAllowedResourceItem": {
-			NullValue:    NewTypedObjectNull[ContentTypeFieldAllowedResourceItemValue](),
-			UnknownValue: NewTypedObjectUnknown[ContentTypeFieldAllowedResourceItemValue](),
+			nullValue:    NewTypedObjectNull[ContentTypeFieldAllowedResourceItemValue](),
+			unknownValue: NewTypedObjectUnknown[ContentTypeFieldAllowedResourceItemValue](),
 		},
 		"ContentTypeFieldAllowedResourceItemContentfulEntry": {
-			NullValue:    NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue](),
-			UnknownValue: NewTypedObjectUnknown[ContentTypeFieldAllowedResourceItemContentfulEntryValue](),
+			nullValue:    NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue](),
+			unknownValue: NewTypedObjectUnknown[ContentTypeFieldAllowedResourceItemContentfulEntryValue](),
 		},
 		"ContentTypeFieldAllowedResourceItemExternal": {
-			NullValue:    NewTypedObjectNull[ContentTypeFieldAllowedResourceItemExternalValue](),
-			UnknownValue: NewTypedObjectUnknown[ContentTypeFieldAllowedResourceItemExternalValue](),
+			nullValue:    NewTypedObjectNull[ContentTypeFieldAllowedResourceItemExternalValue](),
+			unknownValue: NewTypedObjectUnknown[ContentTypeFieldAllowedResourceItemExternalValue](),
 		},
 		"ContentTypeMetadataTaxonomyItem": {
-			NullValue:    NewTypedObjectNull[ContentTypeMetadataTaxonomyItemValue](),
-			UnknownValue: NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemValue](),
+			nullValue:    NewTypedObjectNull[ContentTypeMetadataTaxonomyItemValue](),
+			unknownValue: NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemValue](),
 		},
 		"ContentTypeMetadataTaxonomyItemConceptScheme": {
-			NullValue:    NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
-			UnknownValue: NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+			nullValue:    NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+			unknownValue: NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
 		},
 		"ContentTypeMetadataTaxonomyItemConcept": {
-			NullValue:    NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue](),
-			UnknownValue: NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemConceptValue](),
+			nullValue:    NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue](),
+			unknownValue: NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemConceptValue](),
 		},
 		"ContentTypeMetadata": {
-			NullValue:    NewTypedObjectNull[ContentTypeMetadataValue](),
-			UnknownValue: NewTypedObjectUnknown[ContentTypeMetadataValue](),
+			nullValue:    NewTypedObjectNull[ContentTypeMetadataValue](),
+			unknownValue: NewTypedObjectUnknown[ContentTypeMetadataValue](),
 		},
 		"EditorInterfaceControl": {
-			NullValue:    NewTypedObjectNull[EditorInterfaceControlValue](),
-			UnknownValue: NewTypedObjectUnknown[EditorInterfaceControlValue](),
+			nullValue:    NewTypedObjectNull[EditorInterfaceControlValue](),
+			unknownValue: NewTypedObjectUnknown[EditorInterfaceControlValue](),
 		},
 		"EditorInterfaceEditorLayoutItem": {
-			NullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemValue](),
-			UnknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemValue](),
+			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemValue](),
+			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemValue](),
 		},
 		"EditorInterfaceEditorLayoutItemGroup": {
-			NullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue](),
-			UnknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupValue](),
+			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue](),
+			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupValue](),
 		},
 		"EditorInterfaceEditorLayoutItemGroupItem": {
-			NullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue](),
-			UnknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemValue](),
+			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue](),
+			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemValue](),
 		},
 		"EditorInterfaceEditorLayoutItemGroupItemField": {
-			NullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
-			UnknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
+			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
 		},
 		"EditorInterfaceEditorLayoutItemGroupItemGroup": {
-			NullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
-			UnknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
+			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
 		},
 		"EditorInterfaceEditorLayoutItemGroupItemGroupItem": {
-			NullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue](),
-			UnknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue](),
+			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue](),
+			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue](),
 		},
 		"EditorInterfaceEditorLayoutItemGroupItemGroupItemField": {
-			NullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](),
-			UnknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](),
+			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](),
+			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](),
 		},
 		"EditorInterfaceGroupControl": {
-			NullValue:    NewTypedObjectNull[EditorInterfaceGroupControlValue](),
-			UnknownValue: NewTypedObjectUnknown[EditorInterfaceGroupControlValue](),
+			nullValue:    NewTypedObjectNull[EditorInterfaceGroupControlValue](),
+			unknownValue: NewTypedObjectUnknown[EditorInterfaceGroupControlValue](),
 		},
 		"EditorInterfaceSidebar": {
-			NullValue:    NewTypedObjectNull[EditorInterfaceSidebarValue](),
-			UnknownValue: NewTypedObjectUnknown[EditorInterfaceSidebarValue](),
+			nullValue:    NewTypedObjectNull[EditorInterfaceSidebarValue](),
+			unknownValue: NewTypedObjectUnknown[EditorInterfaceSidebarValue](),
 		},
 		"RolePolicy": {
-			NullValue:    NewTypedObjectNull[RolePolicyValue](),
-			UnknownValue: NewTypedObjectUnknown[RolePolicyValue](),
+			nullValue:    NewTypedObjectNull[RolePolicyValue](),
+			unknownValue: NewTypedObjectUnknown[RolePolicyValue](),
 		},
 		"WebhookFilterEquals": {
-			NullValue:    NewTypedObjectNull[WebhookFilterEqualsValue](),
-			UnknownValue: NewTypedObjectUnknown[WebhookFilterEqualsValue](),
+			nullValue:    NewTypedObjectNull[WebhookFilterEqualsValue](),
+			unknownValue: NewTypedObjectUnknown[WebhookFilterEqualsValue](),
 		},
 		"WebhookFilterIn": {
-			NullValue:    NewTypedObjectNull[WebhookFilterInValue](),
-			UnknownValue: NewTypedObjectUnknown[WebhookFilterInValue](),
+			nullValue:    NewTypedObjectNull[WebhookFilterInValue](),
+			unknownValue: NewTypedObjectUnknown[WebhookFilterInValue](),
 		},
 		"WebhookFilterNot": {
-			NullValue:    NewTypedObjectNull[WebhookFilterNotValue](),
-			UnknownValue: NewTypedObjectUnknown[WebhookFilterNotValue](),
+			nullValue:    NewTypedObjectNull[WebhookFilterNotValue](),
+			unknownValue: NewTypedObjectUnknown[WebhookFilterNotValue](),
 		},
 		"WebhookFilterRegexp": {
-			NullValue:    NewTypedObjectNull[WebhookFilterRegexpValue](),
-			UnknownValue: NewTypedObjectUnknown[WebhookFilterRegexpValue](),
+			nullValue:    NewTypedObjectNull[WebhookFilterRegexpValue](),
+			unknownValue: NewTypedObjectUnknown[WebhookFilterRegexpValue](),
 		},
 		"WebhookFilter": {
-			NullValue:    NewTypedObjectNull[WebhookFilterValue](),
-			UnknownValue: NewTypedObjectUnknown[WebhookFilterValue](),
+			nullValue:    NewTypedObjectNull[WebhookFilterValue](),
+			unknownValue: NewTypedObjectUnknown[WebhookFilterValue](),
 		},
 		"WebhookHeader": {
-			NullValue:    NewTypedObjectNull[WebhookHeaderValue](),
-			UnknownValue: NewTypedObjectUnknown[WebhookHeaderValue](),
+			nullValue:    NewTypedObjectNull[WebhookHeaderValue](),
+			unknownValue: NewTypedObjectUnknown[WebhookHeaderValue](),
 		},
 		"WebhookTransformation": {
-			NullValue:    NewTypedObjectNull[WebhookTransformationValue](),
-			UnknownValue: NewTypedObjectUnknown[WebhookTransformationValue](),
+			nullValue:    NewTypedObjectNull[WebhookTransformationValue](),
+			unknownValue: NewTypedObjectUnknown[WebhookTransformationValue](),
 		},
 	}
 
-	for _, testcase := range testcases {
-		t.Run("unknown", func(t *testing.T) {
+	for name, testcase := range testcases {
+		t.Run(name+"/unknown", func(t *testing.T) {
 			t.Parallel()
 
 			ctx := t.Context()
 
-			val, valOk := testcase.UnknownValue.(basetypes.ObjectValuable)
+			val, valOk := testcase.unknownValue.(basetypes.ObjectValuable)
 			require.True(t, valOk)
 
-			typ, typOk := testcase.UnknownValue.Type(ctx).(basetypes.ObjectTypable)
+			typ, typOk := testcase.unknownValue.Type(ctx).(basetypes.ObjectTypable)
 			require.True(t, typOk)
 
 			objval, objvalDiags := val.ToObjectValue(ctx)
@@ -265,15 +242,15 @@ func TestModelTypeValueFromObject(t *testing.T) {
 			assert.False(t, actual.IsNull())
 		})
 
-		t.Run("null", func(t *testing.T) {
+		t.Run(name+"/null", func(t *testing.T) {
 			t.Parallel()
 
 			ctx := t.Context()
 
-			val, valOk := testcase.NullValue.(basetypes.ObjectValuable)
+			val, valOk := testcase.nullValue.(basetypes.ObjectValuable)
 			require.True(t, valOk)
 
-			typ, typOk := testcase.NullValue.Type(ctx).(basetypes.ObjectTypable)
+			typ, typOk := testcase.nullValue.Type(ctx).(basetypes.ObjectTypable)
 			require.True(t, typOk)
 
 			objval, objvalDiags := val.ToObjectValue(ctx)

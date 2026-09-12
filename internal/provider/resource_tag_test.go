@@ -41,7 +41,7 @@ func TestAccTagResourceImport(t *testing.T) {
 		"visibility":     config.StringVariable("private"),
 	}
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -74,7 +74,7 @@ func TestAccTagResourceImportNotFound(t *testing.T) {
 		"tag_id":         config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory:    config.TestNameDirectory(),
@@ -120,7 +120,7 @@ func TestAccTagResourceCreateUpdate(t *testing.T) {
 	configVariables3 := maps.Clone(configVariables)
 	configVariables3["visibility"] = config.StringVariable("public")
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestNameDirectory(),

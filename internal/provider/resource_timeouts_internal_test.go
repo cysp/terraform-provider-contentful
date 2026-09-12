@@ -53,7 +53,7 @@ func TestResourceOperationContextDurations(t *testing.T) {
 			started := time.Now()
 
 			operationCtx, cancel, diags := test.operationContext(t.Context(), TimeoutsNull())
-			defer cancel()
+			t.Cleanup(cancel)
 
 			require.Empty(t, diags)
 			assertContextDeadline(operationCtx, t, started.Add(2*time.Minute))
@@ -67,7 +67,7 @@ func TestResourceOperationContextDurations(t *testing.T) {
 			operationCtx, cancel, diags := test.operationContext(
 				t.Context(), resourceTimeoutValue(test.operation, types.StringValue("1s")),
 			)
-			defer cancel()
+			t.Cleanup(cancel)
 
 			require.Empty(t, diags)
 			assertContextDeadline(operationCtx, t, started.Add(test.explicitDuration))
@@ -127,12 +127,12 @@ func TestResourceOperationContextsHonorParentDeadline(t *testing.T) {
 			parentDeadline := time.Now().Add(30 * time.Second)
 
 			parentCtx, parentCancel := context.WithDeadline(t.Context(), parentDeadline)
-			defer parentCancel()
+			t.Cleanup(parentCancel)
 
 			operationCtx, cancel, diags := operationContext(
 				parentCtx, resourceTimeoutValue(operation, types.StringValue("1h")),
 			)
-			defer cancel()
+			t.Cleanup(cancel)
 
 			require.Empty(t, diags)
 			assertContextDeadline(operationCtx, t, parentDeadline)

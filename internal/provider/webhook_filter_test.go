@@ -6,6 +6,7 @@ import (
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -116,7 +117,7 @@ func TestWebhookFilterValueToObjectValueUnknown(t *testing.T) {
 
 	ctx := t.Context()
 
-	values := []AttrValueWithToObjectValue{
+	values := []basetypes.ObjectValuable{
 		NewTypedObjectUnknown[WebhookFilterValue](),
 		NewTypedObjectUnknown[WebhookFilterNotValue](),
 		NewTypedObjectUnknown[WebhookFilterEqualsValue](),
@@ -125,12 +126,16 @@ func TestWebhookFilterValueToObjectValueUnknown(t *testing.T) {
 	}
 
 	for _, value := range values {
-		assert.True(t, value.IsUnknown())
+		t.Run(value.Type(ctx).String(), func(t *testing.T) {
+			t.Parallel()
 
-		objectValue, objectValueDiags := value.ToObjectValue(ctx)
-		assert.Empty(t, objectValueDiags)
+			assert.True(t, value.IsUnknown())
 
-		assert.True(t, objectValue.IsUnknown())
+			objectValue, objectValueDiags := value.ToObjectValue(ctx)
+			require.Empty(t, objectValueDiags)
+
+			assert.True(t, objectValue.IsUnknown())
+		})
 	}
 }
 
@@ -139,7 +144,7 @@ func TestWebhookFilterValueToObjectValue(t *testing.T) {
 
 	ctx := t.Context()
 
-	values := []AttrValueWithToObjectValue{
+	values := []basetypes.ObjectValuable{
 		NewTypedObject(WebhookFilterValue{}),
 		NewTypedObject(WebhookFilterNotValue{}),
 		NewTypedObject(WebhookFilterEqualsValue{}),
@@ -148,11 +153,15 @@ func TestWebhookFilterValueToObjectValue(t *testing.T) {
 	}
 
 	for _, value := range values {
-		objectValue, objectValueDiags := value.ToObjectValue(ctx)
-		assert.Empty(t, objectValueDiags)
+		t.Run(value.Type(ctx).String(), func(t *testing.T) {
+			t.Parallel()
 
-		assert.False(t, objectValue.IsNull())
-		assert.False(t, objectValue.IsUnknown())
+			objectValue, objectValueDiags := value.ToObjectValue(ctx)
+			require.Empty(t, objectValueDiags)
+
+			assert.False(t, objectValue.IsNull())
+			assert.False(t, objectValue.IsUnknown())
+		})
 	}
 }
 
@@ -170,11 +179,15 @@ func TestWebhookFilterValueToTerraformValueNull(t *testing.T) {
 	}
 
 	for _, value := range values {
-		objectValue, err := value.ToTerraformValue(ctx)
-		require.NoError(t, err)
+		t.Run(value.Type(ctx).String(), func(t *testing.T) {
+			t.Parallel()
 
-		assert.True(t, objectValue.IsKnown())
-		assert.True(t, objectValue.IsNull())
+			objectValue, err := value.ToTerraformValue(ctx)
+			require.NoError(t, err)
+
+			assert.True(t, objectValue.IsKnown())
+			assert.True(t, objectValue.IsNull())
+		})
 	}
 }
 
@@ -192,10 +205,14 @@ func TestWebhookFilterValueToTerraformValueUnknown(t *testing.T) {
 	}
 
 	for _, value := range values {
-		objectValue, err := value.ToTerraformValue(ctx)
-		require.NoError(t, err)
+		t.Run(value.Type(ctx).String(), func(t *testing.T) {
+			t.Parallel()
 
-		assert.False(t, objectValue.IsKnown())
+			objectValue, err := value.ToTerraformValue(ctx)
+			require.NoError(t, err)
+
+			assert.False(t, objectValue.IsKnown())
+		})
 	}
 }
 

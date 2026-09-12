@@ -14,7 +14,7 @@ func TestNewOptNilPointerInt64(t *testing.T) {
 		input    *int64
 		expected cm.OptNilInt
 	}{
-		"test": {
+		"nonzero": {
 			input:    new(int64(42)),
 			expected: cm.NewOptNilInt(42),
 		},

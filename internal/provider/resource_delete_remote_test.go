@@ -144,7 +144,7 @@ topics = ["Entry.publish"]`, remotePath: "/spaces/space/webhook_definitions/{web
 				siblingBefore           map[string]any
 			)
 
-			ContentfulProviderMockedResourceTest(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+			testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 				{Config: configFor("target") + configFor("sibling"), Check: func(state *terraform.State) error {
 					targetPath = remoteDeletePath(t, state, test.resourceType, "target", test.remotePath)
 					siblingPath = remoteDeletePath(t, state, test.resourceType, "sibling", test.remotePath)

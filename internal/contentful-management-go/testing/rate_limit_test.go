@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -27,8 +26,10 @@ type contentfulErrorResponse struct {
 	Message string `json:"message"`
 }
 
-func makeRateLimitTestRequest() *http.Request {
-	return httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/missing", nil)
+func makeRateLimitTestRequest(t *testing.T) *http.Request {
+	t.Helper()
+
+	return httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", nil)
 }
 
 func TestContentfulManagementServerUsesDefaultRateLimitHeaders(t *testing.T) {
@@ -38,7 +39,7 @@ func TestContentfulManagementServerUsesDefaultRateLimitHeaders(t *testing.T) {
 	require.NoError(t, err)
 
 	response := httptest.NewRecorder()
-	server.ServeHTTP(response, makeRateLimitTestRequest())
+	server.ServeHTTP(response, makeRateLimitTestRequest(t))
 
 	assert.Equal(t, http.StatusNotFound, response.Code)
 	assert.Equal(t, "5", response.Header().Get(rateLimitSecondLimitHeader))
@@ -66,13 +67,13 @@ func TestContentfulManagementServerRateLimitHeadersAnd429WhenEnabled(t *testing.
 	require.NoError(t, err)
 
 	firstResponse := httptest.NewRecorder()
-	server.ServeHTTP(firstResponse, makeRateLimitTestRequest())
+	server.ServeHTTP(firstResponse, makeRateLimitTestRequest(t))
 
 	secondResponse := httptest.NewRecorder()
-	server.ServeHTTP(secondResponse, makeRateLimitTestRequest())
+	server.ServeHTTP(secondResponse, makeRateLimitTestRequest(t))
 
 	thirdResponse := httptest.NewRecorder()
-	server.ServeHTTP(thirdResponse, makeRateLimitTestRequest())
+	server.ServeHTTP(thirdResponse, makeRateLimitTestRequest(t))
 
 	assert.Equal(t, http.StatusNotFound, firstResponse.Code)
 	assert.Equal(t, "2", firstResponse.Header().Get(rateLimitSecondLimitHeader))
@@ -110,10 +111,10 @@ func TestContentfulManagementServerRateLimitResetsAfterOneSecond(t *testing.T) {
 	require.NoError(t, err)
 
 	firstResponse := httptest.NewRecorder()
-	server.ServeHTTP(firstResponse, makeRateLimitTestRequest())
+	server.ServeHTTP(firstResponse, makeRateLimitTestRequest(t))
 
 	secondResponse := httptest.NewRecorder()
-	server.ServeHTTP(secondResponse, makeRateLimitTestRequest())
+	server.ServeHTTP(secondResponse, makeRateLimitTestRequest(t))
 
 	assert.Equal(t, http.StatusNotFound, firstResponse.Code)
 	assert.Equal(t, http.StatusTooManyRequests, secondResponse.Code)
@@ -122,7 +123,7 @@ func TestContentfulManagementServerRateLimitResetsAfterOneSecond(t *testing.T) {
 	clock.Advance(time.Second)
 
 	afterResetResponse := httptest.NewRecorder()
-	server.ServeHTTP(afterResetResponse, makeRateLimitTestRequest())
+	server.ServeHTTP(afterResetResponse, makeRateLimitTestRequest(t))
 
 	assert.Equal(t, http.StatusNotFound, afterResetResponse.Code)
 	assert.Equal(t, "0", afterResetResponse.Header().Get(rateLimitResetHeader))

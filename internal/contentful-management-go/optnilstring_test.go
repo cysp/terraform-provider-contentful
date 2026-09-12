@@ -14,7 +14,7 @@ func TestNewOptNilPointerString(t *testing.T) {
 		input    *string
 		expected cm.OptNilString
 	}{
-		"test": {
+		"nonempty": {
 			input:    new("test"),
 			expected: cm.NewOptNilString("test"),
 		},
@@ -46,7 +46,7 @@ func TestOptNilStringValueStringPointer(t *testing.T) {
 		input    cm.OptNilString
 		expected *string
 	}{
-		"test": {
+		"nonempty": {
 			input:    cm.NewOptNilString("test"),
 			expected: new("test"),
 		},
@@ -58,7 +58,7 @@ func TestOptNilStringValueStringPointer(t *testing.T) {
 			input:    cm.NewOptNilStringNull(),
 			expected: nil,
 		},
-		"nil": {
+		"unset": {
 			input:    cm.OptNilString{},
 			expected: nil,
 		},

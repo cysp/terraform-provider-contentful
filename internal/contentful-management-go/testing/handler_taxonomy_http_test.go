@@ -369,13 +369,21 @@ func TestContentfulManagementServerFiltersConceptSchemePreferredLabelLocales(t *
 func TestContentfulManagementServerFiltersAllObservedTaxonomyLocalizedFields(t *testing.T) {
 	t.Parallel()
 
-	conceptFields := []string{"note", "changeNote", "definition", "editorialNote", "example", "historyNote", "scopeNote"}
-	fields := append([]string{"prefLabel"}, conceptFields...)
+	tests := map[string]struct {
+		requestPath string
+		fields      []string
+	}{
+		"concept": {
+			requestPath: "/organizations/organization/taxonomy/concepts/concept",
+			fields:      []string{"note", "changeNote", "definition", "editorialNote", "example", "historyNote", "scopeNote"},
+		},
+		"scheme": {
+			requestPath: "/organizations/organization/taxonomy/concept-schemes/scheme",
+			fields:      []string{"definition"},
+		},
+	}
 
-	for name, requestPath := range map[string]string{
-		"concept": "/organizations/organization/taxonomy/concepts/concept",
-		"scheme":  "/organizations/organization/taxonomy/concept-schemes/scheme",
-	} {
+	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -388,37 +396,26 @@ func TestContentfulManagementServerFiltersAllObservedTaxonomyLocalizedFields(t *
 			var builder strings.Builder
 			builder.WriteString(`{"prefLabel":{"en-US":"US","fr-FR":"FR"}`)
 
-			for _, field := range conceptFields {
-				if name == "scheme" && field != "definition" {
-					continue
-				}
-
+			for _, field := range test.fields {
 				builder.WriteString(`,"` + field + `":{"en-US":"US","fr-FR":"FR"}`)
 			}
 
 			builder.WriteString(`}`)
 			body := builder.String()
-			status, response := taxonomyHTTPRequestAt(t, testServer, requestPath, http.MethodPut, 0, body)
+			status, response := taxonomyHTTPRequestAt(t, testServer, test.requestPath, http.MethodPut, 0, body)
 			require.Equal(t, http.StatusCreated, status)
-			assertTaxonomyResponseOnlyEnUS(t, response, fieldsForTaxonomyResource(name, fields))
+			assertTaxonomyResponseOnlyEnUS(t, response, append([]string{"prefLabel"}, test.fields...), "US")
 
 			patch := `[{"op":"replace","path":"/prefLabel","value":{"en-US":"US2","fr-FR":"FR2"}}]`
-			status, response = taxonomyHTTPRequestAt(t, testServer, requestPath, http.MethodPatch, 1, patch)
+			status, response = taxonomyHTTPRequestAt(t, testServer, test.requestPath, http.MethodPatch, 1, patch)
 			require.Equal(t, http.StatusOK, status)
-			assertTaxonomyResponseOnlyEnUS(t, response, fieldsForTaxonomyResource(name, fields))
+			assertTaxonomyResponseOnlyEnUS(t, response, []string{"prefLabel"}, "US2")
+			assertTaxonomyResponseOnlyEnUS(t, response, test.fields, "US")
 		})
 	}
 }
 
-func fieldsForTaxonomyResource(name string, fields []string) []string {
-	if name == "concept" {
-		return fields
-	}
-
-	return []string{"prefLabel", "definition"}
-}
-
-func assertTaxonomyResponseOnlyEnUS(t *testing.T, body []byte, fields []string) {
+func assertTaxonomyResponseOnlyEnUS(t *testing.T, body []byte, fields []string, expectedValue string) {
 	t.Helper()
 
 	document := map[string]json.RawMessage{}
@@ -427,7 +424,7 @@ func assertTaxonomyResponseOnlyEnUS(t *testing.T, body []byte, fields []string) 
 	for _, field := range fields {
 		labels := map[string]string{}
 		require.NoError(t, json.Unmarshal(document[field], &labels), field)
-		assert.Equal(t, map[string]string{"en-US": labels["en-US"]}, labels, field)
+		assert.Equal(t, map[string]string{"en-US": expectedValue}, labels, field)
 	}
 }
 

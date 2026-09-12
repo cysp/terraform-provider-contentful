@@ -32,7 +32,7 @@ func TestRequestRequiredString(t *testing.T) {
 
 			assert.Equal(t, test.expected, actual)
 			assert.Equal(t, test.expectedError, diags.HasError())
-			assert.Equal(t, test.expectedPaths, requestDiagnosticPaths(t, diags))
+			assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, diags))
 		})
 	}
 }
@@ -56,7 +56,7 @@ func TestRequestRequiredBool(t *testing.T) {
 			actual, diags := requestRequiredBool(test.value, path.Root("value"))
 
 			assert.Equal(t, test.expected, actual)
-			assert.Equal(t, test.expectedPaths, requestDiagnosticPaths(t, diags))
+			assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, diags))
 		})
 	}
 }
@@ -80,7 +80,7 @@ func TestRequestNullableString(t *testing.T) {
 			actual, diags := requestNullableString(test.value, path.Root("value"))
 
 			assert.Equal(t, test.expected, actual)
-			assert.Equal(t, test.expectedPaths, requestDiagnosticPaths(t, diags))
+			assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, diags))
 		})
 	}
 }
@@ -104,7 +104,7 @@ func TestRequestOmittableString(t *testing.T) {
 			actual, diags := requestOmittableString(test.value, path.Root("value"))
 
 			assert.Equal(t, test.expected, actual)
-			assert.Equal(t, test.expectedPaths, requestDiagnosticPaths(t, diags))
+			assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, diags))
 		})
 	}
 }
@@ -128,7 +128,7 @@ func TestRequestOmittableBool(t *testing.T) {
 			actual, diags := requestOmittableBool(test.value, path.Root("value"))
 
 			assert.Equal(t, test.expected, actual)
-			assert.Equal(t, test.expectedPaths, requestDiagnosticPaths(t, diags))
+			assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, diags))
 		})
 	}
 }

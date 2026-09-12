@@ -84,7 +84,7 @@ func TestAccContentTypeListResourceQuery(t *testing.T) {
 	require.NoError(t, err)
 	require.IsType(t, &cm.ContentTypeStatusCode{}, activationResponse)
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_14_0),
 		},
@@ -165,7 +165,7 @@ func TestAccContentTypeListResourceIncludesUnpublished(t *testing.T) {
 		}},
 	})
 
-	ContentfulProviderMockedResourceTest(t, server, resource.TestCase{
+	testAccMockedResource(t, server, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_14_0),
 		},
@@ -207,7 +207,7 @@ func TestAccContentTypeListResourceNotFoundEnvironment(t *testing.T) {
 		"environment_id": config.StringVariable("nonexistent"),
 	}
 
-	ContentfulProviderMockableResourceTest(t, server, resource.TestCase{
+	testAccMockableResource(t, server, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_14_0),
 		},

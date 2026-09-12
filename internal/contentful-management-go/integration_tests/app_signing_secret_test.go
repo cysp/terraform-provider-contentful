@@ -21,16 +21,16 @@ func TestGetAppSigningSecretTreatsRedactedValueAsOpaqueMetadata(t *testing.T) {
 		RedactedValue: "changed-redaction-format",
 	}
 
-	testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method)
 		assert.Equal(t, "/organizations/organization-id/app_definitions/app-definition-id/signing_secret", r.URL.Path)
 
 		w.Header().Set("Content-Type", "application/json")
 		assert.NoError(t, json.NewEncoder(w).Encode(secret))
 	}))
-	defer testserver.Close()
+	t.Cleanup(testServer.Close)
 
-	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+	client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
 	response, err := client.GetAppSigningSecret(t.Context(), cm.GetAppSigningSecretParams{
 		OrganizationID:  "organization-id",
@@ -51,7 +51,7 @@ func TestPutAppSigningSecretTreatsRedactedValueAsOpaqueMetadata(t *testing.T) {
 		RedactedValue: "changed-redaction-format",
 	}
 
-	testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPut, r.Method)
 		assert.Equal(t, "/organizations/organization-id/app_definitions/app-definition-id/signing_secret", r.URL.Path)
 
@@ -59,9 +59,9 @@ func TestPutAppSigningSecretTreatsRedactedValueAsOpaqueMetadata(t *testing.T) {
 		w.WriteHeader(http.StatusCreated)
 		assert.NoError(t, json.NewEncoder(w).Encode(secret))
 	}))
-	defer testserver.Close()
+	t.Cleanup(testServer.Close)
 
-	client := testContentfulManagementClient(t, testserver.URL, cmt.ValidAccessToken)
+	client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
 	response, err := client.PutAppSigningSecret(t.Context(), &cm.AppSigningSecretRequestData{
 		Value: strings.Repeat("s", 64),

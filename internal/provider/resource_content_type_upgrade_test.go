@@ -47,7 +47,7 @@ func TestAccContentTypeResourceRegistryV0062ImportRemainsObservational(t *testin
 	}
 	additionalCLIOptions := &testingresource.AdditionalCLIOptions{}
 	workingDirectoryParent := t.TempDir()
-	options := ContentfulProviderOptionsWithHTTPTestServer(testserver)
+	options := testProviderOptionsWithHTTPServer(testserver)
 
 	testingresource.Test(t, testingresource.TestCase{
 		WorkingDir:           workingDirectoryParent,
