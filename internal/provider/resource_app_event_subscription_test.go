@@ -219,3 +219,126 @@ func TestAccAppEventSubscriptionResourceParentDisappears(t *testing.T) {
 	}})
 	assert.EqualValues(t, 3, putCount.Load())
 }
+
+func TestAccAppEventSubscriptionResourceRecoveryState(t *testing.T) {
+	t.Parallel()
+
+	for _, update := range []bool{false, true} {
+		t.Run(strconv.FormatBool(update), func(t *testing.T) {
+			t.Parallel()
+
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+			require.NoError(t, err)
+			server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
+
+			var contradict atomic.Bool
+
+			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				rec := httptest.NewRecorder()
+				server.ServeHTTP(rec, r)
+				maps.Copy(w.Header(), rec.Header())
+
+				raw := rec.Body.String()
+				if r.Method == http.MethodPut && contradict.Swap(false) {
+					// Change only the response: a GET cannot supply this checkpoint.
+					raw = strings.Replace(raw, "https://example.invalid/planned", "https://example.invalid/returned", 1)
+				}
+
+				w.WriteHeader(rec.Code)
+				_, writeErr := io.WriteString(w, raw)
+				assert.NoError(t, writeErr)
+			})
+
+			steps := []resource.TestStep{}
+			if update {
+				steps = append(steps, resource.TestStep{Config: appEventHTTPConfig})
+			}
+
+			planned := strings.Replace(appEventHTTPConfig, "/events", "/planned", 1)
+			steps = append(steps, resource.TestStep{
+				PreConfig: func() { contradict.Store(true) }, Config: planned,
+				ExpectError: regexp.MustCompile("Contentful returned a different target_url"),
+			})
+
+			action := plancheck.ResourceActionDestroyBeforeCreate
+			if update {
+				action = plancheck.ResourceActionUpdate
+			}
+
+			steps = append(steps, resource.TestStep{Config: planned, ConfigPlanChecks: resource.ConfigPlanChecks{
+				PreApply: []plancheck.PlanCheck{
+					testAccPriorState{check: statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/returned"))},
+					testAccPriorState{check: statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))},
+					plancheck.ExpectResourceAction(appEventResourceAddress, action),
+				},
+				PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+			}})
+			testAccMockedResource(t, handler, resource.TestCase{
+				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+				Steps:                steps,
+			})
+		})
+	}
+}
+
+func TestAccAppEventSubscriptionResourceParentReplacement(t *testing.T) {
+	t.Parallel()
+
+	for _, createBeforeDestroy := range []bool{false, true} {
+		t.Run(strconv.FormatBool(createBeforeDestroy), func(t *testing.T) {
+			t.Parallel()
+
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+			require.NoError(t, err)
+			server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
+			server.SetAppDefinition("other", "replacement", cm.AppDefinitionData{Name: "Replacement"})
+
+			var (
+				mutations     []string
+				mutationMutex sync.Mutex
+			)
+
+			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodGet {
+					mutationMutex.Lock()
+
+					mutations = append(mutations, r.Method+" "+r.URL.Path)
+					mutationMutex.Unlock()
+				}
+
+				server.ServeHTTP(w, r)
+			})
+			initial := appEventHTTPConfig
+			action := plancheck.ResourceActionDestroyBeforeCreate
+
+			if createBeforeDestroy {
+				initial = strings.Replace(initial, "\n}", "\nlifecycle { create_before_destroy = true }\n}", 1)
+				action = plancheck.ResourceActionCreateBeforeDestroy
+			}
+
+			replacement := strings.NewReplacer(`"organization"`, `"other"`, `"app"`, `"replacement"`).Replace(initial)
+			testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
+				{Config: initial},
+				{Config: replacement, ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, action)},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				}, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("other/replacement"))}},
+			}})
+
+			const (
+				oldPath = "/organizations/organization/app_definitions/app/event_subscription"
+				newPath = "/organizations/other/app_definitions/replacement/event_subscription"
+			)
+
+			want := []string{"PUT " + oldPath, "DELETE " + oldPath, "PUT " + newPath, "DELETE " + newPath}
+			if createBeforeDestroy {
+				want[1], want[2] = want[2], want[1]
+			}
+
+			mutationMutex.Lock()
+			defer mutationMutex.Unlock()
+
+			assert.Equal(t, want, mutations)
+		})
+	}
+}
