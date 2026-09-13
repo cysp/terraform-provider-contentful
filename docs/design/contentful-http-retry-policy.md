@@ -9,7 +9,7 @@ for Contentful Management API (CMA) requests. The implementation is in
 | --- | --- | --- |
 | GET, HEAD, OPTIONS | Retry within the deadline | Retry within the deadline |
 | POST, PUT, PATCH, DELETE by default | Retry within the deadline | Return the result without replay |
-| Entry Create, specified-ID Create, Update, Publish; Content Type Create, Update, Activate | Return the first result without replay | Return the first result without replay |
+| Entry Create, specified-ID Create, Update, Publish; Content Type Create, Update, Activate; WebhookSigningSecret PUT/DELETE | Return the first result without replay | Return the first result without replay |
 
 The response deadline and evidence limits below are part of this policy.
 
@@ -63,8 +63,8 @@ applied write.
 | Contentful's [CMA rate-limit documentation](https://www.contentful.com/developers/docs/references/content-management-api/overview/#api-rate-limits) | 429 represents rate limiting and the reset interval tells clients when to retry | Whether a mutation returning 429 committed |
 | Contentful's [first-party management SDK](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/README.md#L387-L389) | The SDK retries 429 and 500 responses by default | A server commitment guarantee |
 
-The Entry Create, specified-ID Create, Update, and Publish calls and the Content
-Type Create, Update, and Activate calls opt
+The Entry Create, specified-ID Create, Update, and Publish calls, the Content
+Type Create, Update, and Activate calls, and WebhookSigningSecret PUT/DELETE opt
 out of transparent retry for the complete request. For those exact lifecycle
 mutations, explicit 429 responses, transport failures, and 5xx responses are
 returned after one request. The private request-context signal is checked before
@@ -78,6 +78,11 @@ default ten-request limit. A supplied `CheckRedirect` policy replaces that defau
 The outer client has a separate default redirect policy and can follow a redirect
 returned by an inner policy using `http.ErrUseLastResponse`. GET and other CMA
 operations use the retry classification described above.
+
+WebhookSigningSecret mutations are unversioned space-wide overwrites/deletions.
+A read cannot establish complete-secret equality, so this resource cannot recover
+an ambiguous PUT by observing presence or safely replay a mutation across another
+actor's changes. See its [lifecycle contract](webhook-signing-secret.md).
 
 ## Backoff and final errors
 

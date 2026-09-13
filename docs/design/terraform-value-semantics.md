@@ -15,7 +15,7 @@ implementation uses the Framework version pinned in [`go.mod`](../../go.mod).
 | Mutation reconciliation | [Role](#role-mutation-decisions), [Editor Interface](#editor-interface-mutation-decisions), and [Webhook](#webhook-mutation-decisions) |
 | Locking and retries | [Editor Interface preconditions](#editor-interface-version-preconditions), [private optimistic-lock barrier](#provider-private-optimistic-lock-barrier), [taxonomy locking](#taxonomy-optimistic-version-locking), and [HTTP retry policy](contentful-http-retry-policy.md) |
 | Taxonomy values | [Collection ownership](#taxonomy-optionalcomputed-collection-ownership) and [response canonicalization](#taxonomy-response-canonicalization) |
-| Other resource contracts | [Webhook password](#webhook-basic-password), [Delivery API key environments](#delivery-api-key-environments), [Extension sources](#extension-sources), [Space Enablements](#space-enablements), and [Live Preview variables](#live-preview-variables) |
+| Other resource contracts | [Webhook signing secret](webhook-signing-secret.md), [Webhook password](#webhook-basic-password), [Delivery API key environments](#delivery-api-key-environments), [Extension sources](#extension-sources), [Space Enablements](#space-enablements), and [Live Preview variables](#live-preview-variables) |
 
 `Config`, `Plan`, and `State` in the tables refer to Terraform configuration, the
 effective plan after lifecycle processing, and prior state. A known planned value is

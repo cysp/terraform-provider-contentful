@@ -12,6 +12,7 @@ Refresh can verify a value only when Contentful returns it. Import starts withou
 
 | Value | Refresh | Import |
 | --- | --- | --- |
+| [Webhook signing secret](#webhook-signing-secrets) | Preserves stored value | `value` is null |
 | [App signing secret](#app-signing-secrets) | Preserves stored value | `value` is null |
 | [Webhook Basic password](#basic-authentication) | Preserves managed password | `http_basic_password` is null |
 | [Secret webhook header](#secret-custom-headers) | Preserves managed value for matching header | Unreadable value is null |
@@ -20,13 +21,31 @@ Refresh can verify a value only when Contentful returns it. Import starts withou
 | Delivery API access token | Reads token | Reads token |
 | [App Key public JWK](#app-keys) | Reads public key | Reads public key; private key unavailable |
 
+## Webhook signing secrets
+
+[`contentful_webhook_signing_secret`](../resources/webhook_signing_secret) manages the signing secret for all webhooks in a space. Creating the resource replaces an existing secret; destroying it deletes the current secret, including one rotated outside Terraform. A space has at most one signing secret. Multiple Terraform resources can target it and overwrite or delete one another's value. A same-space replacement with `create_before_destroy` can delete the newly written secret.
+
+Contentful returns only a redacted representation. Refresh preserves the complete `value` last applied by Terraform and cannot detect external rotation. To rotate the secret, change `value` and apply. Contentful's [key rotation workflow](https://www.contentful.com/developers/docs/extensibility/webhooks/request-verification/#key-rotation) describes how receivers accept the old and new secrets during rotation. Changing only `timeouts` leaves the remote secret unchanged.
+
+### Uncertain writes
+
+A failed request can leave the remote secret changed. The provider does not retry the mutation, and a read cannot confirm the complete value. A later apply can overwrite or delete intervening changes.
+
+After an uncertain create, [importing without rotation](#importing-signing-secrets) can adopt an existing secret without another write. This confirms its presence, not which value Contentful stored.
+
 ## App signing secrets
 
 Whenever [`contentful_app_signing_secret`](../resources/app_signing_secret) writes a secret to Contentful, it stores the complete configured `value` in Terraform state. Contentful returns only a redacted representation during reads, so refresh preserves the stored value and cannot detect a secret rotated outside Terraform.
 
-To rotate the secret through Terraform, change `value` and apply. Changing only `timeouts` leaves the remote secret unchanged, including a secret rotated outside Terraform. With `ignore_changes = [value]`, configuration changes to `value` do not rotate an existing secret.
+To rotate the secret through Terraform, change `value` and apply. Changing only `timeouts` leaves the remote secret unchanged, including a secret rotated outside Terraform.
 
-Import cannot recover the complete secret and leaves `value` null. Without `ignore_changes = [value]`, applying the configured value replaces the remote secret; a configuration-driven import can do this during the import apply. With that lifecycle setting, the imported value remains null, including after timeout changes.
+## Importing signing secrets
+
+Importing a webhook or app signing secret leaves `value` null because Contentful does not return the complete secret. Applying the configured value then replaces the remote secret, including during a configuration-driven import. This lets Terraform take over rotation using a value you supply.
+
+To leave the existing value managed outside Terraform, you can set `ignore_changes = [value]`. The imported value remains null and Terraform does not write the configured value while updating that resource. Reads and deletion require only the resource identifiers and the provider's management API credentials. Changing only `timeouts` sends no mutation, so none of these operations needs the unreadable secret. Creating or rotating a secret requires the complete value to install.
+
+This setting suppresses configuration-driven rotation; it does not recover or verify the remote value. External rotation is already undetectable without it. `value` is still required in configuration, and Terraform uses it for creation or replacement, including recreation after remote deletion. [Terraform's lifecycle reference](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) explains the distinction between creation and updates. Destroy still deletes the secret. Remove the setting when ready to rotate through Terraform.
 
 ## Webhook credentials and secret headers
 

@@ -2,7 +2,8 @@
 
 WebhookSigningSecret is the space singleton at
 `/spaces/{space_id}/webhook_settings/signing_secret`. It is separate from
-WebhookDefinition and AppSigningSecret.
+WebhookDefinition and AppSigningSecret. The [provider lifecycle contract](../design/webhook-signing-secret.md)
+defines Terraform ownership and state behavior.
 
 ## Published contract
 
