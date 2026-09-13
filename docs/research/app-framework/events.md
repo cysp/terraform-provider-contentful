@@ -92,13 +92,11 @@ method, multiple targets, basic-auth configuration, or a pause flag in the revie
 request contract. The service accepted the tested extra fields but omitted them from
 responses; their acceptance does not establish that they affect event delivery.
 
-## Personal-organization configuration observations
+## Subscription configuration observations
 
-An authorized configuration-only probe on 2026-09-13 used two sequential disposable,
-uninstalled AppDefinitions and the reserved target
-`https://example.invalid/app-event-subscription-probe`. It deployed no Functions,
-installed no apps, and triggered no events. Both definitions were deleted; subsequent
-GETs of each parent and subscription returned 404.
+Configuration observations on 2026-09-13 used disposable, uninstalled AppDefinitions
+and the reserved target `https://example.invalid/app-event-subscription-probe`.
+The scope excluded Function deployment, app installation, and event delivery.
 
 HTTP creation returned 201 and replacements returned 200. GET confirmed replacement
 of `Entry.publish` by `Asset.publish` and `Entry.save`, including a later request
@@ -106,7 +104,7 @@ that reversed the two topics. These reads establish the exercised stored arrays,
 not a general service ordering guarantee. DELETE returned 204 and repeated DELETE
 returned 404.
 
-Function requests could not establish successful configuration in this organization:
+None of the following Function request forms succeeded:
 
 | Request variation | Observed result |
 | --- | --- |
@@ -118,15 +116,14 @@ Function requests could not establish successful configuration in this organizat
 | `functions.filter: {}` | 422 `ValidationFailed`, missing `sys`. |
 
 GET after every rejected request retained the preceding HTTP configuration. These
-results do not establish Function availability in other organizations, validation
+results do not establish general Function availability, validation
 order generally, existence checking for valid Function IDs, invocation-role
 compatibility, coexistence of a target and handler, or removal of stored Function
-roles. In particular, rejection of the property in this account cannot support a
-provider-wide prohibition on Function configuration.
+roles. Rejection of these requests does not establish that the documented Function
+form is unsupported generally.
 
-The current published [GET][event-get], [update/subscribe][event-put], and
-[DELETE][event-delete] operation pages were also
-reviewed on 2026-09-13. Their request/response schemas remain generic maps; their
+The published [GET][event-get], [update/subscribe][event-put], and
+[DELETE][event-delete] operation pages have generic request/response schemas; their
 examples show the HTTP form. The [Functions guide][functions] and [working guide][working-functions]
 describe all three roles but do not specify clearing payloads. SDK optional members
 therefore remain insufficient evidence for omission-as-removal of Function links.

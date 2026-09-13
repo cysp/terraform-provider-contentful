@@ -459,8 +459,8 @@ returning 201 initially and 200 afterward. GET/DELETE of absent subscriptions or
 parents return 404. HTTP topics are nonempty and unique, with no closed vocabulary.
 The fake accepts documented Function links without modeling deployment or entitlement.
 Function omission/removal and HTTP/handler transitions use complete replacement as
-an explicit fixture assumption; the personal-organization probes rejected the
-`functions` property and could not establish those transitions. Parent deletion
+an explicit fixture assumption; the [configuration observations](../research/app-framework/events.md#subscription-configuration-observations)
+did not verify any successful Function configuration. Parent deletion
 clears the fake's subscription record as a storage convention.
 
 **Provider boundary:** The provider forwards the complete desired document and
