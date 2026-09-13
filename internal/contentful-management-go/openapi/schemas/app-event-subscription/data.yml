@@ -1,0 +1,13 @@
+AppEventSubscriptionData:
+  type: object
+  properties:
+    topics:
+      type: array
+      items:
+        type: string
+    targetUrl:
+      type: string
+    functions:
+      $ref: "./functions.yml#/AppEventSubscriptionFunctions"
+  required:
+    - topics

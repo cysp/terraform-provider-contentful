@@ -1,0 +1,9 @@
+AppEventSubscriptionFunctions:
+  type: object
+  properties:
+    filter:
+      $ref: "../links/function-link.yml#/FunctionLink"
+    transformation:
+      $ref: "../links/function-link.yml#/FunctionLink"
+    handler:
+      $ref: "../links/function-link.yml#/FunctionLink"

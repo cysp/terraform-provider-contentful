@@ -1,0 +1,9 @@
+AppEventSubscription:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/AppEventSubscriptionSys"
+      required:
+        - sys
+    - $ref: "./data.yml#/AppEventSubscriptionData"

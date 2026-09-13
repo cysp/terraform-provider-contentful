@@ -522,6 +522,63 @@ paths:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions/{app_definition_id}/event_subscription:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/app_definition_id"
+    get:
+      operationId: getAppEventSubscription
+      summary: Get one app event subscription
+      responses:
+        200:
+          description: An app event subscription
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-event-subscription/app-event-subscription.yml#/AppEventSubscription"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putAppEventSubscription
+      summary: Create or update an app event subscription
+      parameters:
+        - $ref: "#/components/parameters/organization_id"
+        - $ref: "#/components/parameters/app_definition_id"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/app-event-subscription/data.yml#/AppEventSubscriptionData"
+      responses:
+        200:
+          description: An app event subscription
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-event-subscription/app-event-subscription.yml#/AppEventSubscription"
+        201:
+          description: An app event subscription
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-event-subscription/app-event-subscription.yml#/AppEventSubscription"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteAppEventSubscription
+      summary: Delete an app event subscription
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
   /organizations/{organization_id}/app_definitions/{app_definition_id}/signing_secret:
     parameters:
       - $ref: "#/components/parameters/organization_id"

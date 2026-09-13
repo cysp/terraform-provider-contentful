@@ -44,6 +44,7 @@ redaction conventions](../README.md#evidence-and-redaction) apply throughout thi
 | Aggregate Function usage documentation | 2026-09-10; the [usage reference](functions.md#usage-and-observability) records endpoint and overview differences. |
 | Resource Entities display-mapping guide | 2026-09-10; the [mapping reference](native-external-references.md#resourceprovider-resourcetype-and-resource) retains the pinned first-party example. |
 | App Parameters and installation size documentation | 2026-09-10; [configuration](configuration.md#appdefinition-and-appinstallation-data) records Secret access and the guide/overview size disagreement. |
+| App Event HTTP configuration probes | 2026-09-13; authorized disposable, uninstalled definitions. [Events](events.md#personal-organization-configuration-observations) records successful HTTP replacement and rejected Function configuration in the personal organization. |
 | Direct configuration observations | 2026-09-08 (UTC); disposable, uninstalled app configuration, with the experiment scope below. |
 | Supplied read-only observations | 2026-09-09 (UTC); existing installations, environment actions, Function discovery and logs, and ResourceType collections. The focused references retain the observed projections and pagination limits. |
 | Supplied installation-parameter observations | 2026-09-09 (UTC); one existing installation in a concrete environment, with only `Symbol` declarations. [Configuration](configuration.md#installation-parameter-replacement) records the PUT/read-back comparisons. |

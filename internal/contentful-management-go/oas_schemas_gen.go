@@ -1140,6 +1140,205 @@ func (s *AppDefinitionSysType) UnmarshalText(data []byte) error {
 }
 
 // Merged schema.
+// Ref: #/AppEventSubscription
+type AppEventSubscription struct {
+	Sys       AppEventSubscriptionSys          `json:"sys"`
+	Topics    []string                         `json:"topics"`
+	TargetUrl OptString                        `json:"targetUrl"`
+	Functions OptAppEventSubscriptionFunctions `json:"functions"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppEventSubscription) GetSys() AppEventSubscriptionSys {
+	return s.Sys
+}
+
+// GetTopics returns the value of Topics.
+func (s *AppEventSubscription) GetTopics() []string {
+	return s.Topics
+}
+
+// GetTargetUrl returns the value of TargetUrl.
+func (s *AppEventSubscription) GetTargetUrl() OptString {
+	return s.TargetUrl
+}
+
+// GetFunctions returns the value of Functions.
+func (s *AppEventSubscription) GetFunctions() OptAppEventSubscriptionFunctions {
+	return s.Functions
+}
+
+// SetSys sets the value of Sys.
+func (s *AppEventSubscription) SetSys(val AppEventSubscriptionSys) {
+	s.Sys = val
+}
+
+// SetTopics sets the value of Topics.
+func (s *AppEventSubscription) SetTopics(val []string) {
+	s.Topics = val
+}
+
+// SetTargetUrl sets the value of TargetUrl.
+func (s *AppEventSubscription) SetTargetUrl(val OptString) {
+	s.TargetUrl = val
+}
+
+// SetFunctions sets the value of Functions.
+func (s *AppEventSubscription) SetFunctions(val OptAppEventSubscriptionFunctions) {
+	s.Functions = val
+}
+
+func (*AppEventSubscription) getAppEventSubscriptionRes() {}
+
+// Ref: #/AppEventSubscriptionData
+type AppEventSubscriptionData struct {
+	Topics    []string                         `json:"topics"`
+	TargetUrl OptString                        `json:"targetUrl"`
+	Functions OptAppEventSubscriptionFunctions `json:"functions"`
+}
+
+// GetTopics returns the value of Topics.
+func (s *AppEventSubscriptionData) GetTopics() []string {
+	return s.Topics
+}
+
+// GetTargetUrl returns the value of TargetUrl.
+func (s *AppEventSubscriptionData) GetTargetUrl() OptString {
+	return s.TargetUrl
+}
+
+// GetFunctions returns the value of Functions.
+func (s *AppEventSubscriptionData) GetFunctions() OptAppEventSubscriptionFunctions {
+	return s.Functions
+}
+
+// SetTopics sets the value of Topics.
+func (s *AppEventSubscriptionData) SetTopics(val []string) {
+	s.Topics = val
+}
+
+// SetTargetUrl sets the value of TargetUrl.
+func (s *AppEventSubscriptionData) SetTargetUrl(val OptString) {
+	s.TargetUrl = val
+}
+
+// SetFunctions sets the value of Functions.
+func (s *AppEventSubscriptionData) SetFunctions(val OptAppEventSubscriptionFunctions) {
+	s.Functions = val
+}
+
+// Ref: #/AppEventSubscriptionFunctions
+type AppEventSubscriptionFunctions struct {
+	Filter         OptFunctionLink `json:"filter"`
+	Transformation OptFunctionLink `json:"transformation"`
+	Handler        OptFunctionLink `json:"handler"`
+}
+
+// GetFilter returns the value of Filter.
+func (s *AppEventSubscriptionFunctions) GetFilter() OptFunctionLink {
+	return s.Filter
+}
+
+// GetTransformation returns the value of Transformation.
+func (s *AppEventSubscriptionFunctions) GetTransformation() OptFunctionLink {
+	return s.Transformation
+}
+
+// GetHandler returns the value of Handler.
+func (s *AppEventSubscriptionFunctions) GetHandler() OptFunctionLink {
+	return s.Handler
+}
+
+// SetFilter sets the value of Filter.
+func (s *AppEventSubscriptionFunctions) SetFilter(val OptFunctionLink) {
+	s.Filter = val
+}
+
+// SetTransformation sets the value of Transformation.
+func (s *AppEventSubscriptionFunctions) SetTransformation(val OptFunctionLink) {
+	s.Transformation = val
+}
+
+// SetHandler sets the value of Handler.
+func (s *AppEventSubscriptionFunctions) SetHandler(val OptFunctionLink) {
+	s.Handler = val
+}
+
+// Merged schema.
+// Ref: #/AppEventSubscriptionSys
+type AppEventSubscriptionSys struct {
+	Organization OrganizationLink `json:"organization"`
+	// Merged property.
+	Type          AppEventSubscriptionSysType `json:"type"`
+	AppDefinition AppDefinitionLink           `json:"appDefinition"`
+}
+
+// GetOrganization returns the value of Organization.
+func (s *AppEventSubscriptionSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetType returns the value of Type.
+func (s *AppEventSubscriptionSys) GetType() AppEventSubscriptionSysType {
+	return s.Type
+}
+
+// GetAppDefinition returns the value of AppDefinition.
+func (s *AppEventSubscriptionSys) GetAppDefinition() AppDefinitionLink {
+	return s.AppDefinition
+}
+
+// SetOrganization sets the value of Organization.
+func (s *AppEventSubscriptionSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetType sets the value of Type.
+func (s *AppEventSubscriptionSys) SetType(val AppEventSubscriptionSysType) {
+	s.Type = val
+}
+
+// SetAppDefinition sets the value of AppDefinition.
+func (s *AppEventSubscriptionSys) SetAppDefinition(val AppDefinitionLink) {
+	s.AppDefinition = val
+}
+
+// Merged schema.
+type AppEventSubscriptionSysType string
+
+const (
+	AppEventSubscriptionSysTypeAppEventSubscription AppEventSubscriptionSysType = "AppEventSubscription"
+)
+
+// AllValues returns all AppEventSubscriptionSysType values.
+func (AppEventSubscriptionSysType) AllValues() []AppEventSubscriptionSysType {
+	return []AppEventSubscriptionSysType{
+		AppEventSubscriptionSysTypeAppEventSubscription,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppEventSubscriptionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppEventSubscriptionSysTypeAppEventSubscription:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppEventSubscriptionSysType) UnmarshalText(data []byte) error {
+	switch AppEventSubscriptionSysType(data) {
+	case AppEventSubscriptionSysTypeAppEventSubscription:
+		*s = AppEventSubscriptionSysTypeAppEventSubscription
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
 // Ref: #/AppInstallation
 type AppInstallation struct {
 	Sys        AppInstallationSys `json:"sys"`
@@ -1965,6 +2164,7 @@ func (*ApplicationJSONError) createTeamSpaceMembershipRes()      {}
 func (*ApplicationJSONError) createWebhookDefinitionRes()        {}
 func (*ApplicationJSONError) deactivateContentTypeRes()          {}
 func (*ApplicationJSONError) deleteAppDefinitionRes()            {}
+func (*ApplicationJSONError) deleteAppEventSubscriptionRes()     {}
 func (*ApplicationJSONError) deleteAppInstallationRes()          {}
 func (*ApplicationJSONError) deleteAppKeyRes()                   {}
 func (*ApplicationJSONError) deleteAppSigningSecretRes()         {}
@@ -1986,6 +2186,7 @@ func (*ApplicationJSONError) deleteTeamSpaceMembershipRes()      {}
 func (*ApplicationJSONError) deleteWebhookDefinitionRes()        {}
 func (*ApplicationJSONError) deleteWebhookSigningSecretRes()     {}
 func (*ApplicationJSONError) getAppDefinitionRes()               {}
+func (*ApplicationJSONError) getAppEventSubscriptionRes()        {}
 func (*ApplicationJSONError) getAppInstallationRes()             {}
 func (*ApplicationJSONError) getAppKeyRes()                      {}
 func (*ApplicationJSONError) getAppKeysRes()                     {}
@@ -2026,6 +2227,7 @@ func (*ApplicationJSONError) patchTaxonomyConceptRes()           {}
 func (*ApplicationJSONError) patchTaxonomyConceptSchemeRes()     {}
 func (*ApplicationJSONError) publishEntryRes()                   {}
 func (*ApplicationJSONError) putAppDefinitionRes()               {}
+func (*ApplicationJSONError) putAppEventSubscriptionRes()        {}
 func (*ApplicationJSONError) putAppInstallationRes()             {}
 func (*ApplicationJSONError) putAppSigningSecretRes()            {}
 func (*ApplicationJSONError) putContentTypeRes()                 {}
@@ -4860,6 +5062,7 @@ func (*ErrorStatusCode) createTeamSpaceMembershipRes()      {}
 func (*ErrorStatusCode) createWebhookDefinitionRes()        {}
 func (*ErrorStatusCode) deactivateContentTypeRes()          {}
 func (*ErrorStatusCode) deleteAppDefinitionRes()            {}
+func (*ErrorStatusCode) deleteAppEventSubscriptionRes()     {}
 func (*ErrorStatusCode) deleteAppInstallationRes()          {}
 func (*ErrorStatusCode) deleteAppKeyRes()                   {}
 func (*ErrorStatusCode) deleteAppSigningSecretRes()         {}
@@ -4881,6 +5084,7 @@ func (*ErrorStatusCode) deleteTeamSpaceMembershipRes()      {}
 func (*ErrorStatusCode) deleteWebhookDefinitionRes()        {}
 func (*ErrorStatusCode) deleteWebhookSigningSecretRes()     {}
 func (*ErrorStatusCode) getAppDefinitionRes()               {}
+func (*ErrorStatusCode) getAppEventSubscriptionRes()        {}
 func (*ErrorStatusCode) getAppInstallationRes()             {}
 func (*ErrorStatusCode) getAppKeyRes()                      {}
 func (*ErrorStatusCode) getAppKeysRes()                     {}
@@ -4921,6 +5125,7 @@ func (*ErrorStatusCode) patchTaxonomyConceptRes()           {}
 func (*ErrorStatusCode) patchTaxonomyConceptSchemeRes()     {}
 func (*ErrorStatusCode) publishEntryRes()                   {}
 func (*ErrorStatusCode) putAppDefinitionRes()               {}
+func (*ErrorStatusCode) putAppEventSubscriptionRes()        {}
 func (*ErrorStatusCode) putAppInstallationRes()             {}
 func (*ErrorStatusCode) putAppSigningSecretRes()            {}
 func (*ErrorStatusCode) putContentTypeRes()                 {}
@@ -6243,6 +6448,7 @@ type NoContent struct{}
 
 func (*NoContent) deactivateContentTypeRes()       {}
 func (*NoContent) deleteAppDefinitionRes()         {}
+func (*NoContent) deleteAppEventSubscriptionRes()  {}
 func (*NoContent) deleteAppInstallationRes()       {}
 func (*NoContent) deleteAppKeyRes()                {}
 func (*NoContent) deleteAppSigningSecretRes()      {}
@@ -6594,6 +6800,52 @@ func (o OptAppDefinitionParameters) Get() (v AppDefinitionParameters, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptAppDefinitionParameters) Or(d AppDefinitionParameters) AppDefinitionParameters {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAppEventSubscriptionFunctions returns new OptAppEventSubscriptionFunctions with value set to v.
+func NewOptAppEventSubscriptionFunctions(v AppEventSubscriptionFunctions) OptAppEventSubscriptionFunctions {
+	return OptAppEventSubscriptionFunctions{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAppEventSubscriptionFunctions is optional AppEventSubscriptionFunctions.
+type OptAppEventSubscriptionFunctions struct {
+	Value AppEventSubscriptionFunctions
+	Set   bool
+}
+
+// IsSet returns true if OptAppEventSubscriptionFunctions was set.
+func (o OptAppEventSubscriptionFunctions) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAppEventSubscriptionFunctions) Reset() {
+	var v AppEventSubscriptionFunctions
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAppEventSubscriptionFunctions) SetTo(v AppEventSubscriptionFunctions) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAppEventSubscriptionFunctions) Get() (v AppEventSubscriptionFunctions, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAppEventSubscriptionFunctions) Or(d AppEventSubscriptionFunctions) AppEventSubscriptionFunctions {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -7054,6 +7306,52 @@ func (o OptExtensionExtensionFieldTypesItemItems) Get() (v ExtensionExtensionFie
 
 // Or returns value if set, or given parameter if does not.
 func (o OptExtensionExtensionFieldTypesItemItems) Or(d ExtensionExtensionFieldTypesItemItems) ExtensionExtensionFieldTypesItemItems {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptFunctionLink returns new OptFunctionLink with value set to v.
+func NewOptFunctionLink(v FunctionLink) OptFunctionLink {
+	return OptFunctionLink{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptFunctionLink is optional FunctionLink.
+type OptFunctionLink struct {
+	Value FunctionLink
+	Set   bool
+}
+
+// IsSet returns true if OptFunctionLink was set.
+func (o OptFunctionLink) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptFunctionLink) Reset() {
+	var v FunctionLink
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptFunctionLink) SetTo(v FunctionLink) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptFunctionLink) Get() (v FunctionLink, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptFunctionLink) Or(d FunctionLink) FunctionLink {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -9415,6 +9713,14 @@ func (s *PreviewEnvironmentSysType) UnmarshalText(data []byte) error {
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
+
+type PutAppEventSubscriptionCreated AppEventSubscription
+
+func (*PutAppEventSubscriptionCreated) putAppEventSubscriptionRes() {}
+
+type PutAppEventSubscriptionOK AppEventSubscription
+
+func (*PutAppEventSubscriptionOK) putAppEventSubscriptionRes() {}
 
 type PutWebhookSigningSecretCreated WebhookSigningSecret
 
