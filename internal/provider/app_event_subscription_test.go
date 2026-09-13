@@ -160,6 +160,9 @@ func TestAppEventSubscriptionUnknownValuesBlockMutation(t *testing.T) {
 		"topic null": func(m *AppEventSubscriptionModel) {
 			m.Topics = types.SetValueMust(types.StringType, []attr.Value{types.StringNull()})
 		},
+		"topic empty": func(m *AppEventSubscriptionModel) {
+			m.Topics = types.SetValueMust(types.StringType, []attr.Value{types.StringValue("")})
+		},
 		"target empty":   func(m *AppEventSubscriptionModel) { m.TargetURL = types.StringValue("") },
 		"function empty": func(m *AppEventSubscriptionModel) { m.FilterFunctionID = types.StringValue("") },
 	}
@@ -447,6 +450,28 @@ func TestAppEventSubscriptionUpsertDeadline(t *testing.T) {
 	require.True(t, diags.HasError())
 	assert.Contains(t, diags.Errors()[0].Detail(), "deadline")
 	assert.EqualValues(t, 1, count.Load())
+}
+
+func TestAppEventSubscriptionCanceledUpdate(t *testing.T) {
+	t.Parallel()
+
+	var count atomic.Int64
+
+	implementation := appEventTestResource(t, func(http.ResponseWriter, *http.Request) { count.Add(1) })
+	model := appEventTestModel()
+	model.ID = types.StringValue("organization/app")
+	prior := appEventTestPlan(t, model)
+	model.TargetURL = types.StringValue("https://example.invalid/changed")
+	plan := appEventTestPlan(t, model)
+	response := resource.UpdateResponse{State: tfsdk.State(prior), Identity: appEventTestIdentity()}
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+
+	implementation.Update(ctx, resource.UpdateRequest{State: tfsdk.State(prior), Plan: plan}, &response)
+	require.True(t, response.Diagnostics.HasError())
+	assert.Contains(t, response.Diagnostics.Errors()[0].Detail(), "The Contentful request was canceled.")
+	assert.Zero(t, count.Load())
+	assert.True(t, response.State.Raw.Equal(prior.Raw))
 }
 
 func TestAppEventSubscriptionUpdateRecoveryState(t *testing.T) {
