@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-const appSigningValueDescription = "Symmetric key shared between Contentful and an app backend. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Import leaves `value` null; applying a configured value rotates the secret, including during import, unless `ignore_changes = [value]` is set. Timeout-only updates preserve the secret and stored value."
+const appSigningValueDescription = "Symmetric key shared between Contentful and an app backend. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value."
 
 var appSigningSecretValuePattern = regexp.MustCompile(`^[0-9a-zA-Z+/=_-]+$`)
 
@@ -69,7 +69,7 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"value": schema.StringAttribute{
 				Description:         appSigningValueDescription,
-				MarkdownDescription: appSigningValueDescription + " See [import and rotation guidance](../guides/secrets-and-state#app-signing-secrets).",
+				MarkdownDescription: appSigningValueDescription + " See [importing signing secrets](../guides/secrets-and-state#importing-signing-secrets).",
 				Required:            true,
 				Sensitive:           true,
 				Validators: []validator.String{

@@ -249,5 +249,6 @@ func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Reso
 		NewTeamResource,
 		NewTeamSpaceMembershipResource,
 		NewWebhookResource,
+		NewWebhookSigningSecretResource,
 	}
 }
