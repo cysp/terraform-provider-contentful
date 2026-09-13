@@ -37,6 +37,19 @@ const appEventHTTPConfig = appEventBaseConfig + `target_url = "https://example.i
 }`
 const appEventHTTPBody = `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events"}`
 
+func TestAccAppEventSubscriptionResourceInvalidTarget(t *testing.T) {
+	t.Parallel()
+
+	var count atomic.Int64
+
+	handler := http.HandlerFunc(func(http.ResponseWriter, *http.Request) { count.Add(1) })
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{{
+		Config:      strings.Replace(appEventHTTPConfig, "https://", "http://", 1),
+		ExpectError: regexp.MustCompile("Invalid app event target URL"),
+	}}})
+	assert.Zero(t, count.Load())
+}
+
 // TestAccAppEventSubscriptionResourceLifecycle tests the provider against a
 // replacement fixture. Function clearing and switching are mock assumptions;
 // this test is deliberately never selected as live CMA acceptance.
