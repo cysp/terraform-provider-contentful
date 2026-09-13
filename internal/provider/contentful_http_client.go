@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"io"
 	"math"
 	"net/http"
@@ -102,10 +103,14 @@ func newContentfulHTTPClient(httpClient *http.Client) *http.Client {
 	// transport when needed, are the retry budget. RetryMax remains only because
 	// retryablehttp requires an integer limit; it is not an effective bound.
 	if httpClient != nil {
-		retryableClient.HTTPClient = httpClient
+		clientCopy := *httpClient
+		retryableClient.HTTPClient = &clientCopy
 	}
 
+	retryableClient.HTTPClient.CheckRedirect = contentfulCheckRedirect(retryableClient.HTTPClient.CheckRedirect)
+
 	client := retryableClient.StandardClient()
+	client.CheckRedirect = contentfulCheckRedirect(client.CheckRedirect)
 	client.Transport = contentfulRequestContextRoundTripper{next: client.Transport}
 
 	return client
@@ -231,4 +236,29 @@ func contentfulRetryPolicy(ctx context.Context, response *http.Response, err err
 
 func withContentfulRequestNoRetry(ctx context.Context) context.Context {
 	return context.WithValue(ctx, contentfulRequestNoRetryContextKey{}, true)
+}
+
+const contentfulDefaultRedirectLimit = 10
+
+var errContentfulRedirectLimit = errors.New("stopped after 10 redirects")
+
+// Both nested HTTP clients must honor the mutation replay boundary. Otherwise
+// the outer client can follow a redirect that the inner client declined.
+func contentfulCheckRedirect(policy func(*http.Request, []*http.Request) error) func(*http.Request, []*http.Request) error {
+	return func(request *http.Request, via []*http.Request) error {
+		if noRetry, _ := request.Context().Value(contentfulRequestNoRetryContextKey{}).(bool); noRetry {
+			return http.ErrUseLastResponse
+		}
+
+		if policy != nil {
+			return policy(request, via)
+		}
+
+		// Match net/http's default when the supplied client has no custom policy.
+		if len(via) >= contentfulDefaultRedirectLimit {
+			return errContentfulRedirectLimit
+		}
+
+		return nil
+	}
 }
