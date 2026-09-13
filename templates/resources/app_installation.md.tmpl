@@ -10,16 +10,10 @@ description: |-
 
 {{ .Description | trimspace }}
 
-## Environment readiness
-
-Creating an environment returns after Contentful accepts the request. Copying can still be in progress when this resource finishes applying.
-
-Use the [`contentful_environment_status_ready` data source](../data-sources/environment_status_ready) to wait before creating dependent resources or repointing an alias. The example below makes the alias depend on the completed readiness check. The data source's `timeouts.read` controls the wait; the environment resource's `timeouts.create` controls creation only. See [Operation timeouts](../guides/operation-timeouts) for defaults and deadline rules.
+~> When adopting or updating an installation, configure every parameter you want to retain. Omitting `parameters` can clear existing values. See [parameter management](#parameters-1) and [secret parameter limitations](../guides/secrets-and-state#app-and-extension-parameters).
 
 {{ if .HasExamples -}}
 ## Example Usage
-
-This example clones `master`, waits for the new environment, and points the `staging` alias at it. Use an unused environment ID for each new copy. Import an existing alias before managing it.
 
 {{- range .ExampleFiles }}
 
@@ -32,7 +26,7 @@ This example clones `master`, waits for the new environment, and points the `sta
 
 ## Import
 
-Import an existing environment using its space and environment IDs. Set `environment_id` in the resource to the imported ID. Contentful does not return the original clone source, so import leaves `source_environment_id` unset. Remove it from the configuration when adopting an existing environment to avoid a planned replacement.
+Configure the complete `parameters` object you want to retain before applying an imported installation. See [parameter management](#parameters-1) for omission behavior.
 
 Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
 {{- end }}

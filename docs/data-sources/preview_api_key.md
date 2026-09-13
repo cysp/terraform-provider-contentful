@@ -3,16 +3,17 @@
 page_title: "contentful_preview_api_key Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves a Contentful Preview API Key.
+  Reads an existing Contentful Preview API Key and its access token for previewing unpublished content. The corresponding contentful_delivery_api_key resource exposes the preview_api_key_id needed for this lookup.
 ---
 
 # contentful_preview_api_key (Data Source)
 
-Retrieves a Contentful Preview API Key.
+Reads an existing Contentful Preview API Key and its access token for previewing unpublished content. The corresponding `contentful_delivery_api_key` resource exposes the `preview_api_key_id` needed for this lookup.
 
 ## Example Usage
 
 ```terraform
+# This snippet uses contentful_delivery_api_key.this from the Delivery API Key example.
 data "contentful_preview_api_key" "this" {
   space_id = contentful_delivery_api_key.this.space_id
 
@@ -34,7 +35,7 @@ data "contentful_preview_api_key" "this" {
 
 ### Read-Only
 
-- `access_token` (String, Sensitive) The preview API access token.
+- `access_token` (String, Sensitive) Preview API access token. This sensitive value is stored in Terraform state.
 - `description` (String) Description of the preview API key.
 - `environments` (List of String) List of environment IDs this preview API key has access to.
 - `name` (String) Name of the preview API key.

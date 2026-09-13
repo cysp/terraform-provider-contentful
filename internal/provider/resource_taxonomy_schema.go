@@ -89,8 +89,8 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 
 	attributes["notations"] = optionalComputedStringList("Ordered notation values.")
 	for name, description := range map[string]string{
-		"note": "Localized notes.", "change_note": "Localized change notes.", "definition": "Localized definitions.",
-		"editorial_note": "Localized editorial notes.", "example": "Localized examples.", "history_note": "Localized history notes.", "scope_note": "Localized scope notes.",
+		"note": "Notes keyed by locale code.", "change_note": "Change notes keyed by locale code.", "definition": "Definitions keyed by locale code.",
+		"editorial_note": "Editorial notes keyed by locale code.", "example": "Examples keyed by locale code.", "history_note": "History notes keyed by locale code.", "scope_note": "Scope notes keyed by locale code.",
 	} {
 		attributes[name] = localizedStringAttribute(description, false)
 	}
@@ -100,7 +100,7 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 	attributes["concept_scheme_ids"] = schema.SetAttribute{Description: "IDs of schemes containing the concept.", Computed: true, ElementType: types.StringType}
 	attributes["timeouts"] = timeouts.AttributesAll(ctx)
 
-	return schema.Schema{Description: "Manages a Contentful taxonomy concept.", Attributes: attributes}
+	return schema.Schema{Description: "Manages a Contentful taxonomy concept in an organization, including its labels, notes, and relationships to other concepts. Assign concepts to Entries through their `metadata.concepts` attribute.", Attributes: attributes}
 }
 
 func TaxonomyConceptSchemeResourceSchema(ctx context.Context) schema.Schema {
@@ -108,11 +108,11 @@ func TaxonomyConceptSchemeResourceSchema(ctx context.Context) schema.Schema {
 	attributes["concept_scheme_id"] = schema.StringAttribute{Description: "ID to assign to the taxonomy concept scheme. Must contain 1–64 ASCII letters, digits, dots, hyphens, or underscores. Changing this value replaces the resource.", Required: true, Validators: taxonomyIDValidators(), PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}}
 	attributes["uri"] = schema.StringAttribute{Description: "Optional URI identifying the concept scheme. Empty strings are rejected by Contentful.", Optional: true, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}}
 	attributes["pref_label"] = localizedStringAttribute("Preferred labels keyed by locale code, for example `{ \"en-US\" = \"Furniture\" }`.", true)
-	attributes["definition"] = localizedStringAttribute("Localized definitions.", false)
-	attributes["top_concept_ids"] = optionalComputedStringList("Ordered IDs of top concepts. Every top concept must also occur in concept_ids.")
+	attributes["definition"] = localizedStringAttribute("Definitions keyed by locale code.", false)
+	attributes["top_concept_ids"] = optionalComputedStringList("Ordered IDs of top concepts. Every top concept must also occur in `concept_ids`.")
 	attributes["concept_ids"] = optionalComputedStringList("Ordered IDs of concepts in the scheme.")
 	attributes["total_concepts"] = schema.Int64Attribute{Description: "Number of concepts in the scheme.", Computed: true}
 	attributes["timeouts"] = timeouts.AttributesAll(ctx)
 
-	return schema.Schema{Description: "Manages a Contentful taxonomy concept scheme.", Attributes: attributes}
+	return schema.Schema{Description: "Manages a Contentful taxonomy concept scheme in an organization. A scheme groups existing concepts and identifies its top concepts.", Attributes: attributes}
 }

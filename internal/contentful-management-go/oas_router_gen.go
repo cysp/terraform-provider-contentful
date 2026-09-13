@@ -2295,7 +2295,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										switch method {
 										case "GET":
 											r.name = GetAppKeysOperation
-											r.summary = "Get all app keys"
+											r.summary = "List app keys"
 											r.operationID = "getAppKeys"
 											r.operationGroup = ""
 											r.pathPattern = "/organizations/{organization_id}/app_definitions/{app_definition_id}/keys"
@@ -3268,7 +3268,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												switch method {
 												case "GET":
 													r.name = GetEntriesOperation
-													r.summary = "Get all entries of a space"
+													r.summary = "List entries in an environment"
 													r.operationID = "getEntries"
 													r.operationGroup = ""
 													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"

@@ -15,10 +15,10 @@ import (
 
 func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Installation.",
+		Description: "Installs a Contentful app in an environment and manages its installation parameters. The App Definition must already exist; use `contentful_app_definition` to manage a custom app definition.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Composite Terraform resource identifier in space_id/environment_id/app_definition_id form.",
+				Description: "Composite Terraform resource identifier in `space_id/environment_id/app_definition_id` form.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -54,7 +54,7 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"parameters": schema.StringAttribute{
-				Description: "Values for the app installation parameters as a JSON-encoded object. Use `jsonencode(...)` to encode Terraform values.",
+				Description: "Complete installation parameter object encoded with `jsonencode(...)`. Configure every value you want to retain. Omission sends no parameter object and can clear existing values on apply, including after import. Supply secrets through sensitive expressions. See [secret parameter limitations](../guides/secrets-and-state#app-and-extension-parameters).",
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 			},

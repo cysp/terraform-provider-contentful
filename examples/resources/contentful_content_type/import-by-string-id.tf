@@ -1,4 +1,4 @@
 import {
-  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.content_type_id}"
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/author"
   to = contentful_content_type.author
 }

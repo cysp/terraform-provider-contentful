@@ -5,7 +5,3 @@ variable "contentful_space_id" {
 variable "contentful_environment_id" {
   type = string
 }
-
-variable "content_type_id" {
-  type = string
-}

@@ -21,7 +21,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful UI Extension.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Composite Terraform resource identifier in space_id/environment_id/extension_id form.",
+				Description: "Composite Terraform resource identifier in `space_id/environment_id/extension_id` form.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -54,7 +54,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"parameters": schema.StringAttribute{
-				Description: "Values for the extension installation parameters, encoded as JSON with jsonencode(...). Use a sensitive Terraform expression when this mixed-use value contains secrets. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.",
+				Description: "Installation parameter values encoded with `jsonencode(...)`. Omission, including after import, retains values returned by Contentful; removing this attribute does not clear them. Configure the complete object to manage parameters explicitly. Supply secrets through sensitive expressions; values remain in state and saved plans. See [secret parameter guidance](../guides/secrets-and-state#app-and-extension-parameters).",
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 				Computed:    true,
@@ -74,7 +74,7 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			Required:    true,
 		},
 		"src": schema.StringAttribute{
-			Description: "URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Cannot be configured with srcdoc; both may be omitted to preserve an imported source.",
+			Description: "URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Cannot be configured with `srcdoc`; both may be omitted to preserve an imported source.",
 			Optional:    true,
 			Computed:    true,
 			Validators: []validator.String{

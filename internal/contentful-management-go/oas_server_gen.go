@@ -238,7 +238,7 @@ type Handler interface {
 	GetAppKey(ctx context.Context, params GetAppKeyParams) (GetAppKeyRes, error)
 	// GetAppKeys implements getAppKeys operation.
 	//
-	// Get all app keys.
+	// List app keys.
 	//
 	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/keys
 	GetAppKeys(ctx context.Context, params GetAppKeysParams) (GetAppKeysRes, error)
@@ -280,7 +280,7 @@ type Handler interface {
 	GetEditorInterface(ctx context.Context, params GetEditorInterfaceParams) (GetEditorInterfaceRes, error)
 	// GetEntries implements getEntries operation.
 	//
-	// Get all entries of a space.
+	// List entries in an environment.
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/entries
 	GetEntries(ctx context.Context, params GetEntriesParams) (GetEntriesRes, error)

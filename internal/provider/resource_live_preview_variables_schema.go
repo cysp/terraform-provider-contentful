@@ -16,7 +16,7 @@ func LivePreviewVariablesResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages the complete Contentful live preview variables document in an environment. Existing documents must be imported before management. Updates replace all variables; destroy deletes the document without a version precondition.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "Composite Terraform resource identifier in space_id/environment_id form.",
+				Description:   "Composite Terraform resource identifier in `space_id/environment_id` form.",
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
@@ -31,7 +31,7 @@ func LivePreviewVariablesResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"variables": schema.StringAttribute{
-				Description: "Complete variables object encoded with jsonencode(...). Values may be strings, null, or locale-keyed objects of strings/nulls. Locale keys must exist in the environment. Omitted variable or locale keys are removed on update. Empty strings, nulls, and empty objects remain distinct; an empty root object keeps a present document. Values are stored in Terraform state.",
+				Description: "Complete variables object encoded with `jsonencode(...)`. Values may be strings, null, or locale-keyed objects of strings/nulls. Locale keys must exist in the environment. Omitted variable or locale keys are removed on update. Empty strings, nulls, and empty objects remain distinct; an empty root object keeps a present document. Values are stored in Terraform state.",
 				Required:    true,
 				CustomType:  jsontypes.NormalizedType{},
 				Validators:  []validator.String{livePreviewVariablesValidator{}},

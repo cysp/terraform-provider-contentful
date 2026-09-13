@@ -47,24 +47,34 @@ A failed or timed-out write may have changed the remote document. If a write ret
 ## Import
 
 Import an existing document using its space and environment IDs. Import reads the complete remote variables object; configure that object before applying to avoid removing keys. A missing document cannot be imported. All examples use `contentful_live_preview_variables.this`.
+
+Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
 {{- end }}
 {{- if .HasImportIdentityConfig }}
 
-In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `identity` attribute, for example:
+### Import by identity
+
+In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
 
 {{tffile .ImportIdentityConfigFile }}
-
-{{ .IdentitySchemaMarkdown | trimspace }}
 {{- end }}
 {{- if .HasImportIDConfig }}
 
-In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `id` attribute, for example:
+### Import by ID
+
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
 
 {{tffile .ImportIDConfigFile }}
 {{- end }}
 {{- if .HasImport }}
 
-The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+### Import with the CLI
+
+Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
 
 {{codefile "shell" .ImportFile }}
+{{- end }}
+{{- if .HasImportIdentityConfig }}
+
+{{ .IdentitySchemaMarkdown | trimspace }}
 {{- end }}

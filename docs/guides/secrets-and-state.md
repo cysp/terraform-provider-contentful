@@ -8,16 +8,17 @@ description: |-
 
 Terraform's `sensitive` marking redacts normal CLI output but does not keep values out of state or saved plans. Restrict access to both when using resources that manage credentials. See HashiCorp's [sensitive-data guidance](https://developer.hashicorp.com/terraform/language/manage-sensitive-data) for storage and redaction behavior.
 
-Refresh can verify a value only when Contentful returns it. Import starts without a previously stored secret, so it cannot recover values that Contentful withholds.
+Refresh can verify a value only when Contentful returns it. Import starts without a previously stored secret, so it cannot recover values that Contentful withholds. Preserving a stored value does not detect external changes to an unreadable secret.
 
 | Value | Refresh | Import |
 | --- | --- | --- |
-| App signing secret | Preserves the previously stored value; cannot detect external rotation | Leaves `value` null |
-| Webhook Basic authentication password | Preserves a previously managed password; cannot detect external changes | Leaves `http_basic_password` null |
-| Secret webhook header | Preserves a previously managed value for the matching header; cannot detect external changes | Leaves an unreadable header value null |
-| Personal Access Token | Preserves the token returned at creation | Leaves `token` null |
-| Delivery API access token | Reads the token from Contentful | Reads the token from Contentful |
-| App Key public JWK | Reads the public key from Contentful | Reads the public key; cannot recover its private key |
+| [App signing secret](#app-signing-secrets) | Preserves stored value | `value` is null |
+| [Webhook Basic password](#basic-authentication) | Preserves managed password | `http_basic_password` is null |
+| [Secret webhook header](#secret-custom-headers) | Preserves managed value for matching header | Unreadable value is null |
+| [App Installation `Secret` parameter](#app-and-extension-parameters), read with a personal access token | Records redacted response | Original value unavailable |
+| [Personal Access Token](#personal-access-tokens) | Preserves token from creation | `token` is null |
+| Delivery API access token | Reads token | Reads token |
+| [App Key public JWK](#app-keys) | Reads public key | Reads public key; private key unavailable |
 
 ## App signing secrets
 
@@ -47,6 +48,16 @@ After import, choose how Terraform should manage headers:
 - Configure `headers` with values for every header you want to manage.
 - Set `headers = {}` to clear all custom headers.
 
+## App and extension parameters
+
+The `parameters` values on [`contentful_app_installation`](../resources/app_installation) and [`contentful_extension`](../resources/extension) can contain both ordinary configuration and secrets. Supply secrets through sensitive Terraform expressions. Defining an App Definition's installation parameter as type `Secret` does not mark its Terraform value sensitive.
+
+Parameter omission has different effects for these resources. Follow each resource's `parameters` description before importing an existing object or removing configured values.
+
+Contentful redacts App Installation parameters declared as `Secret` when read through the Content Management API with a personal access token. The provider records the returned parameter object on refresh and import, without preserving the original secret values. Import cannot recover those values, and redacted values returned during refresh can cause Terraform to plan further parameter updates. See [Contentful's Secret installation parameter documentation](https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/#secret-installation-parameters).
+
+Omission and replacement of `Secret` values have not been verified against Contentful. Terraform sensitivity controls output redaction; it does not resolve these read and update limitations.
+
 ## Personal access tokens
 
 [`contentful_personal_access_token`](../resources/personal_access_token) stores the secret `token` returned at creation. Contentful does not return that value again, so refresh preserves the known value and import leaves it null.
@@ -55,6 +66,6 @@ Changing `name`, `scopes`, or `expires_in` replaces the token and revokes the ol
 
 ## App keys
 
-[`contentful_app_key`](../resources/app_key) manages caller-supplied public JWK material. The corresponding private key is not sent to Contentful and is not stored by this resource.
+[`contentful_app_key`](../resources/app_key) manages public JWK material that you supply. The corresponding private key is not sent to Contentful and is not stored by this resource.
 
 Unlike the redacted secrets above, the public JWK is readable: import and refresh populate it from Contentful. Changing configured JWK material replaces the App Key rather than updating it in place; importing the public key cannot recover its corresponding private key.

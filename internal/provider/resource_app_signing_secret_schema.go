@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-const appSigningValueDescription = "The symmetric key shared between Contentful and an app backend. Must be exactly 64 characters and match `^[0-9a-zA-Z+/=_-]+$`. The complete value is stored in Terraform state when the provider writes a secret to Contentful. Timeout-only updates preserve the remote secret and the stored value."
+const appSigningValueDescription = "Symmetric key shared between Contentful and an app backend. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Import leaves `value` null; applying a configured value rotates the secret, including during import, unless `ignore_changes = [value]` is set. Timeout-only updates preserve the secret and stored value."
 
 var appSigningSecretValuePattern = regexp.MustCompile(`^[0-9a-zA-Z+/=_-]+$`)
 
@@ -47,7 +47,7 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful App Signing Secret.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Composite Terraform resource identifier in organization_id/app_definition_id form.",
+				Description: "Composite Terraform resource identifier in `organization_id/app_definition_id` form.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -68,8 +68,8 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"value": schema.StringAttribute{
-				Description:         appSigningValueDescription + " Import cannot recover the existing secret and leaves value null. Without ignore_changes = [value], applying the configured value replaces the remote secret; a configuration-driven import can do this during the import apply. With ignore_changes = [value], the imported value remains null, including after timeout changes.",
-				MarkdownDescription: appSigningValueDescription + " Import cannot recover the existing secret and leaves `value` null. Without `ignore_changes = [value]`, applying the configured value replaces the remote secret; a configuration-driven import can do this during the import apply. With `ignore_changes = [value]`, the imported value remains null, including after timeout changes. See [Secrets and Terraform state](../guides/secrets-and-state) for storage, refresh, and import guidance.",
+				Description:         appSigningValueDescription,
+				MarkdownDescription: appSigningValueDescription + " See [import and rotation guidance](../guides/secrets-and-state#app-signing-secrets).",
 				Required:            true,
 				Sensitive:           true,
 				Validators: []validator.String{

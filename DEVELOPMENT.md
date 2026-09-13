@@ -51,7 +51,7 @@ credentials alone do not establish that authorization.
 | Change | Local verification |
 | --- | --- |
 | Agent instructions or prose only | Review instruction consistency, links, and the final diff; run `git diff --check`. |
-| Go behavior | Run tests for the affected packages and the lint and format checks. Use `go test ./...` and `go build .` for shared behavior or when preparing for merge. |
+| Go behavior | Run tests for the affected packages and the lint and format checks. Use the [ordinary test suite](#unit-and-local-integration-tests) and `go build .` for shared behavior or when preparing for merge. |
 | Terraform planning, state, or lifecycle | Run focused mocked acceptance tests for the affected transitions in addition to the Go checks; extend coverage where existing tests do not establish the changed behavior. |
 | Schema, examples, templates, OpenAPI, or other generation inputs | Follow the [generation requirement](AGENTS.md#documentation-and-workflow) using [Code generation](#code-generation), then follow [Documentation verification](#documentation-verification), plus checks for the affected behavior. |
 | A claim about live Contentful behavior | Use primary documentation or an authorized live experiment; mocked tests establish provider behavior against the fixture, not CMA conformance. |
@@ -63,38 +63,29 @@ does not establish that remote CI passed.
 ## Documentation authoring
 
 Practitioner-facing Registry documentation is generated with
-`terraform-plugin-docs`. The [documentation practices and provider examples](docs/design/provider-documentation.md)
-record the external guidance behind this authoring workflow. Change the authoritative input for the kind of
-information being documented, then regenerate and review the rendered output:
+`terraform-plugin-docs`. Follow the [documentation practices](docs/design/provider-documentation.md)
+for editorial rules and supporting evidence. Change the authoritative input for
+the information being documented, then [regenerate](#code-generation) and
+[verify the output](#documentation-verification):
 
 | Documentation concern | Authoritative input |
 | --- | --- |
 | Provider, resource, data-source, list-resource, and attribute contracts | Schema descriptions under `internal/provider/` |
 | Terraform configuration and import syntax | `examples/` |
 | Provider page | `templates/index.md.tmpl` |
-| Resource narrative and workflows | Existing overrides in `templates/resources/`; other resource and data-source pages use the generator defaults |
+| Common resource layout | `templates/resources.md.tmpl`; data-source pages use the generator defaults |
+| Resource-specific workflows | `templates/resources/<name>.md.tmpl` (without the `contentful_` prefix) |
 | Shared list-resource narrative | `templates/list-resources.md.tmpl` |
 | Practitioner guides | `templates/guides/` |
 | Provider design contracts and external-behavior evidence | `docs/design/` and `docs/research/` |
+| Test conventions and verification patterns | `docs/testing.md` |
 | Release process | `docs/releasing.md` |
 
 `tfplugindocs` replaces `docs/index.md`, `docs/resources/`, `docs/data-sources/`,
 `docs/list-resources/`, and `docs/guides/`. These are generated pages, not just
 generated schema fragments. Keep handwritten `docs/design/`, `docs/research/`,
-and `docs/releasing.md`; never clear the entire `docs/` tree to regenerate.
-
-Resource examples are reference snippets. Keep configuration, identity import,
-string-ID import, and CLI import addresses consistent within each resource
-directory; explain any intentional difference and required context. Put complete
-setup and multi-step examples in workflow guides.
-
-Write about the resource's capability and practitioner consequences. Keep short
-attribute contracts in schemas, workflows in templates/guides, and algorithms
-in design notes. Explain a warning's condition, consequence, and available
-recovery action. Distinguish composite Terraform identifiers from Contentful
-system IDs, and document omission, empty values, drift, or import when those
-change behavior. Use the terminology and evidence rules in [AGENTS.md](AGENTS.md)
-and the [design evidence boundaries](docs/design/README.md#evidence-boundaries).
+`docs/testing.md`, and `docs/releasing.md`; never clear the entire `docs/` tree to
+regenerate.
 
 ## Documentation verification
 
@@ -107,17 +98,14 @@ go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs \
 git diff --check
 ```
 
-The validator checks Registry filenames and front matter, excluding handwritten
-design, research, and release documentation. It does not verify prose accuracy
-or generated-text freshness. Check generation reproducibility separately as
-shown below, then review the changed pages for:
+Review the pages using the [content and rendering criteria](docs/design/provider-documentation.md#verify-the-claims-and-the-rendered-result),
+which also explain the validator's limits. Check
+[generation reproducibility](#code-generation) separately, then validate
+runnable examples in an isolated configuration:
 
-- Rendered links and navigation.
-- Agreement with provider behavior and primary Contentful evidence.
-- Consistent addresses, variables, and IDs across configuration/import variants.
-- Valid complete workflow examples: initialize and validate them in an isolated
-  configuration. Do not run all alternative import examples together as a module.
-- Valid `.tfquery.hcl` configurations using `terraform validate -query`; exercise
+- Initialize and validate complete workflow examples. Select one import variant
+  at a time using the [example conventions](docs/design/provider-documentation.md#make-examples-usable).
+- Validate `.tfquery.hcl` configurations using `terraform validate -query`; exercise
   list behavior with `terraform query`. Query tests require Terraform 1.14 or
   later. See HashiCorp's [query workflow](https://developer.hashicorp.com/terraform/language/import/bulk)
   for the general syntax and commands.
@@ -187,6 +175,9 @@ Run a focused package or test while iterating:
 ```sh
 go test ./internal/provider -run '^TestModelType$' -count=1 -timeout=5m
 ```
+
+Use the current test name from the source. A successful command with
+`[no tests to run]` has not checked the intended behavior.
 
 ### Mocked acceptance tests
 

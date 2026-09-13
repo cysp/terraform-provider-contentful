@@ -12,12 +12,14 @@ revisions. The direct configuration probes below do not establish event delivery
 contract, and the [research conventions](README.md#evidence-and-redaction) for evidence
 classes and redaction.
 
+## Addressing and configuration
+
 `W = /spaces/{space_id}/webhook_definitions/{webhook_id}` below.
 
 WebhookDefinition is space-scoped, has its own ID, and needs no app installation. It
-supports headers and secret headers, basic auth, filters, transformations, `active:
-false`, and wildcard topics such as `*.*`, `Entry.*`, and `*.save`. Those are different
-contracts from AppEventSubscription's parent-keyed HTTP target and exact topics. A
+supports headers and secret headers, HTTP Basic authentication, filters, transformations,
+`active: false`, and wildcard topics such as `*.*`, `Entry.*`, and `*.save`. Those differ
+from AppEventSubscription's HTTP target configured on an AppDefinition and its exact topics. A
 wildcard may include future event types. [Webhook entity][webhook-entity],
 [filters][webhook-filters].
 
@@ -42,6 +44,8 @@ EAP ended and removal is planned for the next major version. This is legacy sour
 surface, not evidence of a supported new resource or account entitlement. [Adapter
 deprecations][webhook-sdk].
 
+## Delivery and observability
+
 Under Contentful's documented default retry policy, a webhook delivery that receives
 HTTP 429 or 5xx may be retried up to two additional times, approximately 30 seconds apart.
 Recipient timeout is at most 30 seconds and timed-out requests are not retried.
@@ -55,6 +59,8 @@ limit, not a guaranteed duration. Call details truncate request bodies at 500 kB
 response bodies at 200 kB. Health describes recent calls. No public replay/resend
 operation was established. These webhook APIs do not establish an equivalent App Event
 history endpoint. [Activity log][webhook-activity], [call reference][webhook-calls].
+
+## Related event families
 
 Related emitter families must also be kept distinct. Release events describe the release
 container; ReleaseAction, BulkAction, and ScheduledAction describe specific operations.
@@ -137,7 +143,7 @@ response redaction without testing delivery or secret replacement.
 
 These configuration probes do not establish every secret-header projection, filter
 expression, transformation, signing rotation, concurrency outcome, or successful
-delivery. Delivery guarantees above come from published webhook sources; they are not
+delivery. The delivery behavior above comes from published webhook sources; it is not
 inferred from an App Event subscription or the local test server.
 
 [event-reference]: https://www.contentful.com/developers/docs/references/content-management-api/app-event-subscriptions/

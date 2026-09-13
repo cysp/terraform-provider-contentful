@@ -9,9 +9,9 @@ description: |-
 
 # contentful_environment_status_ready (Data Source)
 
-Waits until a Contentful environment reaches ready status.
+Waits until a Contentful environment reaches `ready` status.
 
-Use this data source in a depends_on relationship before creating resources that need a ready environment. It polls queued, inProgress, and unrecognized statuses, and fails immediately if Contentful reports failed. Set timeouts.read to control how long it waits.
+Use this data source in a `depends_on` relationship before creating resources that need a ready environment. It polls `queued`, `inProgress`, and unrecognized statuses, and fails immediately if Contentful reports `failed`. Set `timeouts.read` to control how long it waits.
 
 ## Example Usage
 
@@ -40,7 +40,7 @@ data "contentful_environment_status_ready" "example" {
 
 ### Read-Only
 
-- `id` (String) Composite Terraform identifier in space_id/environment_id form; not a Contentful system ID.
+- `id` (String) Composite Terraform identifier in `space_id/environment_id` form; not a Contentful system ID.
 - `status` (String) Latest status reported for the environment.
 
 <a id="nestedatt--timeouts"></a>

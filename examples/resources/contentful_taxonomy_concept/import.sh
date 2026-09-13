@@ -1,0 +1,1 @@
+terraform import contentful_taxonomy_concept.furniture "$CONTENTFUL_ORGANIZATION_ID/furniture"

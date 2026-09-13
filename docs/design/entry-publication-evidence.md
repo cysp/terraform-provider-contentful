@@ -8,6 +8,9 @@ its observed version increments are not additional provider requirements.
 
 The Framework source below is pinned to v1.19.0, commit
 `c7ac25e86333d194946fb5e3fd1114e7d101fc23`, reviewed on 2026-08-30.
+Recheck the supporting guarantees when the [Framework dependency](../../go.mod)
+or Terraform version changes; the
+[upgrade triggers](terraform-value-semantics.md#upgrade-triggers) apply here too.
 
 ## Terraform lifecycle and state
 
@@ -38,6 +41,8 @@ operations whose publication result is not predictable. If it leaves a known
 prior `published_version`, Update must return that exact value or Core will report
 an inconsistent result.
 
+## Shared field ownership
+
 Terraform documents `ignore_changes` as considering configured values on Create
 but ignoring them on Update so that another process can share management of a
 remote object. The Core developer documentation is more precise: for an existing
@@ -49,13 +54,16 @@ Consequently, a provider that later performs a full-body CMA update from the
 effective plan will include ignored fields using their refreshed/prior planned
 values; publication applies to that complete Entry version.
 
+## Persisting recovery authority
+
 Framework [private-state documentation](https://developer.hashicorp.com/terraform/plugin/framework/resources/private-state)
-says private data is hidden from plans, is readable during plan/Read/Update, and
-is writable during plan/Read/Update as well as Create and import. Framework
+says private data is hidden from practitioner-facing plans. Entry recovery uses
+it to record authority after Create or Update and examine that authority during
+planning, Read, and Update. Framework
 [diagnostic semantics](https://developer.hashicorp.com/terraform/plugin/framework/diagnostics#how-errors-affect-state)
 say Terraform persists returned state even with an error specifically so a
 provider can checkpoint successful earlier calls in a multi-call mutation. Taken
-together, those contracts support cross-operation pending-version recovery when
+together, those contracts support pending-version recovery across operations when
 a validated draft write succeeds but Publish is not confirmed. An ambiguous
 Publish response does not prove that publication remains pending, so recovery
 does not infer status or adopt a GET result: normal Read clears the marker if the

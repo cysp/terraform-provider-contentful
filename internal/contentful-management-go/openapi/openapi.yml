@@ -343,7 +343,7 @@ paths:
       - $ref: "#/components/parameters/app_definition_id"
     get:
       operationId: getAppKeys
-      summary: Get all app keys
+      summary: List app keys
       parameters:
         - $ref: "#/components/parameters/skip"
         - $ref: "#/components/parameters/limit"
@@ -1378,7 +1378,7 @@ paths:
       - $ref: "#/components/parameters/environment_id"
     get:
       operationId: getEntries
-      summary: Get all entries of a space
+      summary: List entries in an environment
       parameters:
         - $ref: "#/components/parameters/space_id"
         - $ref: "#/components/parameters/environment_id"
