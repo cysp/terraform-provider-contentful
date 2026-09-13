@@ -1,5 +1,4 @@
-# The app must already have a Resource Provider with ID Catalog.
-# The resource_provider example creates that provider; deploy its function separately.
+# The resource_provider example creates the Catalog provider.
 resource "contentful_resource_type" "this" {
   organization_id   = var.contentful_organization_id
   app_definition_id = var.app_definition_id

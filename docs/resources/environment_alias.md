@@ -3,12 +3,12 @@
 page_title: "contentful_environment_alias Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Environment Alias, which routes requests from a stable alias ID to a selected environment. The target environment must already exist. Use contentful_environment_status_ready to wait for a newly copied environment before directing requests to it.
+  Manages a Contentful Environment Alias, which routes requests from a stable alias ID to a selected environment. Use contentful_environment_status_ready to wait for a newly copied environment before directing requests to it.
 ---
 
 # contentful_environment_alias (Resource)
 
-Manages a Contentful Environment Alias, which routes requests from a stable alias ID to a selected environment. The target environment must already exist. Use `contentful_environment_status_ready` to wait for a newly copied environment before directing requests to it.
+Manages a Contentful Environment Alias, which routes requests from a stable alias ID to a selected environment. Use `contentful_environment_status_ready` to wait for a newly copied environment before directing requests to it.
 
 ## Example Usage
 

@@ -15,7 +15,7 @@ import (
 
 func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Installs a Contentful app in an environment and manages its installation parameters. The App Definition must already exist; use `contentful_app_definition` to manage a custom app definition.",
+		Description: "Installs a Contentful app in an environment and manages its installation parameters.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in `space_id/environment_id/app_definition_id` form.",

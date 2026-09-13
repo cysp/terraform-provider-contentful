@@ -12,7 +12,7 @@ Manages a Contentful content preview platform. This space-level resource is not 
 
 ## Content preview configuration
 
-This resource manages preview platforms under **Settings → Content preview** in Contentful, including their content type preview URLs. The space must already exist. Configure and deploy the preview website separately. Manage custom preview tokens with [`contentful_live_preview_variables`](live_preview_variables).
+This resource manages preview platforms under **Settings → Content preview** in Contentful, including their content type preview URLs. Manage custom preview tokens with [`contentful_live_preview_variables`](live_preview_variables).
 
 Use Contentful's [content preview setup guide](https://www.contentful.com/developers/docs/tutorials/preview/content-preview/) for URL placeholders and frontend requirements. Preview URLs are stored in Terraform state; keep credentials out of them.
 
@@ -28,7 +28,7 @@ When replacing a platform that has had configurations, choose a new selected ID.
 
 ## Example Usage
 
-These examples show two alternatives: a Contentful-generated ID and an ID you select. Choose the one you need. The referenced Content Types and the preview website must already exist.
+These examples show two alternatives: a Contentful-generated ID and an ID you select. Choose the one you need.
 
 ```terraform
 resource "contentful_preview_environment" "this" {

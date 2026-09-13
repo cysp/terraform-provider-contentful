@@ -1,4 +1,3 @@
-# The App Definition and its resourceProvider function must already exist.
 resource "contentful_resource_provider" "this" {
   organization_id      = var.contentful_organization_id
   app_definition_id    = var.app_definition_id

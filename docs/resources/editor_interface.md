@@ -20,7 +20,6 @@ Destroying this resource removes it from Terraform state without deleting or res
 
 ```terraform
 # This snippet uses contentful_content_type.author from the Content Type example.
-# The sidebar app must already be installed in that environment.
 resource "contentful_editor_interface" "author" {
   space_id        = contentful_content_type.author.space_id
   environment_id  = contentful_content_type.author.environment_id
