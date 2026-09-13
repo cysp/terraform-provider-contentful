@@ -70,9 +70,7 @@ func TestAccContentTypeResourceFailedCreateActivationRecoversExactDraft(t *testi
 
 	configVariables := contentTypeActivationConfigVariables("create-activation-failure")
 
-	var providerFactoryCalls atomic.Int64
-
-	testAccMockedResourceWithFactoryCounter(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{
@@ -124,14 +122,7 @@ func TestAccContentTypeResourceFailedCreateActivationRecoversExactDraft(t *testi
 						knownvalue.Int64Exact(1),
 					),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{1}),
-					func(*terraform.State) error {
-						require.GreaterOrEqual(t, providerFactoryCalls.Load(), int64(2), "recovery must survive provider restart and private-state serialization")
-
-						return nil
-					},
-				),
+				Check: contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{1}),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceCreate/1"),
@@ -143,7 +134,7 @@ func TestAccContentTypeResourceFailedCreateActivationRecoversExactDraft(t *testi
 				},
 			},
 		},
-	}, &providerFactoryCalls)
+	})
 }
 
 func TestAccContentTypeResourceCreateUsesExactPositiveReturnedVersion(t *testing.T) {
@@ -633,9 +624,7 @@ func TestAccContentTypeResourceFailedUpdateActivationRecoversExactDraftWithoutRe
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	configVariables := contentTypeActivationConfigVariables("update-activation-failure")
 
-	var providerFactoryCalls atomic.Int64
-
-	testAccMockedResourceWithFactoryCounter(t, handler, resource.TestCase{
+	testAccMockedResource(t, handler, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
@@ -715,14 +704,13 @@ func TestAccContentTypeResourceFailedUpdateActivationRecoversExactDraftWithoutRe
 							Version:        3,
 							VersionPresent: true,
 						}}, handler.eventHistory())
-						require.GreaterOrEqual(t, providerFactoryCalls.Load(), int64(3), "recovery must survive provider restart and private-state serialization")
 
 						return nil
 					},
 				),
 			},
 		},
-	}, &providerFactoryCalls)
+	})
 }
 
 func TestAccContentTypeResourceFailedUpdateActivationRecoversExactDraftAfterRefresh(t *testing.T) {

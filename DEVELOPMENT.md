@@ -223,9 +223,9 @@ for example `go test ./internal/provider -run '^$' -fuzz '^FuzzExtensionModelRou
 
 Install Terraform on `PATH` or set `TF_ACC_TERRAFORM_PATH` to an existing binary
 for reproducible acceptance runs. The framework can otherwise download Terraform;
-the direct CLI presentation tests require an installed binary. When
-`TF_ACC_TERRAFORM_VERSION` is also set, those presentation tests verify the
-selected binary matches it. Registry-upgrade
+the direct CLI presentation tests require an installed binary and do not use
+`TF_ACC_TERRAFORM_VERSION`. Set `TF_ACC_TERRAFORM_PATH` to select the same
+installed executable for every test in the suite. Registry-upgrade
 tests always use local Contentful servers but download the pinned released
 provider from the Terraform registry, even with `TF_ACC_MOCKED=1`.
 
@@ -240,8 +240,8 @@ merely to speed up tests. Query tests require Terraform 1.14 and skip on 1.13.
 ### CI coverage
 
 The [test workflow](.github/workflows/test.yml) defines the Terraform version
-matrix. CI runs disjoint provider and management-client suites with the race
-detector and randomized test order, mocked acceptance tests on the two
+matrix. CI runs the full ordinary suite with cross-package coverage, race
+detection, and randomized test order, mocked acceptance tests on the two
 newest stable Terraform minors, and authorized live acceptance on the newest
 stable minor when the repository secret is available. The explicit minor ranges
 select the latest patch in each minor; update them together through review when
@@ -254,7 +254,7 @@ mocked, and live coverage flags.
 
 For order-dependent failures, rerun with the `-shuffle=<seed>` printed by Go.
 Add `-v` for test and subtest progress. Use `TF_LOG=DEBUG` or
-`TF_ACC_WORKING_DIR_PERSIST=1` for focused acceptance debugging; logs and
+`TF_ACC_PERSIST_WORKING_DIR=1` for focused acceptance debugging; logs and
 retained Terraform state may contain credentials. To verify that a changed
 assertion executes, temporarily give it an impossible expected value, observe
 the intended failure, then restore it.

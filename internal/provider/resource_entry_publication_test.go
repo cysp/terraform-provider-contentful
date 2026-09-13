@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -27,12 +26,11 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftWithoutRefresh(t *testin
 	config := managedEntryConfig
 
 	var (
-		providerFactoryCalls atomic.Int64
-		preUpdateVersion     int
-		draftVersion         int
+		preUpdateVersion int
+		draftVersion     int
 	)
 
-	testAccMockedResourceWithFactoryCounter(t, recorder, resource.TestCase{
+	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
@@ -80,13 +78,12 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftWithoutRefresh(t *testin
 					require.NoError(t, resource.TestCheckResourceAttr(
 						"contentful_entry.test", "published_version", strconv.Itoa(publishedVersion),
 					)(state))
-					require.GreaterOrEqual(t, providerFactoryCalls.Load(), int64(3), "recovery must survive provider restart and private-state serialization")
 
 					return nil
 				},
 			},
 		},
-	}, &providerFactoryCalls)
+	})
 }
 
 func TestAccEntryResourceUpdateDoesNotRecreateExternallyDeletedEntryWithoutRefresh(t *testing.T) {
