@@ -1,0 +1,11 @@
+AppEventSubscriptionSys:
+  allOf:
+    - $ref: "../sys/sys.yml"
+    - $ref: "../sys/with-organization.yml"
+    - $ref: "../sys/with-type.yml"
+    - $ref: "../sys/with-app-definition.yml"
+    - type: object
+      properties:
+        type:
+          enum:
+            - AppEventSubscription

@@ -61,6 +61,10 @@ type DeleteAppDefinitionRes interface {
 	deleteAppDefinitionRes()
 }
 
+type DeleteAppEventSubscriptionRes interface {
+	deleteAppEventSubscriptionRes()
+}
+
 type DeleteAppInstallationRes interface {
 	deleteAppInstallationRes()
 }
@@ -147,6 +151,10 @@ type DeleteWebhookSigningSecretRes interface {
 
 type GetAppDefinitionRes interface {
 	getAppDefinitionRes()
+}
+
+type GetAppEventSubscriptionRes interface {
+	getAppEventSubscriptionRes()
 }
 
 type GetAppInstallationRes interface {
@@ -311,6 +319,10 @@ type PublishEntryRes interface {
 
 type PutAppDefinitionRes interface {
 	putAppDefinitionRes()
+}
+
+type PutAppEventSubscriptionRes interface {
+	putAppEventSubscriptionRes()
 }
 
 type PutAppInstallationRes interface {

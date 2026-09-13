@@ -92,6 +92,45 @@ method, multiple targets, basic-auth configuration, or a pause flag in the revie
 request contract. The service accepted the tested extra fields but omitted them from
 responses; their acceptance does not establish that they affect event delivery.
 
+## Personal-organization configuration observations
+
+An authorized configuration-only probe on 2026-09-13 used two sequential disposable,
+uninstalled AppDefinitions and the reserved target
+`https://example.invalid/app-event-subscription-probe`. It deployed no Functions,
+installed no apps, and triggered no events. Both definitions were deleted; subsequent
+GETs of each parent and subscription returned 404.
+
+HTTP creation returned 201 and replacements returned 200. GET confirmed replacement
+of `Entry.publish` by `Asset.publish` and `Entry.save`, including a later request
+that reversed the two topics. These reads establish the exercised stored arrays,
+not a general service ordering guarantee. DELETE returned 204 and repeated DELETE
+returned 404.
+
+Function requests could not establish successful configuration in this organization:
+
+| Request variation | Observed result |
+| --- | --- |
+| HTTP target with an undeployed, alphanumeric filter Function ID | 422 `UnprocessableEntity`, `Unknown property "functions"`. |
+| Undeployed, alphanumeric handler Function ID with target omitted | Same 422 `UnprocessableEntity` response. |
+| `functions: {}` alongside the HTTP target | Same 422 `UnprocessableEntity` response. |
+| Function IDs containing a hyphen, or an empty ID | 422 `ValidationFailed`; the reported pattern was `^[a-zA-Z0-9]+$`. |
+| `functions: null` or `functions.filter: null` | 422 `ValidationFailed`, expected an object. |
+| `functions.filter: {}` | 422 `ValidationFailed`, missing `sys`. |
+
+GET after every rejected request retained the preceding HTTP configuration. These
+results do not establish Function availability in other organizations, validation
+order generally, existence checking for valid Function IDs, invocation-role
+compatibility, coexistence of a target and handler, or removal of stored Function
+roles. In particular, rejection of the property in this account cannot support a
+provider-wide prohibition on Function configuration.
+
+The current published [GET][event-get], [update/subscribe][event-put], and
+[DELETE][event-delete] operation pages were also
+reviewed on 2026-09-13. Their request/response schemas remain generic maps; their
+examples show the HTTP form. The [Functions guide][functions] and [working guide][working-functions]
+describe all three roles but do not specify clearing payloads. SDK optional members
+therefore remain insufficient evidence for omission-as-removal of Function links.
+
 ## Event topics
 
 The observed validation response to an invalid topic enumerated **88 allowed strings**.
@@ -175,8 +214,13 @@ reviewed public surface. This does not establish the absence of internal records
 [event-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-event-subscription.ts
 [event-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/app-event-subscription.ts
 [functions]: https://www.contentful.com/developers/docs/extensibility/app-framework/functions/
+[working-functions]: https://www.contentful.com/developers/docs/extensibility/app-framework/working-with-functions/
 [function-types]: https://github.com/contentful/node-apps-toolkit/blob/64fa31b6b2223cd1c8b1798fa540e8aad5e2d319/src/requests/typings/function.ts
 [payload-types]: https://github.com/contentful/node-apps-toolkit/blob/64fa31b6b2223cd1c8b1798fa540e8aad5e2d319/src/requests/typings/event-payloads.ts
 [workflow-comments]: https://www.contentful.com/developers/changelog/workflow-and-comment-events-updates/
 [comment-save]: https://www.contentful.com/developers/changelog/new-webhook-event-comment-save/
 [context-headers]: https://www.contentful.com/developers/changelog/new-contextual-appevent-and-webhook-headers-on-content-events/
+
+[event-get]: https://www.contentful.com/developers/docs/references/content-management-api/app-event-subscriptions/get-an-app-event-subscription/
+[event-put]: https://www.contentful.com/developers/docs/references/content-management-api/app-event-subscriptions/update-or-subscribe-to-events/
+[event-delete]: https://www.contentful.com/developers/docs/references/content-management-api/app-event-subscriptions/delete-an-app-event-subscription/

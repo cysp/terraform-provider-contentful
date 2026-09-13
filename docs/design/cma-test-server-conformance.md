@@ -445,3 +445,33 @@ handler errors use ordinary JSON, including conflicts; independent client fixtur
 cover vendor-JSON decoding. Whole non-object request bodies receive generated
 decoder errors; the Terraform client sends an object envelope. Authentication
 distinctions remain the shared fake's behavior.
+
+### App Event Subscriptions
+
+**Evidence:** The [App Event research](../research/app-framework/events.md) records
+HTTP replacement, required topics/HTTPS target, duplicate rejection, status codes,
+and the parent-scoped singleton. The pinned first-party entity documents optional
+filter, transformation, and handler Function links.
+
+**Default fake behavior:** Storage is keyed by organization and App Definition;
+parent existence and organization are checked. PUT replaces the complete document,
+returning 201 initially and 200 afterward. GET/DELETE of absent subscriptions or
+parents return 404. HTTP topics are nonempty and unique, with no closed vocabulary.
+The fake accepts documented Function links without modeling deployment or entitlement.
+Function omission/removal and HTTP/handler transitions use complete replacement as
+an explicit fixture assumption; the personal-organization probes rejected the
+`functions` property and could not establish those transitions. Parent deletion
+clears the fake's subscription record as a storage convention.
+
+**Provider boundary:** The provider forwards the complete desired document and
+checks returned values. A contradictory or lossy response cannot establish a
+successful apply. The fixture does not establish Function execution, event delivery,
+retry/order guarantees, or compatibility of Function invocation roles.
+
+**Coverage:** Literal wire assertions cover parent paths, content type, absent
+version headers, Function link shapes and role omission. Terraform lifecycle tests
+cover import, no-op plans under independently reversed API topic order, timeout-only
+updates, topic changes, role removal/form switching, external deletion, and parent
+absence/recovery. Update fault tests verify response-derived state checkpointing and
+prior-state preservation after malformed or ambiguous responses. A
+synthetic future topic tests provider extensibility without asserting server acceptance.

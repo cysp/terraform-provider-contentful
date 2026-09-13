@@ -236,6 +236,7 @@ func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Reso
 		NewAppDefinitionResource,
 		NewAppKeyResource,
 		NewAppSigningSecretResource,
+		NewAppEventSubscriptionResource,
 		NewAppInstallationResource,
 		NewContentTypeResource,
 		NewDeliveryAPIKeyResource,

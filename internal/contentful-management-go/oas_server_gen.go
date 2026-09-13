@@ -98,6 +98,12 @@ type Handler interface {
 	//
 	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}
 	DeleteAppDefinition(ctx context.Context, params DeleteAppDefinitionParams) (DeleteAppDefinitionRes, error)
+	// DeleteAppEventSubscription implements deleteAppEventSubscription operation.
+	//
+	// Delete an app event subscription.
+	//
+	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/event_subscription
+	DeleteAppEventSubscription(ctx context.Context, params DeleteAppEventSubscriptionParams) (DeleteAppEventSubscriptionRes, error)
 	// DeleteAppInstallation implements deleteAppInstallation operation.
 	//
 	// Uninstall an app.
@@ -230,6 +236,12 @@ type Handler interface {
 	//
 	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}
 	GetAppDefinition(ctx context.Context, params GetAppDefinitionParams) (GetAppDefinitionRes, error)
+	// GetAppEventSubscription implements getAppEventSubscription operation.
+	//
+	// Get one app event subscription.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/event_subscription
+	GetAppEventSubscription(ctx context.Context, params GetAppEventSubscriptionParams) (GetAppEventSubscriptionRes, error)
 	// GetAppInstallation implements getAppInstallation operation.
 	//
 	// Get one app installation.
@@ -476,6 +488,12 @@ type Handler interface {
 	//
 	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}
 	PutAppDefinition(ctx context.Context, req *AppDefinitionData, params PutAppDefinitionParams) (PutAppDefinitionRes, error)
+	// PutAppEventSubscription implements putAppEventSubscription operation.
+	//
+	// Create or update an app event subscription.
+	//
+	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/event_subscription
+	PutAppEventSubscription(ctx context.Context, req *AppEventSubscriptionData, params PutAppEventSubscriptionParams) (PutAppEventSubscriptionRes, error)
 	// PutAppInstallation implements putAppInstallation operation.
 	//
 	// Install or update an app.

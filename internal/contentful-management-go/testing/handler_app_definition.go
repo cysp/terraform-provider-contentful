@@ -70,6 +70,7 @@ func (ts *Handler) DeleteAppDefinition(_ context.Context, params cm.DeleteAppDef
 	}
 
 	delete(ts.appDefinitions, params.AppDefinitionID)
+	delete(ts.appEventSubscriptions, [2]string{params.OrganizationID, params.AppDefinitionID})
 
 	return &cm.NoContent{}, nil
 }
