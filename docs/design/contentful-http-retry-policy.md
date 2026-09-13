@@ -64,12 +64,20 @@ applied write.
 | Contentful's [first-party management SDK](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/README.md#L387-L389) | The SDK retries 429 and 500 responses by default | A server commitment guarantee |
 
 The Entry Create, specified-ID Create, Update, and Publish calls and the Content
-Type Create, Update, and Activate calls opt out of transparent retry for the
-complete request. For those exact lifecycle mutations, explicit 429 responses,
-transport failures, and 5xx responses are returned after one request. The
-private request-context signal is checked before the general all-method 429
-branch and survives generated-client request construction. GET and unrelated
-CMA operations retain the default policy.
+Type Create, Update, and Activate calls opt
+out of transparent retry for the complete request. For those exact lifecycle
+mutations, explicit 429 responses, transport failures, and 5xx responses are
+returned after one request. The private request-context signal is checked before
+the general all-method 429 branch and survives generated-client request
+construction. The same signal
+prevents redirects in both nested provider HTTP clients, including
+method-preserving 307/308 and method-rewriting 301/302/303 responses.
+
+For requests without the opt-out, the inner client follows redirects up to the
+default ten-request limit. A supplied `CheckRedirect` policy replaces that default.
+The outer client has a separate default redirect policy and can follow a redirect
+returned by an inner policy using `http.ErrUseLastResponse`. GET and other CMA
+operations use the retry classification described above.
 
 ## Backoff and final errors
 
