@@ -472,6 +472,8 @@ retry/order guarantees, or compatibility of Function invocation roles.
 version headers, Function link shapes and role omission. Terraform lifecycle tests
 cover import, no-op plans under independently reversed API topic order, timeout-only
 updates, topic changes, role removal/form switching, external deletion, and parent
-absence/recovery. Update fault tests verify response-derived state checkpointing and
-prior-state preservation after malformed or ambiguous responses. A
+absence/recovery. Parent replacement checks both Terraform lifecycle orders and
+the exact mutation addresses. Recovery tests inspect Terraform's saved state after
+errored Create and Update without a refresh masking the checkpoint. Update fault
+tests also verify prior-state preservation after malformed or ambiguous responses. A
 synthetic future topic tests provider extensibility without asserting server acceptance.
