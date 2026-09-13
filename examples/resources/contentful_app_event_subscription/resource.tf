@@ -1,4 +1,3 @@
-# The App Definition must exist. Install the app separately to receive events.
 resource "contentful_app_event_subscription" "this" {
   organization_id   = var.contentful_organization_id
   app_definition_id = var.app_definition_id

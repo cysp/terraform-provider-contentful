@@ -3,17 +3,16 @@
 page_title: "contentful_resource_provider Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Resource Provider, connecting an app to the function that retrieves external resources. The App Definition and function must already exist.
+  Manages a Contentful App Resource Provider, connecting an app to the function that retrieves external resources.
 ---
 
 # contentful_resource_provider (Resource)
 
-Manages a Contentful App Resource Provider, connecting an app to the function that retrieves external resources. The App Definition and function must already exist.
+Manages a Contentful App Resource Provider, connecting an app to the function that retrieves external resources.
 
 ## Example Usage
 
 ```terraform
-# The App Definition and its resourceProvider function must already exist.
 resource "contentful_resource_provider" "this" {
   organization_id      = var.contentful_organization_id
   app_definition_id    = var.app_definition_id

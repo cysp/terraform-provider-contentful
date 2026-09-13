@@ -3,17 +3,16 @@
 page_title: "contentful_app_event_subscription Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages the App Event Subscription for an organization and App Definition. Create and update upsert the complete subscription, including an existing subscription at that address. Manage each subscription with one resource. Installation determines the space and environment that trigger events; this resource configures routing and does not install the app or establish delivery readiness.
+  Manages a Contentful App Event Subscription.
 ---
 
 # contentful_app_event_subscription (Resource)
 
-Manages the App Event Subscription for an organization and App Definition. Create and update upsert the complete subscription, including an existing subscription at that address. Manage each subscription with one resource. Installation determines the space and environment that trigger events; this resource configures routing and does not install the app or establish delivery readiness.
+Manages a Contentful App Event Subscription.
 
 ## Example Usage
 
 ```terraform
-# The App Definition must exist. Install the app separately to receive events.
 resource "contentful_app_event_subscription" "this" {
   organization_id   = var.contentful_organization_id
   app_definition_id = var.app_definition_id
@@ -25,25 +24,21 @@ resource "contentful_app_event_subscription" "this" {
 
 ## Ownership and changes
 
-This singleton belongs to the organization and App Definition. Its configuration
-applies across installations. Create uses an upsert and can replace an existing
-subscription; import first to inspect and plan changes to an existing subscription.
-Use one Terraform resource for each organization/App Definition pair. Do not apply
-the HTTP and Function examples together for the same pair.
+Use one resource per organization and App Definition. The subscription applies
+across app installations. Creating or updating this resource replaces the complete
+subscription, including any existing configuration. [Import](#import) an existing
+subscription to review its configuration before applying changes.
 
-Configure every topic, target, and Function role you intend to retain. Each write
-sends the complete desired configuration; omitted optional values are excluded.
-Contentful provides no subscription version precondition. Concurrent writers can
-overwrite one another, and a successful response is not a lock. If a write fails
-ambiguously, inspect the subscription and refresh or import it before retrying.
-A mismatched response produces an error while retaining returned configuration
-under the requested parent identity.
+Writes have no version precondition and can overwrite concurrent changes. If a
+write fails or returns different values, inspect the subscription and refresh before
+retrying. Terraform can record the returned configuration while reporting an error.
+Import the subscription if creation succeeded without saving resource state.
 
-## Function configuration and delivery
+## Function configuration
+
+To use a handler Function instead of an HTTP target:
 
 ```terraform
-# Alternative configuration: use deployed Functions belonging to this app.
-# Replace the IDs with Functions accepting the corresponding appevent.* roles.
 resource "contentful_app_event_subscription" "this" {
   organization_id   = var.contentful_organization_id
   app_definition_id = var.app_definition_id
@@ -55,45 +50,35 @@ resource "contentful_app_event_subscription" "this" {
 }
 ```
 
-Function IDs refer to Functions deployed separately for this app. A filter decides
-whether processing continues, a transformation runs before signing, and a handler
-serves as the destination in place of an HTTP target. With HTTP delivery, keep
-`target_url` and optionally configure filter and transformation Functions. For a
-handler destination, omit `target_url`. Contentful validates account availability,
-Function references, and combinations.
+HTTP delivery can also use filter and transformation Functions: configure
+`target_url` and omit `handler_function_id`. This resource manages Function links;
+deployment is handled separately.
 
-Function links follow the documented API shape. Function removal and HTTP/handler
-switching have mocked test coverage; they have not been validated against a
-Function-enabled Contentful organization. The provider reports a contradiction if
-the returned configuration retains a role or target that the applied configuration
-omitted. No Function deployment or execution is performed by this resource.
-
-Subscription storage does not prove event delivery, runtime health, Function
-entitlement, or signature verification. Configure installation and backend request
-verification separately. Import reads the actual stored configuration without
-writing or adding defaults; the next configured apply manages the complete values.
-Sensitive target URLs remain in Terraform state.
+Function removal and switching between HTTP and handler destinations have not been
+verified against a Function-enabled Contentful organization. If Contentful retains
+an omitted role or target, the provider records the returned values and reports an
+error.
 
 <!-- schema generated by tfplugindocs -->
 ## Schema
 
 ### Required
 
-- `app_definition_id` (String) ID of the existing App Definition. Changing this value replaces the resource.
+- `app_definition_id` (String) ID of the App Definition. Changing this value replaces the resource.
 - `organization_id` (String) ID of the organization that owns the app. Changing this value replaces the resource.
-- `topics` (Set of String) Complete nonempty set of event topics, such as `Entry.publish`. Order is insignificant and duplicate configuration values collapse to one set member. Contentful validates its current topic vocabulary; webhook wildcard syntax is not implied.
+- `topics` (Set of String) Nonempty set of event topics, such as `Entry.publish`. Updates replace the complete set. Contentful validates the supported topics.
 
 ### Optional
 
-- `filter_function_id` (String) ID of a deployed `appevent.filter` Function that decides whether an event proceeds. Omission excludes this role from the applied subscription. Function availability and compatibility are validated by Contentful.
-- `handler_function_id` (String) ID of a deployed `appevent.handler` Function used as the event destination in place of an HTTP target. Omission excludes this role from the applied subscription. Function availability and compatibility are validated by Contentful.
-- `target_url` (String, Sensitive) HTTPS endpoint for HTTP delivery. Omit when using a handler Function. Omission excludes the target from the complete applied subscription. Sensitive because URLs can contain credentials; stored in Terraform state.
+- `filter_function_id` (String) ID of an `appevent.filter` Function that decides whether an event proceeds. Omission excludes this role from the subscription request.
+- `handler_function_id` (String) ID of an `appevent.handler` Function used as the event destination instead of `target_url`. Omission excludes this role from the subscription request.
+- `target_url` (String, Sensitive) HTTPS URL for event delivery. Omit when using `handler_function_id`. Marked sensitive and stored in Terraform state.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `transformation_function_id` (String) ID of a deployed `appevent.transformation` Function that modifies the request before signing. Omission excludes this role from the applied subscription. Function availability and compatibility are validated by Contentful.
+- `transformation_function_id` (String) ID of an `appevent.transformation` Function that modifies the request before signing. Omission excludes this role from the subscription request.
 
 ### Read-Only
 
-- `id` (String) Composite Terraform resource identifier in `organization_id/app_definition_id` form; Contentful does not assign a subscription ID.
+- `id` (String) Composite Terraform resource identifier in `organization_id/app_definition_id` form.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

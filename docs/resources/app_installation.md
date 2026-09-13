@@ -3,12 +3,12 @@
 page_title: "contentful_app_installation Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Installs a Contentful app in an environment and manages its installation parameters. The App Definition must already exist; use contentful_app_definition to manage a custom app definition.
+  Installs a Contentful app in an environment and manages its installation parameters.
 ---
 
 # contentful_app_installation (Resource)
 
-Installs a Contentful app in an environment and manages its installation parameters. The App Definition must already exist; use `contentful_app_definition` to manage a custom app definition.
+Installs a Contentful app in an environment and manages its installation parameters.
 
 ~> When adopting or updating an installation, configure every parameter you want to retain. Omitting `parameters` can clear existing values. See [parameter management](#parameters-1) and [secret parameter limitations](../guides/secrets-and-state#app-and-extension-parameters).
 

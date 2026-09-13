@@ -21,42 +21,30 @@ description: |-
 
 ## Ownership and changes
 
-This singleton belongs to the organization and App Definition. Its configuration
-applies across installations. Create uses an upsert and can replace an existing
-subscription; import first to inspect and plan changes to an existing subscription.
-Use one Terraform resource for each organization/App Definition pair. Do not apply
-the HTTP and Function examples together for the same pair.
+Use one resource per organization and App Definition. The subscription applies
+across app installations. Creating or updating this resource replaces the complete
+subscription, including any existing configuration. [Import](#import) an existing
+subscription to review its configuration before applying changes.
 
-Configure every topic, target, and Function role you intend to retain. Each write
-sends the complete desired configuration; omitted optional values are excluded.
-Contentful provides no subscription version precondition. Concurrent writers can
-overwrite one another, and a successful response is not a lock. If a write fails
-ambiguously, inspect the subscription and refresh or import it before retrying.
-A mismatched response produces an error while retaining returned configuration
-under the requested parent identity.
+Writes have no version precondition and can overwrite concurrent changes. If a
+write fails or returns different values, inspect the subscription and refresh before
+retrying. Terraform can record the returned configuration while reporting an error.
+Import the subscription if creation succeeded without saving resource state.
 
-## Function configuration and delivery
+## Function configuration
+
+To use a handler Function instead of an HTTP target:
 
 {{ tffile "examples/resources/contentful_app_event_subscription/functions.tf" }}
 
-Function IDs refer to Functions deployed separately for this app. A filter decides
-whether processing continues, a transformation runs before signing, and a handler
-serves as the destination in place of an HTTP target. With HTTP delivery, keep
-`target_url` and optionally configure filter and transformation Functions. For a
-handler destination, omit `target_url`. Contentful validates account availability,
-Function references, and combinations.
+HTTP delivery can also use filter and transformation Functions: configure
+`target_url` and omit `handler_function_id`. This resource manages Function links;
+deployment is handled separately.
 
-Function links follow the documented API shape. Function removal and HTTP/handler
-switching have mocked test coverage; they have not been validated against a
-Function-enabled Contentful organization. The provider reports a contradiction if
-the returned configuration retains a role or target that the applied configuration
-omitted. No Function deployment or execution is performed by this resource.
-
-Subscription storage does not prove event delivery, runtime health, Function
-entitlement, or signature verification. Configure installation and backend request
-verification separately. Import reads the actual stored configuration without
-writing or adding defaults; the next configured apply manages the complete values.
-Sensitive target URLs remain in Terraform state.
+Function removal and switching between HTTP and handler destinations have not been
+verified against a Function-enabled Contentful organization. If Contentful retains
+an omitted role or target, the provider records the returned values and reports an
+error.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
