@@ -1,0 +1,10 @@
+WebhookSigningSecretSys:
+  allOf:
+    - $ref: "../sys/sys.yml"
+    - $ref: "../sys/with-type.yml"
+    - $ref: "../sys/with-space.yml"
+    - type: object
+      properties:
+        type:
+          enum:
+            - WebhookSigningSecret

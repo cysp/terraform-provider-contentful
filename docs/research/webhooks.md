@@ -35,8 +35,9 @@ wildcard may include future event types. [Webhook entity][webhook-entity],
 Definition paths use `webhook_definitions`; observability paths use `webhooks`. The SDK
 sends `X-Contentful-Version` for updates. The signing secret is one space-level setting
 affecting **all webhooks in that space**, unlike an AppSigningSecret's one-definition
-scope. Its PUT takes `value`; reads return `redactedValue`. It was not changed during
-the experiments. [Webhook adapter][webhook-sdk], [Webhook security][webhook-security].
+scope. Its wire contract and evidence limits are recorded in
+[Webhook signing secret API evidence](webhook-signing-secret.md). It was not changed
+during the configuration experiments. [Webhook adapter][webhook-sdk], [Webhook security][webhook-security].
 
 The SDK still contains GET/PUT/DELETE for the space singleton
 `/webhook_settings/retry_policy` with `maxRetries`, but marks it deprecated because its

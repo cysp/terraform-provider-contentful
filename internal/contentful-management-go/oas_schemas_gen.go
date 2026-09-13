@@ -1984,6 +1984,7 @@ func (*ApplicationJSONError) deleteTaxonomyConceptSchemeRes()    {}
 func (*ApplicationJSONError) deleteTeamRes()                     {}
 func (*ApplicationJSONError) deleteTeamSpaceMembershipRes()      {}
 func (*ApplicationJSONError) deleteWebhookDefinitionRes()        {}
+func (*ApplicationJSONError) deleteWebhookSigningSecretRes()     {}
 func (*ApplicationJSONError) getAppDefinitionRes()               {}
 func (*ApplicationJSONError) getAppInstallationRes()             {}
 func (*ApplicationJSONError) getAppKeyRes()                      {}
@@ -2014,6 +2015,7 @@ func (*ApplicationJSONError) getTeamRes()                        {}
 func (*ApplicationJSONError) getTeamSpaceMembershipRes()         {}
 func (*ApplicationJSONError) getTeamsRes()                       {}
 func (*ApplicationJSONError) getWebhookDefinitionRes()           {}
+func (*ApplicationJSONError) getWebhookSigningSecretRes()        {}
 func (*ApplicationJSONError) patchTaxonomyConceptRes()           {}
 func (*ApplicationJSONError) patchTaxonomyConceptSchemeRes()     {}
 func (*ApplicationJSONError) publishEntryRes()                   {}
@@ -2033,6 +2035,7 @@ func (*ApplicationJSONError) putTaxonomyConceptRes()             {}
 func (*ApplicationJSONError) putTaxonomyConceptSchemeRes()       {}
 func (*ApplicationJSONError) putTeamRes()                        {}
 func (*ApplicationJSONError) putTeamSpaceMembershipRes()         {}
+func (*ApplicationJSONError) putWebhookSigningSecretRes()        {}
 func (*ApplicationJSONError) revokePersonalAccessTokenRes()      {}
 func (*ApplicationJSONError) unpublishEntryRes()                 {}
 func (*ApplicationJSONError) updateDeliveryAPIKeyRes()           {}
@@ -4634,6 +4637,7 @@ func (*ErrorStatusCode) deleteTaxonomyConceptSchemeRes()    {}
 func (*ErrorStatusCode) deleteTeamRes()                     {}
 func (*ErrorStatusCode) deleteTeamSpaceMembershipRes()      {}
 func (*ErrorStatusCode) deleteWebhookDefinitionRes()        {}
+func (*ErrorStatusCode) deleteWebhookSigningSecretRes()     {}
 func (*ErrorStatusCode) getAppDefinitionRes()               {}
 func (*ErrorStatusCode) getAppInstallationRes()             {}
 func (*ErrorStatusCode) getAppKeyRes()                      {}
@@ -4664,6 +4668,7 @@ func (*ErrorStatusCode) getTeamRes()                        {}
 func (*ErrorStatusCode) getTeamSpaceMembershipRes()         {}
 func (*ErrorStatusCode) getTeamsRes()                       {}
 func (*ErrorStatusCode) getWebhookDefinitionRes()           {}
+func (*ErrorStatusCode) getWebhookSigningSecretRes()        {}
 func (*ErrorStatusCode) patchTaxonomyConceptRes()           {}
 func (*ErrorStatusCode) patchTaxonomyConceptSchemeRes()     {}
 func (*ErrorStatusCode) publishEntryRes()                   {}
@@ -4683,6 +4688,7 @@ func (*ErrorStatusCode) putTaxonomyConceptRes()             {}
 func (*ErrorStatusCode) putTaxonomyConceptSchemeRes()       {}
 func (*ErrorStatusCode) putTeamRes()                        {}
 func (*ErrorStatusCode) putTeamSpaceMembershipRes()         {}
+func (*ErrorStatusCode) putWebhookSigningSecretRes()        {}
 func (*ErrorStatusCode) revokePersonalAccessTokenRes()      {}
 func (*ErrorStatusCode) unpublishEntryRes()                 {}
 func (*ErrorStatusCode) updateDeliveryAPIKeyRes()           {}
@@ -5721,6 +5727,7 @@ func (*NoContent) deleteTaxonomyConceptSchemeRes() {}
 func (*NoContent) deleteTeamRes()                  {}
 func (*NoContent) deleteTeamSpaceMembershipRes()   {}
 func (*NoContent) deleteWebhookDefinitionRes()     {}
+func (*NoContent) deleteWebhookSigningSecretRes()  {}
 func (*NoContent) unpublishEntryRes()              {}
 
 // Ref: #/NullableLocalizedString
@@ -8826,6 +8833,14 @@ func (s *PreviewEnvironmentSysType) UnmarshalText(data []byte) error {
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
+
+type PutWebhookSigningSecretCreated WebhookSigningSecret
+
+func (*PutWebhookSigningSecretCreated) putWebhookSigningSecretRes() {}
+
+type PutWebhookSigningSecretOK WebhookSigningSecret
+
+func (*PutWebhookSigningSecretOK) putWebhookSigningSecretRes() {}
 
 // Ref: #/ResourceLink
 type ResourceLink struct {
@@ -13774,4 +13789,113 @@ func (s *WebhookDefinitionTransformation) SetIncludeContentLength(val OptBool) {
 // SetBody sets the value of Body.
 func (s *WebhookDefinitionTransformation) SetBody(val jx.Raw) {
 	s.Body = val
+}
+
+// Merged schema.
+// Ref: #/WebhookSigningSecret
+type WebhookSigningSecret struct {
+	Sys WebhookSigningSecretSys `json:"sys"`
+	// Opaque redacted representation of the signing secret; not the complete value.
+	RedactedValue string `json:"redactedValue"`
+}
+
+// GetSys returns the value of Sys.
+func (s *WebhookSigningSecret) GetSys() WebhookSigningSecretSys {
+	return s.Sys
+}
+
+// GetRedactedValue returns the value of RedactedValue.
+func (s *WebhookSigningSecret) GetRedactedValue() string {
+	return s.RedactedValue
+}
+
+// SetSys sets the value of Sys.
+func (s *WebhookSigningSecret) SetSys(val WebhookSigningSecretSys) {
+	s.Sys = val
+}
+
+// SetRedactedValue sets the value of RedactedValue.
+func (s *WebhookSigningSecret) SetRedactedValue(val string) {
+	s.RedactedValue = val
+}
+
+func (*WebhookSigningSecret) getWebhookSigningSecretRes() {}
+
+// Ref: #/WebhookSigningSecretRequestData
+type WebhookSigningSecretRequestData struct {
+	// A 64-character signing secret matching ^[0-9a-zA-Z+/=_-]+$.
+	Value string `json:"value"`
+}
+
+// GetValue returns the value of Value.
+func (s *WebhookSigningSecretRequestData) GetValue() string {
+	return s.Value
+}
+
+// SetValue sets the value of Value.
+func (s *WebhookSigningSecretRequestData) SetValue(val string) {
+	s.Value = val
+}
+
+// Merged schema.
+// Ref: #/WebhookSigningSecretSys
+type WebhookSigningSecretSys struct {
+	// Merged property.
+	Type  WebhookSigningSecretSysType `json:"type"`
+	Space SpaceLink                   `json:"space"`
+}
+
+// GetType returns the value of Type.
+func (s *WebhookSigningSecretSys) GetType() WebhookSigningSecretSysType {
+	return s.Type
+}
+
+// GetSpace returns the value of Space.
+func (s *WebhookSigningSecretSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// SetType sets the value of Type.
+func (s *WebhookSigningSecretSys) SetType(val WebhookSigningSecretSysType) {
+	s.Type = val
+}
+
+// SetSpace sets the value of Space.
+func (s *WebhookSigningSecretSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// Merged schema.
+type WebhookSigningSecretSysType string
+
+const (
+	WebhookSigningSecretSysTypeWebhookSigningSecret WebhookSigningSecretSysType = "WebhookSigningSecret"
+)
+
+// AllValues returns all WebhookSigningSecretSysType values.
+func (WebhookSigningSecretSysType) AllValues() []WebhookSigningSecretSysType {
+	return []WebhookSigningSecretSysType{
+		WebhookSigningSecretSysTypeWebhookSigningSecret,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s WebhookSigningSecretSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case WebhookSigningSecretSysTypeWebhookSigningSecret:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *WebhookSigningSecretSysType) UnmarshalText(data []byte) error {
+	switch WebhookSigningSecretSysType(data) {
+	case WebhookSigningSecretSysTypeWebhookSigningSecret:
+		*s = WebhookSigningSecretSysTypeWebhookSigningSecret
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	rn68AllowedHeaders = map[string]string{
+	rn70AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn11AllowedHeaders = map[string]string{
@@ -74,7 +74,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
 	}
-	rn75AllowedHeaders = map[string]string{
+	rn77AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 		"PUT": "Authorization,Content-Type,X-Contentful-Version",
 	}
@@ -93,7 +93,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Marketplace",
 	}
-	rn65AllowedHeaders = map[string]string{
+	rn67AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn6AllowedHeaders = map[string]string{
@@ -101,7 +101,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
 	}
-	rn67AllowedHeaders = map[string]string{
+	rn69AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 		"PUT": "Authorization,Content-Type,X-Contentful-Version",
 	}
@@ -118,7 +118,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Content-Type,X-Contentful-Version",
 	}
-	rn76AllowedHeaders = map[string]string{
+	rn78AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
 		"PUT":    "Authorization,X-Contentful-Version",
 	}
@@ -137,7 +137,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Tag-Visibility,X-Contentful-Version",
 	}
-	rn73AllowedHeaders = map[string]string{
+	rn75AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn23AllowedHeaders = map[string]string{
@@ -172,16 +172,21 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
 	}
-	rn64AllowedHeaders = map[string]string{
+	rn65AllowedHeaders = map[string]string{
+		"DELETE": "Authorization",
+		"GET":    "Authorization",
+		"PUT":    "Authorization,Content-Type",
+	}
+	rn66AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn22AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
 	}
-	rn70AllowedHeaders = map[string]string{
+	rn72AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn77AllowedHeaders = map[string]string{
+	rn79AllowedHeaders = map[string]string{
 		"PUT": "Authorization",
 	}
 )
@@ -253,7 +258,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn68AllowedHeaders,
+							allowedHeaders: rn70AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -947,7 +952,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "GET,PUT",
-										allowedHeaders: rn75AllowedHeaders,
+										allowedHeaders: rn77AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -1141,7 +1146,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 											default:
 												s.notAllowed(w, r, notAllowedParams{
 													allowedMethods: "GET",
-													allowedHeaders: rn65AllowedHeaders,
+													allowedHeaders: rn67AllowedHeaders,
 													acceptPost:     "",
 													acceptPatch:    "",
 												})
@@ -1237,7 +1242,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 														default:
 															s.notAllowed(w, r, notAllowedParams{
 																allowedMethods: "GET,PUT",
-																allowedHeaders: rn67AllowedHeaders,
+																allowedHeaders: rn69AllowedHeaders,
 																acceptPost:     "",
 																acceptPatch:    "",
 															})
@@ -1406,7 +1411,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 														default:
 															s.notAllowed(w, r, notAllowedParams{
 																allowedMethods: "DELETE,PUT",
-																allowedHeaders: rn76AllowedHeaders,
+																allowedHeaders: rn78AllowedHeaders,
 																acceptPost:     "",
 																acceptPatch:    "",
 															})
@@ -1607,7 +1612,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "GET",
-										allowedHeaders: rn73AllowedHeaders,
+										allowedHeaders: rn75AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -1843,71 +1848,120 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 						}
 
-					case 'w': // Prefix: "webhook_definitions"
+					case 'w': // Prefix: "webhook_"
 
-						if l := len("webhook_definitions"); len(elem) >= l && elem[0:l] == "webhook_definitions" {
+						if l := len("webhook_"); len(elem) >= l && elem[0:l] == "webhook_" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
 						if len(elem) == 0 {
-							switch r.Method {
-							case "POST":
-								s.handleCreateWebhookDefinitionRequest([1]string{
-									args[0],
-								}, elemIsEscaped, w, r)
-							default:
-								s.notAllowed(w, r, notAllowedParams{
-									allowedMethods: "POST",
-									allowedHeaders: rn28AllowedHeaders,
-									acceptPost:     "application/vnd.contentful.management.v1+json",
-									acceptPatch:    "",
-								})
-							}
-
-							return
+							break
 						}
 						switch elem[0] {
-						case '/': // Prefix: "/"
+						case 'd': // Prefix: "definitions"
 
-							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+							if l := len("definitions"); len(elem) >= l && elem[0:l] == "definitions" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
-							// Param: "webhook_definition_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
+							if len(elem) == 0 {
+								switch r.Method {
+								case "POST":
+									s.handleCreateWebhookDefinitionRequest([1]string{
+										args[0],
+									}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, notAllowedParams{
+										allowedMethods: "POST",
+										allowedHeaders: rn28AllowedHeaders,
+										acceptPost:     "application/vnd.contentful.management.v1+json",
+										acceptPatch:    "",
+									})
+								}
+
+								return
+							}
+							switch elem[0] {
+							case '/': // Prefix: "/"
+
+								if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								// Param: "webhook_definition_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
+									break
+								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch r.Method {
+									case "DELETE":
+										s.handleDeleteWebhookDefinitionRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "GET":
+										s.handleGetWebhookDefinitionRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									case "PUT":
+										s.handleUpdateWebhookDefinitionRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, notAllowedParams{
+											allowedMethods: "DELETE,GET,PUT",
+											allowedHeaders: rn63AllowedHeaders,
+											acceptPost:     "",
+											acceptPatch:    "",
+										})
+									}
+
+									return
+								}
+
+							}
+
+						case 's': // Prefix: "settings/signing_secret"
+
+							if l := len("settings/signing_secret"); len(elem) >= l && elem[0:l] == "settings/signing_secret" {
+								elem = elem[l:]
+							} else {
 								break
 							}
-							args[1] = elem
-							elem = ""
 
 							if len(elem) == 0 {
 								// Leaf node.
 								switch r.Method {
 								case "DELETE":
-									s.handleDeleteWebhookDefinitionRequest([2]string{
+									s.handleDeleteWebhookSigningSecretRequest([1]string{
 										args[0],
-										args[1],
 									}, elemIsEscaped, w, r)
 								case "GET":
-									s.handleGetWebhookDefinitionRequest([2]string{
+									s.handleGetWebhookSigningSecretRequest([1]string{
 										args[0],
-										args[1],
 									}, elemIsEscaped, w, r)
 								case "PUT":
-									s.handleUpdateWebhookDefinitionRequest([2]string{
+									s.handlePutWebhookSigningSecretRequest([1]string{
 										args[0],
-										args[1],
 									}, elemIsEscaped, w, r)
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "DELETE,GET,PUT",
-										allowedHeaders: rn63AllowedHeaders,
+										allowedHeaders: rn65AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -1937,7 +1991,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn64AllowedHeaders,
+							allowedHeaders: rn66AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -1996,7 +2050,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							default:
 								s.notAllowed(w, r, notAllowedParams{
 									allowedMethods: "GET",
-									allowedHeaders: rn70AllowedHeaders,
+									allowedHeaders: rn72AllowedHeaders,
 									acceptPost:     "",
 									acceptPatch:    "",
 								})
@@ -2023,7 +2077,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "PUT",
-										allowedHeaders: rn77AllowedHeaders,
+										allowedHeaders: rn79AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -3817,76 +3871,133 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 						}
 
-					case 'w': // Prefix: "webhook_definitions"
+					case 'w': // Prefix: "webhook_"
 
-						if l := len("webhook_definitions"); len(elem) >= l && elem[0:l] == "webhook_definitions" {
+						if l := len("webhook_"); len(elem) >= l && elem[0:l] == "webhook_" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
 						if len(elem) == 0 {
-							switch method {
-							case "POST":
-								r.name = CreateWebhookDefinitionOperation
-								r.summary = "Create a webhook definition"
-								r.operationID = "createWebhookDefinition"
-								r.operationGroup = ""
-								r.pathPattern = "/spaces/{space_id}/webhook_definitions"
-								r.args = args
-								r.count = 1
-								return r, true
-							default:
-								return
-							}
+							break
 						}
 						switch elem[0] {
-						case '/': // Prefix: "/"
+						case 'd': // Prefix: "definitions"
 
-							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+							if l := len("definitions"); len(elem) >= l && elem[0:l] == "definitions" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
-							// Param: "webhook_definition_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
+							if len(elem) == 0 {
+								switch method {
+								case "POST":
+									r.name = CreateWebhookDefinitionOperation
+									r.summary = "Create a webhook definition"
+									r.operationID = "createWebhookDefinition"
+									r.operationGroup = ""
+									r.pathPattern = "/spaces/{space_id}/webhook_definitions"
+									r.args = args
+									r.count = 1
+									return r, true
+								default:
+									return
+								}
+							}
+							switch elem[0] {
+							case '/': // Prefix: "/"
+
+								if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								// Param: "webhook_definition_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
+									break
+								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch method {
+									case "DELETE":
+										r.name = DeleteWebhookDefinitionOperation
+										r.summary = "Delete a webhook definition"
+										r.operationID = "deleteWebhookDefinition"
+										r.operationGroup = ""
+										r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "GET":
+										r.name = GetWebhookDefinitionOperation
+										r.summary = "Get a webhook definition"
+										r.operationID = "getWebhookDefinition"
+										r.operationGroup = ""
+										r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									case "PUT":
+										r.name = UpdateWebhookDefinitionOperation
+										r.summary = "Update a webhook definition"
+										r.operationID = "updateWebhookDefinition"
+										r.operationGroup = ""
+										r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									default:
+										return
+									}
+								}
+
+							}
+
+						case 's': // Prefix: "settings/signing_secret"
+
+							if l := len("settings/signing_secret"); len(elem) >= l && elem[0:l] == "settings/signing_secret" {
+								elem = elem[l:]
+							} else {
 								break
 							}
-							args[1] = elem
-							elem = ""
 
 							if len(elem) == 0 {
 								// Leaf node.
 								switch method {
 								case "DELETE":
-									r.name = DeleteWebhookDefinitionOperation
-									r.summary = "Delete a webhook definition"
-									r.operationID = "deleteWebhookDefinition"
+									r.name = DeleteWebhookSigningSecretOperation
+									r.summary = "Delete a webhook signing secret"
+									r.operationID = "deleteWebhookSigningSecret"
 									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+									r.pathPattern = "/spaces/{space_id}/webhook_settings/signing_secret"
 									r.args = args
-									r.count = 2
+									r.count = 1
 									return r, true
 								case "GET":
-									r.name = GetWebhookDefinitionOperation
-									r.summary = "Get a webhook definition"
-									r.operationID = "getWebhookDefinition"
+									r.name = GetWebhookSigningSecretOperation
+									r.summary = "Get one webhook signing secret"
+									r.operationID = "getWebhookSigningSecret"
 									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+									r.pathPattern = "/spaces/{space_id}/webhook_settings/signing_secret"
 									r.args = args
-									r.count = 2
+									r.count = 1
 									return r, true
 								case "PUT":
-									r.name = UpdateWebhookDefinitionOperation
-									r.summary = "Update a webhook definition"
-									r.operationID = "updateWebhookDefinition"
+									r.name = PutWebhookSigningSecretOperation
+									r.summary = "Create or update a webhook signing secret"
+									r.operationID = "putWebhookSigningSecret"
 									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+									r.pathPattern = "/spaces/{space_id}/webhook_settings/signing_secret"
 									r.args = args
-									r.count = 2
+									r.count = 1
 									return r, true
 								default:
 									return

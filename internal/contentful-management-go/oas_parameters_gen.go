@@ -4539,6 +4539,71 @@ func decodeDeleteWebhookDefinitionParams(args [2]string, argsEscaped bool, r *ht
 	return params, nil
 }
 
+// DeleteWebhookSigningSecretParams is parameters of deleteWebhookSigningSecret operation.
+type DeleteWebhookSigningSecretParams struct {
+	SpaceID string
+}
+
+func unpackDeleteWebhookSigningSecretParams(packed middleware.Parameters) (params DeleteWebhookSigningSecretParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeDeleteWebhookSigningSecretParams(args [1]string, argsEscaped bool, r *http.Request) (params DeleteWebhookSigningSecretParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetAppDefinitionParams is parameters of getAppDefinition operation.
 type GetAppDefinitionParams struct {
 	OrganizationID  string
@@ -8881,6 +8946,71 @@ func decodeGetWebhookDefinitionParams(args [2]string, argsEscaped bool, r *http.
 	return params, nil
 }
 
+// GetWebhookSigningSecretParams is parameters of getWebhookSigningSecret operation.
+type GetWebhookSigningSecretParams struct {
+	SpaceID string
+}
+
+func unpackGetWebhookSigningSecretParams(packed middleware.Parameters) (params GetWebhookSigningSecretParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetWebhookSigningSecretParams(args [1]string, argsEscaped bool, r *http.Request) (params GetWebhookSigningSecretParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // PatchTaxonomyConceptParams is parameters of patchTaxonomyConcept operation.
 type PatchTaxonomyConceptParams struct {
 	XContentfulVersion int
@@ -12290,6 +12420,71 @@ func decodePutTeamSpaceMembershipParams(args [2]string, argsEscaped bool, r *htt
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "team_space_membership_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PutWebhookSigningSecretParams is parameters of putWebhookSigningSecret operation.
+type PutWebhookSigningSecretParams struct {
+	SpaceID string
+}
+
+func unpackPutWebhookSigningSecretParams(packed middleware.Parameters) (params PutWebhookSigningSecretParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	return params
+}
+
+func decodePutWebhookSigningSecretParams(args [1]string, argsEscaped bool, r *http.Request) (params PutWebhookSigningSecretParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
 			In:   "path",
 			Err:  err,
 		}

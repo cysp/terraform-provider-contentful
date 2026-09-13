@@ -291,6 +291,12 @@ type Invoker interface {
 	//
 	// DELETE /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	DeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams, options ...RequestOption) (DeleteWebhookDefinitionRes, error)
+	// DeleteWebhookSigningSecret invokes deleteWebhookSigningSecret operation.
+	//
+	// Delete a webhook signing secret.
+	//
+	// DELETE /spaces/{space_id}/webhook_settings/signing_secret
+	DeleteWebhookSigningSecret(ctx context.Context, params DeleteWebhookSigningSecretParams, options ...RequestOption) (DeleteWebhookSigningSecretRes, error)
 	// GetAppDefinition invokes getAppDefinition operation.
 	//
 	// Get one app definition.
@@ -477,6 +483,12 @@ type Invoker interface {
 	//
 	// GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams, options ...RequestOption) (GetWebhookDefinitionRes, error)
+	// GetWebhookSigningSecret invokes getWebhookSigningSecret operation.
+	//
+	// Get one webhook signing secret.
+	//
+	// GET /spaces/{space_id}/webhook_settings/signing_secret
+	GetWebhookSigningSecret(ctx context.Context, params GetWebhookSigningSecretParams, options ...RequestOption) (GetWebhookSigningSecretRes, error)
 	// PatchTaxonomyConcept invokes patchTaxonomyConcept operation.
 	//
 	// Update a taxonomy concept.
@@ -597,6 +609,12 @@ type Invoker interface {
 	//
 	// PUT /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
 	PutTeamSpaceMembership(ctx context.Context, request *TeamSpaceMembershipData, params PutTeamSpaceMembershipParams, options ...RequestOption) (PutTeamSpaceMembershipRes, error)
+	// PutWebhookSigningSecret invokes putWebhookSigningSecret operation.
+	//
+	// Create or update a webhook signing secret.
+	//
+	// PUT /spaces/{space_id}/webhook_settings/signing_secret
+	PutWebhookSigningSecret(ctx context.Context, request *WebhookSigningSecretRequestData, params PutWebhookSigningSecretParams, options ...RequestOption) (PutWebhookSigningSecretRes, error)
 	// RevokePersonalAccessToken invokes revokePersonalAccessToken operation.
 	//
 	// Revoke a personal access token.
@@ -5415,6 +5433,119 @@ func (c *Client) sendDeleteWebhookDefinition(ctx context.Context, params DeleteW
 	return result, nil
 }
 
+// DeleteWebhookSigningSecret invokes deleteWebhookSigningSecret operation.
+//
+// Delete a webhook signing secret.
+//
+// DELETE /spaces/{space_id}/webhook_settings/signing_secret
+func (c *Client) DeleteWebhookSigningSecret(ctx context.Context, params DeleteWebhookSigningSecretParams, options ...RequestOption) (DeleteWebhookSigningSecretRes, error) {
+	res, err := c.sendDeleteWebhookSigningSecret(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendDeleteWebhookSigningSecret(ctx context.Context, params DeleteWebhookSigningSecretParams, requestOptions ...RequestOption) (res DeleteWebhookSigningSecretRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [3]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/webhook_settings/signing_secret"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, DeleteWebhookSigningSecretOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeDeleteWebhookSigningSecretResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // GetAppDefinition invokes getAppDefinition operation.
 //
 // Get one app definition.
@@ -9749,6 +9880,119 @@ func (c *Client) sendGetWebhookDefinition(ctx context.Context, params GetWebhook
 	return result, nil
 }
 
+// GetWebhookSigningSecret invokes getWebhookSigningSecret operation.
+//
+// Get one webhook signing secret.
+//
+// GET /spaces/{space_id}/webhook_settings/signing_secret
+func (c *Client) GetWebhookSigningSecret(ctx context.Context, params GetWebhookSigningSecretParams, options ...RequestOption) (GetWebhookSigningSecretRes, error) {
+	res, err := c.sendGetWebhookSigningSecret(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendGetWebhookSigningSecret(ctx context.Context, params GetWebhookSigningSecretParams, requestOptions ...RequestOption) (res GetWebhookSigningSecretRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [3]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/webhook_settings/signing_secret"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, GetWebhookSigningSecretOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeGetWebhookSigningSecretResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // PatchTaxonomyConcept invokes patchTaxonomyConcept operation.
 //
 // Update a taxonomy concept.
@@ -12767,6 +13011,122 @@ func (c *Client) sendPutTeamSpaceMembership(ctx context.Context, request *TeamSp
 	}
 
 	result, err := decodePutTeamSpaceMembershipResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutWebhookSigningSecret invokes putWebhookSigningSecret operation.
+//
+// Create or update a webhook signing secret.
+//
+// PUT /spaces/{space_id}/webhook_settings/signing_secret
+func (c *Client) PutWebhookSigningSecret(ctx context.Context, request *WebhookSigningSecretRequestData, params PutWebhookSigningSecretParams, options ...RequestOption) (PutWebhookSigningSecretRes, error) {
+	res, err := c.sendPutWebhookSigningSecret(ctx, request, params, options...)
+	return res, err
+}
+
+func (c *Client) sendPutWebhookSigningSecret(ctx context.Context, request *WebhookSigningSecretRequestData, params PutWebhookSigningSecretParams, requestOptions ...RequestOption) (res PutWebhookSigningSecretRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [3]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/webhook_settings/signing_secret"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutWebhookSigningSecretRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAccessToken(ctx, PutWebhookSigningSecretOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AccessToken\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodePutWebhookSigningSecretResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

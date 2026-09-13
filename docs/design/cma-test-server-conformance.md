@@ -58,6 +58,33 @@ submitted value is not response data.
 **Coverage:** Response tests prove that PUT and subsequent GET never return the complete
 submitted value.
 
+### Webhook signing secret
+
+**Evidence:** The [API reference, pinned SDK, and direct observations](../research/webhook-signing-secret.md)
+record the space singleton, first-create versus replacement status, redacted
+GET/PUT responses, tested conditional headers allowing mutations, and error
+status/shape observations.
+
+**Default fake behavior:** GET returns 200; PUT returns 201 for first creation
+and 200 for replacement. Both include a Space link and the final four characters
+of the secret, without `sys.version`. Conditional headers do not prevent
+PUT/DELETE. DELETE returns 204.
+The fake stores only the redacted representation. A registered `master` Environment
+stands in for space presence; a missing parent returns 404 `NotFound`. GET and
+DELETE also return 404 `NotFound` when the secret is absent.
+Malformed JSON returns 400 `BadRequest`; empty bodies and invalid values return
+422 `ValidationFailed`. The existing decoder-error handler maps these failures
+before the endpoint handler runs, as it does for Webhook topics and Live Preview
+variables. The observed error statuses and absent-secret details are modeled.
+The fake omits echoes of submitted values and details identifying the parent;
+the fixture used for space presence and unprobed error precedence remain mock
+conventions.
+Shared authentication handling retains its generic invalid-token message.
+
+**Coverage:** [Wire tests](../../internal/contentful-management-go/testing/handler_webhook_signing_secret_http_test.go)
+check status, response shape, replacement, deletion, absence, invalid-request
+classification, and rejected-create nonmutation.
+
 ### Webhook topics
 
 **Evidence:** Contentful's [Webhook configuration

@@ -1,0 +1,8 @@
+WebhookSigningSecretData:
+  type: object
+  properties:
+    redactedValue:
+      type: string
+      description: Opaque redacted representation of the signing secret; not the complete value.
+  required:
+    - redactedValue
