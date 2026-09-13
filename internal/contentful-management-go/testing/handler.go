@@ -54,7 +54,8 @@ type Handler struct {
 	taxonomyConcepts       OrganizationMap[*cm.TaxonomyConcept]
 	taxonomyConceptSchemes OrganizationMap[*cm.TaxonomyConceptScheme]
 
-	webhookDefinitions cm.SpaceMap[*cm.WebhookDefinition]
+	webhookDefinitions    cm.SpaceMap[*cm.WebhookDefinition]
+	webhookSigningSecrets map[string]cm.WebhookSigningSecret
 
 	previewEnvironments cm.SpaceMap[*cm.PreviewEnvironment]
 }
@@ -91,6 +92,7 @@ func NewHandler() *Handler {
 		taxonomyConcepts:               NewOrganizationMap[*cm.TaxonomyConcept](),
 		taxonomyConceptSchemes:         NewOrganizationMap[*cm.TaxonomyConceptScheme](),
 		webhookDefinitions:             cm.NewSpaceMap[*cm.WebhookDefinition](),
+		webhookSigningSecrets:          make(map[string]cm.WebhookSigningSecret),
 		previewEnvironments:            cm.NewSpaceMap[*cm.PreviewEnvironment](),
 	}
 }

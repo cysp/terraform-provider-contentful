@@ -44,6 +44,10 @@ func errorHandler(ctx context.Context, w http.ResponseWriter, r *http.Request, e
 		return
 	}
 
+	if writeWebhookSigningSecretDecodeError(w, err) {
+		return
+	}
+
 	if writeLivePreviewVariablesDecodeError(w, err) {
 		return
 	}
@@ -116,6 +120,29 @@ func writeLivePreviewVariablesDecodeError(w http.ResponseWriter, err error) bool
 	body, ok := errors.AsType[*ogenerrors.DecodeBodyError](request)
 	if ok && !json.Valid(body.Body) {
 		_ = WriteContentfulManagementResponse(w, http.StatusBadRequest, json.RawMessage(`{"statusCode":400,"error":"Bad Request","message":"Invalid request payload JSON format"}`))
+
+		return true
+	}
+
+	return false
+}
+
+func writeWebhookSigningSecretDecodeError(w http.ResponseWriter, err error) bool {
+	request, ok := errors.AsType[*ogenerrors.DecodeRequestError](err)
+	if !ok || request.OperationName() != "PutWebhookSigningSecret" {
+		return false
+	}
+
+	body, bodyError := errors.AsType[*ogenerrors.DecodeBodyError](request)
+	if bodyError && !json.Valid(body.Body) {
+		_ = WriteContentfulManagementErrorResponse(w, http.StatusBadRequest, "BadRequest", new("Invalid request payload JSON format"), nil)
+
+		return true
+	}
+
+	_, validationError := errors.AsType[*validate.Error](request)
+	if bodyError || validationError || errors.Is(request, validate.ErrBodyRequired) {
+		_ = WriteContentfulManagementErrorResponse(w, http.StatusUnprocessableEntity, "ValidationFailed", new("Validation error"), nil)
 
 		return true
 	}

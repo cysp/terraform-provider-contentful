@@ -218,6 +218,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	DeleteWebhookDefinition(ctx context.Context, params DeleteWebhookDefinitionParams) (DeleteWebhookDefinitionRes, error)
+	// DeleteWebhookSigningSecret implements deleteWebhookSigningSecret operation.
+	//
+	// Delete a webhook signing secret.
+	//
+	// DELETE /spaces/{space_id}/webhook_settings/signing_secret
+	DeleteWebhookSigningSecret(ctx context.Context, params DeleteWebhookSigningSecretParams) (DeleteWebhookSigningSecretRes, error)
 	// GetAppDefinition implements getAppDefinition operation.
 	//
 	// Get one app definition.
@@ -404,6 +410,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	GetWebhookDefinition(ctx context.Context, params GetWebhookDefinitionParams) (GetWebhookDefinitionRes, error)
+	// GetWebhookSigningSecret implements getWebhookSigningSecret operation.
+	//
+	// Get one webhook signing secret.
+	//
+	// GET /spaces/{space_id}/webhook_settings/signing_secret
+	GetWebhookSigningSecret(ctx context.Context, params GetWebhookSigningSecretParams) (GetWebhookSigningSecretRes, error)
 	// PatchTaxonomyConcept implements patchTaxonomyConcept operation.
 	//
 	// Update a taxonomy concept.
@@ -524,6 +536,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/team_space_memberships/{team_space_membership_id}
 	PutTeamSpaceMembership(ctx context.Context, req *TeamSpaceMembershipData, params PutTeamSpaceMembershipParams) (PutTeamSpaceMembershipRes, error)
+	// PutWebhookSigningSecret implements putWebhookSigningSecret operation.
+	//
+	// Create or update a webhook signing secret.
+	//
+	// PUT /spaces/{space_id}/webhook_settings/signing_secret
+	PutWebhookSigningSecret(ctx context.Context, req *WebhookSigningSecretRequestData, params PutWebhookSigningSecretParams) (PutWebhookSigningSecretRes, error)
 	// RevokePersonalAccessToken implements revokePersonalAccessToken operation.
 	//
 	// Revoke a personal access token.

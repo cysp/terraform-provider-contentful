@@ -1728,6 +1728,59 @@ paths:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
+  /spaces/{space_id}/webhook_settings/signing_secret:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+    get:
+      operationId: getWebhookSigningSecret
+      summary: Get one webhook signing secret
+      responses:
+        200:
+          description: A webhook signing secret
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/webhook-signing-secret/webhook-signing-secret.yml#/WebhookSigningSecret"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putWebhookSigningSecret
+      summary: Create or update a webhook signing secret
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/webhook-signing-secret/request-data.yml#/WebhookSigningSecretRequestData"
+      responses:
+        200:
+          description: A webhook signing secret
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/webhook-signing-secret/webhook-signing-secret.yml#/WebhookSigningSecret"
+        201:
+          description: A webhook signing secret
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/webhook-signing-secret/webhook-signing-secret.yml#/WebhookSigningSecret"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteWebhookSigningSecret
+      summary: Delete a webhook signing secret
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/webhook_definitions:
     parameters:
       - $ref: "#/components/parameters/space_id"

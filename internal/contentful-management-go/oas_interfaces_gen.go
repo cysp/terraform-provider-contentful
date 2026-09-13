@@ -141,6 +141,10 @@ type DeleteWebhookDefinitionRes interface {
 	deleteWebhookDefinitionRes()
 }
 
+type DeleteWebhookSigningSecretRes interface {
+	deleteWebhookSigningSecretRes()
+}
+
 type GetAppDefinitionRes interface {
 	getAppDefinitionRes()
 }
@@ -265,6 +269,10 @@ type GetWebhookDefinitionRes interface {
 	getWebhookDefinitionRes()
 }
 
+type GetWebhookSigningSecretRes interface {
+	getWebhookSigningSecretRes()
+}
+
 type PatchTaxonomyConceptRes interface {
 	patchTaxonomyConceptRes()
 }
@@ -343,6 +351,10 @@ type PutTeamRes interface {
 
 type PutTeamSpaceMembershipRes interface {
 	putTeamSpaceMembershipRes()
+}
+
+type PutWebhookSigningSecretRes interface {
+	putWebhookSigningSecretRes()
 }
 
 type RevokePersonalAccessTokenRes interface {
