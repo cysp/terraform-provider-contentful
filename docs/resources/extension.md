@@ -66,12 +66,12 @@ resource "contentful_extension" "example" {
 
 ### Optional
 
-- `parameters` (String) Values for the extension installation parameters, encoded as JSON with jsonencode(...). Use a sensitive Terraform expression when this mixed-use value contains secrets. Sensitivity obscures CLI output; it does not encrypt or omit plan or state data.
+- `parameters` (String) Installation parameter values encoded with `jsonencode(...)`. Omission, including after import, retains values returned by Contentful; removing this attribute does not clear them. Configure the complete object to manage parameters explicitly. Supply secrets through sensitive expressions; values remain in state and saved plans. See [secret parameter guidance](../guides/secrets-and-state#app-and-extension-parameters).
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
-- `id` (String) Composite Terraform resource identifier in space_id/environment_id/extension_id form.
+- `id` (String) Composite Terraform resource identifier in `space_id/environment_id/extension_id` form.
 
 <a id="nestedatt--extension"></a>
 ### Nested Schema for `extension`
@@ -85,7 +85,7 @@ Optional:
 
 - `parameters` (Attributes) Parameter definitions for configuring the extension. Set installation values in the resource-level `parameters` attribute. (see [below for nested schema](#nestedatt--extension--parameters))
 - `sidebar` (Boolean) Render the extension in the sidebar instead of replacing a field editing control. Defaults to false.
-- `src` (String) URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Cannot be configured with srcdoc; both may be omitted to preserve an imported source.
+- `src` (String) URL where the root HTML document of the extension can be found. Must be non-empty and HTTPS, except that Contentful also accepts localhost HTTP URLs. Cannot be configured with `srcdoc`; both may be omitted to preserve an imported source.
 - `srcdoc` (String) Inline HTML document for the extension. Cannot be configured with `src`; both may be omitted to preserve an imported source. An empty string is accepted.
 
 <a id="nestedatt--extension--field_types"></a>
@@ -132,10 +132,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
+- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode("text")` for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--extension--parameters--installation--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode("dark")]. An option may be a string or an object with string values.
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode("light"), jsonencode("dark")]`. An option may be a string or an object with string values.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--installation--labels"></a>
@@ -160,10 +160,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode("text") for Symbol. An Enum default must match an allowed option.
+- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode("text")` for Symbol. An Enum default must match an allowed option.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--extension--parameters--instance--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode("light"), jsonencode("dark")]. An option may be a string or an object with string values.
+- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode("light"), jsonencode("dark")]`. An option may be a string or an object with string values.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--instance--labels"></a>
@@ -191,19 +191,40 @@ Optional:
 
 ## Import
 
-Import is supported using the following syntax:
+Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
 
-In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `identity` attribute, for example:
+### Import by identity
+
+In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
 
 ```terraform
 import {
   identity = {
     space_id       = var.contentful_space_id
     environment_id = var.contentful_environment_id
-    extension_id   = var.extension_id
+    extension_id   = "custom-field-extension"
   }
   to = contentful_extension.example
 }
+```
+
+### Import by ID
+
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+
+```terraform
+import {
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/custom-field-extension"
+  to = contentful_extension.example
+}
+```
+
+### Import with the CLI
+
+Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+
+```shell
+terraform import contentful_extension.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/custom-field-extension"
 ```
 
 <!-- schema generated by tfplugindocs -->
@@ -214,18 +235,3 @@ import {
 - `environment_id` (String)
 - `extension_id` (String)
 - `space_id` (String)
-
-In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `id` attribute, for example:
-
-```terraform
-import {
-  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.extension_id}"
-  to = contentful_extension.example
-}
-```
-
-The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
-
-```shell
-terraform import contentful_extension.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_EXTENSION_ID"
-```

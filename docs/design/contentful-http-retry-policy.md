@@ -5,7 +5,7 @@ It defines the provider HTTP layer's automatic retry and deadline boundaries
 for Contentful Management API (CMA) requests. The implementation is in
 [`contentful_http_client.go`](../../internal/provider/contentful_http_client.go).
 
-| Request | Explicit 429 | Transport failure or retryable server response |
+| Request | Explicit 429 | Retryable transport failure or server response |
 | --- | --- | --- |
 | GET, HEAD, OPTIONS | Retry within the deadline | Retry within the deadline |
 | POST, PUT, PATCH, DELETE by default | Retry within the deadline | Return the result without replay |
@@ -41,8 +41,15 @@ By default, the provider retries:
 
 - explicit HTTP 429 responses for every method, following Contentful's
   documented rate-limit handling and first-party client practice; and
-- transport failures and retryable server responses for safe GET, HEAD, and
+- eligible transport failures and server responses for safe GET, HEAD, and
   OPTIONS requests.
+
+For safe methods, eligibility follows the pinned
+[`retryablehttp.DefaultRetryPolicy`](https://github.com/hashicorp/go-retryablehttp/blob/v0.7.8/client.go#L472-L543).
+It retries most transport errors and server errors other than 501. It excludes
+recognized certificate-verification failures, invalid schemes or headers, and
+exhausted redirects. Context cancellation and deadline expiry always stop
+retrying. The [dependency pin](../../go.mod) determines this classification.
 
 The provider does not transparently replay POST, PUT, PATCH, or DELETE after a
 transport failure or an ordinary 5xx response. Those outcomes do not establish
@@ -61,8 +68,8 @@ Type Create, Update, and Activate calls opt out of transparent retry for the
 complete request. For those exact lifecycle mutations, explicit 429 responses,
 transport failures, and 5xx responses are returned after one request. The
 private request-context signal is checked before the general all-method 429
-branch and survives generated-client request construction; generated client
-code is unchanged. GET and unrelated CMA operations retain the default policy.
+branch and survives generated-client request construction. GET and unrelated
+CMA operations retain the default policy.
 
 ## Backoff and final errors
 
@@ -72,6 +79,9 @@ contention window that starts at 500ms, doubles for each retryablehttp backoff
 attempt, and caps at four seconds. The reset value itself is never multiplied.
 Missing, invalid, or unrepresentable reset values retain retryablehttp's
 `Retry-After` and linear-jitter fallback behavior.
+
+The backoff implementation is
+[`ContentfulRateLimitLinearJitterBackoff`](../../internal/provider/util/retry_backoff.go).
 
 If retryablehttp reaches its terminal error-handler path, the final HTTP
 response or underlying transport error is passed through rather than replaced

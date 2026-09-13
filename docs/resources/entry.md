@@ -3,12 +3,12 @@
 page_title: "contentful_entry Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful Entry.
+  Manages a Contentful Entry in an environment. Creating an Entry or changing its managed fields or metadata writes and publishes a draft. Import and refresh do not publish drafts written outside Terraform.
 ---
 
 # contentful_entry (Resource)
 
-Manages a Contentful Entry.
+Manages a Contentful Entry in an environment. Creating an Entry or changing its managed fields or metadata writes and publishes a draft. Import and refresh do not publish drafts written outside Terraform.
 
 ## Example Usage
 
@@ -36,40 +36,39 @@ resource "contentful_entry" "example" {
 
 ## Lifecycle behavior
 
-Creating an Entry, or changing its `fields` or `metadata` through Terraform, writes a draft and publishes it. Changes that only affect Terraform state do not write or publish the Entry. The read-only `published_version` reports Contentful `sys.publishedVersion`.
-
-See [Operation timeouts](../guides/operation-timeouts) for the default timeouts and deadline precedence that apply to these lifecycle operations.
+Creating an Entry, or changing its `fields` or `metadata` through Terraform, writes a draft and publishes it. Changes that only affect Terraform state do not write or publish the Entry. The read-only `published_version` reports Contentful `sys.publishedVersion`. See [Operation timeouts](../guides/operation-timeouts) for defaults and deadline precedence.
 
 Routine provider logs omit Entry request and response payloads. Contentful error diagnostics can still contain Entry content, even when its Terraform expression is sensitive. Review diagnostics before sharing them. See [Secrets and Terraform state](../guides/secrets-and-state) for storage and redaction behavior.
 
-### Drift and field ownership
+## Drift and field ownership
 
 - Unpublishing outside Terraform makes `published_version` null. Terraform does not republish solely to restore the previous publication. A later managed `fields` or `metadata` change writes and publishes a new draft.
 - Entry updates replace the complete `fields` payload. Values retained by `ignore_changes` remain in that payload and are published with any later managed change. An ignored-only external draft is left untouched.
 - Content Type defaults may be added when an Entry is created, but Contentful does not reapply them on updates. Use `ignore_changes` for defaulted fields that another system should continue to manage.
 - The resource uses whole-Entry publication and does not model independent locale publication. Locale-based publishing is currently unsupported.
 
-### Null and empty field values
+## Null and empty field values
 
 Terraform `null` omits a field from the request; `jsonencode(null)` sends JSON null. Contentful can omit JSON-null fields from its response. When that happens, the provider preserves the planned or previously stored null representation. A value returned by Contentful takes precedence during refresh, so external changes remain visible.
 
 Contentful can also omit fields whose locale values are all empty arrays. The provider preserves those known empty values when they are absent from the response. It does not preserve a removed nonempty field this way. A locale object such as `jsonencode({ "en-US" = null })` is a distinct value and receives no null fallback.
 
-### Destroy
+## Destroy
 
 Destroy unpublishes the Entry, then deletes it. If unpublishing fails for a reason other than an already absent or unpublished Entry, deletion stops. Contentful does not enforce version or ETag preconditions on these requests, so changes made outside Terraform since the last refresh do not prevent deletion.
 
-### Publication recovery
+## Publication recovery
 
-If publication fails after a confirmed draft write, review the Entry and run `terraform plan` again. A creation apply can finish with a warning when publication is unconfirmed. An unchanged later apply can publish the recorded draft version without repeating the write.
+If publication fails after a confirmed draft write, inspect the Entry in Contentful and run `terraform plan` again. A creation apply can finish with a warning when publication is unconfirmed. An unchanged later apply can publish the recorded draft version without repeating the write.
 
-With normal refresh, recovery continues only while Contentful's version and publication state match the recorded draft. If refresh finds the recorded draft version already published, recovery finishes without republishing it. If refresh finds external changes or version and publication details the provider cannot validate, recovery stops without sending a publication request.
+Recovery is limited to that draft:
 
-Import, refresh, or matching configuration alone does not make an external draft eligible for automatic publication. If the draft write itself was not confirmed, later matching remote content is not automatically published either. An ambiguous response or interrupted operation can therefore leave a draft unpublished.
+- With normal refresh, Terraform continues only while Contentful's version and publication state match the recorded draft. If that version is already published, recovery finishes without repeating publication.
+- External changes or version and publication details the provider cannot validate stop recovery without a publication request.
+- Import, refresh, or matching configuration alone does not trigger automatic publication of an external draft. If the draft write was not confirmed, an ambiguous response or interrupted operation can leave the draft unpublished.
+- With `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; Terraform does not fetch and publish a newer external draft instead.
 
-If you use `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; the provider never fetches and publishes a newer external draft instead.
-
-### Retry and create ambiguity
+## Retry and create ambiguity
 
 The provider does not automatically retry Entry creation, updates, or publication after rate limiting (HTTP 429), connection errors, or server errors (HTTP 5xx). A failed response can leave the result uncertain; inspect Contentful before retrying.
 
@@ -84,7 +83,7 @@ Before applying again, inspect Contentful for the Entry that may have been creat
 
 - `content_type_id` (String) ID of the content type for this entry. Changing this value replaces the resource.
 - `environment_id` (String) ID of the environment containing the entry. Changing this value replaces the resource.
-- `fields` (Map of String) Complete set of Entry field values, keyed by Contentful field ID. For field content, encode a JSON object keyed by locale, for example `jsonencode({ "en-US" = "Welcome" })`. Use the environment's default locale for non-localized fields. A Terraform-null map value omits that field from the request; `jsonencode(null)` sends JSON null. Updates replace the complete fields payload. See the lifecycle guidance for field ownership and Contentful's empty-field handling.
+- `fields` (Map of String) Complete set of Entry field values, keyed by Contentful field ID. For field content, encode a JSON object keyed by locale, for example `jsonencode({ "en-US" = "Welcome" })`. Use the environment's default locale for non-localized fields. A Terraform-null map value omits that field from the request; `jsonencode(null)` sends JSON null. Updates replace the complete fields payload. See [field ownership](#drift-and-field-ownership) and [null and empty values](#null-and-empty-field-values).
 - `space_id` (String) ID of the space containing the entry. Changing this value replaces the resource.
 
 ### Optional
@@ -95,7 +94,7 @@ Before applying again, inspect Contentful for the Entry that may have been creat
 
 ### Read-Only
 
-- `id` (String) Composite Terraform resource identifier in space_id/environment_id/entry_id form.
+- `id` (String) Composite Terraform resource identifier in `space_id/environment_id/entry_id` form.
 - `published_version` (Number) Contentful `sys.publishedVersion` for the Entry. Null when Contentful reports the Entry as unpublished.
 
 <a id="nestedatt--metadata"></a>
@@ -103,8 +102,8 @@ Before applying again, inspect Contentful for the Entry that may have been creat
 
 Optional:
 
-- `concepts` (List of String) IDs of Contentful taxonomy concepts attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.
-- `tags` (List of String) IDs of Contentful tags attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.
+- `concepts` (List of String) IDs of Contentful taxonomy concepts attached to the Entry. Configured IDs must be unique. Reordering alone may update Terraform state but does not write or publish the Entry.
+- `tags` (List of String) IDs of Contentful tags attached to the Entry. Configured IDs must be unique. Reordering alone may update Terraform state but does not write or publish the Entry.
 
 
 <a id="nestedatt--timeouts"></a>
@@ -119,9 +118,11 @@ Optional:
 
 ## Import
 
-Import is supported using the following syntax:
+Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
 
-In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `identity` attribute, for example:
+### Import by identity
+
+In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
 
 ```terraform
 import {
@@ -134,16 +135,9 @@ import {
 }
 ```
 
-<!-- schema generated by tfplugindocs -->
-### Identity Schema
+### Import by ID
 
-#### Required
-
-- `entry_id` (String)
-- `environment_id` (String)
-- `space_id` (String)
-
-In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `id` attribute, for example:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
 
 ```terraform
 import {
@@ -152,8 +146,19 @@ import {
 }
 ```
 
-The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+### Import with the CLI
+
+Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
 
 ```shell
 terraform import contentful_entry.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_ENTRY_ID"
 ```
+
+<!-- schema generated by tfplugindocs -->
+### Identity Schema
+
+#### Required
+
+- `entry_id` (String)
+- `environment_id` (String)
+- `space_id` (String)

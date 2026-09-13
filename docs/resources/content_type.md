@@ -12,6 +12,8 @@ Manages a Contentful Content Type. Creating it or changing its draft through Ter
 
 ## Example Usage
 
+This example creates and activates an `author` Content Type in an existing space and environment. Use its `content_type_id` when configuring an Entry or Editor Interface.
+
 ```terraform
 resource "contentful_content_type" "author" {
   space_id       = var.contentful_space_id
@@ -53,29 +55,37 @@ resource "contentful_content_type" "author" {
 
 ## Lifecycle behavior
 
-Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. The read-only `published_version` reports Contentful `sys.publishedVersion`.
+Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. The read-only `published_version` reports Contentful `sys.publishedVersion`. See [Operation timeouts](../guides/operation-timeouts) for defaults and deadline precedence.
 
-See [Operation timeouts](../guides/operation-timeouts) for the default timeouts and deadline precedence that apply to these lifecycle operations.
-
-### Drift and ignored changes
+## Drift and ignored changes
 
 Managed updates write the complete draft, including values retained by `ignore_changes`. An external draft whose changes are all ignored is left untouched. Deactivating outside Terraform is reflected in state; Terraform does not reactivate until a later managed change writes a draft eligible for activation.
 
-### Destroy
+## Remove a field
+
+Remove a field from an activated Content Type in two applies:
+
+1. Set `omitted = true` on the field and apply. Terraform activates the draft with the field omitted from delivery responses.
+2. Remove the field from `fields` and apply again.
+
+~> The second apply permanently deletes the field. Check that your applications work with the field omitted before proceeding. See Contentful's [field deletion workflow](https://www.contentful.com/developers/docs/references/content-management-api/content-types/#deleting-fields).
+
+## Destroy
 
 Destroy deactivates the Content Type before deleting it. If deactivation fails for a reason other than an already absent or unpublished Content Type, deletion stops. These requests do not send a version or ETag precondition, so changes made outside Terraform since the last refresh do not prevent deletion.
 
-### Activation recovery
+## Activation recovery
 
-If activation fails after a confirmed draft write, review the Content Type and run `terraform plan` again. A creation apply can finish with a warning when activation is unconfirmed. An unchanged later apply can activate the recorded draft version without repeating the write.
+If activation fails after a confirmed draft write, inspect the Content Type in Contentful and run `terraform plan` again. A creation apply can finish with a warning when activation is unconfirmed. An unchanged later apply can activate the recorded draft version without repeating the write.
 
-With normal refresh, recovery continues only while Contentful's version and publication state match the recorded draft. If refresh finds the recorded draft version already activated, recovery finishes without activating it again. If refresh finds external changes or version and publication details the provider cannot validate, recovery stops without sending an activation request.
+Recovery is limited to that draft:
 
-Import, refresh, or matching configuration alone does not make an external draft eligible for automatic activation. If the draft write itself was not confirmed, later matching remote content is not automatically activated either. An ambiguous response or interrupted operation can therefore leave a draft inactive.
+- With normal refresh, Terraform continues only while Contentful's version and publication state match the recorded draft. If that version is already activated, recovery finishes without repeating activation.
+- External changes or version and publication details the provider cannot validate stop recovery without an activation request.
+- Import, refresh, or matching configuration alone does not trigger automatic activation of an external draft. If the draft write was not confirmed, an ambiguous response or interrupted operation can leave the draft inactive.
+- With `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; Terraform does not fetch and activate a newer external draft instead.
 
-If you use `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; the provider never fetches and activates a newer external draft instead.
-
-### Retry boundaries
+## Retry boundaries
 
 The provider does not automatically retry Content Type creation, updates, or activation after rate limiting (HTTP 429), connection errors, or server errors (HTTP 5xx). A failed response can leave the result uncertain; inspect Contentful before retrying.
 
@@ -99,7 +109,7 @@ The provider does not automatically retry Content Type creation, updates, or act
 
 ### Read-Only
 
-- `id` (String) Composite Terraform resource identifier in space_id/environment_id/content_type_id form.
+- `id` (String) Composite Terraform resource identifier in `space_id/environment_id/content_type_id` form.
 - `published_version` (Number) The Contentful version most recently activated, or null when the content type is not activated.
 
 <a id="nestedatt--fields"></a>
@@ -116,12 +126,12 @@ Required:
 Optional:
 
 - `allowed_resources` (Attributes List) Allowed resources for Resource Link fields. Each item must configure exactly one of `contentful_entry` or `external`. (see [below for nested schema](#nestedatt--fields--allowed_resources))
-- `default_value` (String) JSON-encoded object mapping locale codes to default field values, for example jsonencode({ "en-US" = "Untitled" }) for a Symbol field. Contentful applies defaults to omitted values when an Entry is created; changing a default does not rewrite existing Entries. For a non-localized field, use the environment's default locale. Omission configures no default.
-- `disabled` (Boolean) Whether editing the field is disabled in the Contentful web app. Defaults to `false`.
+- `default_value` (String) JSON-encoded object mapping locale codes to default field values, for example `jsonencode({ "en-US" = "Untitled" })` for a Symbol field. Contentful applies defaults to omitted values when an Entry is created; changing a default does not rewrite existing Entries. For a non-localized field, use the environment's default locale. Omission configures no default.
+- `disabled` (Boolean) Whether the field is hidden in the entry editor. Editors can still reveal and edit a hidden field; use role permissions to restrict editing. Defaults to `false`. See [Contentful field visibility](https://www.contentful.com/developers/changelog/hidden-entry-editor-fields/).
 - `items` (Attributes) For Array fields, defines the type of items in the array. (see [below for nested schema](#nestedatt--fields--items))
 - `link_type` (String) Type of resource linked by a `Link` field: `Entry` or `Asset`. For an `Array` of links, set `items.link_type` instead.
 - `omitted` (Boolean) Whether the field is omitted from Content Delivery and Preview API responses. Defaults to `false`. Before removing a field from an activated content type, set `omitted = true` and apply, then remove the field in a later apply.
-- `validations` (List of String) Contentful validation rules for this field, encoded as one JSON object string per rule, for example validations = [jsonencode({ size = { min = 1 } })] for a Symbol field. Supported rules depend on the field type. Omission defaults to an empty list of rules.
+- `validations` (List of String) Contentful validation rules for this field, encoded as one JSON object string per rule, for example `validations = [jsonencode({ size = { min = 1 } })]` for a Symbol field. Supported rules depend on the field type. Omission defaults to an empty list of rules.
 
 <a id="nestedatt--fields--allowed_resources"></a>
 ### Nested Schema for `fields.allowed_resources`
@@ -159,7 +169,7 @@ Required:
 Optional:
 
 - `link_type` (String) For arrays of Links, specifies the type of resource being linked to.
-- `validations` (List of String) Contentful validation rules for each array item, encoded as one JSON object string per rule. For an array of Entry links, use validations = [jsonencode({ linkContentType = ["author"] })]. Supported rules depend on the item type. Omission defaults to an empty list of rules.
+- `validations` (List of String) Contentful validation rules for each array item, encoded as one JSON object string per rule. For an array of Entry links, use `validations = [jsonencode({ linkContentType = ["author"] })]`. Supported rules depend on the item type. Omission defaults to an empty list of rules.
 
 
 
@@ -168,7 +178,7 @@ Optional:
 
 Optional:
 
-- `annotations` (String) Contentful annotations for this content type, encoded as a JSON object string using jsonencode(...).
+- `annotations` (String) Contentful annotations for this content type, encoded as a JSON object string using `jsonencode(...)`.
 - `taxonomy` (Attributes List) Taxonomy concepts and concept schemes associated with this content type. Each item must configure exactly one of `taxonomy_concept` or `taxonomy_concept_scheme`. Omission preserves existing taxonomy items; an empty list removes them. (see [below for nested schema](#nestedatt--metadata--taxonomy))
 
 <a id="nestedatt--metadata--taxonomy"></a>
@@ -217,19 +227,40 @@ Optional:
 
 ## Import
 
-Import is supported using the following syntax:
+Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
 
-In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `identity` attribute, for example:
+### Import by identity
+
+In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
 
 ```terraform
 import {
   identity = {
     space_id        = var.contentful_space_id
     environment_id  = var.contentful_environment_id
-    content_type_id = var.content_type_id
+    content_type_id = "author"
   }
   to = contentful_content_type.author
 }
+```
+
+### Import by ID
+
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+
+```terraform
+import {
+  id = "${var.contentful_space_id}/${var.contentful_environment_id}/author"
+  to = contentful_content_type.author
+}
+```
+
+### Import with the CLI
+
+Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+
+```shell
+terraform import contentful_content_type.author "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/author"
 ```
 
 <!-- schema generated by tfplugindocs -->
@@ -240,18 +271,3 @@ import {
 - `content_type_id` (String)
 - `environment_id` (String)
 - `space_id` (String)
-
-In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `id` attribute, for example:
-
-```terraform
-import {
-  id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.content_type_id}"
-  to = contentful_content_type.author
-}
-```
-
-The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
-
-```shell
-terraform import contentful_content_type.author "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_CONTENT_TYPE_ID"
-```

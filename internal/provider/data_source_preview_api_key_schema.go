@@ -10,7 +10,7 @@ import (
 
 func PreviewAPIKeyDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Retrieves a Contentful Preview API Key.",
+		Description: "Reads an existing Contentful Preview API Key and its access token for previewing unpublished content. The corresponding `contentful_delivery_api_key` resource exposes the `preview_api_key_id` needed for this lookup.",
 		Attributes: map[string]schema.Attribute{
 			"space_id": schema.StringAttribute{
 				Description: "The ID of the space.",
@@ -35,7 +35,7 @@ func PreviewAPIKeyDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"access_token": schema.StringAttribute{
-				Description: "The preview API access token.",
+				Description: "Preview API access token. This sensitive value is stored in Terraform state.",
 				Computed:    true,
 				Sensitive:   true,
 			},

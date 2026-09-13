@@ -1,4 +1,4 @@
 import {
-  id = "${var.contentful_organization_id}/${var.app_definition_id}/${var.resource_type_id}"
+  id = "${var.contentful_organization_id}/${var.app_definition_id}/Catalog:Product"
   to = contentful_resource_type.this
 }

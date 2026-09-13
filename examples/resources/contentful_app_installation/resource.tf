@@ -1,3 +1,5 @@
+# The custom and Marketplace examples install two different apps.
+# Use existing App Definition IDs and the agreements required by the Marketplace app.
 resource "contentful_app_installation" "custom" {
   space_id       = var.contentful_space_id
   environment_id = var.contentful_environment_id

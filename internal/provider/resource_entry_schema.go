@@ -25,10 +25,10 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 	}).ToObjectValue(ctx)
 
 	return schema.Schema{
-		Description: "Manages a Contentful Entry.",
+		Description: "Manages a Contentful Entry in an environment. Creating an Entry or changing its managed fields or metadata writes and publishes a draft. Import and refresh do not publish drafts written outside Terraform.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Composite Terraform resource identifier in space_id/environment_id/entry_id form.",
+				Description: "Composite Terraform resource identifier in `space_id/environment_id/entry_id` form.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -72,7 +72,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"fields": schema.MapAttribute{
-				Description: "Complete set of Entry field values, keyed by Contentful field ID. For field content, encode a JSON object keyed by locale, for example `jsonencode({ \"en-US\" = \"Welcome\" })`. Use the environment's default locale for non-localized fields. A Terraform-null map value omits that field from the request; `jsonencode(null)` sends JSON null. Updates replace the complete fields payload. See the lifecycle guidance for field ownership and Contentful's empty-field handling.",
+				Description: "Complete set of Entry field values, keyed by Contentful field ID. For field content, encode a JSON object keyed by locale, for example `jsonencode({ \"en-US\" = \"Welcome\" })`. Use the environment's default locale for non-localized fields. A Terraform-null map value omits that field from the request; `jsonencode(null)` sends JSON null. Updates replace the complete fields payload. See [field ownership](#drift-and-field-ownership) and [null and empty values](#null-and-empty-field-values).",
 				ElementType: jsontypes.NormalizedType{},
 				CustomType:  NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
 				Required:    true,
@@ -99,7 +99,7 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 
 	return map[string]schema.Attribute{
 		"concepts": schema.ListAttribute{
-			Description: "IDs of Contentful taxonomy concepts attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.",
+			Description: "IDs of Contentful taxonomy concepts attached to the Entry. Configured IDs must be unique. Reordering alone may update Terraform state but does not write or publish the Entry.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Optional:    true,
@@ -114,7 +114,7 @@ func (v EntryMetadataValue) SchemaAttributes(ctx context.Context) map[string]sch
 			},
 		},
 		"tags": schema.ListAttribute{
-			Description: "IDs of Contentful tags attached to the entry. Configured IDs must be unique. Comparison ignores ordering; reordering alone may update Terraform state but sends no Contentful Entry PUT or Publish request.",
+			Description: "IDs of Contentful tags attached to the Entry. Configured IDs must be unique. Reordering alone may update Terraform state but does not write or publish the Entry.",
 			ElementType: types.StringType,
 			CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 			Optional:    true,

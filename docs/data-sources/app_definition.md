@@ -3,12 +3,12 @@
 page_title: "contentful_app_definition Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves a Contentful App Definition.
+  Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration.
 ---
 
 # contentful_app_definition (Data Source)
 
-Retrieves a Contentful App Definition.
+Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration.
 
 ## Example Usage
 
@@ -35,7 +35,7 @@ data "contentful_app_definition" "this" {
 ### Read-Only
 
 - `bundle_id` (String) The bundle identifier for the app.
-- `id` (String) Composite Terraform identifier in organization_id/app_definition_id form; not a Contentful system ID.
+- `id` (String) Composite Terraform identifier in `organization_id/app_definition_id` form; not a Contentful system ID.
 - `locations` (Attributes List) Locations where the app can be rendered in the Contentful web app. (see [below for nested schema](#nestedatt--locations))
 - `name` (String) The name of the app.
 - `parameters` (Attributes) Parameter definitions for configuring the app. (see [below for nested schema](#nestedatt--parameters))

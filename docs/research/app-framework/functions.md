@@ -16,12 +16,22 @@ Function executions are excluded from Function quota/overage accounting; that ex
 does not enable custom Function deployment on Free. [Function
 availability][working-functions], [usage limits][usage-limits].
 
-Published Function technical ceilings are 50 Functions/app, 20 million
-executions/organization/month, 128 MB memory, 20 outbound requests, 30 seconds wall time
-and 10 seconds CPU. The limits page specifies a 10-second exception using `resource.*`
-and one-second CPU for `graphql.*`; its spelling differs from the actual `resources.*`
-invocation names. Logs are retained 30 days. Technical ceilings are not included-plan
-quotas. [Technical limits][limits].
+The reviewed [technical limits][limits] distinguish service ceilings from the executions
+included in a plan:
+
+| Limit | Published value |
+| --- | --- |
+| Functions per app | 50 |
+| Executions per organization per month | 20 million |
+| Memory per execution | 128 MB |
+| Outbound requests per execution | 20 |
+| Wall time per execution | 30 seconds; 10 seconds for `resource.*` |
+| CPU time per execution | 10 seconds; 1 second for `graphql.*` |
+| Log retention | 30 days |
+
+The limits page spells the wall-time exception `resource.*`, while the invocation names
+use `resources.*`. That source discrepancy remains unresolved; the table preserves the
+published spelling.
 
 The runtime is not complete Node.js and has no filesystem. Event payloads and the
 built-in CMA client's request/response data must be below 32 MB. Resource limit or
@@ -85,8 +95,9 @@ specify; the observations do not independently establish behavior without that h
 
 Aggregate Function usage requires inclusive `date[gte]` and `date[lte]` parameters. The
 endpoint reference accepts `YYYY-MM-DD` or full ISO-8601 date-times. `P1D` granularity
-supports up to 31 days per query; `P1M` supports up to 12 calendar months including the current month. The documented history boundary is the last
-12 months regardless of granularity. A query without required dates returned 422; that
+supports up to 31 days per query; `P1M` supports up to 12 calendar months including the
+current month. The documented history boundary is the last 12 months regardless of
+granularity. A query without required dates returned 422; that
 probe did not establish accepted date forms or history boundaries. Tenant usage results
 are excluded from this reference. [Aggregated usage][usage-aggregate].
 

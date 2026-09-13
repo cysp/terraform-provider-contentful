@@ -78,10 +78,10 @@ func knownStringListValuesForValidation(value types.List) ([]string, int, bool) 
 
 func RoleResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Role.",
+		Description: "Manages a Contentful Role in a space, including permissions and policies that allow or deny access to content and settings.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Composite Terraform resource identifier in space_id/role_id form.",
+				Description: "Composite Terraform resource identifier in `space_id/role_id` form.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),

@@ -13,6 +13,8 @@ description: |-
 {{ if .HasExamples -}}
 ## Example Usage
 
+This example creates and activates an `author` Content Type in an existing space and environment. Use its `content_type_id` when configuring an Entry or Editor Interface.
+
 {{- range .ExampleFiles }}
 
 {{ tffile . }}
@@ -21,29 +23,37 @@ description: |-
 
 ## Lifecycle behavior
 
-Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. The read-only `published_version` reports Contentful `sys.publishedVersion`.
+Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. The read-only `published_version` reports Contentful `sys.publishedVersion`. See [Operation timeouts](../guides/operation-timeouts) for defaults and deadline precedence.
 
-See [Operation timeouts](../guides/operation-timeouts) for the default timeouts and deadline precedence that apply to these lifecycle operations.
-
-### Drift and ignored changes
+## Drift and ignored changes
 
 Managed updates write the complete draft, including values retained by `ignore_changes`. An external draft whose changes are all ignored is left untouched. Deactivating outside Terraform is reflected in state; Terraform does not reactivate until a later managed change writes a draft eligible for activation.
 
-### Destroy
+## Remove a field
+
+Remove a field from an activated Content Type in two applies:
+
+1. Set `omitted = true` on the field and apply. Terraform activates the draft with the field omitted from delivery responses.
+2. Remove the field from `fields` and apply again.
+
+~> The second apply permanently deletes the field. Check that your applications work with the field omitted before proceeding. See Contentful's [field deletion workflow](https://www.contentful.com/developers/docs/references/content-management-api/content-types/#deleting-fields).
+
+## Destroy
 
 Destroy deactivates the Content Type before deleting it. If deactivation fails for a reason other than an already absent or unpublished Content Type, deletion stops. These requests do not send a version or ETag precondition, so changes made outside Terraform since the last refresh do not prevent deletion.
 
-### Activation recovery
+## Activation recovery
 
-If activation fails after a confirmed draft write, review the Content Type and run `terraform plan` again. A creation apply can finish with a warning when activation is unconfirmed. An unchanged later apply can activate the recorded draft version without repeating the write.
+If activation fails after a confirmed draft write, inspect the Content Type in Contentful and run `terraform plan` again. A creation apply can finish with a warning when activation is unconfirmed. An unchanged later apply can activate the recorded draft version without repeating the write.
 
-With normal refresh, recovery continues only while Contentful's version and publication state match the recorded draft. If refresh finds the recorded draft version already activated, recovery finishes without activating it again. If refresh finds external changes or version and publication details the provider cannot validate, recovery stops without sending an activation request.
+Recovery is limited to that draft:
 
-Import, refresh, or matching configuration alone does not make an external draft eligible for automatic activation. If the draft write itself was not confirmed, later matching remote content is not automatically activated either. An ambiguous response or interrupted operation can therefore leave a draft inactive.
+- With normal refresh, Terraform continues only while Contentful's version and publication state match the recorded draft. If that version is already activated, recovery finishes without repeating activation.
+- External changes or version and publication details the provider cannot validate stop recovery without an activation request.
+- Import, refresh, or matching configuration alone does not trigger automatic activation of an external draft. If the draft write was not confirmed, an ambiguous response or interrupted operation can leave the draft inactive.
+- With `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; Terraform does not fetch and activate a newer external draft instead.
 
-If you use `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; the provider never fetches and activates a newer external draft instead.
-
-### Retry boundaries
+## Retry boundaries
 
 The provider does not automatically retry Content Type creation, updates, or activation after rate limiting (HTTP 429), connection errors, or server errors (HTTP 5xx). A failed response can leave the result uncertain; inspect Contentful before retrying.
 
@@ -52,25 +62,33 @@ The provider does not automatically retry Content Type creation, updates, or act
 
 ## Import
 
-Import is supported using the following syntax:
+Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
 {{- end }}
 {{- if .HasImportIdentityConfig }}
 
-In Terraform v1.12.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `identity` attribute, for example:
+### Import by identity
+
+In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
 
 {{tffile .ImportIdentityConfigFile }}
-
-{{ .IdentitySchemaMarkdown | trimspace }}
 {{- end }}
 {{- if .HasImportIDConfig }}
 
-In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `id` attribute, for example:
+### Import by ID
+
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
 
 {{tffile .ImportIDConfigFile }}
 {{- end }}
 {{- if .HasImport }}
 
-The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+### Import with the CLI
+
+Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
 
 {{codefile "shell" .ImportFile }}
+{{- end }}
+{{- if .HasImportIdentityConfig }}
+
+{{ .IdentitySchemaMarkdown | trimspace }}
 {{- end }}

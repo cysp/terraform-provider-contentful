@@ -2,8 +2,9 @@ data "contentful_teams" "example" {
   organization_id = "your-organization-id"
 }
 
-# Contentful does not document team names as unique. Filter before requiring
-# exactly one result so duplicate names elsewhere do not affect this lookup.
+# Choose a name that identifies exactly one team in this organization.
+# one(...) returns null for no matches and errors for multiple matches;
+# the membership below requires a matching team.
 locals {
   selected_team = one([
     for team in data.contentful_teams.example.teams : team

@@ -9,12 +9,10 @@ import (
 
 func EnvironmentStatusReadyDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: `Waits until a Contentful environment reaches ready status.
-
-Use this data source in a depends_on relationship before creating resources that need a ready environment. It polls queued, inProgress, and unrecognized statuses, and fails immediately if Contentful reports failed. Set timeouts.read to control how long it waits.`,
+		Description: "Waits until a Contentful environment reaches `ready` status.\n\nUse this data source in a `depends_on` relationship before creating resources that need a ready environment. It polls `queued`, `inProgress`, and unrecognized statuses, and fails immediately if Contentful reports `failed`. Set `timeouts.read` to control how long it waits.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Composite Terraform identifier in space_id/environment_id form; not a Contentful system ID.",
+				Description: "Composite Terraform identifier in `space_id/environment_id` form; not a Contentful system ID.",
 				Computed:    true,
 			},
 			"space_id": schema.StringAttribute{

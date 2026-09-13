@@ -15,10 +15,10 @@ import (
 
 func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Definition.",
+		Description: "Manages a Contentful App Definition: the app's name, hosting source, locations in the web app, and parameter definitions. Use `contentful_app_installation` to install it in an environment.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Composite Terraform resource identifier in organization_id/app_definition_id form.",
+				Description: "Composite Terraform resource identifier in `organization_id/app_definition_id` form.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -177,12 +177,12 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			Optional:    true,
 		},
 		"default": schema.StringAttribute{
-			Description: "Default parameter value encoded as JSON, matching the parameter type; for example, jsonencode(\"text\") for Symbol. An Enum default must match an allowed option.",
+			Description: "Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode(\"text\")` for Symbol. An Enum default must match an allowed option.",
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "Allowed options for Enum parameters. Encode each option as JSON, for example [jsonencode(\"light\"), jsonencode(\"dark\")]. An option may be a string or an object with string values.",
+			Description: "Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode(\"light\"), jsonencode(\"dark\")]`. An option may be a string or an object with string values.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,

@@ -21,7 +21,7 @@ func PreviewEnvironmentResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Manages a Contentful content preview platform. This space-level resource is not a Contentful environment.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Composite Terraform resource identifier in space_id/preview_environment_id form.",
+				Description: "Composite Terraform resource identifier in `space_id/preview_environment_id` form.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),

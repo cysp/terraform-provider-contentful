@@ -3,12 +3,12 @@
 page_title: "contentful_marketplace_app_definition Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves a Contentful Marketplace App Definition.
+  Reads an existing Contentful Marketplace App Definition, including its hosting source, locations, and parameter definitions. Use the app definition ID with contentful_app_installation to install the app.
 ---
 
 # contentful_marketplace_app_definition (Data Source)
 
-Retrieves a Contentful Marketplace App Definition.
+Reads an existing Contentful Marketplace App Definition, including its hosting source, locations, and parameter definitions. Use the app definition ID with `contentful_app_installation` to install the app.
 
 ## Example Usage
 
@@ -32,7 +32,7 @@ data "contentful_marketplace_app_definition" "this" {
 ### Read-Only
 
 - `bundle_id` (String) The bundle identifier for the marketplace app.
-- `id` (String) Composite Terraform identifier in organization_id/app_definition_id form; not a Contentful system ID.
+- `id` (String) Composite Terraform identifier in `organization_id/app_definition_id` form; not a Contentful system ID.
 - `locations` (Attributes List) Locations where the marketplace app can be rendered in the Contentful web app. (see [below for nested schema](#nestedatt--locations))
 - `name` (String) The name of the marketplace app.
 - `organization_id` (String) ID of the organization that owns the marketplace app definition.

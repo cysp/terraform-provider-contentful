@@ -1,10 +1,12 @@
 # Contentful API research
 
-These references describe Contentful resource models, HTTP contracts, lifecycle
-behavior, and the evidence supporting them. They are for engineers integrating with
-Contentful, operating those integrations, or evaluating API behavior. Their conclusions
-apply independently of whether a Terraform resource or any other client implements the
-API.
+These references help engineers understand Contentful's resource models, HTTP requests,
+responses, and lifecycle behavior. They distinguish published API contracts from
+first-party client behavior and direct observations.
+
+Research coverage extends beyond the APIs implemented by this provider. For supported
+Terraform resources and configuration, start with the [provider documentation](../index.md).
+For decisions about how the provider uses these APIs, see [provider design](../design/README.md).
 
 ## Reading map
 
@@ -42,7 +44,7 @@ Use the official [Content Management API
 reference](https://www.contentful.com/developers/docs/references/content-management-api/)
 for its full published surface and the [User Management API
 reference](https://www.contentful.com/developers/docs/references/user-management-api/)
-for organization-team contracts. This corpus is focused research, not an exhaustive API
+for organization-team contracts. These notes contain focused research, not an exhaustive API
 specification. A missing operation is not proof that it does not exist.
 
 ## Terminology and scope
@@ -95,8 +97,8 @@ fragments, names, content, URLs, local paths, actor/timestamp metadata, inventor
 region, billing plans, and entitlement outcomes. This includes linked traces and error details
 that could expose the same information indirectly. Use typed path placeholders,
 synthetic resource names, and reserved `example.invalid` URLs. Preserve the
-relationships, value types, omitted/null/ empty distinctions, status codes, and version
-comparisons needed to reproduce the reasoning. The built-in `master` identifier,
+relationships, value types, distinctions between omission, null, and empty values,
+status codes, and version comparisons needed to reproduce the reasoning. The built-in `master` identifier,
 documented public plan limits, experiment counts, observation dates, and public source
 revisions are not tenant inventory. Locale examples must be synthetic or describe a
 configured locale without disclosing the original locale inventory.
@@ -112,8 +114,8 @@ its observations came from separate experiments.
 A focused reference leads with its subject, then states scope and evidence, addressing
 and representation, mutation/lifecycle behavior, and unresolved cases as relevant. Keep
 observation matrices near the behavior they explain. Group related references under a
-family directory when a shared relationship map is useful. This README owns corpus
-conventions; a family overview owns its shared study scope and sources. Individual
+family directory when a shared relationship map is useful. This README defines shared
+conventions; a family overview records its shared study scope and sources. Individual
 references link to that context and retain their specific limitations, definitions, and
 citations. Summaries may orient readers, but detailed contract explanations belong in
 one reference. Update this index and inbound links when moving material.
