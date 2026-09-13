@@ -364,21 +364,43 @@ func TestTaxonomyLabelMapRequestStates(t *testing.T) {
 func TestTaxonomyConceptListRequestStates(t *testing.T) {
 	t.Parallel()
 
-	for _, attributeName := range []string{"notations", "broader_concept_ids", "related_concept_ids"} {
+	attributes := map[string]struct {
+		set   func(*TaxonomyConceptModel, types.List)
+		check func(*testing.T, cm.TaxonomyConceptRequest, taxonomyStringListTestCase)
+	}{
+		"notations": {
+			set: func(model *TaxonomyConceptModel, value types.List) { model.Notations = value },
+			check: func(t *testing.T, request cm.TaxonomyConceptRequest, state taxonomyStringListTestCase) {
+				t.Helper()
+
+				assert.Equal(t, state.expectedStrings, request.Notations)
+			},
+		},
+		"broader_concept_ids": {
+			set: func(model *TaxonomyConceptModel, value types.List) { model.BroaderConceptIDs = value },
+			check: func(t *testing.T, request cm.TaxonomyConceptRequest, state taxonomyStringListTestCase) {
+				t.Helper()
+
+				assert.Equal(t, state.expectedLinks, request.Broader)
+			},
+		},
+		"related_concept_ids": {
+			set: func(model *TaxonomyConceptModel, value types.List) { model.RelatedConceptIDs = value },
+			check: func(t *testing.T, request cm.TaxonomyConceptRequest, state taxonomyStringListTestCase) {
+				t.Helper()
+
+				assert.Equal(t, state.expectedLinks, request.Related)
+			},
+		},
+	}
+
+	for attributeName, attribute := range attributes {
 		for stateName, state := range taxonomyStringListStates() {
 			t.Run(attributeName+"/"+stateName, func(t *testing.T) {
 				t.Parallel()
 
 				model := taxonomyConceptUpdatePlan()
-
-				switch attributeName {
-				case "notations":
-					model.Notations = state.value
-				case "broader_concept_ids":
-					model.BroaderConceptIDs = state.value
-				case "related_concept_ids":
-					model.RelatedConceptIDs = state.value
-				}
+				attribute.set(&model, state.value)
 
 				prepared, diags := prepareTaxonomyConceptMutation(model, model)
 				if state.expectError {
@@ -392,14 +414,7 @@ func TestTaxonomyConceptListRequestStates(t *testing.T) {
 				request, requestDiags := prepared.planRequest(t.Context())
 				require.False(t, requestDiags.HasError(), requestDiags)
 
-				switch attributeName {
-				case "notations":
-					assert.Equal(t, state.expectedStrings, request.Notations)
-				case "broader_concept_ids":
-					assert.Equal(t, state.expectedLinks, request.Broader)
-				case "related_concept_ids":
-					assert.Equal(t, state.expectedLinks, request.Related)
-				}
+				attribute.check(t, request, state)
 			})
 		}
 	}
@@ -408,17 +423,27 @@ func TestTaxonomyConceptListRequestStates(t *testing.T) {
 func TestTaxonomyConceptSchemeListRequestStates(t *testing.T) {
 	t.Parallel()
 
-	for _, attributeName := range []string{"top_concept_ids", "concept_ids"} {
+	attributes := map[string]struct {
+		set func(*TaxonomyConceptSchemeModel, types.List)
+		get func(cm.TaxonomyConceptSchemeRequest) []cm.TaxonomyConceptLink
+	}{
+		"top_concept_ids": {
+			set: func(model *TaxonomyConceptSchemeModel, value types.List) { model.TopConceptIDs = value },
+			get: func(request cm.TaxonomyConceptSchemeRequest) []cm.TaxonomyConceptLink { return request.TopConcepts },
+		},
+		"concept_ids": {
+			set: func(model *TaxonomyConceptSchemeModel, value types.List) { model.ConceptIDs = value },
+			get: func(request cm.TaxonomyConceptSchemeRequest) []cm.TaxonomyConceptLink { return request.Concepts },
+		},
+	}
+
+	for attributeName, attribute := range attributes {
 		for stateName, state := range taxonomyStringListStates() {
 			t.Run(attributeName+"/"+stateName, func(t *testing.T) {
 				t.Parallel()
 
 				model := taxonomyConceptSchemeUpdatePlan()
-				if attributeName == "top_concept_ids" {
-					model.TopConceptIDs = state.value
-				} else {
-					model.ConceptIDs = state.value
-				}
+				attribute.set(&model, state.value)
 
 				prepared, diags := prepareTaxonomyConceptSchemeMutation(model, model)
 				if state.expectError {
@@ -432,12 +457,7 @@ func TestTaxonomyConceptSchemeListRequestStates(t *testing.T) {
 				request, requestDiags := prepared.planRequest(t.Context())
 				require.False(t, requestDiags.HasError(), requestDiags)
 
-				actual := request.TopConcepts
-				if attributeName == "concept_ids" {
-					actual = request.Concepts
-				}
-
-				assert.Equal(t, state.expectedLinks, actual)
+				assert.Equal(t, state.expectedLinks, attribute.get(request))
 			})
 		}
 	}
