@@ -40,6 +40,7 @@ Add the resources you want to manage, run `terraform init`, then review `terrafo
 | Configure content preview | [Preview environments](resources/preview_environment) and [live preview variables](resources/live_preview_variables) |
 | Define and install apps | [App Definitions](resources/app_definition) and [App Installations](resources/app_installation) |
 | Manage access | [Roles](resources/role), [Teams](resources/team), and [Delivery API keys](resources/delivery_api_key) |
+| Reference existing Spaces, Environments, aliases, and Locales | [Configuration data sources](guides/existing-configuration) |
 | Discover existing objects and generate import configuration | [Resource discovery](guides/resource-discovery) |
 | Manage secrets and credential rotation | [Secrets and Terraform state](guides/secrets-and-state) |
 | Configure operation timeouts and readiness waits | [Operation timeouts](guides/operation-timeouts) |
