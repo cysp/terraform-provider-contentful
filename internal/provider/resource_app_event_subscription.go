@@ -193,7 +193,7 @@ func (r *appEventSubscriptionResource) Delete(ctx context.Context, req resource.
 
 	defer cancel()
 
-	response, err := r.providerData.client.DeleteAppEventSubscription(ctx, cm.DeleteAppEventSubscriptionParams{OrganizationID: organization, AppDefinitionID: appDefinition})
+	response, err := r.providerData.client.DeleteAppEventSubscription(withContentfulRequestNoRetry(ctx), cm.DeleteAppEventSubscriptionParams{OrganizationID: organization, AppDefinitionID: appDefinition})
 	if err == nil {
 		if _, ok := response.(*cm.NoContent); ok {
 			return
@@ -207,9 +207,6 @@ func (r *appEventSubscriptionResource) Delete(ctx context.Context, req resource.
 	resp.Diagnostics.AddError("Failed to delete app event subscription", appEventSubscriptionErrorDetail(response, err))
 }
 
-// put is the shared complete-document upsert boundary. It does not replay or
-// infer success after ambiguous writes; the provider transport's ordinary
-// mutation retry policy applies. There is no version precondition on this API.
 func (r *appEventSubscriptionResource) put(ctx context.Context, plan AppEventSubscriptionModel) (AppEventSubscriptionModel, diag.Diagnostics, diag.Diagnostics) {
 	organization, appDefinition, diags := appEventSubscriptionIDs(plan)
 	request, requestDiags := plan.ToAppEventSubscriptionData()
@@ -219,7 +216,7 @@ func (r *appEventSubscriptionResource) put(ctx context.Context, plan AppEventSub
 		return AppEventSubscriptionModel{}, diags, nil
 	}
 
-	response, err := r.providerData.client.PutAppEventSubscription(ctx, &request, cm.PutAppEventSubscriptionParams{OrganizationID: organization, AppDefinitionID: appDefinition})
+	response, err := r.providerData.client.PutAppEventSubscription(withContentfulRequestNoRetry(ctx), &request, cm.PutAppEventSubscriptionParams{OrganizationID: organization, AppDefinitionID: appDefinition})
 	if err == nil {
 		switch result := response.(type) {
 		case *cm.PutAppEventSubscriptionOK:

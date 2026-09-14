@@ -41,10 +41,14 @@ proposes creation. Check the replacement order in the plan, including
 [`create_before_destroy` inherited from dependent resources](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#create_before_destroy).
 Replacement with unchanged IDs must destroy the subscription before creating it again.
 
-If a write fails or returns different values, inspect the subscription, refresh,
-and review the next plan before retrying. Terraform can record the returned
-configuration while reporting an error. After a failed Create with saved state,
-Terraform marks the resource as tainted and plans to replace the entire subscription,
+Create, Update, and Delete are not automatically retried, including after rate
+limiting. A failed request can leave the subscription changed or deleted. If a
+request fails or returns different values, inspect the subscription, refresh,
+and review the next plan before retrying.
+
+Terraform can record the returned configuration while reporting an error.
+After a failed Create with saved state, Terraform marks the resource as tainted
+and plans to replace the entire subscription,
 even if it existed before that Create. The replacement order described above also
 applies to tainted resources. A failed Update does not itself taint the resource.
 Import the subscription if creation succeeded without saving resource state.

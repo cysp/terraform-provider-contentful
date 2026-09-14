@@ -9,7 +9,7 @@ for Contentful Management API (CMA) requests. The implementation is in
 | --- | --- | --- |
 | GET, HEAD, OPTIONS | Retry within the deadline | Retry within the deadline |
 | POST, PUT, PATCH, DELETE by default | Retry within the deadline | Return the result without replay |
-| Entry Create, specified-ID Create, Update, Publish; Content Type Create, Update, Activate; WebhookSigningSecret PUT/DELETE | Return the first result without replay | Return the first result without replay |
+| Entry Create, specified-ID Create, Update, Publish; Content Type Create, Update, Activate; WebhookSigningSecret and AppEventSubscription PUT/DELETE | Return the first result without replay | Return the first result without replay |
 
 The response deadline and evidence limits below are part of this policy.
 
@@ -64,10 +64,11 @@ applied write.
 | Contentful's [first-party management SDK](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/README.md#L387-L389) | The SDK retries 429 and 500 responses by default | A server commitment guarantee |
 
 The Entry Create, specified-ID Create, Update, and Publish calls, the Content
-Type Create, Update, and Activate calls, and WebhookSigningSecret PUT/DELETE opt
-out of transparent retry for the complete request. For those exact lifecycle
-mutations, explicit 429 responses, transport failures, and 5xx responses are
-returned after one request. The private request-context signal is checked before
+Type Create, Update, and Activate calls, and WebhookSigningSecret and
+AppEventSubscription PUT/DELETE opt out of transparent retry for the complete
+request. For those exact lifecycle mutations, explicit 429 responses, transport
+failures, and 5xx responses are returned after one request. The private
+request-context signal is checked before
 the general all-method 429 branch and survives generated-client request
 construction. The same signal
 prevents redirects in both nested provider HTTP clients, including
@@ -83,6 +84,12 @@ WebhookSigningSecret mutations are unversioned space-wide overwrites/deletions.
 A read cannot establish complete-secret equality, so this resource cannot recover
 an ambiguous PUT by observing presence or safely replay a mutation across another
 actor's changes. See its [lifecycle contract](webhook-signing-secret.md).
+
+AppEventSubscription PUT/DELETE similarly overwrite or delete an unversioned
+singleton. Its configuration is readable, but reads cannot authorize a replay
+across another actor's changes without a version precondition. These mutations
+therefore use the same no-retry boundary. See
+[replacement and recovery](../resources/app_event_subscription.md#replacement-and-recovery).
 
 ## Backoff and final errors
 

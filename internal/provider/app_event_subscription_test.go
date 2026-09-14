@@ -342,11 +342,11 @@ func TestAppEventSubscriptionReadDeleteFailures(t *testing.T) {
 				} else {
 					response := resource.DeleteResponse{State: state}
 					implementation.Delete(ctx, resource.DeleteRequest{State: state}, &response)
-					assert.Equal(t, status == 403 || status == 503, response.Diagnostics.HasError(), response.Diagnostics)
+					assert.Equal(t, status == 403 || status == 503 || status == 429, response.Diagnostics.HasError(), response.Diagnostics)
 				}
 
 				expected := int64(1)
-				if status == 429 || (status == 503 && method == http.MethodGet) {
+				if method == http.MethodGet && (status == 429 || status == 503) {
 					expected = 2
 				}
 
@@ -478,7 +478,7 @@ func appEventRetryHandler(t *testing.T, method string, status int, count *atomic
 	}
 }
 
-func TestAppEventSubscriptionUpsertRateLimitAndLogs(t *testing.T) {
+func TestAppEventSubscriptionUpsertRateLimitIsNotRetried(t *testing.T) {
 	t.Parallel()
 
 	var count atomic.Int64
@@ -501,9 +501,11 @@ func TestAppEventSubscriptionUpsertRateLimitAndLogs(t *testing.T) {
 
 	ctx := tflogtest.RootLogger(t.Context(), &logs)
 	_, diags, consistency := implementation.put(ctx, appEventTestModel())
-	assert.Empty(t, diags)
+	require.True(t, diags.HasError())
+	assert.Contains(t, diags.Errors()[0].Detail(), "429")
+	assert.NotContains(t, diags.Errors()[0].Detail(), "sentinel")
 	assert.Empty(t, consistency)
-	assert.EqualValues(t, 2, count.Load())
+	assert.EqualValues(t, 1, count.Load())
 	assert.NotContains(t, logs.String(), "sentinel")
 	assert.NotContains(t, logs.String(), "test-token")
 }
