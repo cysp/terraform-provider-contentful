@@ -38,6 +38,12 @@ type Handler interface {
 	//
 	// POST /spaces/{space_id}/environments/{environment_id}/entries
 	CreateEntry(ctx context.Context, req *EntryRequest, params CreateEntryParams) (CreateEntryRes, error)
+	// CreateLocale implements createLocale operation.
+	//
+	// Create a locale.
+	//
+	// POST /spaces/{space_id}/environments/{environment_id}/locales
+	CreateLocale(ctx context.Context, req *LocaleData, params CreateLocaleParams) (CreateLocaleRes, error)
 	// CreateOrUpdateEnvironment implements createOrUpdateEnvironment operation.
 	//
 	// Create or update an environment.
@@ -164,6 +170,12 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/live_preview/variables
 	DeleteLivePreviewVariables(ctx context.Context, params DeleteLivePreviewVariablesParams) (DeleteLivePreviewVariablesRes, error)
+	// DeleteLocale implements deleteLocale operation.
+	//
+	// Delete a locale.
+	//
+	// DELETE /spaces/{space_id}/environments/{environment_id}/locales/{locale_id}
+	DeleteLocale(ctx context.Context, params DeleteLocaleParams) (DeleteLocaleRes, error)
 	// DeletePreviewEnvironment implements deletePreviewEnvironment operation.
 	//
 	// Delete a content preview platform.
@@ -536,6 +548,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/live_preview/variables
 	PutLivePreviewVariables(ctx context.Context, req *LivePreviewVariablesData, params PutLivePreviewVariablesParams) (PutLivePreviewVariablesRes, error)
+	// PutLocale implements putLocale operation.
+	//
+	// Update a locale.
+	//
+	// PUT /spaces/{space_id}/environments/{environment_id}/locales/{locale_id}
+	PutLocale(ctx context.Context, req *LocaleData, params PutLocaleParams) (PutLocaleRes, error)
 	// PutPreviewEnvironment implements putPreviewEnvironment operation.
 	//
 	// Create or update a content preview platform with a selected ID.

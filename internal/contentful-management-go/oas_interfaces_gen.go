@@ -21,6 +21,10 @@ type CreateEntryRes interface {
 	createEntryRes()
 }
 
+type CreateLocaleRes interface {
+	createLocaleRes()
+}
+
 type CreateOrUpdateEnvironmentAliasRes interface {
 	createOrUpdateEnvironmentAliasRes()
 }
@@ -103,6 +107,10 @@ type DeleteExtensionRes interface {
 
 type DeleteLivePreviewVariablesRes interface {
 	deleteLivePreviewVariablesRes()
+}
+
+type DeleteLocaleRes interface {
+	deleteLocaleRes()
 }
 
 type DeletePreviewEnvironmentRes interface {
@@ -351,6 +359,10 @@ type PutExtensionRes interface {
 
 type PutLivePreviewVariablesRes interface {
 	putLivePreviewVariablesRes()
+}
+
+type PutLocaleRes interface {
+	putLocaleRes()
 }
 
 type PutPreviewEnvironmentRes interface {

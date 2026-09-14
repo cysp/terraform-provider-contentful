@@ -2154,6 +2154,7 @@ func (*ApplicationJSONError) createAppDefinitionRes()            {}
 func (*ApplicationJSONError) createAppKeyRes()                   {}
 func (*ApplicationJSONError) createDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONError) createEntryRes()                    {}
+func (*ApplicationJSONError) createLocaleRes()                   {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentAliasRes() {}
 func (*ApplicationJSONError) createOrUpdateEnvironmentRes()      {}
 func (*ApplicationJSONError) createPersonalAccessTokenRes()      {}
@@ -2174,6 +2175,7 @@ func (*ApplicationJSONError) deleteEntryRes()                    {}
 func (*ApplicationJSONError) deleteEnvironmentAliasRes()         {}
 func (*ApplicationJSONError) deleteEnvironmentRes()              {}
 func (*ApplicationJSONError) deleteExtensionRes()                {}
+func (*ApplicationJSONError) deleteLocaleRes()                   {}
 func (*ApplicationJSONError) deletePreviewEnvironmentRes()       {}
 func (*ApplicationJSONError) deleteResourceProviderRes()         {}
 func (*ApplicationJSONError) deleteResourceTypeRes()             {}
@@ -2234,6 +2236,7 @@ func (*ApplicationJSONError) putContentTypeRes()                 {}
 func (*ApplicationJSONError) putEditorInterfaceRes()             {}
 func (*ApplicationJSONError) putEntryRes()                       {}
 func (*ApplicationJSONError) putExtensionRes()                   {}
+func (*ApplicationJSONError) putLocaleRes()                      {}
 func (*ApplicationJSONError) putPreviewEnvironmentRes()          {}
 func (*ApplicationJSONError) putResourceProviderRes()            {}
 func (*ApplicationJSONError) putResourceTypeRes()                {}
@@ -5052,6 +5055,7 @@ func (*ErrorStatusCode) createAppDefinitionRes()            {}
 func (*ErrorStatusCode) createAppKeyRes()                   {}
 func (*ErrorStatusCode) createDeliveryAPIKeyRes()           {}
 func (*ErrorStatusCode) createEntryRes()                    {}
+func (*ErrorStatusCode) createLocaleRes()                   {}
 func (*ErrorStatusCode) createOrUpdateEnvironmentAliasRes() {}
 func (*ErrorStatusCode) createOrUpdateEnvironmentRes()      {}
 func (*ErrorStatusCode) createPersonalAccessTokenRes()      {}
@@ -5072,6 +5076,7 @@ func (*ErrorStatusCode) deleteEntryRes()                    {}
 func (*ErrorStatusCode) deleteEnvironmentAliasRes()         {}
 func (*ErrorStatusCode) deleteEnvironmentRes()              {}
 func (*ErrorStatusCode) deleteExtensionRes()                {}
+func (*ErrorStatusCode) deleteLocaleRes()                   {}
 func (*ErrorStatusCode) deletePreviewEnvironmentRes()       {}
 func (*ErrorStatusCode) deleteResourceProviderRes()         {}
 func (*ErrorStatusCode) deleteResourceTypeRes()             {}
@@ -5132,6 +5137,7 @@ func (*ErrorStatusCode) putContentTypeRes()                 {}
 func (*ErrorStatusCode) putEditorInterfaceRes()             {}
 func (*ErrorStatusCode) putEntryRes()                       {}
 func (*ErrorStatusCode) putExtensionRes()                   {}
+func (*ErrorStatusCode) putLocaleRes()                      {}
 func (*ErrorStatusCode) putPreviewEnvironmentRes()          {}
 func (*ErrorStatusCode) putResourceProviderRes()            {}
 func (*ErrorStatusCode) putResourceTypeRes()                {}
@@ -6289,6 +6295,105 @@ func (s *LocaleCollectionSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/LocaleData
+type LocaleData struct {
+	Name                 string    `json:"name"`
+	Code                 string    `json:"code"`
+	FallbackCode         NilString `json:"fallbackCode"`
+	ContentDeliveryApi   bool      `json:"contentDeliveryApi"`
+	ContentManagementApi bool      `json:"contentManagementApi"`
+	Optional             bool      `json:"optional"`
+}
+
+// GetName returns the value of Name.
+func (s *LocaleData) GetName() string {
+	return s.Name
+}
+
+// GetCode returns the value of Code.
+func (s *LocaleData) GetCode() string {
+	return s.Code
+}
+
+// GetFallbackCode returns the value of FallbackCode.
+func (s *LocaleData) GetFallbackCode() NilString {
+	return s.FallbackCode
+}
+
+// GetContentDeliveryApi returns the value of ContentDeliveryApi.
+func (s *LocaleData) GetContentDeliveryApi() bool {
+	return s.ContentDeliveryApi
+}
+
+// GetContentManagementApi returns the value of ContentManagementApi.
+func (s *LocaleData) GetContentManagementApi() bool {
+	return s.ContentManagementApi
+}
+
+// GetOptional returns the value of Optional.
+func (s *LocaleData) GetOptional() bool {
+	return s.Optional
+}
+
+// SetName sets the value of Name.
+func (s *LocaleData) SetName(val string) {
+	s.Name = val
+}
+
+// SetCode sets the value of Code.
+func (s *LocaleData) SetCode(val string) {
+	s.Code = val
+}
+
+// SetFallbackCode sets the value of FallbackCode.
+func (s *LocaleData) SetFallbackCode(val NilString) {
+	s.FallbackCode = val
+}
+
+// SetContentDeliveryApi sets the value of ContentDeliveryApi.
+func (s *LocaleData) SetContentDeliveryApi(val bool) {
+	s.ContentDeliveryApi = val
+}
+
+// SetContentManagementApi sets the value of ContentManagementApi.
+func (s *LocaleData) SetContentManagementApi(val bool) {
+	s.ContentManagementApi = val
+}
+
+// SetOptional sets the value of Optional.
+func (s *LocaleData) SetOptional(val bool) {
+	s.Optional = val
+}
+
+// LocaleStatusCode wraps Locale with StatusCode.
+type LocaleStatusCode struct {
+	StatusCode int
+	Response   Locale
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *LocaleStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *LocaleStatusCode) GetResponse() Locale {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *LocaleStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *LocaleStatusCode) SetResponse(val Locale) {
+	s.Response = val
+}
+
+func (*LocaleStatusCode) createLocaleRes() {}
+func (*LocaleStatusCode) putLocaleRes()    {}
+
 // Merged schema.
 // Ref: #/LocaleSys
 type LocaleSys struct {
@@ -6297,6 +6402,7 @@ type LocaleSys struct {
 	ID          string          `json:"id"`
 	Space       SpaceLink       `json:"space"`
 	Environment EnvironmentLink `json:"environment"`
+	Version     OptInt          `json:"version"`
 }
 
 // GetType returns the value of Type.
@@ -6319,6 +6425,11 @@ func (s *LocaleSys) GetEnvironment() EnvironmentLink {
 	return s.Environment
 }
 
+// GetVersion returns the value of Version.
+func (s *LocaleSys) GetVersion() OptInt {
+	return s.Version
+}
+
 // SetType sets the value of Type.
 func (s *LocaleSys) SetType(val LocaleSysType) {
 	s.Type = val
@@ -6337,6 +6448,11 @@ func (s *LocaleSys) SetSpace(val SpaceLink) {
 // SetEnvironment sets the value of Environment.
 func (s *LocaleSys) SetEnvironment(val EnvironmentLink) {
 	s.Environment = val
+}
+
+// SetVersion sets the value of Version.
+func (s *LocaleSys) SetVersion(val OptInt) {
+	s.Version = val
 }
 
 // Merged schema.
@@ -6459,6 +6575,7 @@ func (*NoContent) deleteEnvironmentAliasRes()      {}
 func (*NoContent) deleteEnvironmentRes()           {}
 func (*NoContent) deleteExtensionRes()             {}
 func (*NoContent) deleteLivePreviewVariablesRes()  {}
+func (*NoContent) deleteLocaleRes()                {}
 func (*NoContent) deletePreviewEnvironmentRes()    {}
 func (*NoContent) deleteResourceProviderRes()      {}
 func (*NoContent) deleteResourceTypeRes()          {}
