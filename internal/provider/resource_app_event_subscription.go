@@ -18,9 +18,13 @@ var (
 )
 
 //nolint:ireturn
-func NewAppEventSubscriptionResource() resource.Resource { return &appEventSubscriptionResource{} }
+func NewAppEventSubscriptionResource() resource.Resource {
+	return &appEventSubscriptionResource{}
+}
 
-type appEventSubscriptionResource struct{ providerData ContentfulProviderData }
+type appEventSubscriptionResource struct {
+	providerData ContentfulProviderData
+}
 
 func appEventSubscriptionIdentityAttributeNames() []string {
 	return []string{"organization_id", "app_definition_id"}
@@ -29,15 +33,19 @@ func appEventSubscriptionIdentityAttributeNames() []string {
 func (r *appEventSubscriptionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_app_event_subscription"
 }
+
 func (r *appEventSubscriptionResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = AppEventSubscriptionResourceSchema(ctx)
 }
+
 func (r *appEventSubscriptionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
 }
+
 func (r *appEventSubscriptionResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
 	resp.IdentitySchema = resourceIdentitySchema(appEventSubscriptionIdentityAttributeNames())
 }
+
 func (r *appEventSubscriptionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	ImportStatePassthroughMultipartID(ctx, appEventSubscriptionIdentityAttributeNames(), req, resp)
 }
@@ -128,7 +136,13 @@ func (r *appEventSubscriptionResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	if plan.Topics.Equal(state.Topics) && plan.TargetURL.Equal(state.TargetURL) && plan.FilterFunctionID.Equal(state.FilterFunctionID) && plan.TransformationFunctionID.Equal(state.TransformationFunctionID) && plan.HandlerFunctionID.Equal(state.HandlerFunctionID) && plan.OrganizationID.Equal(state.OrganizationID) && plan.AppDefinitionID.Equal(state.AppDefinitionID) {
+	if plan.Topics.Equal(state.Topics) &&
+		plan.TargetURL.Equal(state.TargetURL) &&
+		plan.FilterFunctionID.Equal(state.FilterFunctionID) &&
+		plan.TransformationFunctionID.Equal(state.TransformationFunctionID) &&
+		plan.HandlerFunctionID.Equal(state.HandlerFunctionID) &&
+		plan.OrganizationID.Equal(state.OrganizationID) &&
+		plan.AppDefinitionID.Equal(state.AppDefinitionID) {
 		state.Timeouts = plan.Timeouts
 		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appEventSubscriptionIdentityAttributeNames(), &state)...)
 

@@ -26,13 +26,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const appEventResourceAddress = "contentful_app_event_subscription.test"
-const appEventResourcePath = "/organizations/organization/app_definitions/app/event_subscription"
-const appEventBaseConfig = `resource "contentful_app_event_subscription" "test" {
+const (
+	appEventResourceAddress = "contentful_app_event_subscription.test"
+	appEventResourcePath    = "/organizations/organization/app_definitions/app/event_subscription"
+	appEventBaseConfig      = `resource "contentful_app_event_subscription" "test" {
  organization_id = "organization"
  app_definition_id = "app"
  topics = ["Entry.publish", "Asset.publish"]
 `
+)
+
 const appEventHTTPConfig = appEventBaseConfig + `target_url = "https://example.invalid/events"
 }`
 const appEventHTTPBody = `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events"}`

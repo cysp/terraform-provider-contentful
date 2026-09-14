@@ -11,14 +11,16 @@ import (
 
 func appEventSubscriptionIDs(model AppEventSubscriptionModel) (string, string, diag.Diagnostics) {
 	organization, diags := requestRequiredString(model.OrganizationID, path.Root("organization_id"))
-	appDefinition, appDiags := requestRequiredString(model.AppDefinitionID, path.Root("app_definition_id"))
-	diags.Append(appDiags...)
-
-	for name, value := range map[string]string{"organization_id": organization, "app_definition_id": appDefinition} {
-		if value == "" {
-			diags.AddAttributeError(path.Root(name), "Invalid app event subscription identity", "Identity components must not be empty.")
-		}
+	if !diags.HasError() && organization == "" {
+		diags.AddAttributeError(path.Root("organization_id"), "Invalid app event subscription identity", "Identity components must not be empty.")
 	}
+
+	appDefinition, appDiags := requestRequiredString(model.AppDefinitionID, path.Root("app_definition_id"))
+	if !appDiags.HasError() && appDefinition == "" {
+		appDiags.AddAttributeError(path.Root("app_definition_id"), "Invalid app event subscription identity", "Identity components must not be empty.")
+	}
+
+	diags.Append(appDiags...)
 
 	return organization, appDefinition, diags
 }
@@ -28,7 +30,7 @@ func appEventSubscriptionIDs(model AppEventSubscriptionModel) (string, string, d
 // empty functions object is used as an invented clearing instruction.
 func (model AppEventSubscriptionModel) ToAppEventSubscriptionData() (cm.AppEventSubscriptionData, diag.Diagnostics) {
 	topics, diags := knownOptionalStringSetElements(path.Root("topics"), model.Topics)
-	if !model.Topics.IsUnknown() && len(topics) == 0 {
+	if !diags.HasError() && len(topics) == 0 {
 		diags.AddAttributeError(path.Root("topics"), "Invalid app event topics", "At least one topic must be supplied.")
 	}
 

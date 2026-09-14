@@ -74,9 +74,11 @@ type appEventSubscriptionTargetValidator struct{}
 func (appEventSubscriptionTargetValidator) Description(context.Context) string {
 	return "The target must be an HTTPS URL."
 }
+
 func (v appEventSubscriptionTargetValidator) MarkdownDescription(ctx context.Context) string {
 	return v.Description(ctx)
 }
+
 func (v appEventSubscriptionTargetValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
 	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
 		return
