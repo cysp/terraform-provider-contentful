@@ -30,13 +30,27 @@ configuration. Creating this resource can overwrite an existing subscription.
 [Import](#import) an existing subscription to review its configuration before
 applying changes.
 
-Writes have no version precondition and can overwrite concurrent changes. If a
-write fails or returns different values, inspect the subscription, refresh, and
-review the next plan before retrying. Terraform can record the returned configuration
-while reporting an error. After a failed Create with saved state, Terraform marks
-the resource as tainted and plans to delete and recreate the entire subscription,
-even if it existed before that Create. A failed Update does not itself taint the
-resource. Import the subscription if creation succeeded without saving resource state.
+Create, Update, and Delete have no version precondition. Writes can overwrite
+concurrent changes; destroying the resource deletes the current subscription,
+including changes made outside Terraform.
+
+## Replacement and recovery
+
+Do not use `create_before_destroy` when replacing a subscription with the same
+`organization_id` and `app_definition_id`: Create updates the existing subscription,
+then Delete removes the newly written configuration. Terraform can retain the
+resource in state even though the subscription is absent; the next refreshed plan
+proposes creation. Check the replacement order in the plan, including
+[`create_before_destroy` inherited from dependent resources](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#create_before_destroy).
+Replacement with unchanged IDs must destroy the subscription before creating it again.
+
+If a write fails or returns different values, inspect the subscription, refresh,
+and review the next plan before retrying. Terraform can record the returned
+configuration while reporting an error. After a failed Create with saved state,
+Terraform marks the resource as tainted and plans to replace the entire subscription,
+even if it existed before that Create. The replacement order described above also
+applies to tainted resources. A failed Update does not itself taint the resource.
+Import the subscription if creation succeeded without saving resource state.
 
 ## Function configuration
 
