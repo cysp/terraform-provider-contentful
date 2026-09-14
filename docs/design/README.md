@@ -18,6 +18,7 @@ when simplifying code or tests.
 | HTTP retries, deadlines, or mutation recovery | [Contentful HTTP retry policy](contentful-http-retry-policy.md) |
 | Entry publication recovery | [Entry publication contract](terraform-value-semantics.md#entry-publication-ownership-and-partial-field-ownership) and [Terraform lifecycle evidence](entry-publication-evidence.md) |
 | Content preview platform representation and requests (`contentful_preview_environment`) | [Configuration and reconciliation](content-preview-environments.md) |
+| Locale management (`contentful_locale`) | [Identity, values, and version handling](locale.md) |
 | CMA test-server behavior or tests that rely on its defaults | [CMA test-server conformance boundaries](cma-test-server-conformance.md) |
 | Practitioner and contributor documentation | [Provider documentation practices](provider-documentation.md) |
 

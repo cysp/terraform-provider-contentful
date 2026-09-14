@@ -1,0 +1,23 @@
+LocaleData:
+  type: object
+  properties:
+    name:
+      type: string
+    code:
+      type: string
+    fallbackCode:
+      type: string
+      nullable: true
+    contentDeliveryApi:
+      type: boolean
+    contentManagementApi:
+      type: boolean
+    optional:
+      type: boolean
+  required:
+    - name
+    - code
+    - fallbackCode
+    - contentDeliveryApi
+    - contentManagementApi
+    - optional
