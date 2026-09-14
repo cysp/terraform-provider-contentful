@@ -2,10 +2,8 @@ package provider
 
 import (
 	"context"
-	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -105,7 +103,7 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		data = mutationState
 
 	default:
-		resp.Diagnostics.AddError("Failed to create app signing secret", appSigningSecretErrorDetail(response, err, plan.Value))
+		resp.Diagnostics.AddError("Failed to create app signing secret", signingSecretErrorDetail(response, err, plan.Value))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -163,13 +161,13 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 
 	default:
 		if contentfulResponseIsNotFound(response) {
-			resp.Diagnostics.AddWarning("Failed to read app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
+			resp.Diagnostics.AddWarning("Failed to read app signing secret", signingSecretErrorDetail(response, err, state.Value))
 			resp.State.RemoveResource(ctx)
 
 			return
 		}
 
-		resp.Diagnostics.AddError("Failed to read app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
+		resp.Diagnostics.AddError("Failed to read app signing secret", signingSecretErrorDetail(response, err, state.Value))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -246,7 +244,7 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		data = mutationState
 
 	default:
-		resp.Diagnostics.AddError("Failed to update app signing secret", appSigningSecretErrorDetail(response, err, state.Value, plan.Value))
+		resp.Diagnostics.AddError("Failed to update app signing secret", signingSecretErrorDetail(response, err, state.Value, plan.Value))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -270,28 +268,12 @@ func maskAppSigningSecretValues(ctx context.Context, values ...types.String) con
 	return tflog.MaskLogStrings(ctx, knownValues...)
 }
 
-func appSigningSecretErrorDetail(response any, err error, values ...types.String) string {
-	return redactAppSigningSecretValues(util.ErrorDetailFromContentfulManagementResponse(response, err), values...)
-}
-
 func appSigningSecretLogError(err error, values ...types.String) any {
 	if err == nil {
 		return nil
 	}
 
-	return redactAppSigningSecretValues(err.Error(), values...)
-}
-
-func redactAppSigningSecretValues(text string, values ...types.String) string {
-	redacted := text
-
-	for _, value := range values {
-		if !value.IsNull() && !value.IsUnknown() && value.ValueString() != "" {
-			redacted = strings.ReplaceAll(redacted, value.ValueString(), "***")
-		}
-	}
-
-	return redacted
+	return redactSigningSecretValues(err.Error(), values...)
 }
 
 func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -332,11 +314,11 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 
 	default:
 		if contentfulResponseIsNotFound(response) {
-			resp.Diagnostics.AddWarning("App signing secret already deleted", appSigningSecretErrorDetail(response, err, state.Value))
+			resp.Diagnostics.AddWarning("App signing secret already deleted", signingSecretErrorDetail(response, err, state.Value))
 
 			return
 		}
 
-		resp.Diagnostics.AddError("Failed to delete app signing secret", appSigningSecretErrorDetail(response, err, state.Value))
+		resp.Diagnostics.AddError("Failed to delete app signing secret", signingSecretErrorDetail(response, err, state.Value))
 	}
 }
