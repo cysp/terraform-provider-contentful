@@ -6872,6 +6872,342 @@ func decodeGetEnvironmentAliasParams(args [2]string, argsEscaped bool, r *http.R
 	return params, nil
 }
 
+// GetEnvironmentAliasesParams is parameters of getEnvironmentAliases operation.
+type GetEnvironmentAliasesParams struct {
+	Skip    OptInt64 `json:",omitempty,omitzero"`
+	Limit   OptInt64 `json:",omitempty,omitzero"`
+	SpaceID string
+}
+
+func unpackGetEnvironmentAliasesParams(packed middleware.Parameters) (params GetEnvironmentAliasesParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "skip",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.Skip = v.(OptInt64)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "limit",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.Limit = v.(OptInt64)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetEnvironmentAliasesParams(args [1]string, argsEscaped bool, r *http.Request) (params GetEnvironmentAliasesParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode query: skip.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "skip",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotSkipVal int64
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt64(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotSkipVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.Skip.SetTo(paramsDotSkipVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "skip",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: limit.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "limit",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotLimitVal int64
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt64(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotLimitVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.Limit.SetTo(paramsDotLimitVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "limit",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetEnvironmentsParams is parameters of getEnvironments operation.
+type GetEnvironmentsParams struct {
+	Skip    OptInt64 `json:",omitempty,omitzero"`
+	Limit   OptInt64 `json:",omitempty,omitzero"`
+	SpaceID string
+}
+
+func unpackGetEnvironmentsParams(packed middleware.Parameters) (params GetEnvironmentsParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "skip",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.Skip = v.(OptInt64)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "limit",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.Limit = v.(OptInt64)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetEnvironmentsParams(args [1]string, argsEscaped bool, r *http.Request) (params GetEnvironmentsParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode query: skip.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "skip",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotSkipVal int64
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt64(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotSkipVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.Skip.SetTo(paramsDotSkipVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "skip",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: limit.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "limit",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotLimitVal int64
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt64(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotLimitVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.Limit.SetTo(paramsDotLimitVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "limit",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetExtensionParams is parameters of getExtension operation.
 type GetExtensionParams struct {
 	SpaceID       string
@@ -7068,6 +7404,398 @@ func unpackGetLivePreviewVariablesParams(packed middleware.Parameters) (params G
 }
 
 func decodeGetLivePreviewVariablesParams(args [2]string, argsEscaped bool, r *http.Request) (params GetLivePreviewVariablesParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: environment_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "environment_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.EnvironmentID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "environment_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetLocaleParams is parameters of getLocale operation.
+type GetLocaleParams struct {
+	SpaceID       string
+	EnvironmentID string
+	LocaleID      string
+}
+
+func unpackGetLocaleParams(packed middleware.Parameters) (params GetLocaleParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "environment_id",
+			In:   "path",
+		}
+		params.EnvironmentID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "locale_id",
+			In:   "path",
+		}
+		params.LocaleID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetLocaleParams(args [3]string, argsEscaped bool, r *http.Request) (params GetLocaleParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: environment_id.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "environment_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.EnvironmentID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "environment_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: locale_id.
+	if err := func() error {
+		param := args[2]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[2])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "locale_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.LocaleID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "locale_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetLocalesParams is parameters of getLocales operation.
+type GetLocalesParams struct {
+	Skip          OptInt64 `json:",omitempty,omitzero"`
+	Limit         OptInt64 `json:",omitempty,omitzero"`
+	SpaceID       string
+	EnvironmentID string
+}
+
+func unpackGetLocalesParams(packed middleware.Parameters) (params GetLocalesParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "skip",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.Skip = v.(OptInt64)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "limit",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.Limit = v.(OptInt64)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "environment_id",
+			In:   "path",
+		}
+		params.EnvironmentID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetLocalesParams(args [2]string, argsEscaped bool, r *http.Request) (params GetLocalesParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode query: skip.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "skip",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotSkipVal int64
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt64(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotSkipVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.Skip.SetTo(paramsDotSkipVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "skip",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: limit.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "limit",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotLimitVal int64
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt64(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotLimitVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.Limit.SetTo(paramsDotLimitVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "limit",
+			In:   "query",
+			Err:  err,
+		}
+	}
 	// Decode path: space_id.
 	if err := func() error {
 		param := args[0]
@@ -7952,6 +8680,71 @@ func decodeGetRoleParams(args [2]string, argsEscaped bool, r *http.Request) (par
 	return params, nil
 }
 
+// GetSpaceParams is parameters of getSpace operation.
+type GetSpaceParams struct {
+	SpaceID string
+}
+
+func unpackGetSpaceParams(packed middleware.Parameters) (params GetSpaceParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "space_id",
+			In:   "path",
+		}
+		params.SpaceID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetSpaceParams(args [1]string, argsEscaped bool, r *http.Request) (params GetSpaceParams, _ error) {
+	// Decode path: space_id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "space_id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.SpaceID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "space_id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetSpaceEnablementsParams is parameters of getSpaceEnablements operation.
 type GetSpaceEnablementsParams struct {
 	SpaceID string
@@ -8011,6 +8804,171 @@ func decodeGetSpaceEnablementsParams(args [1]string, argsEscaped bool, r *http.R
 		return params, &ogenerrors.DecodeParamError{
 			Name: "space_id",
 			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetSpacesParams is parameters of getSpaces operation.
+type GetSpacesParams struct {
+	Skip                    OptInt64  `json:",omitempty,omitzero"`
+	Limit                   OptInt64  `json:",omitempty,omitzero"`
+	XContentfulOrganization OptString `json:",omitempty,omitzero"`
+}
+
+func unpackGetSpacesParams(packed middleware.Parameters) (params GetSpacesParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "skip",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.Skip = v.(OptInt64)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "limit",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.Limit = v.(OptInt64)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Contentful-Organization",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XContentfulOrganization = v.(OptString)
+		}
+	}
+	return params
+}
+
+func decodeGetSpacesParams(args [0]string, argsEscaped bool, r *http.Request) (params GetSpacesParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode query: skip.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "skip",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotSkipVal int64
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt64(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotSkipVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.Skip.SetTo(paramsDotSkipVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "skip",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: limit.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "limit",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotLimitVal int64
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToInt64(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotLimitVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.Limit.SetTo(paramsDotLimitVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "limit",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode header: X-Contentful-Organization.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Contentful-Organization",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXContentfulOrganizationVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXContentfulOrganizationVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XContentfulOrganization.SetTo(paramsDotXContentfulOrganizationVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Contentful-Organization",
+			In:   "header",
 			Err:  err,
 		}
 	}

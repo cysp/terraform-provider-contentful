@@ -197,8 +197,16 @@ type GetEnvironmentAliasRes interface {
 	getEnvironmentAliasRes()
 }
 
+type GetEnvironmentAliasesRes interface {
+	getEnvironmentAliasesRes()
+}
+
 type GetEnvironmentRes interface {
 	getEnvironmentRes()
+}
+
+type GetEnvironmentsRes interface {
+	getEnvironmentsRes()
 }
 
 type GetExtensionRes interface {
@@ -207,6 +215,14 @@ type GetExtensionRes interface {
 
 type GetLivePreviewVariablesRes interface {
 	getLivePreviewVariablesRes()
+}
+
+type GetLocaleRes interface {
+	getLocaleRes()
+}
+
+type GetLocalesRes interface {
+	getLocalesRes()
 }
 
 type GetMarketplaceAppDefinitionsRes interface {
@@ -239,6 +255,14 @@ type GetRoleRes interface {
 
 type GetSpaceEnablementsRes interface {
 	getSpaceEnablementsRes()
+}
+
+type GetSpaceRes interface {
+	getSpaceRes()
+}
+
+type GetSpacesRes interface {
+	getSpacesRes()
 }
 
 type GetTagRes interface {

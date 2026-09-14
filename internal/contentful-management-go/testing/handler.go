@@ -11,7 +11,9 @@ type Handler struct {
 
 	omitEntryMutationResponseFields bool
 
-	me *cm.User
+	me      *cm.User
+	spaces  map[string]*cm.Space
+	locales cm.SpaceEnvironmentMap[*cm.Locale]
 
 	teams OrganizationMap[*cm.Team]
 
@@ -66,6 +68,8 @@ func NewHandler() *Handler {
 	return &Handler{
 		mu: sync.Mutex{},
 
+		spaces:                         make(map[string]*cm.Space),
+		locales:                        cm.NewSpaceEnvironmentMap[*cm.Locale](),
 		teams:                          NewOrganizationMap[*cm.Team](),
 		teamSpaceMemberships:           cm.NewSpaceMap[*cm.TeamSpaceMembership](),
 		personalAccessTokens:           make(map[string]*cm.PersonalAccessToken),

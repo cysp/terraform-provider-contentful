@@ -44,6 +44,20 @@ func (ts *Handler) GetEnvironment(_ context.Context, params cm.GetEnvironmentPar
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if alias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentID); alias != nil {
+		target := ts.environments.Get(params.SpaceID, alias.Environment.Sys.ID)
+		if target == nil {
+			return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		}
+
+		environment := *target
+		environment.Sys.ID = params.EnvironmentID
+		environment.Name = params.EnvironmentID
+		environment.Sys.AliasedEnvironment = cm.NewOptEnvironmentLink(alias.Environment)
+
+		return &environment, nil
+	}
+
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
 	if environment == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil

@@ -158,7 +158,7 @@ func environmentStatusReadyTestResponseBody(t *testing.T, status string) string 
 		Name: "environment",
 	}
 
-	encoded, err := json.Marshal(environment)
+	encoded, err := json.Marshal(&environment)
 	require.NoError(t, err)
 
 	return string(encoded)

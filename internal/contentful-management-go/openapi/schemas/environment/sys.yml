@@ -11,3 +11,5 @@ EnvironmentSys:
         type:
           enum:
             - Environment
+        aliasedEnvironment:
+          $ref: "../links/environment-link.yml#/EnvironmentLink"

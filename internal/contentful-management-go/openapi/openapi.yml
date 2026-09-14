@@ -12,6 +12,17 @@ components:
       required: true
       schema:
         type: string
+    locale_id:
+      in: path
+      name: locale_id
+      required: true
+      schema:
+        type: string
+    x-contentful-organization-optional:
+      in: header
+      name: X-Contentful-Organization
+      schema:
+        type: string
     space_id:
       in: path
       name: space_id
@@ -796,6 +807,122 @@ paths:
       responses:
         204:
           $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces:
+    get:
+      operationId: getSpaces
+      summary: Read Space collection
+      parameters:
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/x-contentful-organization-optional"
+      responses:
+        200:
+          description: Space collection
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/space/collection.yml#/SpaceCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+    get:
+      operationId: getSpace
+      summary: Read Space
+      responses:
+        200:
+          description: Space
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/space/space.yml#/Space"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+    get:
+      operationId: getEnvironments
+      summary: Read Environment collection
+      parameters:
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        200:
+          description: Environment collection
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/environment/collection.yml#/EnvironmentCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environment_aliases:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+    get:
+      operationId: getEnvironmentAliases
+      summary: Read EnvironmentAlias collection
+      parameters:
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        200:
+          description: EnvironmentAlias collection
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/environment-alias/collection.yml#/EnvironmentAliasCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/locales:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+    get:
+      operationId: getLocales
+      summary: Read Locale collection
+      parameters:
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        200:
+          description: Locale collection
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/locale/collection.yml#/LocaleCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/locales/{locale_id}:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/locale_id"
+    get:
+      operationId: getLocale
+      summary: Read Locale
+      responses:
+        200:
+          description: Locale
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/locale/locale.yml#/Locale"
         401:
           $ref: "#/components/responses/unauthorized"
         default:

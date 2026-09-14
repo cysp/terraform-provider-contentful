@@ -1998,8 +1998,12 @@ func (*ApplicationJSONError) getEditorInterfaceRes()             {}
 func (*ApplicationJSONError) getEntriesRes()                     {}
 func (*ApplicationJSONError) getEntryRes()                       {}
 func (*ApplicationJSONError) getEnvironmentAliasRes()            {}
+func (*ApplicationJSONError) getEnvironmentAliasesRes()          {}
 func (*ApplicationJSONError) getEnvironmentRes()                 {}
+func (*ApplicationJSONError) getEnvironmentsRes()                {}
 func (*ApplicationJSONError) getExtensionRes()                   {}
+func (*ApplicationJSONError) getLocaleRes()                      {}
+func (*ApplicationJSONError) getLocalesRes()                     {}
 func (*ApplicationJSONError) getMarketplaceAppDefinitionsRes()   {}
 func (*ApplicationJSONError) getPersonalAccessTokenRes()         {}
 func (*ApplicationJSONError) getPreviewAPIKeyRes()               {}
@@ -2008,6 +2012,8 @@ func (*ApplicationJSONError) getResourceProviderRes()            {}
 func (*ApplicationJSONError) getResourceTypeRes()                {}
 func (*ApplicationJSONError) getRoleRes()                        {}
 func (*ApplicationJSONError) getSpaceEnablementsRes()            {}
+func (*ApplicationJSONError) getSpaceRes()                       {}
+func (*ApplicationJSONError) getSpacesRes()                      {}
 func (*ApplicationJSONError) getTagRes()                         {}
 func (*ApplicationJSONError) getTaxonomyConceptRes()             {}
 func (*ApplicationJSONError) getTaxonomyConceptSchemeRes()       {}
@@ -4147,6 +4153,115 @@ func (s *EnvironmentAlias) SetEnvironment(val EnvironmentLink) {
 
 func (*EnvironmentAlias) getEnvironmentAliasRes() {}
 
+// Ref: #/EnvironmentAliasCollection
+type EnvironmentAliasCollection struct {
+	Sys   EnvironmentAliasCollectionSys `json:"sys"`
+	Total OptInt                        `json:"total"`
+	Skip  OptInt                        `json:"skip"`
+	Limit OptInt                        `json:"limit"`
+	Items []EnvironmentAlias            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *EnvironmentAliasCollection) GetSys() EnvironmentAliasCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *EnvironmentAliasCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *EnvironmentAliasCollection) GetSkip() OptInt {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *EnvironmentAliasCollection) GetLimit() OptInt {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *EnvironmentAliasCollection) GetItems() []EnvironmentAlias {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *EnvironmentAliasCollection) SetSys(val EnvironmentAliasCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *EnvironmentAliasCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *EnvironmentAliasCollection) SetSkip(val OptInt) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *EnvironmentAliasCollection) SetLimit(val OptInt) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *EnvironmentAliasCollection) SetItems(val []EnvironmentAlias) {
+	s.Items = val
+}
+
+func (*EnvironmentAliasCollection) getEnvironmentAliasesRes() {}
+
+type EnvironmentAliasCollectionSys struct {
+	Type EnvironmentAliasCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *EnvironmentAliasCollectionSys) GetType() EnvironmentAliasCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *EnvironmentAliasCollectionSys) SetType(val EnvironmentAliasCollectionSysType) {
+	s.Type = val
+}
+
+type EnvironmentAliasCollectionSysType string
+
+const (
+	EnvironmentAliasCollectionSysTypeArray EnvironmentAliasCollectionSysType = "Array"
+)
+
+// AllValues returns all EnvironmentAliasCollectionSysType values.
+func (EnvironmentAliasCollectionSysType) AllValues() []EnvironmentAliasCollectionSysType {
+	return []EnvironmentAliasCollectionSysType{
+		EnvironmentAliasCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s EnvironmentAliasCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case EnvironmentAliasCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *EnvironmentAliasCollectionSysType) UnmarshalText(data []byte) error {
+	switch EnvironmentAliasCollectionSysType(data) {
+	case EnvironmentAliasCollectionSysTypeArray:
+		*s = EnvironmentAliasCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/EnvironmentAliasData
 type EnvironmentAliasData struct {
 	Environment EnvironmentLink `json:"environment"`
@@ -4244,20 +4359,24 @@ func (s *EnvironmentAliasSys) SetVersion(val int) {
 type EnvironmentAliasSysType string
 
 const (
-	EnvironmentAliasSysTypeEnvironmentAlias EnvironmentAliasSysType = "EnvironmentAlias"
+	EnvironmentAliasSysType_0 EnvironmentAliasSysType = "EnvironmentAlias"
+	EnvironmentAliasSysType_1 EnvironmentAliasSysType = "Environment Alias"
 )
 
 // AllValues returns all EnvironmentAliasSysType values.
 func (EnvironmentAliasSysType) AllValues() []EnvironmentAliasSysType {
 	return []EnvironmentAliasSysType{
-		EnvironmentAliasSysTypeEnvironmentAlias,
+		EnvironmentAliasSysType_0,
+		EnvironmentAliasSysType_1,
 	}
 }
 
 // MarshalText implements encoding.TextMarshaler.
 func (s EnvironmentAliasSysType) MarshalText() ([]byte, error) {
 	switch s {
-	case EnvironmentAliasSysTypeEnvironmentAlias:
+	case EnvironmentAliasSysType_0:
+		return []byte(s), nil
+	case EnvironmentAliasSysType_1:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -4267,8 +4386,120 @@ func (s EnvironmentAliasSysType) MarshalText() ([]byte, error) {
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (s *EnvironmentAliasSysType) UnmarshalText(data []byte) error {
 	switch EnvironmentAliasSysType(data) {
-	case EnvironmentAliasSysTypeEnvironmentAlias:
-		*s = EnvironmentAliasSysTypeEnvironmentAlias
+	case EnvironmentAliasSysType_0:
+		*s = EnvironmentAliasSysType_0
+		return nil
+	case EnvironmentAliasSysType_1:
+		*s = EnvironmentAliasSysType_1
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/EnvironmentCollection
+type EnvironmentCollection struct {
+	Sys   EnvironmentCollectionSys `json:"sys"`
+	Total OptInt                   `json:"total"`
+	Skip  OptInt                   `json:"skip"`
+	Limit OptInt                   `json:"limit"`
+	Items []Environment            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *EnvironmentCollection) GetSys() EnvironmentCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *EnvironmentCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *EnvironmentCollection) GetSkip() OptInt {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *EnvironmentCollection) GetLimit() OptInt {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *EnvironmentCollection) GetItems() []Environment {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *EnvironmentCollection) SetSys(val EnvironmentCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *EnvironmentCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *EnvironmentCollection) SetSkip(val OptInt) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *EnvironmentCollection) SetLimit(val OptInt) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *EnvironmentCollection) SetItems(val []Environment) {
+	s.Items = val
+}
+
+func (*EnvironmentCollection) getEnvironmentsRes() {}
+
+type EnvironmentCollectionSys struct {
+	Type EnvironmentCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *EnvironmentCollectionSys) GetType() EnvironmentCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *EnvironmentCollectionSys) SetType(val EnvironmentCollectionSysType) {
+	s.Type = val
+}
+
+type EnvironmentCollectionSysType string
+
+const (
+	EnvironmentCollectionSysTypeArray EnvironmentCollectionSysType = "Array"
+)
+
+// AllValues returns all EnvironmentCollectionSysType values.
+func (EnvironmentCollectionSysType) AllValues() []EnvironmentCollectionSysType {
+	return []EnvironmentCollectionSysType{
+		EnvironmentCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s EnvironmentCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case EnvironmentCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *EnvironmentCollectionSysType) UnmarshalText(data []byte) error {
+	switch EnvironmentCollectionSysType(data) {
+	case EnvironmentCollectionSysTypeArray:
+		*s = EnvironmentCollectionSysTypeArray
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -4448,10 +4679,11 @@ func (*EnvironmentStatusCode) createOrUpdateEnvironmentRes() {}
 type EnvironmentSys struct {
 	Space SpaceLink `json:"space"`
 	// Merged property.
-	Type    EnvironmentSysType `json:"type"`
-	ID      string             `json:"id"`
-	Version int                `json:"version"`
-	Status  StatusLink         `json:"status"`
+	Type               EnvironmentSysType `json:"type"`
+	ID                 string             `json:"id"`
+	Version            int                `json:"version"`
+	Status             StatusLink         `json:"status"`
+	AliasedEnvironment OptEnvironmentLink `json:"aliasedEnvironment"`
 }
 
 // GetSpace returns the value of Space.
@@ -4479,6 +4711,11 @@ func (s *EnvironmentSys) GetStatus() StatusLink {
 	return s.Status
 }
 
+// GetAliasedEnvironment returns the value of AliasedEnvironment.
+func (s *EnvironmentSys) GetAliasedEnvironment() OptEnvironmentLink {
+	return s.AliasedEnvironment
+}
+
 // SetSpace sets the value of Space.
 func (s *EnvironmentSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -4502,6 +4739,11 @@ func (s *EnvironmentSys) SetVersion(val int) {
 // SetStatus sets the value of Status.
 func (s *EnvironmentSys) SetStatus(val StatusLink) {
 	s.Status = val
+}
+
+// SetAliasedEnvironment sets the value of AliasedEnvironment.
+func (s *EnvironmentSys) SetAliasedEnvironment(val OptEnvironmentLink) {
+	s.AliasedEnvironment = val
 }
 
 // Merged schema.
@@ -4651,8 +4893,12 @@ func (*ErrorStatusCode) getEditorInterfaceRes()             {}
 func (*ErrorStatusCode) getEntriesRes()                     {}
 func (*ErrorStatusCode) getEntryRes()                       {}
 func (*ErrorStatusCode) getEnvironmentAliasRes()            {}
+func (*ErrorStatusCode) getEnvironmentAliasesRes()          {}
 func (*ErrorStatusCode) getEnvironmentRes()                 {}
+func (*ErrorStatusCode) getEnvironmentsRes()                {}
 func (*ErrorStatusCode) getExtensionRes()                   {}
+func (*ErrorStatusCode) getLocaleRes()                      {}
+func (*ErrorStatusCode) getLocalesRes()                     {}
 func (*ErrorStatusCode) getMarketplaceAppDefinitionsRes()   {}
 func (*ErrorStatusCode) getPersonalAccessTokenRes()         {}
 func (*ErrorStatusCode) getPreviewAPIKeyRes()               {}
@@ -4661,6 +4907,8 @@ func (*ErrorStatusCode) getResourceProviderRes()            {}
 func (*ErrorStatusCode) getResourceTypeRes()                {}
 func (*ErrorStatusCode) getRoleRes()                        {}
 func (*ErrorStatusCode) getSpaceEnablementsRes()            {}
+func (*ErrorStatusCode) getSpaceRes()                       {}
+func (*ErrorStatusCode) getSpacesRes()                      {}
 func (*ErrorStatusCode) getTagRes()                         {}
 func (*ErrorStatusCode) getTaxonomyConceptRes()             {}
 func (*ErrorStatusCode) getTaxonomyConceptSchemeRes()       {}
@@ -5633,6 +5881,294 @@ func (s *LivePreviewVariablesSys) SetVersion(val int) {
 	s.Version = val
 }
 
+// Ref: #/Locale
+type Locale struct {
+	Sys                  LocaleSys    `json:"sys"`
+	Name                 string       `json:"name"`
+	Code                 string       `json:"code"`
+	FallbackCode         OptNilString `json:"fallbackCode"`
+	Default              bool         `json:"default"`
+	Optional             bool         `json:"optional"`
+	ContentManagementApi bool         `json:"contentManagementApi"`
+	ContentDeliveryApi   bool         `json:"contentDeliveryApi"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Locale) GetSys() LocaleSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *Locale) GetName() string {
+	return s.Name
+}
+
+// GetCode returns the value of Code.
+func (s *Locale) GetCode() string {
+	return s.Code
+}
+
+// GetFallbackCode returns the value of FallbackCode.
+func (s *Locale) GetFallbackCode() OptNilString {
+	return s.FallbackCode
+}
+
+// GetDefault returns the value of Default.
+func (s *Locale) GetDefault() bool {
+	return s.Default
+}
+
+// GetOptional returns the value of Optional.
+func (s *Locale) GetOptional() bool {
+	return s.Optional
+}
+
+// GetContentManagementApi returns the value of ContentManagementApi.
+func (s *Locale) GetContentManagementApi() bool {
+	return s.ContentManagementApi
+}
+
+// GetContentDeliveryApi returns the value of ContentDeliveryApi.
+func (s *Locale) GetContentDeliveryApi() bool {
+	return s.ContentDeliveryApi
+}
+
+// SetSys sets the value of Sys.
+func (s *Locale) SetSys(val LocaleSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *Locale) SetName(val string) {
+	s.Name = val
+}
+
+// SetCode sets the value of Code.
+func (s *Locale) SetCode(val string) {
+	s.Code = val
+}
+
+// SetFallbackCode sets the value of FallbackCode.
+func (s *Locale) SetFallbackCode(val OptNilString) {
+	s.FallbackCode = val
+}
+
+// SetDefault sets the value of Default.
+func (s *Locale) SetDefault(val bool) {
+	s.Default = val
+}
+
+// SetOptional sets the value of Optional.
+func (s *Locale) SetOptional(val bool) {
+	s.Optional = val
+}
+
+// SetContentManagementApi sets the value of ContentManagementApi.
+func (s *Locale) SetContentManagementApi(val bool) {
+	s.ContentManagementApi = val
+}
+
+// SetContentDeliveryApi sets the value of ContentDeliveryApi.
+func (s *Locale) SetContentDeliveryApi(val bool) {
+	s.ContentDeliveryApi = val
+}
+
+func (*Locale) getLocaleRes() {}
+
+// Ref: #/LocaleCollection
+type LocaleCollection struct {
+	Sys   LocaleCollectionSys `json:"sys"`
+	Total OptInt              `json:"total"`
+	Skip  OptInt              `json:"skip"`
+	Limit OptInt              `json:"limit"`
+	Items []Locale            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *LocaleCollection) GetSys() LocaleCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *LocaleCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *LocaleCollection) GetSkip() OptInt {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *LocaleCollection) GetLimit() OptInt {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *LocaleCollection) GetItems() []Locale {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *LocaleCollection) SetSys(val LocaleCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *LocaleCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *LocaleCollection) SetSkip(val OptInt) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *LocaleCollection) SetLimit(val OptInt) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *LocaleCollection) SetItems(val []Locale) {
+	s.Items = val
+}
+
+func (*LocaleCollection) getLocalesRes() {}
+
+type LocaleCollectionSys struct {
+	Type LocaleCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *LocaleCollectionSys) GetType() LocaleCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *LocaleCollectionSys) SetType(val LocaleCollectionSysType) {
+	s.Type = val
+}
+
+type LocaleCollectionSysType string
+
+const (
+	LocaleCollectionSysTypeArray LocaleCollectionSysType = "Array"
+)
+
+// AllValues returns all LocaleCollectionSysType values.
+func (LocaleCollectionSysType) AllValues() []LocaleCollectionSysType {
+	return []LocaleCollectionSysType{
+		LocaleCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s LocaleCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case LocaleCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *LocaleCollectionSysType) UnmarshalText(data []byte) error {
+	switch LocaleCollectionSysType(data) {
+	case LocaleCollectionSysTypeArray:
+		*s = LocaleCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/LocaleSys
+type LocaleSys struct {
+	// Merged property.
+	Type        LocaleSysType   `json:"type"`
+	ID          string          `json:"id"`
+	Space       SpaceLink       `json:"space"`
+	Environment EnvironmentLink `json:"environment"`
+}
+
+// GetType returns the value of Type.
+func (s *LocaleSys) GetType() LocaleSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *LocaleSys) GetID() string {
+	return s.ID
+}
+
+// GetSpace returns the value of Space.
+func (s *LocaleSys) GetSpace() SpaceLink {
+	return s.Space
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *LocaleSys) GetEnvironment() EnvironmentLink {
+	return s.Environment
+}
+
+// SetType sets the value of Type.
+func (s *LocaleSys) SetType(val LocaleSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *LocaleSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetSpace sets the value of Space.
+func (s *LocaleSys) SetSpace(val SpaceLink) {
+	s.Space = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *LocaleSys) SetEnvironment(val EnvironmentLink) {
+	s.Environment = val
+}
+
+// Merged schema.
+type LocaleSysType string
+
+const (
+	LocaleSysTypeLocale LocaleSysType = "Locale"
+)
+
+// AllValues returns all LocaleSysType values.
+func (LocaleSysType) AllValues() []LocaleSysType {
+	return []LocaleSysType{
+		LocaleSysTypeLocale,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s LocaleSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case LocaleSysTypeLocale:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *LocaleSysType) UnmarshalText(data []byte) error {
+	switch LocaleSysType(data) {
+	case LocaleSysTypeLocale:
+		*s = LocaleSysTypeLocale
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/LocalizedString
 type LocalizedString map[string]string
 
@@ -6380,6 +6916,52 @@ func (o OptEntryMetadata) Get() (v EntryMetadata, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptEntryMetadata) Or(d EntryMetadata) EntryMetadata {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEnvironmentLink returns new OptEnvironmentLink with value set to v.
+func NewOptEnvironmentLink(v EnvironmentLink) OptEnvironmentLink {
+	return OptEnvironmentLink{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEnvironmentLink is optional EnvironmentLink.
+type OptEnvironmentLink struct {
+	Value EnvironmentLink
+	Set   bool
+}
+
+// IsSet returns true if OptEnvironmentLink was set.
+func (o OptEnvironmentLink) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEnvironmentLink) Reset() {
+	var v EnvironmentLink
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEnvironmentLink) SetTo(v EnvironmentLink) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEnvironmentLink) Get() (v EnvironmentLink, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEnvironmentLink) Or(d EnvironmentLink) EnvironmentLink {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -10379,6 +10961,143 @@ func (s *RoleSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/Space
+type Space struct {
+	Sys  SpaceSys `json:"sys"`
+	Name string   `json:"name"`
+}
+
+// GetSys returns the value of Sys.
+func (s *Space) GetSys() SpaceSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *Space) GetName() string {
+	return s.Name
+}
+
+// SetSys sets the value of Sys.
+func (s *Space) SetSys(val SpaceSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *Space) SetName(val string) {
+	s.Name = val
+}
+
+func (*Space) getSpaceRes() {}
+
+// Ref: #/SpaceCollection
+type SpaceCollection struct {
+	Sys   SpaceCollectionSys `json:"sys"`
+	Total OptInt             `json:"total"`
+	Skip  OptInt             `json:"skip"`
+	Limit OptInt             `json:"limit"`
+	Items []Space            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *SpaceCollection) GetSys() SpaceCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *SpaceCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *SpaceCollection) GetSkip() OptInt {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *SpaceCollection) GetLimit() OptInt {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *SpaceCollection) GetItems() []Space {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *SpaceCollection) SetSys(val SpaceCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *SpaceCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *SpaceCollection) SetSkip(val OptInt) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *SpaceCollection) SetLimit(val OptInt) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *SpaceCollection) SetItems(val []Space) {
+	s.Items = val
+}
+
+func (*SpaceCollection) getSpacesRes() {}
+
+type SpaceCollectionSys struct {
+	Type SpaceCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *SpaceCollectionSys) GetType() SpaceCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *SpaceCollectionSys) SetType(val SpaceCollectionSysType) {
+	s.Type = val
+}
+
+type SpaceCollectionSysType string
+
+const (
+	SpaceCollectionSysTypeArray SpaceCollectionSysType = "Array"
+)
+
+// AllValues returns all SpaceCollectionSysType values.
+func (SpaceCollectionSysType) AllValues() []SpaceCollectionSysType {
+	return []SpaceCollectionSysType{
+		SpaceCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s SpaceCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case SpaceCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *SpaceCollectionSysType) UnmarshalText(data []byte) error {
+	switch SpaceCollectionSysType(data) {
+	case SpaceCollectionSysTypeArray:
+		*s = SpaceCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Merged schema.
 // Ref: #/SpaceEnablement
 type SpaceEnablement struct {
@@ -10724,6 +11443,80 @@ func (s *SpaceLinkSysType) UnmarshalText(data []byte) error {
 	switch SpaceLinkSysType(data) {
 	case SpaceLinkSysTypeLink:
 		*s = SpaceLinkSysTypeLink
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Merged schema.
+// Ref: #/SpaceSys
+type SpaceSys struct {
+	// Merged property.
+	Type         SpaceSysType     `json:"type"`
+	ID           string           `json:"id"`
+	Organization OrganizationLink `json:"organization"`
+}
+
+// GetType returns the value of Type.
+func (s *SpaceSys) GetType() SpaceSysType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *SpaceSys) GetID() string {
+	return s.ID
+}
+
+// GetOrganization returns the value of Organization.
+func (s *SpaceSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// SetType sets the value of Type.
+func (s *SpaceSys) SetType(val SpaceSysType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *SpaceSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetOrganization sets the value of Organization.
+func (s *SpaceSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// Merged schema.
+type SpaceSysType string
+
+const (
+	SpaceSysTypeSpace SpaceSysType = "Space"
+)
+
+// AllValues returns all SpaceSysType values.
+func (SpaceSysType) AllValues() []SpaceSysType {
+	return []SpaceSysType{
+		SpaceSysTypeSpace,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s SpaceSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case SpaceSysTypeSpace:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *SpaceSysType) UnmarshalText(data []byte) error {
+	switch SpaceSysType(data) {
+	case SpaceSysTypeSpace:
+		*s = SpaceSysTypeSpace
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

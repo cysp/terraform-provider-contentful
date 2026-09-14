@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	rn70AllowedHeaders = map[string]string{
+	rn76AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn11AllowedHeaders = map[string]string{
@@ -66,6 +66,12 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
 	}
+	rn84AllowedHeaders = map[string]string{
+		"GET": "Authorization,X-Contentful-Organization",
+	}
+	rn2AllowedHeaders = map[string]string{
+		"GET": "Authorization",
+	}
 	rn16AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
 	}
@@ -74,14 +80,20 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
 	}
-	rn77AllowedHeaders = map[string]string{
+	rn83AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 		"PUT": "Authorization,Content-Type,X-Contentful-Version",
+	}
+	rn70AllowedHeaders = map[string]string{
+		"GET": "Authorization",
 	}
 	rn21AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
+	}
+	rn71AllowedHeaders = map[string]string{
+		"GET": "Authorization",
 	}
 	rn4AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
@@ -118,7 +130,7 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Content-Type,X-Contentful-Version",
 	}
-	rn78AllowedHeaders = map[string]string{
+	rn85AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
 		"PUT":    "Authorization,X-Contentful-Version",
 	}
@@ -132,12 +144,18 @@ var (
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
 	}
+	rn75AllowedHeaders = map[string]string{
+		"GET": "Authorization",
+	}
+	rn74AllowedHeaders = map[string]string{
+		"GET": "Authorization",
+	}
 	rn51AllowedHeaders = map[string]string{
 		"DELETE": "Authorization,X-Contentful-Version",
 		"GET":    "Authorization",
 		"PUT":    "Authorization,Content-Type,X-Contentful-Tag-Visibility,X-Contentful-Version",
 	}
-	rn75AllowedHeaders = map[string]string{
+	rn81AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn23AllowedHeaders = map[string]string{
@@ -183,10 +201,10 @@ var (
 	rn22AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
 	}
-	rn72AllowedHeaders = map[string]string{
+	rn78AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn79AllowedHeaders = map[string]string{
+	rn86AllowedHeaders = map[string]string{
 		"PUT": "Authorization",
 	}
 )
@@ -258,7 +276,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn70AllowedHeaders,
+							allowedHeaders: rn76AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -810,25 +828,28 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 				}
 
-			case 's': // Prefix: "spaces/"
+			case 's': // Prefix: "spaces"
 
-				if l := len("spaces/"); len(elem) >= l && elem[0:l] == "spaces/" {
+				if l := len("spaces"); len(elem) >= l && elem[0:l] == "spaces" {
 					elem = elem[l:]
 				} else {
 					break
 				}
 
-				// Param: "space_id"
-				// Match until "/"
-				idx := strings.IndexByte(elem, '/')
-				if idx < 0 {
-					idx = len(elem)
-				}
-				args[0] = elem[:idx]
-				elem = elem[idx:]
-
 				if len(elem) == 0 {
-					break
+					switch r.Method {
+					case "GET":
+						s.handleGetSpacesRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, notAllowedParams{
+							allowedMethods: "GET",
+							allowedHeaders: rn84AllowedHeaders,
+							acceptPost:     "",
+							acceptPatch:    "",
+						})
+					}
+
+					return
 				}
 				switch elem[0] {
 				case '/': // Prefix: "/"
@@ -839,88 +860,36 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 
+					// Param: "space_id"
+					// Match until "/"
+					idx := strings.IndexByte(elem, '/')
+					if idx < 0 {
+						idx = len(elem)
+					}
+					args[0] = elem[:idx]
+					elem = elem[idx:]
+
 					if len(elem) == 0 {
-						break
+						switch r.Method {
+						case "GET":
+							s.handleGetSpaceRequest([1]string{
+								args[0],
+							}, elemIsEscaped, w, r)
+						default:
+							s.notAllowed(w, r, notAllowedParams{
+								allowedMethods: "GET",
+								allowedHeaders: rn2AllowedHeaders,
+								acceptPost:     "",
+								acceptPatch:    "",
+							})
+						}
+
+						return
 					}
 					switch elem[0] {
-					case 'a': // Prefix: "api_keys"
+					case '/': // Prefix: "/"
 
-						if l := len("api_keys"); len(elem) >= l && elem[0:l] == "api_keys" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							switch r.Method {
-							case "POST":
-								s.handleCreateDeliveryAPIKeyRequest([1]string{
-									args[0],
-								}, elemIsEscaped, w, r)
-							default:
-								s.notAllowed(w, r, notAllowedParams{
-									allowedMethods: "POST",
-									allowedHeaders: rn16AllowedHeaders,
-									acceptPost:     "application/vnd.contentful.management.v1+json",
-									acceptPatch:    "",
-								})
-							}
-
-							return
-						}
-						switch elem[0] {
-						case '/': // Prefix: "/"
-
-							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-								elem = elem[l:]
-							} else {
-								break
-							}
-
-							// Param: "api_key_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
-								break
-							}
-							args[1] = elem
-							elem = ""
-
-							if len(elem) == 0 {
-								// Leaf node.
-								switch r.Method {
-								case "DELETE":
-									s.handleDeleteDeliveryAPIKeyRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								case "GET":
-									s.handleGetDeliveryAPIKeyRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								case "PUT":
-									s.handleUpdateDeliveryAPIKeyRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								default:
-									s.notAllowed(w, r, notAllowedParams{
-										allowedMethods: "DELETE,GET,PUT",
-										allowedHeaders: rn36AllowedHeaders,
-										acceptPost:     "",
-										acceptPatch:    "",
-									})
-								}
-
-								return
-							}
-
-						}
-
-					case 'e': // Prefix: "en"
-
-						if l := len("en"); len(elem) >= l && elem[0:l] == "en" {
+						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 							elem = elem[l:]
 						} else {
 							break
@@ -930,58 +899,41 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							break
 						}
 						switch elem[0] {
-						case 'a': // Prefix: "ablements"
+						case 'a': // Prefix: "api_keys"
 
-							if l := len("ablements"); len(elem) >= l && elem[0:l] == "ablements" {
+							if l := len("api_keys"); len(elem) >= l && elem[0:l] == "api_keys" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
 							if len(elem) == 0 {
-								// Leaf node.
 								switch r.Method {
-								case "GET":
-									s.handleGetSpaceEnablementsRequest([1]string{
-										args[0],
-									}, elemIsEscaped, w, r)
-								case "PUT":
-									s.handlePutSpaceEnablementsRequest([1]string{
+								case "POST":
+									s.handleCreateDeliveryAPIKeyRequest([1]string{
 										args[0],
 									}, elemIsEscaped, w, r)
 								default:
 									s.notAllowed(w, r, notAllowedParams{
-										allowedMethods: "GET,PUT",
-										allowedHeaders: rn77AllowedHeaders,
-										acceptPost:     "",
+										allowedMethods: "POST",
+										allowedHeaders: rn16AllowedHeaders,
+										acceptPost:     "application/vnd.contentful.management.v1+json",
 										acceptPatch:    "",
 									})
 								}
 
 								return
-							}
-
-						case 'v': // Prefix: "vironment"
-
-							if l := len("vironment"); len(elem) >= l && elem[0:l] == "vironment" {
-								elem = elem[l:]
-							} else {
-								break
-							}
-
-							if len(elem) == 0 {
-								break
 							}
 							switch elem[0] {
-							case '_': // Prefix: "_aliases/"
+							case '/': // Prefix: "/"
 
-								if l := len("_aliases/"); len(elem) >= l && elem[0:l] == "_aliases/" {
+								if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 									elem = elem[l:]
 								} else {
 									break
 								}
 
-								// Param: "environment_alias_id"
+								// Param: "api_key_id"
 								// Leaf parameter, slashes are prohibited
 								idx := strings.IndexByte(elem, '/')
 								if idx >= 0 {
@@ -994,24 +946,24 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									// Leaf node.
 									switch r.Method {
 									case "DELETE":
-										s.handleDeleteEnvironmentAliasRequest([2]string{
+										s.handleDeleteDeliveryAPIKeyRequest([2]string{
 											args[0],
 											args[1],
 										}, elemIsEscaped, w, r)
 									case "GET":
-										s.handleGetEnvironmentAliasRequest([2]string{
+										s.handleGetDeliveryAPIKeyRequest([2]string{
 											args[0],
 											args[1],
 										}, elemIsEscaped, w, r)
 									case "PUT":
-										s.handleCreateOrUpdateEnvironmentAliasRequest([2]string{
+										s.handleUpdateDeliveryAPIKeyRequest([2]string{
 											args[0],
 											args[1],
 										}, elemIsEscaped, w, r)
 									default:
 										s.notAllowed(w, r, notAllowedParams{
 											allowedMethods: "DELETE,GET,PUT",
-											allowedHeaders: rn21AllowedHeaders,
+											allowedHeaders: rn36AllowedHeaders,
 											acceptPost:     "",
 											acceptPatch:    "",
 										})
@@ -1020,44 +972,43 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									return
 								}
 
-							case 's': // Prefix: "s/"
+							}
 
-								if l := len("s/"); len(elem) >= l && elem[0:l] == "s/" {
+						case 'e': // Prefix: "en"
+
+							if l := len("en"); len(elem) >= l && elem[0:l] == "en" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								break
+							}
+							switch elem[0] {
+							case 'a': // Prefix: "ablements"
+
+								if l := len("ablements"); len(elem) >= l && elem[0:l] == "ablements" {
 									elem = elem[l:]
 								} else {
 									break
 								}
 
-								// Param: "environment_id"
-								// Match until "/"
-								idx := strings.IndexByte(elem, '/')
-								if idx < 0 {
-									idx = len(elem)
-								}
-								args[1] = elem[:idx]
-								elem = elem[idx:]
-
 								if len(elem) == 0 {
+									// Leaf node.
 									switch r.Method {
-									case "DELETE":
-										s.handleDeleteEnvironmentRequest([2]string{
-											args[0],
-											args[1],
-										}, elemIsEscaped, w, r)
 									case "GET":
-										s.handleGetEnvironmentRequest([2]string{
+										s.handleGetSpaceEnablementsRequest([1]string{
 											args[0],
-											args[1],
 										}, elemIsEscaped, w, r)
 									case "PUT":
-										s.handleCreateOrUpdateEnvironmentRequest([2]string{
+										s.handlePutSpaceEnablementsRequest([1]string{
 											args[0],
-											args[1],
 										}, elemIsEscaped, w, r)
 									default:
 										s.notAllowed(w, r, notAllowedParams{
-											allowedMethods: "DELETE,GET,PUT",
-											allowedHeaders: rn4AllowedHeaders,
+											allowedMethods: "GET,PUT",
+											allowedHeaders: rn83AllowedHeaders,
 											acceptPost:     "",
 											acceptPatch:    "",
 										})
@@ -1065,61 +1016,84 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 									return
 								}
-								switch elem[0] {
-								case '/': // Prefix: "/"
 
-									if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+							case 'v': // Prefix: "vironment"
+
+								if l := len("vironment"); len(elem) >= l && elem[0:l] == "vironment" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								if len(elem) == 0 {
+									break
+								}
+								switch elem[0] {
+								case '_': // Prefix: "_aliases"
+
+									if l := len("_aliases"); len(elem) >= l && elem[0:l] == "_aliases" {
 										elem = elem[l:]
 									} else {
 										break
 									}
 
 									if len(elem) == 0 {
-										break
+										switch r.Method {
+										case "GET":
+											s.handleGetEnvironmentAliasesRequest([1]string{
+												args[0],
+											}, elemIsEscaped, w, r)
+										default:
+											s.notAllowed(w, r, notAllowedParams{
+												allowedMethods: "GET",
+												allowedHeaders: rn70AllowedHeaders,
+												acceptPost:     "",
+												acceptPatch:    "",
+											})
+										}
+
+										return
 									}
 									switch elem[0] {
-									case 'a': // Prefix: "app_installations/"
+									case '/': // Prefix: "/"
 
-										if l := len("app_installations/"); len(elem) >= l && elem[0:l] == "app_installations/" {
+										if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
-										// Param: "app_definition_id"
+										// Param: "environment_alias_id"
 										// Leaf parameter, slashes are prohibited
 										idx := strings.IndexByte(elem, '/')
 										if idx >= 0 {
 											break
 										}
-										args[2] = elem
+										args[1] = elem
 										elem = ""
 
 										if len(elem) == 0 {
 											// Leaf node.
 											switch r.Method {
 											case "DELETE":
-												s.handleDeleteAppInstallationRequest([3]string{
+												s.handleDeleteEnvironmentAliasRequest([2]string{
 													args[0],
 													args[1],
-													args[2],
 												}, elemIsEscaped, w, r)
 											case "GET":
-												s.handleGetAppInstallationRequest([3]string{
+												s.handleGetEnvironmentAliasRequest([2]string{
 													args[0],
 													args[1],
-													args[2],
 												}, elemIsEscaped, w, r)
 											case "PUT":
-												s.handlePutAppInstallationRequest([3]string{
+												s.handleCreateOrUpdateEnvironmentAliasRequest([2]string{
 													args[0],
 													args[1],
-													args[2],
 												}, elemIsEscaped, w, r)
 											default:
 												s.notAllowed(w, r, notAllowedParams{
 													allowedMethods: "DELETE,GET,PUT",
-													allowedHeaders: rn30AllowedHeaders,
+													allowedHeaders: rn21AllowedHeaders,
 													acceptPost:     "",
 													acceptPatch:    "",
 												})
@@ -1128,25 +1102,72 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 											return
 										}
 
-									case 'c': // Prefix: "content_types"
+									}
 
-										if l := len("content_types"); len(elem) >= l && elem[0:l] == "content_types" {
+								case 's': // Prefix: "s"
+
+									if l := len("s"); len(elem) >= l && elem[0:l] == "s" {
+										elem = elem[l:]
+									} else {
+										break
+									}
+
+									if len(elem) == 0 {
+										switch r.Method {
+										case "GET":
+											s.handleGetEnvironmentsRequest([1]string{
+												args[0],
+											}, elemIsEscaped, w, r)
+										default:
+											s.notAllowed(w, r, notAllowedParams{
+												allowedMethods: "GET",
+												allowedHeaders: rn71AllowedHeaders,
+												acceptPost:     "",
+												acceptPatch:    "",
+											})
+										}
+
+										return
+									}
+									switch elem[0] {
+									case '/': // Prefix: "/"
+
+										if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
+										// Param: "environment_id"
+										// Match until "/"
+										idx := strings.IndexByte(elem, '/')
+										if idx < 0 {
+											idx = len(elem)
+										}
+										args[1] = elem[:idx]
+										elem = elem[idx:]
+
 										if len(elem) == 0 {
 											switch r.Method {
+											case "DELETE":
+												s.handleDeleteEnvironmentRequest([2]string{
+													args[0],
+													args[1],
+												}, elemIsEscaped, w, r)
 											case "GET":
-												s.handleGetContentTypesRequest([2]string{
+												s.handleGetEnvironmentRequest([2]string{
+													args[0],
+													args[1],
+												}, elemIsEscaped, w, r)
+											case "PUT":
+												s.handleCreateOrUpdateEnvironmentRequest([2]string{
 													args[0],
 													args[1],
 												}, elemIsEscaped, w, r)
 											default:
 												s.notAllowed(w, r, notAllowedParams{
-													allowedMethods: "GET",
-													allowedHeaders: rn67AllowedHeaders,
+													allowedMethods: "DELETE,GET,PUT",
+													allowedHeaders: rn4AllowedHeaders,
 													acceptPost:     "",
 													acceptPatch:    "",
 												})
@@ -1163,212 +1184,44 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 												break
 											}
 
-											// Param: "content_type_id"
-											// Match until "/"
-											idx := strings.IndexByte(elem, '/')
-											if idx < 0 {
-												idx = len(elem)
-											}
-											args[2] = elem[:idx]
-											elem = elem[idx:]
-
 											if len(elem) == 0 {
-												switch r.Method {
-												case "DELETE":
-													s.handleDeleteContentTypeRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												case "GET":
-													s.handleGetContentTypeRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												case "PUT":
-													s.handlePutContentTypeRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												default:
-													s.notAllowed(w, r, notAllowedParams{
-														allowedMethods: "DELETE,GET,PUT",
-														allowedHeaders: rn6AllowedHeaders,
-														acceptPost:     "",
-														acceptPatch:    "",
-													})
-												}
-
-												return
-											}
-											switch elem[0] {
-											case '/': // Prefix: "/"
-
-												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-													elem = elem[l:]
-												} else {
-													break
-												}
-
-												if len(elem) == 0 {
-													break
-												}
-												switch elem[0] {
-												case 'e': // Prefix: "editor_interface"
-
-													if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
-														elem = elem[l:]
-													} else {
-														break
-													}
-
-													if len(elem) == 0 {
-														// Leaf node.
-														switch r.Method {
-														case "GET":
-															s.handleGetEditorInterfaceRequest([3]string{
-																args[0],
-																args[1],
-																args[2],
-															}, elemIsEscaped, w, r)
-														case "PUT":
-															s.handlePutEditorInterfaceRequest([3]string{
-																args[0],
-																args[1],
-																args[2],
-															}, elemIsEscaped, w, r)
-														default:
-															s.notAllowed(w, r, notAllowedParams{
-																allowedMethods: "GET,PUT",
-																allowedHeaders: rn69AllowedHeaders,
-																acceptPost:     "",
-																acceptPatch:    "",
-															})
-														}
-
-														return
-													}
-
-												case 'p': // Prefix: "published"
-
-													if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
-														elem = elem[l:]
-													} else {
-														break
-													}
-
-													if len(elem) == 0 {
-														// Leaf node.
-														switch r.Method {
-														case "DELETE":
-															s.handleDeactivateContentTypeRequest([3]string{
-																args[0],
-																args[1],
-																args[2],
-															}, elemIsEscaped, w, r)
-														case "PUT":
-															s.handleActivateContentTypeRequest([3]string{
-																args[0],
-																args[1],
-																args[2],
-															}, elemIsEscaped, w, r)
-														default:
-															s.notAllowed(w, r, notAllowedParams{
-																allowedMethods: "DELETE,PUT",
-																allowedHeaders: rn7AllowedHeaders,
-																acceptPost:     "",
-																acceptPatch:    "",
-															})
-														}
-
-														return
-													}
-
-												}
-
-											}
-
-										}
-
-									case 'e': // Prefix: "e"
-
-										if l := len("e"); len(elem) >= l && elem[0:l] == "e" {
-											elem = elem[l:]
-										} else {
-											break
-										}
-
-										if len(elem) == 0 {
-											break
-										}
-										switch elem[0] {
-										case 'n': // Prefix: "ntries"
-
-											if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
-												elem = elem[l:]
-											} else {
 												break
 											}
-
-											if len(elem) == 0 {
-												switch r.Method {
-												case "GET":
-													s.handleGetEntriesRequest([2]string{
-														args[0],
-														args[1],
-													}, elemIsEscaped, w, r)
-												case "POST":
-													s.handleCreateEntryRequest([2]string{
-														args[0],
-														args[1],
-													}, elemIsEscaped, w, r)
-												default:
-													s.notAllowed(w, r, notAllowedParams{
-														allowedMethods: "GET,POST",
-														allowedHeaders: rn18AllowedHeaders,
-														acceptPost:     "application/vnd.contentful.management.v1+json",
-														acceptPatch:    "",
-													})
-												}
-
-												return
-											}
 											switch elem[0] {
-											case '/': // Prefix: "/"
+											case 'a': // Prefix: "app_installations/"
 
-												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+												if l := len("app_installations/"); len(elem) >= l && elem[0:l] == "app_installations/" {
 													elem = elem[l:]
 												} else {
 													break
 												}
 
-												// Param: "entry_id"
-												// Match until "/"
+												// Param: "app_definition_id"
+												// Leaf parameter, slashes are prohibited
 												idx := strings.IndexByte(elem, '/')
-												if idx < 0 {
-													idx = len(elem)
+												if idx >= 0 {
+													break
 												}
-												args[2] = elem[:idx]
-												elem = elem[idx:]
+												args[2] = elem
+												elem = ""
 
 												if len(elem) == 0 {
+													// Leaf node.
 													switch r.Method {
 													case "DELETE":
-														s.handleDeleteEntryRequest([3]string{
+														s.handleDeleteAppInstallationRequest([3]string{
 															args[0],
 															args[1],
 															args[2],
 														}, elemIsEscaped, w, r)
 													case "GET":
-														s.handleGetEntryRequest([3]string{
+														s.handleGetAppInstallationRequest([3]string{
 															args[0],
 															args[1],
 															args[2],
 														}, elemIsEscaped, w, r)
 													case "PUT":
-														s.handlePutEntryRequest([3]string{
+														s.handlePutAppInstallationRequest([3]string{
 															args[0],
 															args[1],
 															args[2],
@@ -1376,7 +1229,34 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 													default:
 														s.notAllowed(w, r, notAllowedParams{
 															allowedMethods: "DELETE,GET,PUT",
-															allowedHeaders: rn38AllowedHeaders,
+															allowedHeaders: rn30AllowedHeaders,
+															acceptPost:     "",
+															acceptPatch:    "",
+														})
+													}
+
+													return
+												}
+
+											case 'c': // Prefix: "content_types"
+
+												if l := len("content_types"); len(elem) >= l && elem[0:l] == "content_types" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												if len(elem) == 0 {
+													switch r.Method {
+													case "GET":
+														s.handleGetContentTypesRequest([2]string{
+															args[0],
+															args[1],
+														}, elemIsEscaped, w, r)
+													default:
+														s.notAllowed(w, r, notAllowedParams{
+															allowedMethods: "GET",
+															allowedHeaders: rn67AllowedHeaders,
 															acceptPost:     "",
 															acceptPatch:    "",
 														})
@@ -1385,33 +1265,317 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 													return
 												}
 												switch elem[0] {
-												case '/': // Prefix: "/published"
+												case '/': // Prefix: "/"
 
-													if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+													if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 														elem = elem[l:]
 													} else {
 														break
 													}
 
+													// Param: "content_type_id"
+													// Match until "/"
+													idx := strings.IndexByte(elem, '/')
+													if idx < 0 {
+														idx = len(elem)
+													}
+													args[2] = elem[:idx]
+													elem = elem[idx:]
+
 													if len(elem) == 0 {
-														// Leaf node.
 														switch r.Method {
 														case "DELETE":
-															s.handleUnpublishEntryRequest([3]string{
+															s.handleDeleteContentTypeRequest([3]string{
+																args[0],
+																args[1],
+																args[2],
+															}, elemIsEscaped, w, r)
+														case "GET":
+															s.handleGetContentTypeRequest([3]string{
 																args[0],
 																args[1],
 																args[2],
 															}, elemIsEscaped, w, r)
 														case "PUT":
-															s.handlePublishEntryRequest([3]string{
+															s.handlePutContentTypeRequest([3]string{
 																args[0],
 																args[1],
 																args[2],
 															}, elemIsEscaped, w, r)
 														default:
 															s.notAllowed(w, r, notAllowedParams{
-																allowedMethods: "DELETE,PUT",
-																allowedHeaders: rn78AllowedHeaders,
+																allowedMethods: "DELETE,GET,PUT",
+																allowedHeaders: rn6AllowedHeaders,
+																acceptPost:     "",
+																acceptPatch:    "",
+															})
+														}
+
+														return
+													}
+													switch elem[0] {
+													case '/': // Prefix: "/"
+
+														if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+															elem = elem[l:]
+														} else {
+															break
+														}
+
+														if len(elem) == 0 {
+															break
+														}
+														switch elem[0] {
+														case 'e': // Prefix: "editor_interface"
+
+															if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
+																elem = elem[l:]
+															} else {
+																break
+															}
+
+															if len(elem) == 0 {
+																// Leaf node.
+																switch r.Method {
+																case "GET":
+																	s.handleGetEditorInterfaceRequest([3]string{
+																		args[0],
+																		args[1],
+																		args[2],
+																	}, elemIsEscaped, w, r)
+																case "PUT":
+																	s.handlePutEditorInterfaceRequest([3]string{
+																		args[0],
+																		args[1],
+																		args[2],
+																	}, elemIsEscaped, w, r)
+																default:
+																	s.notAllowed(w, r, notAllowedParams{
+																		allowedMethods: "GET,PUT",
+																		allowedHeaders: rn69AllowedHeaders,
+																		acceptPost:     "",
+																		acceptPatch:    "",
+																	})
+																}
+
+																return
+															}
+
+														case 'p': // Prefix: "published"
+
+															if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
+																elem = elem[l:]
+															} else {
+																break
+															}
+
+															if len(elem) == 0 {
+																// Leaf node.
+																switch r.Method {
+																case "DELETE":
+																	s.handleDeactivateContentTypeRequest([3]string{
+																		args[0],
+																		args[1],
+																		args[2],
+																	}, elemIsEscaped, w, r)
+																case "PUT":
+																	s.handleActivateContentTypeRequest([3]string{
+																		args[0],
+																		args[1],
+																		args[2],
+																	}, elemIsEscaped, w, r)
+																default:
+																	s.notAllowed(w, r, notAllowedParams{
+																		allowedMethods: "DELETE,PUT",
+																		allowedHeaders: rn7AllowedHeaders,
+																		acceptPost:     "",
+																		acceptPatch:    "",
+																	})
+																}
+
+																return
+															}
+
+														}
+
+													}
+
+												}
+
+											case 'e': // Prefix: "e"
+
+												if l := len("e"); len(elem) >= l && elem[0:l] == "e" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												if len(elem) == 0 {
+													break
+												}
+												switch elem[0] {
+												case 'n': // Prefix: "ntries"
+
+													if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														switch r.Method {
+														case "GET":
+															s.handleGetEntriesRequest([2]string{
+																args[0],
+																args[1],
+															}, elemIsEscaped, w, r)
+														case "POST":
+															s.handleCreateEntryRequest([2]string{
+																args[0],
+																args[1],
+															}, elemIsEscaped, w, r)
+														default:
+															s.notAllowed(w, r, notAllowedParams{
+																allowedMethods: "GET,POST",
+																allowedHeaders: rn18AllowedHeaders,
+																acceptPost:     "application/vnd.contentful.management.v1+json",
+																acceptPatch:    "",
+															})
+														}
+
+														return
+													}
+													switch elem[0] {
+													case '/': // Prefix: "/"
+
+														if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+															elem = elem[l:]
+														} else {
+															break
+														}
+
+														// Param: "entry_id"
+														// Match until "/"
+														idx := strings.IndexByte(elem, '/')
+														if idx < 0 {
+															idx = len(elem)
+														}
+														args[2] = elem[:idx]
+														elem = elem[idx:]
+
+														if len(elem) == 0 {
+															switch r.Method {
+															case "DELETE":
+																s.handleDeleteEntryRequest([3]string{
+																	args[0],
+																	args[1],
+																	args[2],
+																}, elemIsEscaped, w, r)
+															case "GET":
+																s.handleGetEntryRequest([3]string{
+																	args[0],
+																	args[1],
+																	args[2],
+																}, elemIsEscaped, w, r)
+															case "PUT":
+																s.handlePutEntryRequest([3]string{
+																	args[0],
+																	args[1],
+																	args[2],
+																}, elemIsEscaped, w, r)
+															default:
+																s.notAllowed(w, r, notAllowedParams{
+																	allowedMethods: "DELETE,GET,PUT",
+																	allowedHeaders: rn38AllowedHeaders,
+																	acceptPost:     "",
+																	acceptPatch:    "",
+																})
+															}
+
+															return
+														}
+														switch elem[0] {
+														case '/': // Prefix: "/published"
+
+															if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+																elem = elem[l:]
+															} else {
+																break
+															}
+
+															if len(elem) == 0 {
+																// Leaf node.
+																switch r.Method {
+																case "DELETE":
+																	s.handleUnpublishEntryRequest([3]string{
+																		args[0],
+																		args[1],
+																		args[2],
+																	}, elemIsEscaped, w, r)
+																case "PUT":
+																	s.handlePublishEntryRequest([3]string{
+																		args[0],
+																		args[1],
+																		args[2],
+																	}, elemIsEscaped, w, r)
+																default:
+																	s.notAllowed(w, r, notAllowedParams{
+																		allowedMethods: "DELETE,PUT",
+																		allowedHeaders: rn85AllowedHeaders,
+																		acceptPost:     "",
+																		acceptPatch:    "",
+																	})
+																}
+
+																return
+															}
+
+														}
+
+													}
+
+												case 'x': // Prefix: "xtensions/"
+
+													if l := len("xtensions/"); len(elem) >= l && elem[0:l] == "xtensions/" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													// Param: "extension_id"
+													// Leaf parameter, slashes are prohibited
+													idx := strings.IndexByte(elem, '/')
+													if idx >= 0 {
+														break
+													}
+													args[2] = elem
+													elem = ""
+
+													if len(elem) == 0 {
+														// Leaf node.
+														switch r.Method {
+														case "DELETE":
+															s.handleDeleteExtensionRequest([3]string{
+																args[0],
+																args[1],
+																args[2],
+															}, elemIsEscaped, w, r)
+														case "GET":
+															s.handleGetExtensionRequest([3]string{
+																args[0],
+																args[1],
+																args[2],
+															}, elemIsEscaped, w, r)
+														case "PUT":
+															s.handlePutExtensionRequest([3]string{
+																args[0],
+																args[1],
+																args[2],
+															}, elemIsEscaped, w, r)
+														default:
+															s.notAllowed(w, r, notAllowedParams{
+																allowedMethods: "DELETE,GET,PUT",
+																allowedHeaders: rn41AllowedHeaders,
 																acceptPost:     "",
 																acceptPatch:    "",
 															})
@@ -1422,146 +1586,177 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 												}
 
-											}
+											case 'l': // Prefix: "l"
 
-										case 'x': // Prefix: "xtensions/"
-
-											if l := len("xtensions/"); len(elem) >= l && elem[0:l] == "xtensions/" {
-												elem = elem[l:]
-											} else {
-												break
-											}
-
-											// Param: "extension_id"
-											// Leaf parameter, slashes are prohibited
-											idx := strings.IndexByte(elem, '/')
-											if idx >= 0 {
-												break
-											}
-											args[2] = elem
-											elem = ""
-
-											if len(elem) == 0 {
-												// Leaf node.
-												switch r.Method {
-												case "DELETE":
-													s.handleDeleteExtensionRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												case "GET":
-													s.handleGetExtensionRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												case "PUT":
-													s.handlePutExtensionRequest([3]string{
-														args[0],
-														args[1],
-														args[2],
-													}, elemIsEscaped, w, r)
-												default:
-													s.notAllowed(w, r, notAllowedParams{
-														allowedMethods: "DELETE,GET,PUT",
-														allowedHeaders: rn41AllowedHeaders,
-														acceptPost:     "",
-														acceptPatch:    "",
-													})
+												if l := len("l"); len(elem) >= l && elem[0:l] == "l" {
+													elem = elem[l:]
+												} else {
+													break
 												}
 
-												return
+												if len(elem) == 0 {
+													break
+												}
+												switch elem[0] {
+												case 'i': // Prefix: "ive_preview/variables"
+
+													if l := len("ive_preview/variables"); len(elem) >= l && elem[0:l] == "ive_preview/variables" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														// Leaf node.
+														switch r.Method {
+														case "DELETE":
+															s.handleDeleteLivePreviewVariablesRequest([2]string{
+																args[0],
+																args[1],
+															}, elemIsEscaped, w, r)
+														case "GET":
+															s.handleGetLivePreviewVariablesRequest([2]string{
+																args[0],
+																args[1],
+															}, elemIsEscaped, w, r)
+														case "PUT":
+															s.handlePutLivePreviewVariablesRequest([2]string{
+																args[0],
+																args[1],
+															}, elemIsEscaped, w, r)
+														default:
+															s.notAllowed(w, r, notAllowedParams{
+																allowedMethods: "DELETE,GET,PUT",
+																allowedHeaders: rn42AllowedHeaders,
+																acceptPost:     "",
+																acceptPatch:    "",
+															})
+														}
+
+														return
+													}
+
+												case 'o': // Prefix: "ocales"
+
+													if l := len("ocales"); len(elem) >= l && elem[0:l] == "ocales" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														switch r.Method {
+														case "GET":
+															s.handleGetLocalesRequest([2]string{
+																args[0],
+																args[1],
+															}, elemIsEscaped, w, r)
+														default:
+															s.notAllowed(w, r, notAllowedParams{
+																allowedMethods: "GET",
+																allowedHeaders: rn75AllowedHeaders,
+																acceptPost:     "",
+																acceptPatch:    "",
+															})
+														}
+
+														return
+													}
+													switch elem[0] {
+													case '/': // Prefix: "/"
+
+														if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+															elem = elem[l:]
+														} else {
+															break
+														}
+
+														// Param: "locale_id"
+														// Leaf parameter, slashes are prohibited
+														idx := strings.IndexByte(elem, '/')
+														if idx >= 0 {
+															break
+														}
+														args[2] = elem
+														elem = ""
+
+														if len(elem) == 0 {
+															// Leaf node.
+															switch r.Method {
+															case "GET":
+																s.handleGetLocaleRequest([3]string{
+																	args[0],
+																	args[1],
+																	args[2],
+																}, elemIsEscaped, w, r)
+															default:
+																s.notAllowed(w, r, notAllowedParams{
+																	allowedMethods: "GET",
+																	allowedHeaders: rn74AllowedHeaders,
+																	acceptPost:     "",
+																	acceptPatch:    "",
+																})
+															}
+
+															return
+														}
+
+													}
+
+												}
+
+											case 't': // Prefix: "tags/"
+
+												if l := len("tags/"); len(elem) >= l && elem[0:l] == "tags/" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												// Param: "tag_id"
+												// Leaf parameter, slashes are prohibited
+												idx := strings.IndexByte(elem, '/')
+												if idx >= 0 {
+													break
+												}
+												args[2] = elem
+												elem = ""
+
+												if len(elem) == 0 {
+													// Leaf node.
+													switch r.Method {
+													case "DELETE":
+														s.handleDeleteTagRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													case "GET":
+														s.handleGetTagRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													case "PUT":
+														s.handlePutTagRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													default:
+														s.notAllowed(w, r, notAllowedParams{
+															allowedMethods: "DELETE,GET,PUT",
+															allowedHeaders: rn51AllowedHeaders,
+															acceptPost:     "",
+															acceptPatch:    "",
+														})
+													}
+
+													return
+												}
+
 											}
 
-										}
-
-									case 'l': // Prefix: "live_preview/variables"
-
-										if l := len("live_preview/variables"); len(elem) >= l && elem[0:l] == "live_preview/variables" {
-											elem = elem[l:]
-										} else {
-											break
-										}
-
-										if len(elem) == 0 {
-											// Leaf node.
-											switch r.Method {
-											case "DELETE":
-												s.handleDeleteLivePreviewVariablesRequest([2]string{
-													args[0],
-													args[1],
-												}, elemIsEscaped, w, r)
-											case "GET":
-												s.handleGetLivePreviewVariablesRequest([2]string{
-													args[0],
-													args[1],
-												}, elemIsEscaped, w, r)
-											case "PUT":
-												s.handlePutLivePreviewVariablesRequest([2]string{
-													args[0],
-													args[1],
-												}, elemIsEscaped, w, r)
-											default:
-												s.notAllowed(w, r, notAllowedParams{
-													allowedMethods: "DELETE,GET,PUT",
-													allowedHeaders: rn42AllowedHeaders,
-													acceptPost:     "",
-													acceptPatch:    "",
-												})
-											}
-
-											return
-										}
-
-									case 't': // Prefix: "tags/"
-
-										if l := len("tags/"); len(elem) >= l && elem[0:l] == "tags/" {
-											elem = elem[l:]
-										} else {
-											break
-										}
-
-										// Param: "tag_id"
-										// Leaf parameter, slashes are prohibited
-										idx := strings.IndexByte(elem, '/')
-										if idx >= 0 {
-											break
-										}
-										args[2] = elem
-										elem = ""
-
-										if len(elem) == 0 {
-											// Leaf node.
-											switch r.Method {
-											case "DELETE":
-												s.handleDeleteTagRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											case "GET":
-												s.handleGetTagRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											case "PUT":
-												s.handlePutTagRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											default:
-												s.notAllowed(w, r, notAllowedParams{
-													allowedMethods: "DELETE,GET,PUT",
-													allowedHeaders: rn51AllowedHeaders,
-													acceptPost:     "",
-													acceptPatch:    "",
-												})
-											}
-
-											return
 										}
 
 									}
@@ -1570,60 +1765,135 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 							}
 
-						}
+						case 'p': // Prefix: "preview_"
 
-					case 'p': // Prefix: "preview_"
-
-						if l := len("preview_"); len(elem) >= l && elem[0:l] == "preview_" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							break
-						}
-						switch elem[0] {
-						case 'a': // Prefix: "api_keys/"
-
-							if l := len("api_keys/"); len(elem) >= l && elem[0:l] == "api_keys/" {
+							if l := len("preview_"); len(elem) >= l && elem[0:l] == "preview_" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
-							// Param: "preview_api_key_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
+							if len(elem) == 0 {
 								break
 							}
-							args[1] = elem
-							elem = ""
+							switch elem[0] {
+							case 'a': // Prefix: "api_keys/"
 
-							if len(elem) == 0 {
-								// Leaf node.
-								switch r.Method {
-								case "GET":
-									s.handleGetPreviewAPIKeyRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								default:
-									s.notAllowed(w, r, notAllowedParams{
-										allowedMethods: "GET",
-										allowedHeaders: rn75AllowedHeaders,
-										acceptPost:     "",
-										acceptPatch:    "",
-									})
+								if l := len("api_keys/"); len(elem) >= l && elem[0:l] == "api_keys/" {
+									elem = elem[l:]
+								} else {
+									break
 								}
 
-								return
+								// Param: "preview_api_key_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
+									break
+								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch r.Method {
+									case "GET":
+										s.handleGetPreviewAPIKeyRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, notAllowedParams{
+											allowedMethods: "GET",
+											allowedHeaders: rn81AllowedHeaders,
+											acceptPost:     "",
+											acceptPatch:    "",
+										})
+									}
+
+									return
+								}
+
+							case 'e': // Prefix: "environments"
+
+								if l := len("environments"); len(elem) >= l && elem[0:l] == "environments" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								if len(elem) == 0 {
+									switch r.Method {
+									case "POST":
+										s.handleCreatePreviewEnvironmentRequest([1]string{
+											args[0],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, notAllowedParams{
+											allowedMethods: "POST",
+											allowedHeaders: rn23AllowedHeaders,
+											acceptPost:     "application/vnd.contentful.management.v1+json",
+											acceptPatch:    "",
+										})
+									}
+
+									return
+								}
+								switch elem[0] {
+								case '/': // Prefix: "/"
+
+									if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+										elem = elem[l:]
+									} else {
+										break
+									}
+
+									// Param: "preview_environment_id"
+									// Leaf parameter, slashes are prohibited
+									idx := strings.IndexByte(elem, '/')
+									if idx >= 0 {
+										break
+									}
+									args[1] = elem
+									elem = ""
+
+									if len(elem) == 0 {
+										// Leaf node.
+										switch r.Method {
+										case "DELETE":
+											s.handleDeletePreviewEnvironmentRequest([2]string{
+												args[0],
+												args[1],
+											}, elemIsEscaped, w, r)
+										case "GET":
+											s.handleGetPreviewEnvironmentRequest([2]string{
+												args[0],
+												args[1],
+											}, elemIsEscaped, w, r)
+										case "PUT":
+											s.handlePutPreviewEnvironmentRequest([2]string{
+												args[0],
+												args[1],
+											}, elemIsEscaped, w, r)
+										default:
+											s.notAllowed(w, r, notAllowedParams{
+												allowedMethods: "DELETE,GET,PUT",
+												allowedHeaders: rn44AllowedHeaders,
+												acceptPost:     "",
+												acceptPatch:    "",
+											})
+										}
+
+										return
+									}
+
+								}
+
 							}
 
-						case 'e': // Prefix: "environments"
+						case 'r': // Prefix: "roles"
 
-							if l := len("environments"); len(elem) >= l && elem[0:l] == "environments" {
+							if l := len("roles"); len(elem) >= l && elem[0:l] == "roles" {
 								elem = elem[l:]
 							} else {
 								break
@@ -1632,13 +1902,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							if len(elem) == 0 {
 								switch r.Method {
 								case "POST":
-									s.handleCreatePreviewEnvironmentRequest([1]string{
+									s.handleCreateRoleRequest([1]string{
 										args[0],
 									}, elemIsEscaped, w, r)
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "POST",
-										allowedHeaders: rn23AllowedHeaders,
+										allowedHeaders: rn24AllowedHeaders,
 										acceptPost:     "application/vnd.contentful.management.v1+json",
 										acceptPatch:    "",
 									})
@@ -1655,7 +1925,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									break
 								}
 
-								// Param: "preview_environment_id"
+								// Param: "role_id"
 								// Leaf parameter, slashes are prohibited
 								idx := strings.IndexByte(elem, '/')
 								if idx >= 0 {
@@ -1668,24 +1938,24 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									// Leaf node.
 									switch r.Method {
 									case "DELETE":
-										s.handleDeletePreviewEnvironmentRequest([2]string{
+										s.handleDeleteRoleRequest([2]string{
 											args[0],
 											args[1],
 										}, elemIsEscaped, w, r)
 									case "GET":
-										s.handleGetPreviewEnvironmentRequest([2]string{
+										s.handleGetRoleRequest([2]string{
 											args[0],
 											args[1],
 										}, elemIsEscaped, w, r)
 									case "PUT":
-										s.handlePutPreviewEnvironmentRequest([2]string{
+										s.handleUpdateRoleRequest([2]string{
 											args[0],
 											args[1],
 										}, elemIsEscaped, w, r)
 									default:
 										s.notAllowed(w, r, notAllowedParams{
 											allowedMethods: "DELETE,GET,PUT",
-											allowedHeaders: rn44AllowedHeaders,
+											allowedHeaders: rn49AllowedHeaders,
 											acceptPost:     "",
 											acceptPatch:    "",
 										})
@@ -1696,173 +1966,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 							}
 
-						}
+						case 't': // Prefix: "team_space_memberships"
 
-					case 'r': // Prefix: "roles"
-
-						if l := len("roles"); len(elem) >= l && elem[0:l] == "roles" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							switch r.Method {
-							case "POST":
-								s.handleCreateRoleRequest([1]string{
-									args[0],
-								}, elemIsEscaped, w, r)
-							default:
-								s.notAllowed(w, r, notAllowedParams{
-									allowedMethods: "POST",
-									allowedHeaders: rn24AllowedHeaders,
-									acceptPost:     "application/vnd.contentful.management.v1+json",
-									acceptPatch:    "",
-								})
-							}
-
-							return
-						}
-						switch elem[0] {
-						case '/': // Prefix: "/"
-
-							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-								elem = elem[l:]
-							} else {
-								break
-							}
-
-							// Param: "role_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
-								break
-							}
-							args[1] = elem
-							elem = ""
-
-							if len(elem) == 0 {
-								// Leaf node.
-								switch r.Method {
-								case "DELETE":
-									s.handleDeleteRoleRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								case "GET":
-									s.handleGetRoleRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								case "PUT":
-									s.handleUpdateRoleRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								default:
-									s.notAllowed(w, r, notAllowedParams{
-										allowedMethods: "DELETE,GET,PUT",
-										allowedHeaders: rn49AllowedHeaders,
-										acceptPost:     "",
-										acceptPatch:    "",
-									})
-								}
-
-								return
-							}
-
-						}
-
-					case 't': // Prefix: "team_space_memberships"
-
-						if l := len("team_space_memberships"); len(elem) >= l && elem[0:l] == "team_space_memberships" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							switch r.Method {
-							case "POST":
-								s.handleCreateTeamSpaceMembershipRequest([1]string{
-									args[0],
-								}, elemIsEscaped, w, r)
-							default:
-								s.notAllowed(w, r, notAllowedParams{
-									allowedMethods: "POST",
-									allowedHeaders: rn27AllowedHeaders,
-									acceptPost:     "application/vnd.contentful.management.v1+json",
-									acceptPatch:    "",
-								})
-							}
-
-							return
-						}
-						switch elem[0] {
-						case '/': // Prefix: "/"
-
-							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-								elem = elem[l:]
-							} else {
-								break
-							}
-
-							// Param: "team_space_membership_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
-								break
-							}
-							args[1] = elem
-							elem = ""
-
-							if len(elem) == 0 {
-								// Leaf node.
-								switch r.Method {
-								case "DELETE":
-									s.handleDeleteTeamSpaceMembershipRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								case "GET":
-									s.handleGetTeamSpaceMembershipRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								case "PUT":
-									s.handlePutTeamSpaceMembershipRequest([2]string{
-										args[0],
-										args[1],
-									}, elemIsEscaped, w, r)
-								default:
-									s.notAllowed(w, r, notAllowedParams{
-										allowedMethods: "DELETE,GET,PUT",
-										allowedHeaders: rn61AllowedHeaders,
-										acceptPost:     "",
-										acceptPatch:    "",
-									})
-								}
-
-								return
-							}
-
-						}
-
-					case 'w': // Prefix: "webhook_"
-
-						if l := len("webhook_"); len(elem) >= l && elem[0:l] == "webhook_" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							break
-						}
-						switch elem[0] {
-						case 'd': // Prefix: "definitions"
-
-							if l := len("definitions"); len(elem) >= l && elem[0:l] == "definitions" {
+							if l := len("team_space_memberships"); len(elem) >= l && elem[0:l] == "team_space_memberships" {
 								elem = elem[l:]
 							} else {
 								break
@@ -1871,13 +1977,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							if len(elem) == 0 {
 								switch r.Method {
 								case "POST":
-									s.handleCreateWebhookDefinitionRequest([1]string{
+									s.handleCreateTeamSpaceMembershipRequest([1]string{
 										args[0],
 									}, elemIsEscaped, w, r)
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "POST",
-										allowedHeaders: rn28AllowedHeaders,
+										allowedHeaders: rn27AllowedHeaders,
 										acceptPost:     "application/vnd.contentful.management.v1+json",
 										acceptPatch:    "",
 									})
@@ -1894,7 +2000,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									break
 								}
 
-								// Param: "webhook_definition_id"
+								// Param: "team_space_membership_id"
 								// Leaf parameter, slashes are prohibited
 								idx := strings.IndexByte(elem, '/')
 								if idx >= 0 {
@@ -1907,24 +2013,24 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									// Leaf node.
 									switch r.Method {
 									case "DELETE":
-										s.handleDeleteWebhookDefinitionRequest([2]string{
+										s.handleDeleteTeamSpaceMembershipRequest([2]string{
 											args[0],
 											args[1],
 										}, elemIsEscaped, w, r)
 									case "GET":
-										s.handleGetWebhookDefinitionRequest([2]string{
+										s.handleGetTeamSpaceMembershipRequest([2]string{
 											args[0],
 											args[1],
 										}, elemIsEscaped, w, r)
 									case "PUT":
-										s.handleUpdateWebhookDefinitionRequest([2]string{
+										s.handlePutTeamSpaceMembershipRequest([2]string{
 											args[0],
 											args[1],
 										}, elemIsEscaped, w, r)
 									default:
 										s.notAllowed(w, r, notAllowedParams{
 											allowedMethods: "DELETE,GET,PUT",
-											allowedHeaders: rn63AllowedHeaders,
+											allowedHeaders: rn61AllowedHeaders,
 											acceptPost:     "",
 											acceptPatch:    "",
 										})
@@ -1935,39 +2041,128 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 							}
 
-						case 's': // Prefix: "settings/signing_secret"
+						case 'w': // Prefix: "webhook_"
 
-							if l := len("settings/signing_secret"); len(elem) >= l && elem[0:l] == "settings/signing_secret" {
+							if l := len("webhook_"); len(elem) >= l && elem[0:l] == "webhook_" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
 							if len(elem) == 0 {
-								// Leaf node.
-								switch r.Method {
-								case "DELETE":
-									s.handleDeleteWebhookSigningSecretRequest([1]string{
-										args[0],
-									}, elemIsEscaped, w, r)
-								case "GET":
-									s.handleGetWebhookSigningSecretRequest([1]string{
-										args[0],
-									}, elemIsEscaped, w, r)
-								case "PUT":
-									s.handlePutWebhookSigningSecretRequest([1]string{
-										args[0],
-									}, elemIsEscaped, w, r)
-								default:
-									s.notAllowed(w, r, notAllowedParams{
-										allowedMethods: "DELETE,GET,PUT",
-										allowedHeaders: rn65AllowedHeaders,
-										acceptPost:     "",
-										acceptPatch:    "",
-									})
+								break
+							}
+							switch elem[0] {
+							case 'd': // Prefix: "definitions"
+
+								if l := len("definitions"); len(elem) >= l && elem[0:l] == "definitions" {
+									elem = elem[l:]
+								} else {
+									break
 								}
 
-								return
+								if len(elem) == 0 {
+									switch r.Method {
+									case "POST":
+										s.handleCreateWebhookDefinitionRequest([1]string{
+											args[0],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, notAllowedParams{
+											allowedMethods: "POST",
+											allowedHeaders: rn28AllowedHeaders,
+											acceptPost:     "application/vnd.contentful.management.v1+json",
+											acceptPatch:    "",
+										})
+									}
+
+									return
+								}
+								switch elem[0] {
+								case '/': // Prefix: "/"
+
+									if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+										elem = elem[l:]
+									} else {
+										break
+									}
+
+									// Param: "webhook_definition_id"
+									// Leaf parameter, slashes are prohibited
+									idx := strings.IndexByte(elem, '/')
+									if idx >= 0 {
+										break
+									}
+									args[1] = elem
+									elem = ""
+
+									if len(elem) == 0 {
+										// Leaf node.
+										switch r.Method {
+										case "DELETE":
+											s.handleDeleteWebhookDefinitionRequest([2]string{
+												args[0],
+												args[1],
+											}, elemIsEscaped, w, r)
+										case "GET":
+											s.handleGetWebhookDefinitionRequest([2]string{
+												args[0],
+												args[1],
+											}, elemIsEscaped, w, r)
+										case "PUT":
+											s.handleUpdateWebhookDefinitionRequest([2]string{
+												args[0],
+												args[1],
+											}, elemIsEscaped, w, r)
+										default:
+											s.notAllowed(w, r, notAllowedParams{
+												allowedMethods: "DELETE,GET,PUT",
+												allowedHeaders: rn63AllowedHeaders,
+												acceptPost:     "",
+												acceptPatch:    "",
+											})
+										}
+
+										return
+									}
+
+								}
+
+							case 's': // Prefix: "settings/signing_secret"
+
+								if l := len("settings/signing_secret"); len(elem) >= l && elem[0:l] == "settings/signing_secret" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch r.Method {
+									case "DELETE":
+										s.handleDeleteWebhookSigningSecretRequest([1]string{
+											args[0],
+										}, elemIsEscaped, w, r)
+									case "GET":
+										s.handleGetWebhookSigningSecretRequest([1]string{
+											args[0],
+										}, elemIsEscaped, w, r)
+									case "PUT":
+										s.handlePutWebhookSigningSecretRequest([1]string{
+											args[0],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, notAllowedParams{
+											allowedMethods: "DELETE,GET,PUT",
+											allowedHeaders: rn65AllowedHeaders,
+											acceptPost:     "",
+											acceptPatch:    "",
+										})
+									}
+
+									return
+								}
+
 							}
 
 						}
@@ -2050,7 +2245,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							default:
 								s.notAllowed(w, r, notAllowedParams{
 									allowedMethods: "GET",
-									allowedHeaders: rn72AllowedHeaders,
+									allowedHeaders: rn78AllowedHeaders,
 									acceptPost:     "",
 									acceptPatch:    "",
 								})
@@ -2077,7 +2272,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "PUT",
-										allowedHeaders: rn79AllowedHeaders,
+										allowedHeaders: rn86AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -2801,25 +2996,28 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 				}
 
-			case 's': // Prefix: "spaces/"
+			case 's': // Prefix: "spaces"
 
-				if l := len("spaces/"); len(elem) >= l && elem[0:l] == "spaces/" {
+				if l := len("spaces"); len(elem) >= l && elem[0:l] == "spaces" {
 					elem = elem[l:]
 				} else {
 					break
 				}
 
-				// Param: "space_id"
-				// Match until "/"
-				idx := strings.IndexByte(elem, '/')
-				if idx < 0 {
-					idx = len(elem)
-				}
-				args[0] = elem[:idx]
-				elem = elem[idx:]
-
 				if len(elem) == 0 {
-					break
+					switch method {
+					case "GET":
+						r.name = GetSpacesOperation
+						r.summary = "Read Space collection"
+						r.operationID = "getSpaces"
+						r.operationGroup = ""
+						r.pathPattern = "/spaces"
+						r.args = args
+						r.count = 0
+						return r, true
+					default:
+						return
+					}
 				}
 				switch elem[0] {
 				case '/': // Prefix: "/"
@@ -2830,91 +3028,34 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						break
 					}
 
+					// Param: "space_id"
+					// Match until "/"
+					idx := strings.IndexByte(elem, '/')
+					if idx < 0 {
+						idx = len(elem)
+					}
+					args[0] = elem[:idx]
+					elem = elem[idx:]
+
 					if len(elem) == 0 {
-						break
+						switch method {
+						case "GET":
+							r.name = GetSpaceOperation
+							r.summary = "Read Space"
+							r.operationID = "getSpace"
+							r.operationGroup = ""
+							r.pathPattern = "/spaces/{space_id}"
+							r.args = args
+							r.count = 1
+							return r, true
+						default:
+							return
+						}
 					}
 					switch elem[0] {
-					case 'a': // Prefix: "api_keys"
+					case '/': // Prefix: "/"
 
-						if l := len("api_keys"); len(elem) >= l && elem[0:l] == "api_keys" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							switch method {
-							case "POST":
-								r.name = CreateDeliveryAPIKeyOperation
-								r.summary = "Create a delivery api key"
-								r.operationID = "createDeliveryAPIKey"
-								r.operationGroup = ""
-								r.pathPattern = "/spaces/{space_id}/api_keys"
-								r.args = args
-								r.count = 1
-								return r, true
-							default:
-								return
-							}
-						}
-						switch elem[0] {
-						case '/': // Prefix: "/"
-
-							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-								elem = elem[l:]
-							} else {
-								break
-							}
-
-							// Param: "api_key_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
-								break
-							}
-							args[1] = elem
-							elem = ""
-
-							if len(elem) == 0 {
-								// Leaf node.
-								switch method {
-								case "DELETE":
-									r.name = DeleteDeliveryAPIKeyOperation
-									r.summary = "Delete a single delivery api key"
-									r.operationID = "deleteDeliveryAPIKey"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								case "GET":
-									r.name = GetDeliveryAPIKeyOperation
-									r.summary = "Get a single delivery api key"
-									r.operationID = "getDeliveryAPIKey"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								case "PUT":
-									r.name = UpdateDeliveryAPIKeyOperation
-									r.summary = "Update a single delivery api key"
-									r.operationID = "updateDeliveryAPIKey"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								default:
-									return
-								}
-							}
-
-						}
-
-					case 'e': // Prefix: "en"
-
-						if l := len("en"); len(elem) >= l && elem[0:l] == "en" {
+						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 							elem = elem[l:]
 						} else {
 							break
@@ -2924,61 +3065,39 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							break
 						}
 						switch elem[0] {
-						case 'a': // Prefix: "ablements"
+						case 'a': // Prefix: "api_keys"
 
-							if l := len("ablements"); len(elem) >= l && elem[0:l] == "ablements" {
+							if l := len("api_keys"); len(elem) >= l && elem[0:l] == "api_keys" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
 							if len(elem) == 0 {
-								// Leaf node.
 								switch method {
-								case "GET":
-									r.name = GetSpaceEnablementsOperation
-									r.summary = "Get enablements for a space"
-									r.operationID = "getSpaceEnablements"
+								case "POST":
+									r.name = CreateDeliveryAPIKeyOperation
+									r.summary = "Create a delivery api key"
+									r.operationID = "createDeliveryAPIKey"
 									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/enablements"
-									r.args = args
-									r.count = 1
-									return r, true
-								case "PUT":
-									r.name = PutSpaceEnablementsOperation
-									r.summary = "Update enablements for a space"
-									r.operationID = "putSpaceEnablements"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/enablements"
+									r.pathPattern = "/spaces/{space_id}/api_keys"
 									r.args = args
 									r.count = 1
 									return r, true
 								default:
 									return
 								}
-							}
-
-						case 'v': // Prefix: "vironment"
-
-							if l := len("vironment"); len(elem) >= l && elem[0:l] == "vironment" {
-								elem = elem[l:]
-							} else {
-								break
-							}
-
-							if len(elem) == 0 {
-								break
 							}
 							switch elem[0] {
-							case '_': // Prefix: "_aliases/"
+							case '/': // Prefix: "/"
 
-								if l := len("_aliases/"); len(elem) >= l && elem[0:l] == "_aliases/" {
+								if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 									elem = elem[l:]
 								} else {
 									break
 								}
 
-								// Param: "environment_alias_id"
+								// Param: "api_key_id"
 								// Leaf parameter, slashes are prohibited
 								idx := strings.IndexByte(elem, '/')
 								if idx >= 0 {
@@ -2991,29 +3110,29 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									// Leaf node.
 									switch method {
 									case "DELETE":
-										r.name = DeleteEnvironmentAliasOperation
-										r.summary = "Delete an environment alias"
-										r.operationID = "deleteEnvironmentAlias"
+										r.name = DeleteDeliveryAPIKeyOperation
+										r.summary = "Delete a single delivery api key"
+										r.operationID = "deleteDeliveryAPIKey"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
+										r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
 										r.args = args
 										r.count = 2
 										return r, true
 									case "GET":
-										r.name = GetEnvironmentAliasOperation
-										r.summary = "Get a single environment alias"
-										r.operationID = "getEnvironmentAlias"
+										r.name = GetDeliveryAPIKeyOperation
+										r.summary = "Get a single delivery api key"
+										r.operationID = "getDeliveryAPIKey"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
+										r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
 										r.args = args
 										r.count = 2
 										return r, true
 									case "PUT":
-										r.name = CreateOrUpdateEnvironmentAliasOperation
-										r.summary = "Create/Update an environment alias"
-										r.operationID = "createOrUpdateEnvironmentAlias"
+										r.name = UpdateDeliveryAPIKeyOperation
+										r.summary = "Update a single delivery api key"
+										r.operationID = "updateDeliveryAPIKey"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
+										r.pathPattern = "/spaces/{space_id}/api_keys/{api_key_id}"
 										r.args = args
 										r.count = 2
 										return r, true
@@ -3022,137 +3141,211 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									}
 								}
 
-							case 's': // Prefix: "s/"
+							}
 
-								if l := len("s/"); len(elem) >= l && elem[0:l] == "s/" {
+						case 'e': // Prefix: "en"
+
+							if l := len("en"); len(elem) >= l && elem[0:l] == "en" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								break
+							}
+							switch elem[0] {
+							case 'a': // Prefix: "ablements"
+
+								if l := len("ablements"); len(elem) >= l && elem[0:l] == "ablements" {
 									elem = elem[l:]
 								} else {
 									break
 								}
 
-								// Param: "environment_id"
-								// Match until "/"
-								idx := strings.IndexByte(elem, '/')
-								if idx < 0 {
-									idx = len(elem)
-								}
-								args[1] = elem[:idx]
-								elem = elem[idx:]
-
 								if len(elem) == 0 {
+									// Leaf node.
 									switch method {
-									case "DELETE":
-										r.name = DeleteEnvironmentOperation
-										r.summary = "Delete an environment"
-										r.operationID = "deleteEnvironment"
-										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
-										r.args = args
-										r.count = 2
-										return r, true
 									case "GET":
-										r.name = GetEnvironmentOperation
-										r.summary = "Get a single environment"
-										r.operationID = "getEnvironment"
+										r.name = GetSpaceEnablementsOperation
+										r.summary = "Get enablements for a space"
+										r.operationID = "getSpaceEnablements"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
+										r.pathPattern = "/spaces/{space_id}/enablements"
 										r.args = args
-										r.count = 2
+										r.count = 1
 										return r, true
 									case "PUT":
-										r.name = CreateOrUpdateEnvironmentOperation
-										r.summary = "Create or update an environment"
-										r.operationID = "createOrUpdateEnvironment"
+										r.name = PutSpaceEnablementsOperation
+										r.summary = "Update enablements for a space"
+										r.operationID = "putSpaceEnablements"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
+										r.pathPattern = "/spaces/{space_id}/enablements"
 										r.args = args
-										r.count = 2
+										r.count = 1
 										return r, true
 									default:
 										return
 									}
 								}
-								switch elem[0] {
-								case '/': // Prefix: "/"
 
-									if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+							case 'v': // Prefix: "vironment"
+
+								if l := len("vironment"); len(elem) >= l && elem[0:l] == "vironment" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								if len(elem) == 0 {
+									break
+								}
+								switch elem[0] {
+								case '_': // Prefix: "_aliases"
+
+									if l := len("_aliases"); len(elem) >= l && elem[0:l] == "_aliases" {
 										elem = elem[l:]
 									} else {
 										break
 									}
 
 									if len(elem) == 0 {
-										break
+										switch method {
+										case "GET":
+											r.name = GetEnvironmentAliasesOperation
+											r.summary = "Read EnvironmentAlias collection"
+											r.operationID = "getEnvironmentAliases"
+											r.operationGroup = ""
+											r.pathPattern = "/spaces/{space_id}/environment_aliases"
+											r.args = args
+											r.count = 1
+											return r, true
+										default:
+											return
+										}
 									}
 									switch elem[0] {
-									case 'a': // Prefix: "app_installations/"
+									case '/': // Prefix: "/"
 
-										if l := len("app_installations/"); len(elem) >= l && elem[0:l] == "app_installations/" {
+										if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
-										// Param: "app_definition_id"
+										// Param: "environment_alias_id"
 										// Leaf parameter, slashes are prohibited
 										idx := strings.IndexByte(elem, '/')
 										if idx >= 0 {
 											break
 										}
-										args[2] = elem
+										args[1] = elem
 										elem = ""
 
 										if len(elem) == 0 {
 											// Leaf node.
 											switch method {
 											case "DELETE":
-												r.name = DeleteAppInstallationOperation
-												r.summary = "Uninstall an app"
-												r.operationID = "deleteAppInstallation"
+												r.name = DeleteEnvironmentAliasOperation
+												r.summary = "Delete an environment alias"
+												r.operationID = "deleteEnvironmentAlias"
 												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
+												r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
 												r.args = args
-												r.count = 3
+												r.count = 2
 												return r, true
 											case "GET":
-												r.name = GetAppInstallationOperation
-												r.summary = "Get one app installation"
-												r.operationID = "getAppInstallation"
+												r.name = GetEnvironmentAliasOperation
+												r.summary = "Get a single environment alias"
+												r.operationID = "getEnvironmentAlias"
 												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
+												r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
 												r.args = args
-												r.count = 3
+												r.count = 2
 												return r, true
 											case "PUT":
-												r.name = PutAppInstallationOperation
-												r.summary = "Install or update an app"
-												r.operationID = "putAppInstallation"
+												r.name = CreateOrUpdateEnvironmentAliasOperation
+												r.summary = "Create/Update an environment alias"
+												r.operationID = "createOrUpdateEnvironmentAlias"
 												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
+												r.pathPattern = "/spaces/{space_id}/environment_aliases/{environment_alias_id}"
 												r.args = args
-												r.count = 3
+												r.count = 2
 												return r, true
 											default:
 												return
 											}
 										}
 
-									case 'c': // Prefix: "content_types"
+									}
 
-										if l := len("content_types"); len(elem) >= l && elem[0:l] == "content_types" {
+								case 's': // Prefix: "s"
+
+									if l := len("s"); len(elem) >= l && elem[0:l] == "s" {
+										elem = elem[l:]
+									} else {
+										break
+									}
+
+									if len(elem) == 0 {
+										switch method {
+										case "GET":
+											r.name = GetEnvironmentsOperation
+											r.summary = "Read Environment collection"
+											r.operationID = "getEnvironments"
+											r.operationGroup = ""
+											r.pathPattern = "/spaces/{space_id}/environments"
+											r.args = args
+											r.count = 1
+											return r, true
+										default:
+											return
+										}
+									}
+									switch elem[0] {
+									case '/': // Prefix: "/"
+
+										if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
+										// Param: "environment_id"
+										// Match until "/"
+										idx := strings.IndexByte(elem, '/')
+										if idx < 0 {
+											idx = len(elem)
+										}
+										args[1] = elem[:idx]
+										elem = elem[idx:]
+
 										if len(elem) == 0 {
 											switch method {
-											case "GET":
-												r.name = GetContentTypesOperation
-												r.summary = "Get a collection of content types"
-												r.operationID = "getContentTypes"
+											case "DELETE":
+												r.name = DeleteEnvironmentOperation
+												r.summary = "Delete an environment"
+												r.operationID = "deleteEnvironment"
 												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types"
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
+												r.args = args
+												r.count = 2
+												return r, true
+											case "GET":
+												r.name = GetEnvironmentOperation
+												r.summary = "Get a single environment"
+												r.operationID = "getEnvironment"
+												r.operationGroup = ""
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
+												r.args = args
+												r.count = 2
+												return r, true
+											case "PUT":
+												r.name = CreateOrUpdateEnvironmentOperation
+												r.summary = "Create or update an environment"
+												r.operationID = "createOrUpdateEnvironment"
+												r.operationGroup = ""
+												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}"
 												r.args = args
 												r.count = 2
 												return r, true
@@ -3169,223 +3362,54 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												break
 											}
 
-											// Param: "content_type_id"
-											// Match until "/"
-											idx := strings.IndexByte(elem, '/')
-											if idx < 0 {
-												idx = len(elem)
-											}
-											args[2] = elem[:idx]
-											elem = elem[idx:]
-
 											if len(elem) == 0 {
-												switch method {
-												case "DELETE":
-													r.name = DeleteContentTypeOperation
-													r.summary = "Delete a content type"
-													r.operationID = "deleteContentType"
-													r.operationGroup = ""
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
-													r.args = args
-													r.count = 3
-													return r, true
-												case "GET":
-													r.name = GetContentTypeOperation
-													r.summary = "Get a content type"
-													r.operationID = "getContentType"
-													r.operationGroup = ""
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
-													r.args = args
-													r.count = 3
-													return r, true
-												case "PUT":
-													r.name = PutContentTypeOperation
-													r.summary = "Create or update a content type"
-													r.operationID = "putContentType"
-													r.operationGroup = ""
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
-													r.args = args
-													r.count = 3
-													return r, true
-												default:
-													return
-												}
-											}
-											switch elem[0] {
-											case '/': // Prefix: "/"
-
-												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-													elem = elem[l:]
-												} else {
-													break
-												}
-
-												if len(elem) == 0 {
-													break
-												}
-												switch elem[0] {
-												case 'e': // Prefix: "editor_interface"
-
-													if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
-														elem = elem[l:]
-													} else {
-														break
-													}
-
-													if len(elem) == 0 {
-														// Leaf node.
-														switch method {
-														case "GET":
-															r.name = GetEditorInterfaceOperation
-															r.summary = "Get the editor interface for a content type"
-															r.operationID = "getEditorInterface"
-															r.operationGroup = ""
-															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
-															r.args = args
-															r.count = 3
-															return r, true
-														case "PUT":
-															r.name = PutEditorInterfaceOperation
-															r.summary = "Update the editor interface for a content type"
-															r.operationID = "putEditorInterface"
-															r.operationGroup = ""
-															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
-															r.args = args
-															r.count = 3
-															return r, true
-														default:
-															return
-														}
-													}
-
-												case 'p': // Prefix: "published"
-
-													if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
-														elem = elem[l:]
-													} else {
-														break
-													}
-
-													if len(elem) == 0 {
-														// Leaf node.
-														switch method {
-														case "DELETE":
-															r.name = DeactivateContentTypeOperation
-															r.summary = "Deactivate a content type"
-															r.operationID = "deactivateContentType"
-															r.operationGroup = ""
-															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
-															r.args = args
-															r.count = 3
-															return r, true
-														case "PUT":
-															r.name = ActivateContentTypeOperation
-															r.summary = "Activate a content type"
-															r.operationID = "activateContentType"
-															r.operationGroup = ""
-															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
-															r.args = args
-															r.count = 3
-															return r, true
-														default:
-															return
-														}
-													}
-
-												}
-
-											}
-
-										}
-
-									case 'e': // Prefix: "e"
-
-										if l := len("e"); len(elem) >= l && elem[0:l] == "e" {
-											elem = elem[l:]
-										} else {
-											break
-										}
-
-										if len(elem) == 0 {
-											break
-										}
-										switch elem[0] {
-										case 'n': // Prefix: "ntries"
-
-											if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
-												elem = elem[l:]
-											} else {
 												break
 											}
-
-											if len(elem) == 0 {
-												switch method {
-												case "GET":
-													r.name = GetEntriesOperation
-													r.summary = "List entries in an environment"
-													r.operationID = "getEntries"
-													r.operationGroup = ""
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"
-													r.args = args
-													r.count = 2
-													return r, true
-												case "POST":
-													r.name = CreateEntryOperation
-													r.summary = "Create an entry"
-													r.operationID = "createEntry"
-													r.operationGroup = ""
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"
-													r.args = args
-													r.count = 2
-													return r, true
-												default:
-													return
-												}
-											}
 											switch elem[0] {
-											case '/': // Prefix: "/"
+											case 'a': // Prefix: "app_installations/"
 
-												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+												if l := len("app_installations/"); len(elem) >= l && elem[0:l] == "app_installations/" {
 													elem = elem[l:]
 												} else {
 													break
 												}
 
-												// Param: "entry_id"
-												// Match until "/"
+												// Param: "app_definition_id"
+												// Leaf parameter, slashes are prohibited
 												idx := strings.IndexByte(elem, '/')
-												if idx < 0 {
-													idx = len(elem)
+												if idx >= 0 {
+													break
 												}
-												args[2] = elem[:idx]
-												elem = elem[idx:]
+												args[2] = elem
+												elem = ""
 
 												if len(elem) == 0 {
+													// Leaf node.
 													switch method {
 													case "DELETE":
-														r.name = DeleteEntryOperation
-														r.summary = "Delete an entry"
-														r.operationID = "deleteEntry"
+														r.name = DeleteAppInstallationOperation
+														r.summary = "Uninstall an app"
+														r.operationID = "deleteAppInstallation"
 														r.operationGroup = ""
-														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
 														r.args = args
 														r.count = 3
 														return r, true
 													case "GET":
-														r.name = GetEntryOperation
-														r.summary = "Get a single entry"
-														r.operationID = "getEntry"
+														r.name = GetAppInstallationOperation
+														r.summary = "Get one app installation"
+														r.operationID = "getAppInstallation"
 														r.operationGroup = ""
-														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
 														r.args = args
 														r.count = 3
 														return r, true
 													case "PUT":
-														r.name = PutEntryOperation
-														r.summary = "Create or update an entry"
-														r.operationID = "putEntry"
+														r.name = PutAppInstallationOperation
+														r.summary = "Install or update an app"
+														r.operationID = "putAppInstallation"
 														r.operationGroup = ""
-														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}"
 														r.args = args
 														r.count = 3
 														return r, true
@@ -3393,33 +3417,346 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 														return
 													}
 												}
-												switch elem[0] {
-												case '/': // Prefix: "/published"
 
-													if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+											case 'c': // Prefix: "content_types"
+
+												if l := len("content_types"); len(elem) >= l && elem[0:l] == "content_types" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												if len(elem) == 0 {
+													switch method {
+													case "GET":
+														r.name = GetContentTypesOperation
+														r.summary = "Get a collection of content types"
+														r.operationID = "getContentTypes"
+														r.operationGroup = ""
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types"
+														r.args = args
+														r.count = 2
+														return r, true
+													default:
+														return
+													}
+												}
+												switch elem[0] {
+												case '/': // Prefix: "/"
+
+													if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													// Param: "content_type_id"
+													// Match until "/"
+													idx := strings.IndexByte(elem, '/')
+													if idx < 0 {
+														idx = len(elem)
+													}
+													args[2] = elem[:idx]
+													elem = elem[idx:]
+
+													if len(elem) == 0 {
+														switch method {
+														case "DELETE":
+															r.name = DeleteContentTypeOperation
+															r.summary = "Delete a content type"
+															r.operationID = "deleteContentType"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
+															r.args = args
+															r.count = 3
+															return r, true
+														case "GET":
+															r.name = GetContentTypeOperation
+															r.summary = "Get a content type"
+															r.operationID = "getContentType"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
+															r.args = args
+															r.count = 3
+															return r, true
+														case "PUT":
+															r.name = PutContentTypeOperation
+															r.summary = "Create or update a content type"
+															r.operationID = "putContentType"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}"
+															r.args = args
+															r.count = 3
+															return r, true
+														default:
+															return
+														}
+													}
+													switch elem[0] {
+													case '/': // Prefix: "/"
+
+														if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+															elem = elem[l:]
+														} else {
+															break
+														}
+
+														if len(elem) == 0 {
+															break
+														}
+														switch elem[0] {
+														case 'e': // Prefix: "editor_interface"
+
+															if l := len("editor_interface"); len(elem) >= l && elem[0:l] == "editor_interface" {
+																elem = elem[l:]
+															} else {
+																break
+															}
+
+															if len(elem) == 0 {
+																// Leaf node.
+																switch method {
+																case "GET":
+																	r.name = GetEditorInterfaceOperation
+																	r.summary = "Get the editor interface for a content type"
+																	r.operationID = "getEditorInterface"
+																	r.operationGroup = ""
+																	r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
+																	r.args = args
+																	r.count = 3
+																	return r, true
+																case "PUT":
+																	r.name = PutEditorInterfaceOperation
+																	r.summary = "Update the editor interface for a content type"
+																	r.operationID = "putEditorInterface"
+																	r.operationGroup = ""
+																	r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/editor_interface"
+																	r.args = args
+																	r.count = 3
+																	return r, true
+																default:
+																	return
+																}
+															}
+
+														case 'p': // Prefix: "published"
+
+															if l := len("published"); len(elem) >= l && elem[0:l] == "published" {
+																elem = elem[l:]
+															} else {
+																break
+															}
+
+															if len(elem) == 0 {
+																// Leaf node.
+																switch method {
+																case "DELETE":
+																	r.name = DeactivateContentTypeOperation
+																	r.summary = "Deactivate a content type"
+																	r.operationID = "deactivateContentType"
+																	r.operationGroup = ""
+																	r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
+																	r.args = args
+																	r.count = 3
+																	return r, true
+																case "PUT":
+																	r.name = ActivateContentTypeOperation
+																	r.summary = "Activate a content type"
+																	r.operationID = "activateContentType"
+																	r.operationGroup = ""
+																	r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published"
+																	r.args = args
+																	r.count = 3
+																	return r, true
+																default:
+																	return
+																}
+															}
+
+														}
+
+													}
+
+												}
+
+											case 'e': // Prefix: "e"
+
+												if l := len("e"); len(elem) >= l && elem[0:l] == "e" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												if len(elem) == 0 {
+													break
+												}
+												switch elem[0] {
+												case 'n': // Prefix: "ntries"
+
+													if l := len("ntries"); len(elem) >= l && elem[0:l] == "ntries" {
 														elem = elem[l:]
 													} else {
 														break
 													}
 
 													if len(elem) == 0 {
+														switch method {
+														case "GET":
+															r.name = GetEntriesOperation
+															r.summary = "List entries in an environment"
+															r.operationID = "getEntries"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"
+															r.args = args
+															r.count = 2
+															return r, true
+														case "POST":
+															r.name = CreateEntryOperation
+															r.summary = "Create an entry"
+															r.operationID = "createEntry"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries"
+															r.args = args
+															r.count = 2
+															return r, true
+														default:
+															return
+														}
+													}
+													switch elem[0] {
+													case '/': // Prefix: "/"
+
+														if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+															elem = elem[l:]
+														} else {
+															break
+														}
+
+														// Param: "entry_id"
+														// Match until "/"
+														idx := strings.IndexByte(elem, '/')
+														if idx < 0 {
+															idx = len(elem)
+														}
+														args[2] = elem[:idx]
+														elem = elem[idx:]
+
+														if len(elem) == 0 {
+															switch method {
+															case "DELETE":
+																r.name = DeleteEntryOperation
+																r.summary = "Delete an entry"
+																r.operationID = "deleteEntry"
+																r.operationGroup = ""
+																r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+																r.args = args
+																r.count = 3
+																return r, true
+															case "GET":
+																r.name = GetEntryOperation
+																r.summary = "Get a single entry"
+																r.operationID = "getEntry"
+																r.operationGroup = ""
+																r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+																r.args = args
+																r.count = 3
+																return r, true
+															case "PUT":
+																r.name = PutEntryOperation
+																r.summary = "Create or update an entry"
+																r.operationID = "putEntry"
+																r.operationGroup = ""
+																r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}"
+																r.args = args
+																r.count = 3
+																return r, true
+															default:
+																return
+															}
+														}
+														switch elem[0] {
+														case '/': // Prefix: "/published"
+
+															if l := len("/published"); len(elem) >= l && elem[0:l] == "/published" {
+																elem = elem[l:]
+															} else {
+																break
+															}
+
+															if len(elem) == 0 {
+																// Leaf node.
+																switch method {
+																case "DELETE":
+																	r.name = UnpublishEntryOperation
+																	r.summary = "Unpublish an entry"
+																	r.operationID = "unpublishEntry"
+																	r.operationGroup = ""
+																	r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+																	r.args = args
+																	r.count = 3
+																	return r, true
+																case "PUT":
+																	r.name = PublishEntryOperation
+																	r.summary = "Publish an entry"
+																	r.operationID = "publishEntry"
+																	r.operationGroup = ""
+																	r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+																	r.args = args
+																	r.count = 3
+																	return r, true
+																default:
+																	return
+																}
+															}
+
+														}
+
+													}
+
+												case 'x': // Prefix: "xtensions/"
+
+													if l := len("xtensions/"); len(elem) >= l && elem[0:l] == "xtensions/" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													// Param: "extension_id"
+													// Leaf parameter, slashes are prohibited
+													idx := strings.IndexByte(elem, '/')
+													if idx >= 0 {
+														break
+													}
+													args[2] = elem
+													elem = ""
+
+													if len(elem) == 0 {
 														// Leaf node.
 														switch method {
 														case "DELETE":
-															r.name = UnpublishEntryOperation
-															r.summary = "Unpublish an entry"
-															r.operationID = "unpublishEntry"
+															r.name = DeleteExtensionOperation
+															r.summary = "Delete an extension"
+															r.operationID = "deleteExtension"
 															r.operationGroup = ""
-															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
+															r.args = args
+															r.count = 3
+															return r, true
+														case "GET":
+															r.name = GetExtensionOperation
+															r.summary = "Get a single extension"
+															r.operationID = "getExtension"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
 															r.args = args
 															r.count = 3
 															return r, true
 														case "PUT":
-															r.name = PublishEntryOperation
-															r.summary = "Publish an entry"
-															r.operationID = "publishEntry"
+															r.name = PutExtensionOperation
+															r.summary = "Create or update an extension"
+															r.operationID = "putExtension"
 															r.operationGroup = ""
-															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published"
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
 															r.args = args
 															r.count = 3
 															return r, true
@@ -3430,155 +3767,177 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 												}
 
-											}
+											case 'l': // Prefix: "l"
 
-										case 'x': // Prefix: "xtensions/"
-
-											if l := len("xtensions/"); len(elem) >= l && elem[0:l] == "xtensions/" {
-												elem = elem[l:]
-											} else {
-												break
-											}
-
-											// Param: "extension_id"
-											// Leaf parameter, slashes are prohibited
-											idx := strings.IndexByte(elem, '/')
-											if idx >= 0 {
-												break
-											}
-											args[2] = elem
-											elem = ""
-
-											if len(elem) == 0 {
-												// Leaf node.
-												switch method {
-												case "DELETE":
-													r.name = DeleteExtensionOperation
-													r.summary = "Delete an extension"
-													r.operationID = "deleteExtension"
-													r.operationGroup = ""
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
-													r.args = args
-													r.count = 3
-													return r, true
-												case "GET":
-													r.name = GetExtensionOperation
-													r.summary = "Get a single extension"
-													r.operationID = "getExtension"
-													r.operationGroup = ""
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
-													r.args = args
-													r.count = 3
-													return r, true
-												case "PUT":
-													r.name = PutExtensionOperation
-													r.summary = "Create or update an extension"
-													r.operationID = "putExtension"
-													r.operationGroup = ""
-													r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/extensions/{extension_id}"
-													r.args = args
-													r.count = 3
-													return r, true
-												default:
-													return
+												if l := len("l"); len(elem) >= l && elem[0:l] == "l" {
+													elem = elem[l:]
+												} else {
+													break
 												}
+
+												if len(elem) == 0 {
+													break
+												}
+												switch elem[0] {
+												case 'i': // Prefix: "ive_preview/variables"
+
+													if l := len("ive_preview/variables"); len(elem) >= l && elem[0:l] == "ive_preview/variables" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														// Leaf node.
+														switch method {
+														case "DELETE":
+															r.name = DeleteLivePreviewVariablesOperation
+															r.summary = "Delete live preview variables"
+															r.operationID = "deleteLivePreviewVariables"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/live_preview/variables"
+															r.args = args
+															r.count = 2
+															return r, true
+														case "GET":
+															r.name = GetLivePreviewVariablesOperation
+															r.summary = "Get live preview variables"
+															r.operationID = "getLivePreviewVariables"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/live_preview/variables"
+															r.args = args
+															r.count = 2
+															return r, true
+														case "PUT":
+															r.name = PutLivePreviewVariablesOperation
+															r.summary = "Replace live preview variables"
+															r.operationID = "putLivePreviewVariables"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/live_preview/variables"
+															r.args = args
+															r.count = 2
+															return r, true
+														default:
+															return
+														}
+													}
+
+												case 'o': // Prefix: "ocales"
+
+													if l := len("ocales"); len(elem) >= l && elem[0:l] == "ocales" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														switch method {
+														case "GET":
+															r.name = GetLocalesOperation
+															r.summary = "Read Locale collection"
+															r.operationID = "getLocales"
+															r.operationGroup = ""
+															r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/locales"
+															r.args = args
+															r.count = 2
+															return r, true
+														default:
+															return
+														}
+													}
+													switch elem[0] {
+													case '/': // Prefix: "/"
+
+														if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+															elem = elem[l:]
+														} else {
+															break
+														}
+
+														// Param: "locale_id"
+														// Leaf parameter, slashes are prohibited
+														idx := strings.IndexByte(elem, '/')
+														if idx >= 0 {
+															break
+														}
+														args[2] = elem
+														elem = ""
+
+														if len(elem) == 0 {
+															// Leaf node.
+															switch method {
+															case "GET":
+																r.name = GetLocaleOperation
+																r.summary = "Read Locale"
+																r.operationID = "getLocale"
+																r.operationGroup = ""
+																r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/locales/{locale_id}"
+																r.args = args
+																r.count = 3
+																return r, true
+															default:
+																return
+															}
+														}
+
+													}
+
+												}
+
+											case 't': // Prefix: "tags/"
+
+												if l := len("tags/"); len(elem) >= l && elem[0:l] == "tags/" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												// Param: "tag_id"
+												// Leaf parameter, slashes are prohibited
+												idx := strings.IndexByte(elem, '/')
+												if idx >= 0 {
+													break
+												}
+												args[2] = elem
+												elem = ""
+
+												if len(elem) == 0 {
+													// Leaf node.
+													switch method {
+													case "DELETE":
+														r.name = DeleteTagOperation
+														r.summary = "Delete a tag"
+														r.operationID = "deleteTag"
+														r.operationGroup = ""
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/tags/{tag_id}"
+														r.args = args
+														r.count = 3
+														return r, true
+													case "GET":
+														r.name = GetTagOperation
+														r.summary = "Get a single tag"
+														r.operationID = "getTag"
+														r.operationGroup = ""
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/tags/{tag_id}"
+														r.args = args
+														r.count = 3
+														return r, true
+													case "PUT":
+														r.name = PutTagOperation
+														r.summary = "Create or update a tag"
+														r.operationID = "putTag"
+														r.operationGroup = ""
+														r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/tags/{tag_id}"
+														r.args = args
+														r.count = 3
+														return r, true
+													default:
+														return
+													}
+												}
+
 											}
 
-										}
-
-									case 'l': // Prefix: "live_preview/variables"
-
-										if l := len("live_preview/variables"); len(elem) >= l && elem[0:l] == "live_preview/variables" {
-											elem = elem[l:]
-										} else {
-											break
-										}
-
-										if len(elem) == 0 {
-											// Leaf node.
-											switch method {
-											case "DELETE":
-												r.name = DeleteLivePreviewVariablesOperation
-												r.summary = "Delete live preview variables"
-												r.operationID = "deleteLivePreviewVariables"
-												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/live_preview/variables"
-												r.args = args
-												r.count = 2
-												return r, true
-											case "GET":
-												r.name = GetLivePreviewVariablesOperation
-												r.summary = "Get live preview variables"
-												r.operationID = "getLivePreviewVariables"
-												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/live_preview/variables"
-												r.args = args
-												r.count = 2
-												return r, true
-											case "PUT":
-												r.name = PutLivePreviewVariablesOperation
-												r.summary = "Replace live preview variables"
-												r.operationID = "putLivePreviewVariables"
-												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/live_preview/variables"
-												r.args = args
-												r.count = 2
-												return r, true
-											default:
-												return
-											}
-										}
-
-									case 't': // Prefix: "tags/"
-
-										if l := len("tags/"); len(elem) >= l && elem[0:l] == "tags/" {
-											elem = elem[l:]
-										} else {
-											break
-										}
-
-										// Param: "tag_id"
-										// Leaf parameter, slashes are prohibited
-										idx := strings.IndexByte(elem, '/')
-										if idx >= 0 {
-											break
-										}
-										args[2] = elem
-										elem = ""
-
-										if len(elem) == 0 {
-											// Leaf node.
-											switch method {
-											case "DELETE":
-												r.name = DeleteTagOperation
-												r.summary = "Delete a tag"
-												r.operationID = "deleteTag"
-												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/tags/{tag_id}"
-												r.args = args
-												r.count = 3
-												return r, true
-											case "GET":
-												r.name = GetTagOperation
-												r.summary = "Get a single tag"
-												r.operationID = "getTag"
-												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/tags/{tag_id}"
-												r.args = args
-												r.count = 3
-												return r, true
-											case "PUT":
-												r.name = PutTagOperation
-												r.summary = "Create or update a tag"
-												r.operationID = "putTag"
-												r.operationGroup = ""
-												r.pathPattern = "/spaces/{space_id}/environments/{environment_id}/tags/{tag_id}"
-												r.args = args
-												r.count = 3
-												return r, true
-											default:
-												return
-											}
 										}
 
 									}
@@ -3587,57 +3946,135 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 							}
 
-						}
+						case 'p': // Prefix: "preview_"
 
-					case 'p': // Prefix: "preview_"
-
-						if l := len("preview_"); len(elem) >= l && elem[0:l] == "preview_" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							break
-						}
-						switch elem[0] {
-						case 'a': // Prefix: "api_keys/"
-
-							if l := len("api_keys/"); len(elem) >= l && elem[0:l] == "api_keys/" {
+							if l := len("preview_"); len(elem) >= l && elem[0:l] == "preview_" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
-							// Param: "preview_api_key_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
+							if len(elem) == 0 {
 								break
 							}
-							args[1] = elem
-							elem = ""
+							switch elem[0] {
+							case 'a': // Prefix: "api_keys/"
 
-							if len(elem) == 0 {
-								// Leaf node.
-								switch method {
-								case "GET":
-									r.name = GetPreviewAPIKeyOperation
-									r.summary = "Get a single preview api key"
-									r.operationID = "getPreviewAPIKey"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/preview_api_keys/{preview_api_key_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								default:
-									return
+								if l := len("api_keys/"); len(elem) >= l && elem[0:l] == "api_keys/" {
+									elem = elem[l:]
+								} else {
+									break
 								}
+
+								// Param: "preview_api_key_id"
+								// Leaf parameter, slashes are prohibited
+								idx := strings.IndexByte(elem, '/')
+								if idx >= 0 {
+									break
+								}
+								args[1] = elem
+								elem = ""
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch method {
+									case "GET":
+										r.name = GetPreviewAPIKeyOperation
+										r.summary = "Get a single preview api key"
+										r.operationID = "getPreviewAPIKey"
+										r.operationGroup = ""
+										r.pathPattern = "/spaces/{space_id}/preview_api_keys/{preview_api_key_id}"
+										r.args = args
+										r.count = 2
+										return r, true
+									default:
+										return
+									}
+								}
+
+							case 'e': // Prefix: "environments"
+
+								if l := len("environments"); len(elem) >= l && elem[0:l] == "environments" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								if len(elem) == 0 {
+									switch method {
+									case "POST":
+										r.name = CreatePreviewEnvironmentOperation
+										r.summary = "Create a content preview platform"
+										r.operationID = "createPreviewEnvironment"
+										r.operationGroup = ""
+										r.pathPattern = "/spaces/{space_id}/preview_environments"
+										r.args = args
+										r.count = 1
+										return r, true
+									default:
+										return
+									}
+								}
+								switch elem[0] {
+								case '/': // Prefix: "/"
+
+									if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+										elem = elem[l:]
+									} else {
+										break
+									}
+
+									// Param: "preview_environment_id"
+									// Leaf parameter, slashes are prohibited
+									idx := strings.IndexByte(elem, '/')
+									if idx >= 0 {
+										break
+									}
+									args[1] = elem
+									elem = ""
+
+									if len(elem) == 0 {
+										// Leaf node.
+										switch method {
+										case "DELETE":
+											r.name = DeletePreviewEnvironmentOperation
+											r.summary = "Delete a content preview platform"
+											r.operationID = "deletePreviewEnvironment"
+											r.operationGroup = ""
+											r.pathPattern = "/spaces/{space_id}/preview_environments/{preview_environment_id}"
+											r.args = args
+											r.count = 2
+											return r, true
+										case "GET":
+											r.name = GetPreviewEnvironmentOperation
+											r.summary = "Get a content preview platform"
+											r.operationID = "getPreviewEnvironment"
+											r.operationGroup = ""
+											r.pathPattern = "/spaces/{space_id}/preview_environments/{preview_environment_id}"
+											r.args = args
+											r.count = 2
+											return r, true
+										case "PUT":
+											r.name = PutPreviewEnvironmentOperation
+											r.summary = "Create or update a content preview platform with a selected ID"
+											r.operationID = "putPreviewEnvironment"
+											r.operationGroup = ""
+											r.pathPattern = "/spaces/{space_id}/preview_environments/{preview_environment_id}"
+											r.args = args
+											r.count = 2
+											return r, true
+										default:
+											return
+										}
+									}
+
+								}
+
 							}
 
-						case 'e': // Prefix: "environments"
+						case 'r': // Prefix: "roles"
 
-							if l := len("environments"); len(elem) >= l && elem[0:l] == "environments" {
+							if l := len("roles"); len(elem) >= l && elem[0:l] == "roles" {
 								elem = elem[l:]
 							} else {
 								break
@@ -3646,11 +4083,11 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							if len(elem) == 0 {
 								switch method {
 								case "POST":
-									r.name = CreatePreviewEnvironmentOperation
-									r.summary = "Create a content preview platform"
-									r.operationID = "createPreviewEnvironment"
+									r.name = CreateRoleOperation
+									r.summary = "Create a role"
+									r.operationID = "createRole"
 									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/preview_environments"
+									r.pathPattern = "/spaces/{space_id}/roles"
 									r.args = args
 									r.count = 1
 									return r, true
@@ -3667,7 +4104,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									break
 								}
 
-								// Param: "preview_environment_id"
+								// Param: "role_id"
 								// Leaf parameter, slashes are prohibited
 								idx := strings.IndexByte(elem, '/')
 								if idx >= 0 {
@@ -3680,29 +4117,29 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									// Leaf node.
 									switch method {
 									case "DELETE":
-										r.name = DeletePreviewEnvironmentOperation
-										r.summary = "Delete a content preview platform"
-										r.operationID = "deletePreviewEnvironment"
+										r.name = DeleteRoleOperation
+										r.summary = "Delete a role"
+										r.operationID = "deleteRole"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/preview_environments/{preview_environment_id}"
+										r.pathPattern = "/spaces/{space_id}/roles/{role_id}"
 										r.args = args
 										r.count = 2
 										return r, true
 									case "GET":
-										r.name = GetPreviewEnvironmentOperation
-										r.summary = "Get a content preview platform"
-										r.operationID = "getPreviewEnvironment"
+										r.name = GetRoleOperation
+										r.summary = "Get a role"
+										r.operationID = "getRole"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/preview_environments/{preview_environment_id}"
+										r.pathPattern = "/spaces/{space_id}/roles/{role_id}"
 										r.args = args
 										r.count = 2
 										return r, true
 									case "PUT":
-										r.name = PutPreviewEnvironmentOperation
-										r.summary = "Create or update a content preview platform with a selected ID"
-										r.operationID = "putPreviewEnvironment"
+										r.name = UpdateRoleOperation
+										r.summary = "Update a role"
+										r.operationID = "updateRole"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/preview_environments/{preview_environment_id}"
+										r.pathPattern = "/spaces/{space_id}/roles/{role_id}"
 										r.args = args
 										r.count = 2
 										return r, true
@@ -3713,179 +4150,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 							}
 
-						}
+						case 't': // Prefix: "team_space_memberships"
 
-					case 'r': // Prefix: "roles"
-
-						if l := len("roles"); len(elem) >= l && elem[0:l] == "roles" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							switch method {
-							case "POST":
-								r.name = CreateRoleOperation
-								r.summary = "Create a role"
-								r.operationID = "createRole"
-								r.operationGroup = ""
-								r.pathPattern = "/spaces/{space_id}/roles"
-								r.args = args
-								r.count = 1
-								return r, true
-							default:
-								return
-							}
-						}
-						switch elem[0] {
-						case '/': // Prefix: "/"
-
-							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-								elem = elem[l:]
-							} else {
-								break
-							}
-
-							// Param: "role_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
-								break
-							}
-							args[1] = elem
-							elem = ""
-
-							if len(elem) == 0 {
-								// Leaf node.
-								switch method {
-								case "DELETE":
-									r.name = DeleteRoleOperation
-									r.summary = "Delete a role"
-									r.operationID = "deleteRole"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/roles/{role_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								case "GET":
-									r.name = GetRoleOperation
-									r.summary = "Get a role"
-									r.operationID = "getRole"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/roles/{role_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								case "PUT":
-									r.name = UpdateRoleOperation
-									r.summary = "Update a role"
-									r.operationID = "updateRole"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/roles/{role_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								default:
-									return
-								}
-							}
-
-						}
-
-					case 't': // Prefix: "team_space_memberships"
-
-						if l := len("team_space_memberships"); len(elem) >= l && elem[0:l] == "team_space_memberships" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							switch method {
-							case "POST":
-								r.name = CreateTeamSpaceMembershipOperation
-								r.summary = "Create a team space membership"
-								r.operationID = "createTeamSpaceMembership"
-								r.operationGroup = ""
-								r.pathPattern = "/spaces/{space_id}/team_space_memberships"
-								r.args = args
-								r.count = 1
-								return r, true
-							default:
-								return
-							}
-						}
-						switch elem[0] {
-						case '/': // Prefix: "/"
-
-							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-								elem = elem[l:]
-							} else {
-								break
-							}
-
-							// Param: "team_space_membership_id"
-							// Leaf parameter, slashes are prohibited
-							idx := strings.IndexByte(elem, '/')
-							if idx >= 0 {
-								break
-							}
-							args[1] = elem
-							elem = ""
-
-							if len(elem) == 0 {
-								// Leaf node.
-								switch method {
-								case "DELETE":
-									r.name = DeleteTeamSpaceMembershipOperation
-									r.summary = "Delete a team space membership"
-									r.operationID = "deleteTeamSpaceMembership"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								case "GET":
-									r.name = GetTeamSpaceMembershipOperation
-									r.summary = "Get a single team space membership"
-									r.operationID = "getTeamSpaceMembership"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								case "PUT":
-									r.name = PutTeamSpaceMembershipOperation
-									r.summary = "Update a single team space membership"
-									r.operationID = "putTeamSpaceMembership"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
-									r.args = args
-									r.count = 2
-									return r, true
-								default:
-									return
-								}
-							}
-
-						}
-
-					case 'w': // Prefix: "webhook_"
-
-						if l := len("webhook_"); len(elem) >= l && elem[0:l] == "webhook_" {
-							elem = elem[l:]
-						} else {
-							break
-						}
-
-						if len(elem) == 0 {
-							break
-						}
-						switch elem[0] {
-						case 'd': // Prefix: "definitions"
-
-							if l := len("definitions"); len(elem) >= l && elem[0:l] == "definitions" {
+							if l := len("team_space_memberships"); len(elem) >= l && elem[0:l] == "team_space_memberships" {
 								elem = elem[l:]
 							} else {
 								break
@@ -3894,11 +4161,11 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							if len(elem) == 0 {
 								switch method {
 								case "POST":
-									r.name = CreateWebhookDefinitionOperation
-									r.summary = "Create a webhook definition"
-									r.operationID = "createWebhookDefinition"
+									r.name = CreateTeamSpaceMembershipOperation
+									r.summary = "Create a team space membership"
+									r.operationID = "createTeamSpaceMembership"
 									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/webhook_definitions"
+									r.pathPattern = "/spaces/{space_id}/team_space_memberships"
 									r.args = args
 									r.count = 1
 									return r, true
@@ -3915,7 +4182,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									break
 								}
 
-								// Param: "webhook_definition_id"
+								// Param: "team_space_membership_id"
 								// Leaf parameter, slashes are prohibited
 								idx := strings.IndexByte(elem, '/')
 								if idx >= 0 {
@@ -3928,29 +4195,29 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									// Leaf node.
 									switch method {
 									case "DELETE":
-										r.name = DeleteWebhookDefinitionOperation
-										r.summary = "Delete a webhook definition"
-										r.operationID = "deleteWebhookDefinition"
+										r.name = DeleteTeamSpaceMembershipOperation
+										r.summary = "Delete a team space membership"
+										r.operationID = "deleteTeamSpaceMembership"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+										r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
 										r.args = args
 										r.count = 2
 										return r, true
 									case "GET":
-										r.name = GetWebhookDefinitionOperation
-										r.summary = "Get a webhook definition"
-										r.operationID = "getWebhookDefinition"
+										r.name = GetTeamSpaceMembershipOperation
+										r.summary = "Get a single team space membership"
+										r.operationID = "getTeamSpaceMembership"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+										r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
 										r.args = args
 										r.count = 2
 										return r, true
 									case "PUT":
-										r.name = UpdateWebhookDefinitionOperation
-										r.summary = "Update a webhook definition"
-										r.operationID = "updateWebhookDefinition"
+										r.name = PutTeamSpaceMembershipOperation
+										r.summary = "Update a single team space membership"
+										r.operationID = "putTeamSpaceMembership"
 										r.operationGroup = ""
-										r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+										r.pathPattern = "/spaces/{space_id}/team_space_memberships/{team_space_membership_id}"
 										r.args = args
 										r.count = 2
 										return r, true
@@ -3961,47 +4228,139 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 							}
 
-						case 's': // Prefix: "settings/signing_secret"
+						case 'w': // Prefix: "webhook_"
 
-							if l := len("settings/signing_secret"); len(elem) >= l && elem[0:l] == "settings/signing_secret" {
+							if l := len("webhook_"); len(elem) >= l && elem[0:l] == "webhook_" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
 							if len(elem) == 0 {
-								// Leaf node.
-								switch method {
-								case "DELETE":
-									r.name = DeleteWebhookSigningSecretOperation
-									r.summary = "Delete a webhook signing secret"
-									r.operationID = "deleteWebhookSigningSecret"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/webhook_settings/signing_secret"
-									r.args = args
-									r.count = 1
-									return r, true
-								case "GET":
-									r.name = GetWebhookSigningSecretOperation
-									r.summary = "Get one webhook signing secret"
-									r.operationID = "getWebhookSigningSecret"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/webhook_settings/signing_secret"
-									r.args = args
-									r.count = 1
-									return r, true
-								case "PUT":
-									r.name = PutWebhookSigningSecretOperation
-									r.summary = "Create or update a webhook signing secret"
-									r.operationID = "putWebhookSigningSecret"
-									r.operationGroup = ""
-									r.pathPattern = "/spaces/{space_id}/webhook_settings/signing_secret"
-									r.args = args
-									r.count = 1
-									return r, true
-								default:
-									return
+								break
+							}
+							switch elem[0] {
+							case 'd': // Prefix: "definitions"
+
+								if l := len("definitions"); len(elem) >= l && elem[0:l] == "definitions" {
+									elem = elem[l:]
+								} else {
+									break
 								}
+
+								if len(elem) == 0 {
+									switch method {
+									case "POST":
+										r.name = CreateWebhookDefinitionOperation
+										r.summary = "Create a webhook definition"
+										r.operationID = "createWebhookDefinition"
+										r.operationGroup = ""
+										r.pathPattern = "/spaces/{space_id}/webhook_definitions"
+										r.args = args
+										r.count = 1
+										return r, true
+									default:
+										return
+									}
+								}
+								switch elem[0] {
+								case '/': // Prefix: "/"
+
+									if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+										elem = elem[l:]
+									} else {
+										break
+									}
+
+									// Param: "webhook_definition_id"
+									// Leaf parameter, slashes are prohibited
+									idx := strings.IndexByte(elem, '/')
+									if idx >= 0 {
+										break
+									}
+									args[1] = elem
+									elem = ""
+
+									if len(elem) == 0 {
+										// Leaf node.
+										switch method {
+										case "DELETE":
+											r.name = DeleteWebhookDefinitionOperation
+											r.summary = "Delete a webhook definition"
+											r.operationID = "deleteWebhookDefinition"
+											r.operationGroup = ""
+											r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+											r.args = args
+											r.count = 2
+											return r, true
+										case "GET":
+											r.name = GetWebhookDefinitionOperation
+											r.summary = "Get a webhook definition"
+											r.operationID = "getWebhookDefinition"
+											r.operationGroup = ""
+											r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+											r.args = args
+											r.count = 2
+											return r, true
+										case "PUT":
+											r.name = UpdateWebhookDefinitionOperation
+											r.summary = "Update a webhook definition"
+											r.operationID = "updateWebhookDefinition"
+											r.operationGroup = ""
+											r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"
+											r.args = args
+											r.count = 2
+											return r, true
+										default:
+											return
+										}
+									}
+
+								}
+
+							case 's': // Prefix: "settings/signing_secret"
+
+								if l := len("settings/signing_secret"); len(elem) >= l && elem[0:l] == "settings/signing_secret" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch method {
+									case "DELETE":
+										r.name = DeleteWebhookSigningSecretOperation
+										r.summary = "Delete a webhook signing secret"
+										r.operationID = "deleteWebhookSigningSecret"
+										r.operationGroup = ""
+										r.pathPattern = "/spaces/{space_id}/webhook_settings/signing_secret"
+										r.args = args
+										r.count = 1
+										return r, true
+									case "GET":
+										r.name = GetWebhookSigningSecretOperation
+										r.summary = "Get one webhook signing secret"
+										r.operationID = "getWebhookSigningSecret"
+										r.operationGroup = ""
+										r.pathPattern = "/spaces/{space_id}/webhook_settings/signing_secret"
+										r.args = args
+										r.count = 1
+										return r, true
+									case "PUT":
+										r.name = PutWebhookSigningSecretOperation
+										r.summary = "Create or update a webhook signing secret"
+										r.operationID = "putWebhookSigningSecret"
+										r.operationGroup = ""
+										r.pathPattern = "/spaces/{space_id}/webhook_settings/signing_secret"
+										r.args = args
+										r.count = 1
+										return r, true
+									default:
+										return
+									}
+								}
+
 							}
 
 						}
