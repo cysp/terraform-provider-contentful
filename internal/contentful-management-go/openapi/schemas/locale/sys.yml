@@ -1,0 +1,11 @@
+LocaleSys:
+  allOf:
+    - $ref: "../sys/with-type.yml"
+    - $ref: "../sys/with-id.yml"
+    - $ref: "../sys/with-space.yml"
+    - $ref: "../sys/with-environment.yml"
+    - type: object
+      properties:
+        type:
+          enum:
+            - Locale

@@ -49,3 +49,12 @@ func (sm *SpaceMap[Value]) Delete(spaceID string, key string) {
 
 	delete(spaceValues, key)
 }
+
+func (sm *SpaceMap[Value]) List(spaceID string) []Value {
+	values := make([]Value, 0, len(sm.m[spaceID]))
+	for _, value := range sm.m[spaceID] {
+		values = append(values, value)
+	}
+
+	return values
+}

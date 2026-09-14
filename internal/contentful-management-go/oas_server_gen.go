@@ -308,6 +308,18 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environment_aliases/{environment_alias_id}
 	GetEnvironmentAlias(ctx context.Context, params GetEnvironmentAliasParams) (GetEnvironmentAliasRes, error)
+	// GetEnvironmentAliases implements getEnvironmentAliases operation.
+	//
+	// Read EnvironmentAlias collection.
+	//
+	// GET /spaces/{space_id}/environment_aliases
+	GetEnvironmentAliases(ctx context.Context, params GetEnvironmentAliasesParams) (GetEnvironmentAliasesRes, error)
+	// GetEnvironments implements getEnvironments operation.
+	//
+	// Read Environment collection.
+	//
+	// GET /spaces/{space_id}/environments
+	GetEnvironments(ctx context.Context, params GetEnvironmentsParams) (GetEnvironmentsRes, error)
 	// GetExtension implements getExtension operation.
 	//
 	// Get a single extension.
@@ -320,6 +332,18 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/environments/{environment_id}/live_preview/variables
 	GetLivePreviewVariables(ctx context.Context, params GetLivePreviewVariablesParams) (GetLivePreviewVariablesRes, error)
+	// GetLocale implements getLocale operation.
+	//
+	// Read Locale.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/locales/{locale_id}
+	GetLocale(ctx context.Context, params GetLocaleParams) (GetLocaleRes, error)
+	// GetLocales implements getLocales operation.
+	//
+	// Read Locale collection.
+	//
+	// GET /spaces/{space_id}/environments/{environment_id}/locales
+	GetLocales(ctx context.Context, params GetLocalesParams) (GetLocalesRes, error)
 	// GetMarketplaceAppDefinitions implements getMarketplaceAppDefinitions operation.
 	//
 	// Get marketplace app definitions.
@@ -362,12 +386,24 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/roles/{role_id}
 	GetRole(ctx context.Context, params GetRoleParams) (GetRoleRes, error)
+	// GetSpace implements getSpace operation.
+	//
+	// Read Space.
+	//
+	// GET /spaces/{space_id}
+	GetSpace(ctx context.Context, params GetSpaceParams) (GetSpaceRes, error)
 	// GetSpaceEnablements implements getSpaceEnablements operation.
 	//
 	// Get enablements for a space.
 	//
 	// GET /spaces/{space_id}/enablements
 	GetSpaceEnablements(ctx context.Context, params GetSpaceEnablementsParams) (GetSpaceEnablementsRes, error)
+	// GetSpaces implements getSpaces operation.
+	//
+	// Read Space collection.
+	//
+	// GET /spaces
+	GetSpaces(ctx context.Context, params GetSpacesParams) (GetSpacesRes, error)
 	// GetTag implements getTag operation.
 	//
 	// Get a single tag.

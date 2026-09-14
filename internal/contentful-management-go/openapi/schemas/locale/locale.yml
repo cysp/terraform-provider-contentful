@@ -1,0 +1,28 @@
+Locale:
+  type: object
+  properties:
+    sys:
+      $ref: "./sys.yml#/LocaleSys"
+    name:
+      type: string
+    code:
+      type: string
+    fallbackCode:
+      type: string
+      nullable: true
+    default:
+      type: boolean
+    optional:
+      type: boolean
+    contentManagementApi:
+      type: boolean
+    contentDeliveryApi:
+      type: boolean
+  required:
+    - sys
+    - name
+    - code
+    - default
+    - optional
+    - contentManagementApi
+    - contentDeliveryApi

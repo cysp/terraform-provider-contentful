@@ -10,3 +10,4 @@ EnvironmentAliasSys:
         type:
           enum:
             - EnvironmentAlias
+            - Environment Alias

@@ -1,0 +1,10 @@
+Space:
+  type: object
+  properties:
+    sys:
+      $ref: "./sys.yml#/SpaceSys"
+    name:
+      type: string
+  required:
+    - sys
+    - name

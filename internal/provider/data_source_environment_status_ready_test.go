@@ -50,7 +50,7 @@ func (h *environmentStatusReadyTestHandler) ServeHTTP(w http.ResponseWriter, r *
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		w.WriteHeader(http.StatusOK)
 
-		err := json.NewEncoder(w).Encode(environment)
+		err := json.NewEncoder(w).Encode(&environment)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
