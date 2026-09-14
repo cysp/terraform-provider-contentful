@@ -270,7 +270,11 @@ then run the repository checks:
 ```sh
 golangci-lint run
 golangci-lint fmt --diff
+go run mvdan.cc/gofumpt@v0.12.0 -d .
 ```
+
+Until golangci-lint includes the compatible gofumpt version, CI checks it
+separately. Use `-w` instead of `-d` to apply gofumpt formatting.
 
 ## Releases
 

@@ -28,3 +28,8 @@ jobs:
 
       - name: golangci-lint format
         run: golangci-lint fmt --diff
+
+      # Remove this step and re-enable the bundled formatter once golangci-lint
+      # includes gofumpt v0.12.0 or later.
+      - name: gofumpt
+        run: go run mvdan.cc/gofumpt@v0.12.0 -d .

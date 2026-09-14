@@ -182,12 +182,14 @@ topics = ["Entry.publish"]`, remotePath: "/spaces/space/webhook_definitions/{web
 	}
 }
 
-type remoteDeleteRequest struct{ method, path, version string }
-type remoteDeleteRecorder struct {
-	next      http.Handler
-	mu        sync.Mutex
-	mutations []remoteDeleteRequest
-}
+type (
+	remoteDeleteRequest  struct{ method, path, version string }
+	remoteDeleteRecorder struct {
+		next      http.Handler
+		mu        sync.Mutex
+		mutations []remoteDeleteRequest
+	}
+)
 
 func (r *remoteDeleteRecorder) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodDelete || strings.HasSuffix(req.URL.Path, "/revoked") {
@@ -198,18 +200,21 @@ func (r *remoteDeleteRecorder) ServeHTTP(w http.ResponseWriter, req *http.Reques
 
 	r.next.ServeHTTP(w, req)
 }
+
 func (r *remoteDeleteRecorder) reset() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	r.mutations = nil
 }
+
 func (r *remoteDeleteRecorder) requests() []remoteDeleteRequest {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	return append([]remoteDeleteRequest(nil), r.mutations...)
 }
+
 func remoteDeletePath(t *testing.T, state *terraform.State, resourceType, name, pattern string) string {
 	t.Helper()
 
@@ -224,6 +229,7 @@ func remoteDeletePath(t *testing.T, state *terraform.State, resourceType, name, 
 
 	return pattern
 }
+
 func remoteDeleteGet(t *testing.T, server http.Handler, path string, status int) map[string]any {
 	t.Helper()
 
