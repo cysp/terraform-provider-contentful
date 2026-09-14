@@ -72,53 +72,43 @@ func (d *teamsDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 }
 
 func readTeams(ctx context.Context, client *cm.Client, organizationID string) ([]TeamsDataSourceTeamModel, diag.Diagnostics) {
-	var (
-		skip  int64
-		teams = make([]TeamsDataSourceTeamModel, 0)
-	)
+	const errorTitle = "Failed to read teams"
 
-	for {
-		params := cm.GetTeamsParams{
-			OrganizationID: organizationID,
-			Skip:           cm.NewOptInt64(skip),
-			Limit:          cm.NewOptInt64(defaultPageLimit),
-		}
-
-		response, err := client.GetTeams(ctx, params)
-
-		tflog.Info(ctx, "teams.read", map[string]any{
-			"params":   params,
-			"response": response,
-			"err":      err,
-		})
-
-		if err != nil {
-			return nil, diag.Diagnostics{
-				diag.NewErrorDiagnostic("Failed to read teams", util.ErrorDetailFromContentfulManagementResponse(response, err)),
+	teams, diagnostics := readContentfulCollection(ctx, errorTitle,
+		func(ctx context.Context, skip int64) (contentfulCollection[cm.TeamListItem], diag.Diagnostics) {
+			params := cm.GetTeamsParams{
+				OrganizationID: organizationID,
+				Skip:           cm.NewOptInt64(skip),
+				Limit:          cm.NewOptInt64(defaultPageLimit),
 			}
-		}
+			response, err := client.GetTeams(ctx, params)
+			tflog.Info(ctx, "teams.read", map[string]any{
+				"params":   params,
+				"response": response,
+				"err":      err,
+			})
 
-		collection, ok := response.(*cm.TeamCollection)
-		if !ok {
-			return nil, diag.Diagnostics{
-				diag.NewErrorDiagnostic("Failed to read teams", contentfulListNonCollectionResponseDetail(response)),
+			if err != nil {
+				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, util.ErrorDetailFromContentfulManagementResponse(response, err))}
 			}
-		}
 
-		for _, team := range collection.Items {
-			teams = append(teams, TeamsDataSourceTeamModel{
+			switch response := response.(type) {
+			case *cm.TeamCollection:
+				return response, nil
+			default:
+				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, contentfulListNonCollectionResponseDetail(response))}
+			}
+		},
+		func(team cm.TeamListItem) (TeamsDataSourceTeamModel, diag.Diagnostics) {
+			return TeamsDataSourceTeamModel{
 				TeamID:      types.StringValue(team.Sys.ID),
 				Name:        types.StringValue(team.Name),
 				Description: types.StringPointerValue(team.Description.ValueStringPointer()),
-			})
-		}
-
-		skip += int64(len(collection.Items))
-		total, totalSet := collection.Total.Get()
-
-		if len(collection.Items) == 0 || (totalSet && skip >= int64(total)) {
-			break
-		}
+			}, nil
+		},
+	)
+	if diagnostics.HasError() {
+		return nil, diagnostics
 	}
 
 	// Contentful does not define collection order; canonicalize Terraform's ordered list.

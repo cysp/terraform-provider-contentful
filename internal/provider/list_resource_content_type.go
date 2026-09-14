@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -55,8 +56,9 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 	}
 
 	stream.Results = paginateContentfulCollectionItemsAsListResults(ctx, req,
-		"Failed to list content types",
-		func(ctx context.Context, skip int64, limit int64) (cm.GetContentTypesRes, error) {
+		func(ctx context.Context, skip int64, limit int64) (contentfulCollection[cm.ContentType], diag.Diagnostics) {
+			const errorTitle = "Failed to list content types"
+
 			pageParams := params
 			pageParams.Skip = cm.NewOptInt64(skip)
 			pageParams.Limit = cm.NewOptInt64(limit)
@@ -69,7 +71,16 @@ func (r *contentTypeListResource) List(ctx context.Context, req list.ListRequest
 				"err":      err,
 			})
 
-			return response, err //nolint:wrapcheck // preserve generated CMA client errors for list diagnostics.
+			if err != nil {
+				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, util.ErrorDetailFromContentfulManagementResponse(response, err))}
+			}
+
+			switch response := response.(type) {
+			case *cm.ContentTypeCollection:
+				return response, nil
+			default:
+				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, contentfulListNonCollectionResponseDetail(response))}
+			}
 		},
 		func(item cm.ContentType) list.ListResult {
 			return newListResultFromResponse(

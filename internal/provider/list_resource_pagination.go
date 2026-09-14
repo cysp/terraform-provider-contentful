@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"iter"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
@@ -10,20 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/list"
 )
 
-const defaultPageLimit int64 = 100
-
-type contentfulCollection[Item any] interface {
-	GetTotal() cm.OptInt
-	GetItems() []Item
-}
-
-func paginateContentfulCollectionItemsAsListResults[Item, Response any](
+func paginateContentfulCollectionItemsAsListResults[Item any](
 	ctx context.Context,
 	req list.ListRequest,
-	errorTitle string,
-	fetchPage func(context.Context, int64, int64) (Response, error),
-	buildResult func(Item) list.ListResult,
-) func(func(list.ListResult) bool) {
+	fetchPage func(ctx context.Context, skip, limit int64) (contentfulCollection[Item], diag.Diagnostics),
+	buildResult func(item Item) list.ListResult,
+) iter.Seq[list.ListResult] {
 	return func(yield func(list.ListResult) bool) {
 		var (
 			emitted int64
@@ -42,24 +35,9 @@ func paginateContentfulCollectionItemsAsListResults[Item, Response any](
 				limit = min(limit, remaining)
 			}
 
-			response, err := fetchPage(ctx, skip, limit)
-			if err != nil {
-				yield(list.ListResult{
-					Diagnostics: diag.Diagnostics{
-						diag.NewErrorDiagnostic(errorTitle, util.ErrorDetailFromContentfulManagementResponse(response, err)),
-					},
-				})
-
-				return
-			}
-
-			collection, ok := any(response).(contentfulCollection[Item])
-			if !ok {
-				yield(list.ListResult{
-					Diagnostics: diag.Diagnostics{
-						diag.NewErrorDiagnostic(errorTitle, contentfulListNonCollectionResponseDetail(response)),
-					},
-				})
+			collection, diagnostics := fetchPage(ctx, skip, limit)
+			if diagnostics.HasError() {
+				yield(list.ListResult{Diagnostics: diagnostics})
 
 				return
 			}

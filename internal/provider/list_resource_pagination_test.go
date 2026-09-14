@@ -3,17 +3,15 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-var errTestContentfulUnavailable = errors.New("contentful unavailable")
 
 type testListCollection struct {
 	total cm.OptInt
@@ -41,8 +39,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsPaginatesUntilTotal(t *te
 	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
 		t.Context(),
 		list.ListRequest{},
-		"failed",
-		func(_ context.Context, skip int64, limit int64) (testListCollection, error) {
+		func(_ context.Context, skip int64, limit int64) (contentfulCollection[int], diag.Diagnostics) {
 			params := testListParams{skip: skip, limit: limit}
 			requests = append(requests, params)
 
@@ -75,8 +72,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsPaginatesUntilEmptyWithou
 	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
 		t.Context(),
 		list.ListRequest{},
-		"failed",
-		func(_ context.Context, skip int64, limit int64) (testListCollection, error) {
+		func(_ context.Context, skip int64, limit int64) (contentfulCollection[int], diag.Diagnostics) {
 			params := testListParams{skip: skip, limit: limit}
 			requests = append(requests, params)
 
@@ -109,8 +105,7 @@ func TestPaginateContentfulCollectionItemsAsListResultsHonorsTerraformLimit(t *t
 	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
 		t.Context(),
 		list.ListRequest{Limit: 2},
-		"failed",
-		func(_ context.Context, skip int64, limit int64) (testListCollection, error) {
+		func(_ context.Context, skip int64, limit int64) (contentfulCollection[int], diag.Diagnostics) {
 			requests = append(requests, testListParams{skip: skip, limit: limit})
 
 			return testListCollection{total: cm.NewOptInt(10), items: []int{1, 2}}, nil
@@ -128,54 +123,14 @@ func TestPaginateContentfulCollectionItemsAsListResultsReturnsFetchDiagnostics(t
 	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
 		t.Context(),
 		list.ListRequest{},
-		"failed",
-		func(context.Context, int64, int64) (testListCollection, error) {
-			return testListCollection{}, errTestContentfulUnavailable
+		func(context.Context, int64, int64) (contentfulCollection[int], diag.Diagnostics) {
+			return nil, diag.Diagnostics{diag.NewErrorDiagnostic("failed", "contentful unavailable")}
 		},
 		testListResult,
 	))
 
 	require.Len(t, results, 1)
 	assert.Equal(t, "diagnostic: contentful unavailable", results[0])
-}
-
-func TestPaginateContentfulCollectionItemsAsListResultsReturnsUnexpectedResponseDiagnostics(t *testing.T) {
-	t.Parallel()
-
-	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
-		t.Context(),
-		list.ListRequest{},
-		"failed",
-		func(context.Context, int64, int64) (any, error) {
-			return struct{}{}, nil
-		},
-		testListResult,
-	))
-
-	require.Len(t, results, 1)
-	assert.Contains(t, results[0], "diagnostic: Unexpected response type")
-}
-
-func TestPaginateContentfulCollectionItemsAsListResultsReturnsContentfulErrorDiagnostics(t *testing.T) {
-	t.Parallel()
-
-	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
-		t.Context(),
-		list.ListRequest{},
-		"failed",
-		func(context.Context, int64, int64) (any, error) {
-			return &cm.ErrorStatusCode{
-				Response: cm.NewErrorApplicationJSONError(cm.Error{
-					Sys:     cm.NewErrorSys("NotFound"),
-					Message: cm.NewOptString("Environment not found"),
-				}),
-			}, nil
-		},
-		testListResult,
-	))
-
-	require.Len(t, results, 1)
-	assert.Equal(t, "diagnostic: Error: NotFound: Environment not found", results[0])
 }
 
 func collectTestListResults(t *testing.T, stream func(func(list.ListResult) bool)) []string {
