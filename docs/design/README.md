@@ -40,3 +40,5 @@ external evidence establishes. Mock behavior alone does not establish Contentful
 behavior. The [test-server conformance reference](cma-test-server-conformance.md)
 connects API evidence to fixture behavior and coverage. Deliberate faults belong
 in explicit adversarial cases rather than undocumented default behavior.
+
+[Configuration data sources](configuration-data-sources.md) defines read-only lookup identity, offset traversal, alias context, and compatibility boundaries.

@@ -1,0 +1,1 @@
+{"sys":{"id":"item-b","type":"Locale","space":{"sys":{"id":"space","type":"Link","linkType":"Space"}},"environment":{"sys":{"id":"master","type":"Link","linkType":"Environment"}}},"name":"Second","code":"en-GB","default":true,"fallbackCode":null,"optional":false,"contentManagementApi":true,"contentDeliveryApi":false,"internal_code":"must-not-be-exposed"}

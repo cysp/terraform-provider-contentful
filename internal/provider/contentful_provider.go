@@ -209,9 +209,17 @@ func (p *ContentfulProvider) Metadata(_ context.Context, _ provider.MetadataRequ
 func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewAppDefinitionDataSource,
+		NewEnvironmentAliasDataSource,
+		NewEnvironmentAliasesDataSource,
+		NewEnvironmentDataSource,
 		NewEnvironmentStatusReadyDataSource,
+		NewEnvironmentsDataSource,
+		NewLocaleDataSource,
+		NewLocalesDataSource,
 		NewMarketplaceAppDefinitionDataSource,
 		NewPreviewAPIKeyDataSource,
+		NewSpaceDataSource,
+		NewSpacesDataSource,
 		NewTeamsDataSource,
 	}
 }

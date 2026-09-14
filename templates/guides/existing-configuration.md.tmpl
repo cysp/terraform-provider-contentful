@@ -1,0 +1,46 @@
+---
+page_title: "Reference existing Spaces, Environments, aliases, and Locales"
+description: |-
+  Use Contentful data sources to compose configuration with objects managed elsewhere.
+---
+
+# Reference existing Spaces, Environments, aliases, and Locales
+
+Look up existing Contentful configuration by ID, or select an object from a scoped collection:
+
+| Object | Exact lookup | Discovery scope |
+| --- | --- | --- |
+| Space | [`contentful_space`](../data-sources/space) | [`contentful_spaces`](../data-sources/spaces): one organization or all accessible organizations |
+| Environment | [`contentful_environment`](../data-sources/environment) | [`contentful_environments`](../data-sources/environments): one Space |
+| Environment Alias | [`contentful_environment_alias`](../data-sources/environment_alias) | [`contentful_environment_aliases`](../data-sources/environment_aliases): one Space |
+| Locale | [`contentful_locale`](../data-sources/locale) | [`contentful_locales`](../data-sources/locales): one Space and Environment |
+
+## Read existing configuration
+
+With the [provider configured](../index#authentication), this example reads an existing Space and Environment, selects the default Locale, and outputs its ID and content code.
+
+{{ tffile "examples/guides/existing-configuration/main.tf" }}
+
+Set `contentful_space_id` and, if needed, `contentful_environment_id`, then run `terraform init` and `terraform plan`. Run `terraform apply` to save the lookup results and outputs in state. These data sources do not change Contentful configuration.
+
+The Environment data source reports status immediately. Use [`contentful_environment_status_ready`](../data-sources/environment_status_ready) when a lookup needs to wait for an Environment to become ready.
+
+## Select exactly one discovered object
+
+Filter collection results by name, locale code, or another returned attribute. To select a locale by code, use `locale.code == "en-GB"` in both the postcondition and the `one(...)` expression above. Comparisons are case-sensitive.
+
+The postcondition requires exactly one match before dependent expressions use it: `one([])` returns null, while multiple matches produce an error. Apply the same pattern to `self.spaces` and `space.name` to select a Space by name, using `organization_id` to narrow the search when needed.
+
+Use `locale_id` for a Locale lookup and `code` for localized content.
+
+## Use environment aliases
+
+An Environment lookup accepts an alias ID and returns its target as `aliased_environment_id` when Contentful supplies it. An Environment Alias lookup returns `target_environment_id`. Using the resolved target ID makes dependent requests address that environment directly.
+
+Alias lookups refresh on later plans, so a resolved target can change. To keep lookups tied to one environment across alias changes, use a concrete environment ID.
+
+Locale lookups also accept an alias as `environment_id`. The provider currently supports responses whose environment link identifies that alias; other responses produce an identity error. Use the target environment ID if you encounter this error.
+
+## Collection reads
+
+The two-minute `timeouts.read` default covers the whole collection read. Concurrent edits or alias changes can affect results between pages, so a collection is not an atomic snapshot. See [Operation timeouts](operation-timeouts) to adjust the read deadline.
