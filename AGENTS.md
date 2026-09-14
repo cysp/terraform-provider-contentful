@@ -23,6 +23,14 @@
 
 - Keep durable documentation current: record user-visible contracts, invariants, evidence, and limitations; do not retain dated audit inventories, cleanup chronology, or completed plans.
 - Leave unrelated concerns out of each change, preserve unrelated worktree changes, and use a separate worktree and pull request when concurrently pursuing an independent concern; keep history reviewable.
-- Use Conventional Commit messages. Choose a scope for the affected codebase area, following recent repository history when a matching scope exists.
 - After changing a schema or another input to generated code or documentation, run `go generate ./...` and inspect both tracked changes and untracked output.
 - Review the final diff against the request and these rules. Report completed work, verification, and any remaining blocker, with relevant evidence.
+
+## Commit messages
+
+- Use Conventional Commit messages. The type describes the kind of change, the scope identifies the affected component or maintenance concern, and the subject describes the specific change.
+- For components under `internal/`, use the immediate directory's exact name as the scope, such as `contentful-management-go` or `provider`. Name individual resources in the subject.
+- Tests, examples, generated files, and documentation about a component use that component's scope, regardless of their location.
+- For repository maintenance, use the established concern name, such as `deps`, `lint`, `generate`, `release`, or `agents`. Scope workflow changes by their purpose.
+- When a cohesive change spans components, use its primary concern as the scope if one clearly owns the change; otherwise omit the scope. Split independently useful changes into separate commits where appropriate.
+- For a new concern, prefer an existing directory, tool, or workflow name. Use recent history to resolve choices left open by these rules.
