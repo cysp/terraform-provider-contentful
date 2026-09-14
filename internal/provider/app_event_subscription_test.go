@@ -17,6 +17,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -29,9 +30,11 @@ import (
 
 var errAppEventTestTransport = errors.New("transport sentinel")
 
-const appEventTestPath = "/organizations/organization/app_definitions/app/event_subscription"
-const appEventTestSys = `"sys":{"type":"AppEventSubscription","organization":{"sys":{"type":"Link","linkType":"Organization","id":"organization"}},"appDefinition":{"sys":{"type":"Link","linkType":"AppDefinition","id":"app"}}}`
-const appEventHTTPResponse = `{` + appEventTestSys + `,"topics":["Entry.publish","Asset.publish"],"targetUrl":"https://example.invalid/events?secret=sentinel"}`
+const (
+	appEventTestPath     = "/organizations/organization/app_definitions/app/event_subscription"
+	appEventTestSys      = `"sys":{"type":"AppEventSubscription","organization":{"sys":{"type":"Link","linkType":"Organization","id":"organization"}},"appDefinition":{"sys":{"type":"Link","linkType":"AppDefinition","id":"app"}}}`
+	appEventHTTPResponse = `{` + appEventTestSys + `,"topics":["Entry.publish","Asset.publish"],"targetUrl":"https://example.invalid/events?secret=sentinel"}`
+)
 
 func appEventTestModel() AppEventSubscriptionModel {
 	return AppEventSubscriptionModel{IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()}, OrganizationID: types.StringValue("organization"), AppDefinitionID: types.StringValue("app"), Topics: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("Entry.publish"), types.StringValue("Asset.publish")}), TargetURL: types.StringValue("https://example.invalid/events?secret=sentinel"), FilterFunctionID: types.StringNull(), TransformationFunctionID: types.StringNull(), HandlerFunctionID: types.StringNull(), Timeouts: TimeoutsNull()}
@@ -55,6 +58,7 @@ func appEventTestPlan(t *testing.T, model AppEventSubscriptionModel) tfsdk.Plan 
 
 	return plan
 }
+
 func appEventTestIdentity() *tfsdk.ResourceIdentity {
 	s := resourceIdentitySchema(appEventSubscriptionIdentityAttributeNames())
 
@@ -141,32 +145,102 @@ func TestAppEventSubscriptionMutationResponses(t *testing.T) {
 	}
 }
 
-func TestAppEventSubscriptionUnknownValuesBlockMutation(t *testing.T) {
+func TestAppEventSubscriptionInvalidValuesBlockMutation(t *testing.T) {
 	t.Parallel()
 
-	changes := map[string]func(*AppEventSubscriptionModel){
-		"organization_id":            func(m *AppEventSubscriptionModel) { m.OrganizationID = types.StringUnknown() },
-		"app_definition_id":          func(m *AppEventSubscriptionModel) { m.AppDefinitionID = types.StringUnknown() },
-		"target_url":                 func(m *AppEventSubscriptionModel) { m.TargetURL = types.StringUnknown() },
-		"filter_function_id":         func(m *AppEventSubscriptionModel) { m.FilterFunctionID = types.StringUnknown() },
-		"transformation_function_id": func(m *AppEventSubscriptionModel) { m.TransformationFunctionID = types.StringUnknown() },
-		"handler_function_id":        func(m *AppEventSubscriptionModel) { m.HandlerFunctionID = types.StringUnknown() },
-		"topics unknown":             func(m *AppEventSubscriptionModel) { m.Topics = types.SetUnknown(types.StringType) },
-		"topics null":                func(m *AppEventSubscriptionModel) { m.Topics = types.SetNull(types.StringType) },
-		"topics empty":               func(m *AppEventSubscriptionModel) { m.Topics = types.SetValueMust(types.StringType, []attr.Value{}) },
-		"topic unknown": func(m *AppEventSubscriptionModel) {
-			m.Topics = types.SetValueMust(types.StringType, []attr.Value{types.StringUnknown()})
+	tests := map[string]struct {
+		change    func(*AppEventSubscriptionModel)
+		summaries []string
+	}{
+		"organization unknown": {
+			change:    func(m *AppEventSubscriptionModel) { m.OrganizationID = types.StringUnknown() },
+			summaries: []string{"Unexpected unknown string"},
 		},
-		"topic null": func(m *AppEventSubscriptionModel) {
-			m.Topics = types.SetValueMust(types.StringType, []attr.Value{types.StringNull()})
+		"organization null": {
+			change:    func(m *AppEventSubscriptionModel) { m.OrganizationID = types.StringNull() },
+			summaries: []string{"Unexpected null string"},
 		},
-		"topic empty": func(m *AppEventSubscriptionModel) {
-			m.Topics = types.SetValueMust(types.StringType, []attr.Value{types.StringValue("")})
+		"organization empty": {
+			change:    func(m *AppEventSubscriptionModel) { m.OrganizationID = types.StringValue("") },
+			summaries: []string{"Invalid app event subscription identity"},
 		},
-		"target empty":   func(m *AppEventSubscriptionModel) { m.TargetURL = types.StringValue("") },
-		"function empty": func(m *AppEventSubscriptionModel) { m.FilterFunctionID = types.StringValue("") },
+		"app definition unknown": {
+			change:    func(m *AppEventSubscriptionModel) { m.AppDefinitionID = types.StringUnknown() },
+			summaries: []string{"Unexpected unknown string"},
+		},
+		"app definition null": {
+			change:    func(m *AppEventSubscriptionModel) { m.AppDefinitionID = types.StringNull() },
+			summaries: []string{"Unexpected null string"},
+		},
+		"app definition empty": {
+			change:    func(m *AppEventSubscriptionModel) { m.AppDefinitionID = types.StringValue("") },
+			summaries: []string{"Invalid app event subscription identity"},
+		},
+		"target_url": {
+			change:    func(m *AppEventSubscriptionModel) { m.TargetURL = types.StringUnknown() },
+			summaries: []string{"Unexpected unknown string"},
+		},
+		"filter_function_id": {
+			change:    func(m *AppEventSubscriptionModel) { m.FilterFunctionID = types.StringUnknown() },
+			summaries: []string{"Unexpected unknown string"},
+		},
+		"transformation_function_id": {
+			change:    func(m *AppEventSubscriptionModel) { m.TransformationFunctionID = types.StringUnknown() },
+			summaries: []string{"Unexpected unknown string"},
+		},
+		"handler_function_id": {
+			change:    func(m *AppEventSubscriptionModel) { m.HandlerFunctionID = types.StringUnknown() },
+			summaries: []string{"Unexpected unknown string"},
+		},
+		"topics unknown": {
+			change:    func(m *AppEventSubscriptionModel) { m.Topics = types.SetUnknown(types.StringType) },
+			summaries: []string{"Unexpected unknown string set"},
+		},
+		"topics null": {
+			change:    func(m *AppEventSubscriptionModel) { m.Topics = types.SetNull(types.StringType) },
+			summaries: []string{"Invalid app event topics"},
+		},
+		"topics empty": {
+			change:    func(m *AppEventSubscriptionModel) { m.Topics = types.SetValueMust(types.StringType, []attr.Value{}) },
+			summaries: []string{"Invalid app event topics"},
+		},
+		"topic unknown": {
+			change: func(m *AppEventSubscriptionModel) {
+				m.Topics = types.SetValueMust(types.StringType, []attr.Value{types.StringUnknown()})
+			},
+			summaries: []string{"Unexpected unknown string"},
+		},
+		"topic null": {
+			change: func(m *AppEventSubscriptionModel) {
+				m.Topics = types.SetValueMust(types.StringType, []attr.Value{types.StringNull()})
+			},
+			summaries: []string{"Unexpected null string"},
+		},
+		"topic empty": {
+			change: func(m *AppEventSubscriptionModel) {
+				m.Topics = types.SetValueMust(types.StringType, []attr.Value{types.StringValue("")})
+			},
+			summaries: []string{"Invalid app event topic"},
+		},
+		"target empty": {
+			change:    func(m *AppEventSubscriptionModel) { m.TargetURL = types.StringValue("") },
+			summaries: []string{"Invalid app event target URL"},
+		},
+		"function empty": {
+			change:    func(m *AppEventSubscriptionModel) { m.FilterFunctionID = types.StringValue("") },
+			summaries: []string{"Invalid Function ID"},
+		},
+		"independent errors": {
+			change: func(m *AppEventSubscriptionModel) {
+				m.OrganizationID = types.StringUnknown()
+				m.AppDefinitionID = types.StringValue("")
+				m.Topics = types.SetValueMust(types.StringType, []attr.Value{types.StringNull()})
+				m.TargetURL = types.StringValue("")
+			},
+			summaries: []string{"Unexpected unknown string", "Invalid app event subscription identity", "Unexpected null string", "Invalid app event target URL"},
+		},
 	}
-	for name, change := range changes {
+	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -174,17 +248,26 @@ func TestAppEventSubscriptionUnknownValuesBlockMutation(t *testing.T) {
 
 			implementation := appEventTestResource(t, func(http.ResponseWriter, *http.Request) { count.Add(1) })
 			model := appEventTestModel()
-			change(&model)
+			test.change(&model)
 			plan := appEventTestPlan(t, model)
 			response := resource.CreateResponse{State: tfsdk.State{Schema: plan.Schema}, Identity: appEventTestIdentity()}
 			implementation.Create(t.Context(), resource.CreateRequest{Plan: plan}, &response)
-			assert.True(t, response.Diagnostics.HasError(), response.Diagnostics)
 			assert.Zero(t, count.Load())
 			prior := appEventTestPlan(t, appEventTestModel())
 			update := resource.UpdateResponse{State: tfsdk.State{Schema: plan.Schema, Raw: prior.Raw}, Identity: appEventTestIdentity()}
 			implementation.Update(t.Context(), resource.UpdateRequest{Plan: plan, Config: tfsdk.Config(prior), State: tfsdk.State(prior)}, &update)
-			assert.True(t, update.Diagnostics.HasError())
 			assert.Zero(t, count.Load())
+
+			for _, diagnostics := range []diag.Diagnostics{response.Diagnostics, update.Diagnostics} {
+				assert.True(t, diagnostics.HasError())
+
+				summaries := make([]string, 0, len(diagnostics))
+				for _, diagnostic := range diagnostics {
+					summaries = append(summaries, diagnostic.Summary())
+				}
+
+				assert.ElementsMatch(t, test.summaries, summaries)
+			}
 		})
 	}
 }

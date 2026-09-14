@@ -24,17 +24,24 @@ func appEventSubscriptionResponse(ctx context.Context, response cm.AppEventSubsc
 	}
 
 	data := AppEventSubscriptionModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID(target.OrganizationID.ValueString(), target.AppDefinitionID.ValueString()),
-		OrganizationID:  target.OrganizationID, AppDefinitionID: target.AppDefinitionID,
-		Topics: topics, TargetURL: types.StringPointerValue(response.TargetUrl.ValueStringPointer()),
-		FilterFunctionID: types.StringNull(), TransformationFunctionID: types.StringNull(), HandlerFunctionID: types.StringNull(), Timeouts: target.Timeouts,
+		IDIdentityModel:          NewIDIdentityModelFromMultipartID(target.OrganizationID.ValueString(), target.AppDefinitionID.ValueString()),
+		OrganizationID:           target.OrganizationID,
+		AppDefinitionID:          target.AppDefinitionID,
+		Topics:                   topics,
+		TargetURL:                types.StringPointerValue(response.TargetUrl.ValueStringPointer()),
+		FilterFunctionID:         types.StringNull(),
+		TransformationFunctionID: types.StringNull(),
+		HandlerFunctionID:        types.StringNull(),
+		Timeouts:                 target.Timeouts,
 	}
 	if functions, ok := response.Functions.Get(); ok {
 		for _, role := range []struct {
 			link   cm.OptFunctionLink
 			target *types.String
 		}{
-			{functions.Filter, &data.FilterFunctionID}, {functions.Transformation, &data.TransformationFunctionID}, {functions.Handler, &data.HandlerFunctionID},
+			{functions.Filter, &data.FilterFunctionID},
+			{functions.Transformation, &data.TransformationFunctionID},
+			{functions.Handler, &data.HandlerFunctionID},
 		} {
 			if link, present := role.link.Get(); present {
 				*role.target = types.StringValue(link.Sys.ID)
