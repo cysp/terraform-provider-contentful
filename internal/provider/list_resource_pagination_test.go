@@ -133,6 +133,45 @@ func TestPaginateContentfulCollectionItemsAsListResultsReturnsFetchDiagnostics(t
 	assert.Equal(t, "diagnostic: contentful unavailable", results[0])
 }
 
+func TestPaginateContentfulCollectionItemsAsListResultsStopsWithConsumer(t *testing.T) {
+	t.Parallel()
+
+	requests := 0
+	results := paginateContentfulCollectionItemsAsListResults(t.Context(), list.ListRequest{},
+		func(context.Context, int64, int64) (contentfulCollection[int], diag.Diagnostics) {
+			requests++
+
+			return testListCollection{total: cm.NewOptInt(3), items: []int{1, 2}}, nil
+		}, testListResult)
+
+	for result := range results {
+		assert.Equal(t, "1", result.DisplayName)
+
+		break
+	}
+
+	assert.Equal(t, 1, requests)
+}
+
+func TestPaginateContentfulCollectionItemsAsListResultsRetainsResultsBeforeError(t *testing.T) {
+	t.Parallel()
+
+	results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(t.Context(), list.ListRequest{},
+		func(_ context.Context, skip, limit int64) (contentfulCollection[int], diag.Diagnostics) {
+			assert.EqualValues(t, 100, limit)
+
+			if skip == 0 {
+				return testListCollection{total: cm.NewOptInt(3), items: []int{1, 2}}, nil
+			}
+
+			assert.EqualValues(t, 2, skip)
+
+			return nil, diag.Diagnostics{diag.NewErrorDiagnostic("failed", "contentful unavailable")}
+		}, testListResult))
+
+	assert.Equal(t, []string{"1", "2", "diagnostic: contentful unavailable"}, results)
+}
+
 func collectTestListResults(t *testing.T, stream func(func(list.ListResult) bool)) []string {
 	t.Helper()
 
@@ -140,6 +179,9 @@ func collectTestListResults(t *testing.T, stream func(func(list.ListResult) bool
 
 	stream(func(result list.ListResult) bool {
 		if result.Diagnostics.HasError() {
+			require.Len(t, result.Diagnostics, 1)
+			assert.Nil(t, result.Identity)
+			assert.Nil(t, result.Resource)
 			results = append(results, "diagnostic: "+result.Diagnostics.Errors()[0].Detail())
 
 			return true
