@@ -199,6 +199,11 @@ for the command so an inherited mock setting cannot mask a live-capable check:
 env -u TF_ACC_MOCKED TF_ACC=1 go test ./internal/provider -run '^TestAcc' -count=1 -timeout 15m
 ```
 
+The [live Entry lifecycle fixtures](internal/provider/resource_entry_test.go)
+require the referenced Content Type to exist in the configured space and
+environment. Their publication payloads must include the translations required
+by that environment's Locale and Content Type configuration.
+
 ### Interpreting test results
 
 All `TestAcc` tests require `TF_ACC`, including registry upgrades and tests that

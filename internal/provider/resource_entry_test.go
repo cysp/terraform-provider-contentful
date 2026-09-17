@@ -230,7 +230,7 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 		"entry_id":        config.StringVariable(entryID),
 		"content_type_id": config.StringVariable("author"),
 		"fields": config.MapVariable(map[string]config.Variable{
-			"name": config.StringVariable(`{"en-AU":"name"}`),
+			"name": config.StringVariable(`{"en-AU":"name","en-CA":"name"}`),
 		}),
 	}
 
@@ -257,7 +257,7 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 		"fields": config.MapVariable(map[string]config.Variable{
-			"name":  config.StringVariable(`{"en-AU":"name"}`),
+			"name":  config.StringVariable(`{"en-AU":"name","en-CA":"name"}`),
 			"blurb": config.StringVariable(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`),
 		}),
 	}
@@ -267,7 +267,7 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 		"fields": config.MapVariable(map[string]config.Variable{
-			"name":  config.StringVariable(`{"en-AU":"name (updated)"}`),
+			"name":  config.StringVariable(`{"en-AU":"name (updated)","en-CA":"name (updated)"}`),
 			"blurb": config.StringVariable(`{"en-AU":{"nodeType":"document","data":{},"content":[]}}`),
 		}),
 	}
@@ -292,11 +292,11 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 					},
 					PostApplyPreRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
-						expectEntryFields(`{"en-AU":"name"}`),
+						expectEntryFields(`{"en-AU":"name","en-CA":"name"}`),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
-						expectEntryFields(`{"en-AU":"name"}`),
+						expectEntryFields(`{"en-AU":"name","en-CA":"name"}`),
 					},
 				},
 			},
@@ -310,10 +310,10 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 						plancheck.ExpectUnknownValue("contentful_entry.test", tfjsonpath.New("published_version")),
 					},
 					PostApplyPreRefresh: []plancheck.PlanCheck{
-						expectEntryFields(`{"en-AU":"name (updated)"}`),
+						expectEntryFields(`{"en-AU":"name (updated)","en-CA":"name (updated)"}`),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
-						expectEntryFields(`{"en-AU":"name (updated)"}`),
+						expectEntryFields(`{"en-AU":"name (updated)","en-CA":"name (updated)"}`),
 					},
 				},
 			},
@@ -357,7 +357,7 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 		"entry_fields": config.MapVariable(map[string]config.Variable{
-			"name": config.StringVariable(`{"en-AU":"name"}`),
+			"name": config.StringVariable(`{"en-AU":"name","en-CA":"name"}`),
 		}),
 	}
 
