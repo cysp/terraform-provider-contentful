@@ -1,12 +1,12 @@
 ---
 page_title: "Discover and import existing resources"
 description: |-
-  Discover existing Contentful Entries and Content Types with Terraform list resources.
+  Discover existing Contentful Entries, Content Types, and Locales with Terraform list resources.
 ---
 
 # Discover and import existing resources
 
-Use list resources to discover existing [`contentful_entry`](../list-resources/entry) and [`contentful_content_type`](../list-resources/content_type) objects and generate configuration for import. This workflow requires Terraform 1.14 or later and a configured Contentful provider.
+Use list resources to discover existing [`contentful_entry`](../list-resources/entry), [`contentful_content_type`](../list-resources/content_type), and [`contentful_locale`](../list-resources/locale) objects and generate configuration for import. This workflow requires Terraform 1.14 or later and a configured Contentful provider.
 
 If you already know an object's ID, use the Import section on its resource page. For a lookup without managing an object's lifecycle, use [configuration data sources](existing-configuration) for Spaces, Environments, Environment Aliases, and Locales. Entries and Content Types are discoverable through list resources; they do not have individual data sources.
 
@@ -26,7 +26,7 @@ list "contentful_entry" "blog_posts" {
 }
 ```
 
-For Content Types, use `list "contentful_content_type"` with the same space and environment arguments. The Entry list resource also accepts Contentful filters through `query` and ordering through `order`; see its schema for those arguments. The provider handles CMA pagination, while Terraform's list `limit` controls the maximum number of results.
+For Content Types or Locales, use `list "contentful_content_type"` or `list "contentful_locale"` with the same space and environment arguments. The Entry list resource also accepts Contentful filters through `query` and ordering through `order`; see its schema for those arguments. The provider handles CMA pagination, while Terraform's list `limit` controls the maximum number of results.
 
 ## 2. Preview results and generate configuration
 
@@ -50,6 +50,6 @@ See HashiCorp's [bulk import workflow](https://developer.hashicorp.com/terraform
 
 Review the generated configuration against each resource's schema and run `terraform plan`. Check for proposed updates as well as imports before applying. Remove or adjust arguments that do not describe the configuration you want Terraform to manage.
 
-For Entries, review the complete `fields` and `metadata` values. For Content Types, review the field definitions and metadata. The generated configuration may adopt values that other editors or systems currently manage.
+For Entries, review the complete `fields` and `metadata` values. For Content Types, review the field definitions and metadata. For Locales, review fallback codes and delivery/editing flags; discovery also returns the default locale, which Contentful does not allow deleting. See [Locale management](../resources/locale#manage-existing-and-default-locales). The generated configuration may adopt values that other editors or systems currently manage.
 
 Import alone does not publish an external Entry draft or activate an external Content Type draft. Managed changes included in the same apply, or in a later apply, follow the [`contentful_entry`](../resources/entry) and [`contentful_content_type`](../resources/content_type) lifecycle contracts.

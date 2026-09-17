@@ -228,6 +228,7 @@ func (p *ContentfulProvider) ListResources(_ context.Context) []func() list.List
 	return []func() list.ListResource{
 		NewContentTypeListResource,
 		NewEntryListResource,
+		NewLocaleListResource,
 	}
 }
 
@@ -245,6 +246,7 @@ func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Reso
 		NewEnvironmentResource,
 		NewEntryResource,
 		NewExtensionResource,
+		NewLocaleResource,
 		NewPersonalAccessTokenResource,
 		NewPreviewEnvironmentResource,
 		NewLivePreviewVariablesResource,

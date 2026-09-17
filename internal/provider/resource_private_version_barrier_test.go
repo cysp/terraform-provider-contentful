@@ -51,7 +51,8 @@ func TestPrivateVersionValuesAreForwardedToRepresentativeMutations(t *testing.T)
 			method: http.MethodPut,
 			path:   "/spaces/space/preview_environments/preview",
 		},
-		"tag update": {method: http.MethodPut, path: "/spaces/space/environments/environment/tags/tag"},
+		"tag update":    {method: http.MethodPut, path: "/spaces/space/environments/environment/tags/tag"},
+		"locale update": {method: http.MethodPut, path: "/spaces/space/environments/environment/locales/locale"},
 	}
 
 	var cases []privateVersionForwardingCase
@@ -277,6 +278,22 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 		Visibility: types.StringValue("private"),
 		Timeouts:   TimeoutsNull(),
 	}
+	locale := LocaleModel{
+		IDIdentityModel: IDIdentityModel{ID: types.StringValue("space/environment/locale")},
+		LocaleIdentityModel: LocaleIdentityModel{
+			SpaceID:       types.StringValue("space"),
+			EnvironmentID: types.StringValue("environment"),
+			LocaleID:      types.StringValue("locale"),
+		},
+		Name:                 types.StringValue("English (Australia)"),
+		Code:                 types.StringValue("en-AU"),
+		FallbackCode:         types.StringNull(),
+		ContentDeliveryAPI:   types.BoolValue(true),
+		ContentManagementAPI: types.BoolValue(true),
+		Optional:             types.BoolValue(false),
+		Default:              types.BoolValue(false),
+		Timeouts:             TimeoutsNull(),
+	}
 
 	contentType := validContentTypeRequestModel()
 	contentType.ID = types.StringValue("space/environment/content-type")
@@ -411,6 +428,7 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 			},
 		},
 		{name: "editor interface update", typeName: "contentful_editor_interface", resourceSchema: EditorInterfaceResourceSchema(t.Context()), model: editorInterface},
+		{name: "locale update", typeName: "contentful_locale", resourceSchema: LocaleResourceSchema(t.Context()), model: locale},
 		{name: "tag update", typeName: "contentful_tag", resourceSchema: TagResourceSchema(t.Context()), model: tag},
 		{name: "tag delete", typeName: "contentful_tag", resourceSchema: TagResourceSchema(t.Context()), model: tag, delete: true},
 	}
