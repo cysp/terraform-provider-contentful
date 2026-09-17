@@ -43,7 +43,7 @@ jobs:
       - run: go test -race -shuffle=on -count=1 -timeout=10m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
         timeout-minutes: 12
 
-      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      - uses: codecov/codecov-action@0b35c9ecc4f0529d0eb674914510c22f85b196b4 # v7.1.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: test
@@ -66,7 +66,7 @@ jobs:
       - run: go test -race -shuffle=on -count=1 -timeout=10m -coverprofile=coverage.txt -covermode=atomic ./internal/contentful-management-go/...
         timeout-minutes: 12
 
-      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      - uses: codecov/codecov-action@0b35c9ecc4f0529d0eb674914510c22f85b196b4 # v7.1.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: contentful-management-go
@@ -106,7 +106,7 @@ jobs:
           CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
         timeout-minutes: 20
 
-      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      - uses: codecov/codecov-action@0b35c9ecc4f0529d0eb674914510c22f85b196b4 # v7.1.0
         if: env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE == 'true'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -144,7 +144,7 @@ jobs:
           TF_ACC_MOCKED: "1"
         timeout-minutes: 20
 
-      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      - uses: codecov/codecov-action@0b35c9ecc4f0529d0eb674914510c22f85b196b4 # v7.1.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: testaccmocked-${{ matrix.terraform }}
