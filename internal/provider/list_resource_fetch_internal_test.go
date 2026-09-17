@@ -32,6 +32,9 @@ func TestListResourceFetchDiagnostics(t *testing.T) {
 		{"content types", "/spaces/space/environments/environment/content_types", "Failed to list content types", func(client *cm.Client) list.ListResource {
 			return &contentTypeListResource{providerData: ContentfulProviderData{client: client}}
 		}},
+		{"locales", "/spaces/space/environments/environment/locales", "Failed to list locales", func(client *cm.Client) list.ListResource {
+			return &localeResource{providerData: ContentfulProviderData{client: client}}
+		}},
 	} {
 		t.Run(family.name, func(t *testing.T) {
 			t.Parallel()

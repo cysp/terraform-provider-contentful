@@ -92,6 +92,10 @@ environment_id = "master"
 visibility = "private"
 tag_id = "@name@"
 name = "@name@"`, remotePath: "/spaces/space/environments/master/tags/{tag_id}", version: "1"},
+		{resourceType: "locale", attributes: `space_id = "space"
+environment_id = "master"
+name = "@name@"
+code = "@name@"`, remotePath: "/spaces/space/environments/master/locales/{locale_id}", version: ""},
 		{resourceType: "taxonomy_concept", attributes: `organization_id = "organization"
 concept_id = "@name@"
 pref_label = {"en-US" = "@name@"}`, remotePath: "/organizations/organization/taxonomy/concepts/{concept_id}", version: "1"},

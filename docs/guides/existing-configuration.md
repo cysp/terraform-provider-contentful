@@ -81,7 +81,7 @@ Filter collection results by name, locale code, or another returned attribute. T
 
 The postcondition requires exactly one match before dependent expressions use it: `one([])` returns null, while multiple matches produce an error. Apply the same pattern to `self.spaces` and `space.name` to select a Space by name, using `organization_id` to narrow the search when needed.
 
-Use `locale_id` for a Locale lookup and `code` for localized content.
+Use `locale_id` for a Locale lookup and `code` for localized content. To manage a discovered Locale, import it into the [`contentful_locale` resource](../resources/locale). For bulk import and configuration generation, use the [Locale list resource](../list-resources/locale).
 
 ## Use environment aliases
 

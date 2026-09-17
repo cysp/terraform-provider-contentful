@@ -26,6 +26,30 @@ func TestContentTypeListResourceConfigRequestParamsRejectsUnresolvedValues(t *te
 	assert.Equal(t, []string{"space_id", "environment_id"}, attributeDiagnosticPaths(t, diags))
 }
 
+func TestLocaleListResourceListReturnsConfigurationDiagnosticsOnly(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	config := tfsdk.Config{
+		Raw: tftypes.NewValue(tftypes.Object{
+			AttributeTypes: map[string]tftypes.Type{
+				"space_id":       tftypes.String,
+				"environment_id": tftypes.String,
+			},
+		}, map[string]tftypes.Value{
+			"space_id":       tftypes.NewValue(tftypes.String, tftypes.UnknownValue),
+			"environment_id": tftypes.NewValue(tftypes.String, nil),
+		}),
+		Schema: LocaleListResourceConfigSchema(ctx),
+	}
+
+	var stream list.ListResultsStream
+	(&localeResource{}).List(ctx, list.ListRequest{Config: config}, &stream)
+
+	result := requireSingleDiagnosticOnlyListResult(t, stream)
+	assert.Equal(t, []string{"space_id", "environment_id"}, attributeDiagnosticPaths(t, result.Diagnostics))
+}
+
 func TestContentTypeListResourceListReturnsConfigurationDiagnosticsOnly(t *testing.T) {
 	t.Parallel()
 
