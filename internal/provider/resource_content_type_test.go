@@ -2,6 +2,7 @@ package provider_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -723,7 +724,19 @@ func setContentTypeTaxonomyDrift(
 	metadata := contentType.Metadata.Or(cm.ContentTypeMetadata{})
 	metadata.Taxonomy = taxonomy
 	contentType.Metadata.SetTo(metadata)
-	contentType.Sys.Version++
+	// GET returns a response projection, not mutable server storage. Apply drift
+	// through CMA so version and publication metadata follow a real update.
+	encoded, err := json.Marshal(contentType)
+	require.NoError(t, err)
+
+	var request cm.ContentTypeRequestData
+	require.NoError(t, json.Unmarshal(encoded, &request))
+	updated, err := server.Handler().PutContentType(t.Context(), &request, cm.PutContentTypeParams{
+		SpaceID: "0p38pssr0fi3", EnvironmentID: "test", ContentTypeID: contentTypeID,
+		XContentfulVersion: cm.NewOptInt(contentType.Sys.Version),
+	})
+	require.NoError(t, err)
+	require.IsType(t, &cm.ContentTypeStatusCode{}, updated)
 }
 
 func contentTypeTaxonomyConceptScheme(id string) cm.ContentTypeMetadataTaxonomyItem {

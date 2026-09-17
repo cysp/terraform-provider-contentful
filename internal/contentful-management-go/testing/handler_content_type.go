@@ -37,7 +37,7 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 
 	items := make([]cm.ContentType, 0, len(contentTypes))
 	for _, ct := range contentTypes {
-		items = append(items, *ct)
+		items = append(items, ts.projectContentTypeResponse(*ct))
 	}
 
 	slices.SortFunc(items, func(a, b cm.ContentType) int {
@@ -68,7 +68,9 @@ func (ts *Handler) GetContentType(_ context.Context, params cm.GetContentTypePar
 		return NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil), nil
 	}
 
-	return contentType, nil
+	response := ts.projectContentTypeResponse(*contentType)
+
+	return &response, nil
 }
 
 //nolint:ireturn
@@ -85,6 +87,10 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 		return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), nil), nil
 	}
 
+	if failure := ts.validateContentTypeLocales(params.SpaceID, params.EnvironmentID, req); failure != nil {
+		return failure, nil
+	}
+
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
 		newContentType := NewContentTypeFromRequestFields(params.SpaceID, params.EnvironmentID, params.ContentTypeID, *req)
@@ -92,7 +98,7 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 
 		return &cm.ContentTypeStatusCode{
 			StatusCode: http.StatusCreated,
-			Response:   newContentType,
+			Response:   ts.projectContentTypeResponse(newContentType),
 		}, nil
 	}
 
@@ -119,7 +125,7 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 
 	return &cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *contentType,
+		Response:   ts.projectContentTypeResponse(*contentType),
 	}, nil
 }
 
@@ -183,7 +189,7 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 
 	return &cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *contentType,
+		Response:   ts.projectContentTypeResponse(*contentType),
 	}, nil
 }
 
@@ -243,5 +249,7 @@ func (ts *Handler) DeactivateContentType(_ context.Context, params cm.Deactivate
 
 	ts.editorInterfaces.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 
-	return contentType, nil
+	response := ts.projectContentTypeResponse(*contentType)
+
+	return &response, nil
 }
