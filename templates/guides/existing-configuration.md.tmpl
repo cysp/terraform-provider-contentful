@@ -39,7 +39,7 @@ An Environment lookup accepts an alias ID and returns its target as `aliased_env
 
 Alias lookups refresh on later plans, so a resolved target can change. To keep lookups tied to one environment across alias changes, use a concrete environment ID.
 
-Locale lookups also accept an alias as `environment_id`. The provider currently supports responses whose environment link identifies that alias; other responses produce an identity error. Use the target environment ID if you encounter this error.
+Locale lookups also accept an environment alias ID as `environment_id`. The provider currently supports responses whose environment link identifies that alias; other responses produce an identity error. Use the target environment ID if you encounter this error.
 
 ## Collection reads
 

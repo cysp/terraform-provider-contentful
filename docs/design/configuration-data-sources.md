@@ -21,9 +21,9 @@ Singular returned IDs and requested Space or organization scope must match the
 request. Computed references and collection item IDs preserve decoded values,
 even when those values would be invalid as inputs to a later lookup. Projection
 does not reapply request-ID validation. Locale environment links must echo the
-addressed Environment/alias context. Other links are diagnosed as unsupported
-response identity, rather than proof that the service routed incorrectly. This
-bound follows the retained [Locale/alias observations](../research/environment-aliases.md).
+requested environment or environment alias ID. Other links are diagnosed as
+unsupported response identity, rather than proof that the service routed incorrectly. This
+bound follows the retained [Locale reads through environment aliases](../research/environment-aliases.md).
 It introduces no alias resolution or parent preflight requests.
 
 Locale resource ID, content code, and fallback code remain distinct. Explicit

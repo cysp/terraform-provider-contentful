@@ -63,10 +63,10 @@ Optional:
 Read-Only:
 
 - `code` (String) Locale code used for localized content, distinct from `locale_id`.
-- `content_delivery_api` (Boolean) Whether this locale is enabled for reading in the Content Delivery API.
-- `content_management_api` (Boolean) Whether this locale is enabled for editing in the Content Management API.
+- `content_delivery_api` (Boolean) Whether localized content is included in Content Delivery API and Content Preview API responses.
+- `content_management_api` (Boolean) Whether localized content is available through the Content Management API and for editing in the web app. Disabled locales remain discoverable as Locale entities.
 - `default` (Boolean) Whether this is the default locale.
 - `fallback_code` (String) Locale code used as fallback, or null when no fallback is returned.
 - `locale_id` (String) System ID of the locale, distinct from its code.
 - `name` (String) Name of the locale.
-- `optional` (Boolean) Whether localized content may be left empty.
+- `optional` (Boolean) Whether required localized fields may be empty for this locale when publishing all locales together. This does not relax required fields in the default locale.
