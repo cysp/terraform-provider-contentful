@@ -42,9 +42,7 @@ func (h *Handler) GetSpace(_ context.Context, params cm.GetSpaceParams) (cm.GetS
 	return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
 }
 
-// localeEnvironment resolves only the mock's explicit fixtures. Child response
-// links retain the requested context, matching the retained Locale observation.
-func (h *Handler) localeEnvironment(spaceID, environmentID string) string {
+func (h *Handler) resolveEnvironmentAlias(spaceID, environmentID string) string {
 	if alias := h.environmentAliases.Get(spaceID, environmentID); alias != nil {
 		return alias.Environment.Sys.ID
 	}
@@ -57,13 +55,12 @@ func (h *Handler) GetLocale(_ context.Context, params cm.GetLocaleParams) (cm.Ge
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	locale := h.locales.Get(params.SpaceID, h.localeEnvironment(params.SpaceID, params.EnvironmentID), params.LocaleID)
+	locale := h.locales.Get(params.SpaceID, h.resolveEnvironmentAlias(params.SpaceID, params.EnvironmentID), params.LocaleID)
 	if locale == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
 	}
 
-	result := *locale
-	result.Sys.Environment = cm.NewEnvironmentLink(params.EnvironmentID)
+	result := projectLocaleResponse(*locale, params.EnvironmentID)
 
 	return &result, nil
 }
@@ -162,7 +159,7 @@ func (h *Handler) GetLocales(_ context.Context, params cm.GetLocalesParams) (cm.
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	environmentID := h.localeEnvironment(params.SpaceID, params.EnvironmentID)
+	environmentID := h.resolveEnvironmentAlias(params.SpaceID, params.EnvironmentID)
 	if h.environments.Get(params.SpaceID, environmentID) == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
 	}
@@ -180,8 +177,7 @@ func (h *Handler) GetLocales(_ context.Context, params cm.GetLocalesParams) (cm.
 
 	items := make([]cm.Locale, 0, end-start)
 	for _, value := range values[start:end] {
-		item := *value
-		item.Sys.Environment = cm.NewEnvironmentLink(params.EnvironmentID)
+		item := projectLocaleResponse(*value, params.EnvironmentID)
 		items = append(items, item)
 	}
 
