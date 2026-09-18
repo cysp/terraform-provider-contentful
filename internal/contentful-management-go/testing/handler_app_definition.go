@@ -69,6 +69,12 @@ func (ts *Handler) DeleteAppDefinition(_ context.Context, params cm.DeleteAppDef
 		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
 	}
 
+	for key := range ts.appActions {
+		if key[0] == appDefinition.Sys.Organization.Sys.ID && key[1] == params.AppDefinitionID {
+			delete(ts.appActions, key)
+		}
+	}
+
 	delete(ts.appDefinitions, params.AppDefinitionID)
 	delete(ts.appEventSubscriptions, [2]string{params.OrganizationID, params.AppDefinitionID})
 

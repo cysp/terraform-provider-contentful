@@ -88,6 +88,22 @@ The schema-based alternative exercised successfully was:
 | Null description, URL, or either schema | 422 type validation errors; null was not an omission/clear operation. |
 | `Entries.v1.0` with no parameters array | POST 201; response supplied its `entryIds` parameter definition. |
 
+Live definition probes on 2026-09-18 returned the following results for built-in
+parameters:
+
+| Observed request | Result |
+| --- | --- |
+| `Entries.v1.0` or `Notification.v1.0` with `parameters: []` | 422: `parameters` is unexpected. |
+| Either built-in with parameters omitted | 201 with category-owned parameter definitions. |
+| `Entries.v1.0` with only `parametersSchema: {"type":"object"}` | 201 with both built-in parameters and the supplied schema. |
+| Built-in PUT omitting parameters | 200 retaining category-owned definitions. |
+| `Entries.v1.0` → `Custom` with `parameters: []` → `Notification.v1.0` omitting parameters | Both updates 200 with the corresponding definitions. |
+| Organization collection with `limit=1&skip=1` | 200 with matching offset/limit, total, and a full definition. |
+
+These probes created temporary App Definitions and actions without App Signing
+Secrets, then deleted them successfully (204). They did not deploy or invoke
+Functions, and do not establish how other categories behave.
+
 Schema object key order changed on GET; compare JSON structurally, not as raw text. The
 observations do not cover every JSON Schema keyword, built-in/schema combination, or
 result validation during execution. The observed `Entries.v1.0` response supplied
