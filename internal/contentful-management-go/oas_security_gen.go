@@ -35,6 +35,7 @@ func findAuthorization(h http.Header, prefix string) (string, bool) {
 // operationRolesAccessToken is a private map storing roles per operation.
 var operationRolesAccessToken = map[string][]string{
 	ActivateContentTypeOperation:            []string{},
+	CreateAppActionOperation:                []string{},
 	CreateAppDefinitionOperation:            []string{},
 	CreateAppKeyOperation:                   []string{},
 	CreateDeliveryAPIKeyOperation:           []string{},
@@ -49,6 +50,7 @@ var operationRolesAccessToken = map[string][]string{
 	CreateTeamSpaceMembershipOperation:      []string{},
 	CreateWebhookDefinitionOperation:        []string{},
 	DeactivateContentTypeOperation:          []string{},
+	DeleteAppActionOperation:                []string{},
 	DeleteAppDefinitionOperation:            []string{},
 	DeleteAppEventSubscriptionOperation:     []string{},
 	DeleteAppInstallationOperation:          []string{},
@@ -73,6 +75,8 @@ var operationRolesAccessToken = map[string][]string{
 	DeleteTeamSpaceMembershipOperation:      []string{},
 	DeleteWebhookDefinitionOperation:        []string{},
 	DeleteWebhookSigningSecretOperation:     []string{},
+	GetAppActionOperation:                   []string{},
+	GetAppActionsOperation:                  []string{},
 	GetAppDefinitionOperation:               []string{},
 	GetAppEventSubscriptionOperation:        []string{},
 	GetAppInstallationOperation:             []string{},
@@ -137,6 +141,7 @@ var operationRolesAccessToken = map[string][]string{
 	PutWebhookSigningSecretOperation:        []string{},
 	RevokePersonalAccessTokenOperation:      []string{},
 	UnpublishEntryOperation:                 []string{},
+	UpdateAppActionOperation:                []string{},
 	UpdateDeliveryAPIKeyOperation:           []string{},
 	UpdateRoleOperation:                     []string{},
 	UpdateWebhookDefinitionOperation:        []string{},

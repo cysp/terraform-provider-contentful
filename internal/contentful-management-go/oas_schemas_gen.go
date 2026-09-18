@@ -258,6 +258,430 @@ func (s *ApiKeySysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Merged schema.
+// Ref: #/AppAction
+type AppAction struct {
+	Sys         AppActionSys    `json:"sys"`
+	Name        string          `json:"name"`
+	Category    string          `json:"category"`
+	Type        string          `json:"type"`
+	Description OptString       `json:"description"`
+	URL         OptString       `json:"url"`
+	Function    OptFunctionLink `json:"function"`
+	// Legacy parameter definitions. Raw JSON preserves response fields without narrowing future
+	// definitions.
+	Parameters jx.Raw `json:"parameters"`
+	// JSON Schema draft 4 input contract.
+	ParametersSchema jx.Raw `json:"parametersSchema"`
+	// JSON Schema draft 4 result contract.
+	ResultSchema jx.Raw `json:"resultSchema"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppAction) GetSys() AppActionSys {
+	return s.Sys
+}
+
+// GetName returns the value of Name.
+func (s *AppAction) GetName() string {
+	return s.Name
+}
+
+// GetCategory returns the value of Category.
+func (s *AppAction) GetCategory() string {
+	return s.Category
+}
+
+// GetType returns the value of Type.
+func (s *AppAction) GetType() string {
+	return s.Type
+}
+
+// GetDescription returns the value of Description.
+func (s *AppAction) GetDescription() OptString {
+	return s.Description
+}
+
+// GetURL returns the value of URL.
+func (s *AppAction) GetURL() OptString {
+	return s.URL
+}
+
+// GetFunction returns the value of Function.
+func (s *AppAction) GetFunction() OptFunctionLink {
+	return s.Function
+}
+
+// GetParameters returns the value of Parameters.
+func (s *AppAction) GetParameters() jx.Raw {
+	return s.Parameters
+}
+
+// GetParametersSchema returns the value of ParametersSchema.
+func (s *AppAction) GetParametersSchema() jx.Raw {
+	return s.ParametersSchema
+}
+
+// GetResultSchema returns the value of ResultSchema.
+func (s *AppAction) GetResultSchema() jx.Raw {
+	return s.ResultSchema
+}
+
+// SetSys sets the value of Sys.
+func (s *AppAction) SetSys(val AppActionSys) {
+	s.Sys = val
+}
+
+// SetName sets the value of Name.
+func (s *AppAction) SetName(val string) {
+	s.Name = val
+}
+
+// SetCategory sets the value of Category.
+func (s *AppAction) SetCategory(val string) {
+	s.Category = val
+}
+
+// SetType sets the value of Type.
+func (s *AppAction) SetType(val string) {
+	s.Type = val
+}
+
+// SetDescription sets the value of Description.
+func (s *AppAction) SetDescription(val OptString) {
+	s.Description = val
+}
+
+// SetURL sets the value of URL.
+func (s *AppAction) SetURL(val OptString) {
+	s.URL = val
+}
+
+// SetFunction sets the value of Function.
+func (s *AppAction) SetFunction(val OptFunctionLink) {
+	s.Function = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *AppAction) SetParameters(val jx.Raw) {
+	s.Parameters = val
+}
+
+// SetParametersSchema sets the value of ParametersSchema.
+func (s *AppAction) SetParametersSchema(val jx.Raw) {
+	s.ParametersSchema = val
+}
+
+// SetResultSchema sets the value of ResultSchema.
+func (s *AppAction) SetResultSchema(val jx.Raw) {
+	s.ResultSchema = val
+}
+
+func (*AppAction) createAppActionRes() {}
+func (*AppAction) getAppActionRes()    {}
+func (*AppAction) updateAppActionRes() {}
+
+// Ref: #/AppActionCollection
+type AppActionCollection struct {
+	Sys   AppActionCollectionSys `json:"sys"`
+	Total OptInt                 `json:"total"`
+	Skip  OptInt                 `json:"skip"`
+	Limit OptInt                 `json:"limit"`
+	Items []AppAction            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppActionCollection) GetSys() AppActionCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *AppActionCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *AppActionCollection) GetSkip() OptInt {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *AppActionCollection) GetLimit() OptInt {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *AppActionCollection) GetItems() []AppAction {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *AppActionCollection) SetSys(val AppActionCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *AppActionCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *AppActionCollection) SetSkip(val OptInt) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *AppActionCollection) SetLimit(val OptInt) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *AppActionCollection) SetItems(val []AppAction) {
+	s.Items = val
+}
+
+func (*AppActionCollection) getAppActionsRes() {}
+
+type AppActionCollectionSys struct {
+	Type AppActionCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *AppActionCollectionSys) GetType() AppActionCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *AppActionCollectionSys) SetType(val AppActionCollectionSysType) {
+	s.Type = val
+}
+
+type AppActionCollectionSysType string
+
+const (
+	AppActionCollectionSysTypeArray AppActionCollectionSysType = "Array"
+)
+
+// AllValues returns all AppActionCollectionSysType values.
+func (AppActionCollectionSysType) AllValues() []AppActionCollectionSysType {
+	return []AppActionCollectionSysType{
+		AppActionCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppActionCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppActionCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppActionCollectionSysType) UnmarshalText(data []byte) error {
+	switch AppActionCollectionSysType(data) {
+	case AppActionCollectionSysTypeArray:
+		*s = AppActionCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/AppActionData
+type AppActionData struct {
+	Name        string          `json:"name"`
+	Category    string          `json:"category"`
+	Type        string          `json:"type"`
+	Description OptString       `json:"description"`
+	URL         OptString       `json:"url"`
+	Function    OptFunctionLink `json:"function"`
+	// Legacy parameter definitions. Raw JSON preserves response fields without narrowing future
+	// definitions.
+	Parameters jx.Raw `json:"parameters"`
+	// JSON Schema draft 4 input contract.
+	ParametersSchema jx.Raw `json:"parametersSchema"`
+	// JSON Schema draft 4 result contract.
+	ResultSchema jx.Raw `json:"resultSchema"`
+}
+
+// GetName returns the value of Name.
+func (s *AppActionData) GetName() string {
+	return s.Name
+}
+
+// GetCategory returns the value of Category.
+func (s *AppActionData) GetCategory() string {
+	return s.Category
+}
+
+// GetType returns the value of Type.
+func (s *AppActionData) GetType() string {
+	return s.Type
+}
+
+// GetDescription returns the value of Description.
+func (s *AppActionData) GetDescription() OptString {
+	return s.Description
+}
+
+// GetURL returns the value of URL.
+func (s *AppActionData) GetURL() OptString {
+	return s.URL
+}
+
+// GetFunction returns the value of Function.
+func (s *AppActionData) GetFunction() OptFunctionLink {
+	return s.Function
+}
+
+// GetParameters returns the value of Parameters.
+func (s *AppActionData) GetParameters() jx.Raw {
+	return s.Parameters
+}
+
+// GetParametersSchema returns the value of ParametersSchema.
+func (s *AppActionData) GetParametersSchema() jx.Raw {
+	return s.ParametersSchema
+}
+
+// GetResultSchema returns the value of ResultSchema.
+func (s *AppActionData) GetResultSchema() jx.Raw {
+	return s.ResultSchema
+}
+
+// SetName sets the value of Name.
+func (s *AppActionData) SetName(val string) {
+	s.Name = val
+}
+
+// SetCategory sets the value of Category.
+func (s *AppActionData) SetCategory(val string) {
+	s.Category = val
+}
+
+// SetType sets the value of Type.
+func (s *AppActionData) SetType(val string) {
+	s.Type = val
+}
+
+// SetDescription sets the value of Description.
+func (s *AppActionData) SetDescription(val OptString) {
+	s.Description = val
+}
+
+// SetURL sets the value of URL.
+func (s *AppActionData) SetURL(val OptString) {
+	s.URL = val
+}
+
+// SetFunction sets the value of Function.
+func (s *AppActionData) SetFunction(val OptFunctionLink) {
+	s.Function = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *AppActionData) SetParameters(val jx.Raw) {
+	s.Parameters = val
+}
+
+// SetParametersSchema sets the value of ParametersSchema.
+func (s *AppActionData) SetParametersSchema(val jx.Raw) {
+	s.ParametersSchema = val
+}
+
+// SetResultSchema sets the value of ResultSchema.
+func (s *AppActionData) SetResultSchema(val jx.Raw) {
+	s.ResultSchema = val
+}
+
+// Merged schema.
+// Ref: #/AppActionSys
+type AppActionSys struct {
+	ID string `json:"id"`
+	// Merged property.
+	Type          AppActionSysType  `json:"type"`
+	Organization  OrganizationLink  `json:"organization"`
+	AppDefinition AppDefinitionLink `json:"appDefinition"`
+}
+
+// GetID returns the value of ID.
+func (s *AppActionSys) GetID() string {
+	return s.ID
+}
+
+// GetType returns the value of Type.
+func (s *AppActionSys) GetType() AppActionSysType {
+	return s.Type
+}
+
+// GetOrganization returns the value of Organization.
+func (s *AppActionSys) GetOrganization() OrganizationLink {
+	return s.Organization
+}
+
+// GetAppDefinition returns the value of AppDefinition.
+func (s *AppActionSys) GetAppDefinition() AppDefinitionLink {
+	return s.AppDefinition
+}
+
+// SetID sets the value of ID.
+func (s *AppActionSys) SetID(val string) {
+	s.ID = val
+}
+
+// SetType sets the value of Type.
+func (s *AppActionSys) SetType(val AppActionSysType) {
+	s.Type = val
+}
+
+// SetOrganization sets the value of Organization.
+func (s *AppActionSys) SetOrganization(val OrganizationLink) {
+	s.Organization = val
+}
+
+// SetAppDefinition sets the value of AppDefinition.
+func (s *AppActionSys) SetAppDefinition(val AppDefinitionLink) {
+	s.AppDefinition = val
+}
+
+// Merged schema.
+type AppActionSysType string
+
+const (
+	AppActionSysTypeAppAction AppActionSysType = "AppAction"
+)
+
+// AllValues returns all AppActionSysType values.
+func (AppActionSysType) AllValues() []AppActionSysType {
+	return []AppActionSysType{
+		AppActionSysTypeAppAction,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AppActionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case AppActionSysTypeAppAction:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AppActionSysType) UnmarshalText(data []byte) error {
+	switch AppActionSysType(data) {
+	case AppActionSysTypeAppAction:
+		*s = AppActionSysTypeAppAction
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/AppBundleLink
 type AppBundleLink struct {
 	Sys AppBundleLinkSys `json:"sys"`
@@ -2150,6 +2574,7 @@ func NewErrorApplicationJSONError(v Error) ApplicationJSONError {
 }
 
 func (*ApplicationJSONError) activateContentTypeRes()            {}
+func (*ApplicationJSONError) createAppActionRes()                {}
 func (*ApplicationJSONError) createAppDefinitionRes()            {}
 func (*ApplicationJSONError) createAppKeyRes()                   {}
 func (*ApplicationJSONError) createDeliveryAPIKeyRes()           {}
@@ -2164,6 +2589,7 @@ func (*ApplicationJSONError) createTeamRes()                     {}
 func (*ApplicationJSONError) createTeamSpaceMembershipRes()      {}
 func (*ApplicationJSONError) createWebhookDefinitionRes()        {}
 func (*ApplicationJSONError) deactivateContentTypeRes()          {}
+func (*ApplicationJSONError) deleteAppActionRes()                {}
 func (*ApplicationJSONError) deleteAppDefinitionRes()            {}
 func (*ApplicationJSONError) deleteAppEventSubscriptionRes()     {}
 func (*ApplicationJSONError) deleteAppInstallationRes()          {}
@@ -2187,6 +2613,8 @@ func (*ApplicationJSONError) deleteTeamRes()                     {}
 func (*ApplicationJSONError) deleteTeamSpaceMembershipRes()      {}
 func (*ApplicationJSONError) deleteWebhookDefinitionRes()        {}
 func (*ApplicationJSONError) deleteWebhookSigningSecretRes()     {}
+func (*ApplicationJSONError) getAppActionRes()                   {}
+func (*ApplicationJSONError) getAppActionsRes()                  {}
 func (*ApplicationJSONError) getAppDefinitionRes()               {}
 func (*ApplicationJSONError) getAppEventSubscriptionRes()        {}
 func (*ApplicationJSONError) getAppInstallationRes()             {}
@@ -2249,6 +2677,7 @@ func (*ApplicationJSONError) putTeamSpaceMembershipRes()         {}
 func (*ApplicationJSONError) putWebhookSigningSecretRes()        {}
 func (*ApplicationJSONError) revokePersonalAccessTokenRes()      {}
 func (*ApplicationJSONError) unpublishEntryRes()                 {}
+func (*ApplicationJSONError) updateAppActionRes()                {}
 func (*ApplicationJSONError) updateDeliveryAPIKeyRes()           {}
 func (*ApplicationJSONError) updateRoleRes()                     {}
 func (*ApplicationJSONError) updateWebhookDefinitionRes()        {}
@@ -5051,6 +5480,7 @@ func (s *ErrorStatusCode) SetResponse(val ApplicationJSONError) {
 }
 
 func (*ErrorStatusCode) activateContentTypeRes()            {}
+func (*ErrorStatusCode) createAppActionRes()                {}
 func (*ErrorStatusCode) createAppDefinitionRes()            {}
 func (*ErrorStatusCode) createAppKeyRes()                   {}
 func (*ErrorStatusCode) createDeliveryAPIKeyRes()           {}
@@ -5065,6 +5495,7 @@ func (*ErrorStatusCode) createTeamRes()                     {}
 func (*ErrorStatusCode) createTeamSpaceMembershipRes()      {}
 func (*ErrorStatusCode) createWebhookDefinitionRes()        {}
 func (*ErrorStatusCode) deactivateContentTypeRes()          {}
+func (*ErrorStatusCode) deleteAppActionRes()                {}
 func (*ErrorStatusCode) deleteAppDefinitionRes()            {}
 func (*ErrorStatusCode) deleteAppEventSubscriptionRes()     {}
 func (*ErrorStatusCode) deleteAppInstallationRes()          {}
@@ -5088,6 +5519,8 @@ func (*ErrorStatusCode) deleteTeamRes()                     {}
 func (*ErrorStatusCode) deleteTeamSpaceMembershipRes()      {}
 func (*ErrorStatusCode) deleteWebhookDefinitionRes()        {}
 func (*ErrorStatusCode) deleteWebhookSigningSecretRes()     {}
+func (*ErrorStatusCode) getAppActionRes()                   {}
+func (*ErrorStatusCode) getAppActionsRes()                  {}
 func (*ErrorStatusCode) getAppDefinitionRes()               {}
 func (*ErrorStatusCode) getAppEventSubscriptionRes()        {}
 func (*ErrorStatusCode) getAppInstallationRes()             {}
@@ -5150,6 +5583,7 @@ func (*ErrorStatusCode) putTeamSpaceMembershipRes()         {}
 func (*ErrorStatusCode) putWebhookSigningSecretRes()        {}
 func (*ErrorStatusCode) revokePersonalAccessTokenRes()      {}
 func (*ErrorStatusCode) unpublishEntryRes()                 {}
+func (*ErrorStatusCode) updateAppActionRes()                {}
 func (*ErrorStatusCode) updateDeliveryAPIKeyRes()           {}
 func (*ErrorStatusCode) updateRoleRes()                     {}
 func (*ErrorStatusCode) updateWebhookDefinitionRes()        {}
@@ -6563,6 +6997,7 @@ func (o NilString) Or(d string) string {
 type NoContent struct{}
 
 func (*NoContent) deactivateContentTypeRes()       {}
+func (*NoContent) deleteAppActionRes()             {}
 func (*NoContent) deleteAppDefinitionRes()         {}
 func (*NoContent) deleteAppEventSubscriptionRes()  {}
 func (*NoContent) deleteAppInstallationRes()       {}

@@ -1,0 +1,8 @@
+AppAction:
+  allOf:
+    - type: object
+      properties:
+        sys:
+          $ref: "./sys.yml#/AppActionSys"
+      required: [sys]
+    - $ref: "./data.yml#/AppActionData"

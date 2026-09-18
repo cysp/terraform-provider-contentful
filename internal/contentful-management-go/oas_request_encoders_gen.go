@@ -10,6 +10,20 @@ import (
 	ht "github.com/ogen-go/ogen/http"
 )
 
+func encodeCreateAppActionRequest(
+	req *AppActionData,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
 func encodeCreateAppDefinitionRequest(
 	req *AppDefinitionData,
 	r *http.Request,
@@ -488,6 +502,20 @@ func encodePutTeamSpaceMembershipRequest(
 
 func encodePutWebhookSigningSecretRequest(
 	req *WebhookSigningSecretRequestData,
+	r *http.Request,
+) error {
+	const contentType = "application/vnd.contentful.management.v1+json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodeUpdateAppActionRequest(
+	req *AppActionData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"
