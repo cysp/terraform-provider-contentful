@@ -88,6 +88,32 @@ The schema-based alternative exercised successfully was:
 | Null description, URL, or either schema | 422 type validation errors; null was not an omission/clear operation. |
 | `Entries.v1.0` with no parameters array | POST 201; response supplied its `entryIds` parameter definition. |
 
+Live definition probes on 2026-09-18 covered built-in categories and pagination:
+
+| Observed request | Result and read-back evidence |
+| --- | --- |
+| `Entries.v1.0` or `Notification.v1.0` with `parameters: []` | 422: `parameters` is unexpected. |
+| Either built-in with parameters omitted | 201 with category-owned parameter definitions. |
+| `Entries.v1.0` with only `parametersSchema: {"type":"object"}` | 201 with both built-in parameters and the supplied schema. |
+| Built-in PUT omitting parameters | 200 retaining category-owned definitions. |
+| `Entries.v1.0` → `Custom` with `parameters: []` → `Notification.v1.0` omitting parameters | Both updates 200 with the corresponding definitions. |
+| Organization collection with `limit=1&skip=1` | 200 with matching offset/limit, total, and a full definition. |
+
+The additional observations below cover parameter-member preservation, empty
+descriptions, schemas, and undeployed Function links. Their experiment dates are
+unrecorded; the shared study dates do not establish when these probes ran.
+
+| Observed request | Result and read-back evidence |
+| --- | --- |
+| Legacy `Symbol`, `Number`, `Boolean`, and `Enum` parameters with optional members omitted, `required: false`, `default: 0`, and `default: false` | POST 201 and GET retained the complete array without adding defaults. |
+| Empty description string | POST 201 and GET retained `""`. |
+| Either built-in category with `parametersSchema` and `resultSchema` both `{"type":"object"}` | POST 201 and GET retained both schemas alongside category-owned parameters. |
+| Empty schema objects `{}` | 422 with attribute paths identifying missing `type` in each schema. Schema keyword validation remains service-owned. |
+| Function action linked to an undeployed alphanumeric Function ID | POST 201 and GET retained the Function link. Configuration success does not establish Function existence or execution readiness. |
+| PUT switching that action to an endpoint | 200 and GET omitted the Function link. |
+
+Function deployment and execution remain unverified.
+
 Schema object key order changed on GET; compare JSON structurally, not as raw text. The
 observations do not cover every JSON Schema keyword, built-in/schema combination, or
 result validation during execution. The observed `Entries.v1.0` response supplied

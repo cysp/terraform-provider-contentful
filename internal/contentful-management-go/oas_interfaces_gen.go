@@ -5,6 +5,10 @@ type ActivateContentTypeRes interface {
 	activateContentTypeRes()
 }
 
+type CreateAppActionRes interface {
+	createAppActionRes()
+}
+
 type CreateAppDefinitionRes interface {
 	createAppDefinitionRes()
 }
@@ -59,6 +63,10 @@ type CreateWebhookDefinitionRes interface {
 
 type DeactivateContentTypeRes interface {
 	deactivateContentTypeRes()
+}
+
+type DeleteAppActionRes interface {
+	deleteAppActionRes()
 }
 
 type DeleteAppDefinitionRes interface {
@@ -155,6 +163,14 @@ type DeleteWebhookDefinitionRes interface {
 
 type DeleteWebhookSigningSecretRes interface {
 	deleteWebhookSigningSecretRes()
+}
+
+type GetAppActionRes interface {
+	getAppActionRes()
+}
+
+type GetAppActionsRes interface {
+	getAppActionsRes()
 }
 
 type GetAppDefinitionRes interface {
@@ -411,6 +427,10 @@ type RevokePersonalAccessTokenRes interface {
 
 type UnpublishEntryRes interface {
 	unpublishEntryRes()
+}
+
+type UpdateAppActionRes interface {
+	updateAppActionRes()
 }
 
 type UpdateDeliveryAPIKeyRes interface {

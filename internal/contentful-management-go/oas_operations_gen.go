@@ -7,6 +7,7 @@ type OperationName = string
 
 const (
 	ActivateContentTypeOperation            OperationName = "ActivateContentType"
+	CreateAppActionOperation                OperationName = "CreateAppAction"
 	CreateAppDefinitionOperation            OperationName = "CreateAppDefinition"
 	CreateAppKeyOperation                   OperationName = "CreateAppKey"
 	CreateDeliveryAPIKeyOperation           OperationName = "CreateDeliveryAPIKey"
@@ -21,6 +22,7 @@ const (
 	CreateTeamSpaceMembershipOperation      OperationName = "CreateTeamSpaceMembership"
 	CreateWebhookDefinitionOperation        OperationName = "CreateWebhookDefinition"
 	DeactivateContentTypeOperation          OperationName = "DeactivateContentType"
+	DeleteAppActionOperation                OperationName = "DeleteAppAction"
 	DeleteAppDefinitionOperation            OperationName = "DeleteAppDefinition"
 	DeleteAppEventSubscriptionOperation     OperationName = "DeleteAppEventSubscription"
 	DeleteAppInstallationOperation          OperationName = "DeleteAppInstallation"
@@ -45,6 +47,8 @@ const (
 	DeleteTeamSpaceMembershipOperation      OperationName = "DeleteTeamSpaceMembership"
 	DeleteWebhookDefinitionOperation        OperationName = "DeleteWebhookDefinition"
 	DeleteWebhookSigningSecretOperation     OperationName = "DeleteWebhookSigningSecret"
+	GetAppActionOperation                   OperationName = "GetAppAction"
+	GetAppActionsOperation                  OperationName = "GetAppActions"
 	GetAppDefinitionOperation               OperationName = "GetAppDefinition"
 	GetAppEventSubscriptionOperation        OperationName = "GetAppEventSubscription"
 	GetAppInstallationOperation             OperationName = "GetAppInstallation"
@@ -109,6 +113,7 @@ const (
 	PutWebhookSigningSecretOperation        OperationName = "PutWebhookSigningSecret"
 	RevokePersonalAccessTokenOperation      OperationName = "RevokePersonalAccessToken"
 	UnpublishEntryOperation                 OperationName = "UnpublishEntry"
+	UpdateAppActionOperation                OperationName = "UpdateAppAction"
 	UpdateDeliveryAPIKeyOperation           OperationName = "UpdateDeliveryAPIKey"
 	UpdateRoleOperation                     OperationName = "UpdateRole"
 	UpdateWebhookDefinitionOperation        OperationName = "UpdateWebhookDefinition"
