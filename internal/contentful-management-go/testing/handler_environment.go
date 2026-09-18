@@ -76,6 +76,10 @@ func (ts *Handler) DeleteEnvironment(_ context.Context, params cm.DeleteEnvironm
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
+	for _, locale := range ts.locales.List(params.SpaceID, params.EnvironmentID) {
+		ts.locales.Delete(params.SpaceID, params.EnvironmentID, locale.Sys.ID)
+	}
+
 	ts.environments.Delete(params.SpaceID, params.EnvironmentID)
 	ts.livePreviewVariables.Delete(params.SpaceID, params.EnvironmentID)
 

@@ -6,6 +6,8 @@ LocaleSys:
     - $ref: "../sys/with-environment.yml"
     - type: object
       properties:
+        version:
+          type: integer
         type:
           enum:
             - Locale

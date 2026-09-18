@@ -965,6 +965,26 @@ paths:
           $ref: "#/components/responses/unauthorized"
         default:
           $ref: "#/components/responses/error"
+    post:
+      operationId: createLocale
+      summary: Create a locale
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/locale/data.yml#/LocaleData"
+      responses:
+        2XX:
+          description: A locale
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/locale/locale.yml#/Locale"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
   /spaces/{space_id}/environments/{environment_id}/locales/{locale_id}:
     parameters:
       - $ref: "#/components/parameters/space_id"
@@ -980,6 +1000,38 @@ paths:
             application/json:
               schema:
                 $ref: "./schemas/locale/locale.yml#/Locale"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: putLocale
+      summary: Update a locale
+      parameters:
+        - $ref: "#/components/parameters/x-contentful-version-required"
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/locale/data.yml#/LocaleData"
+      responses:
+        2XX:
+          description: A locale
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/locale/locale.yml#/Locale"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteLocale
+      summary: Delete a locale
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
         401:
           $ref: "#/components/responses/unauthorized"
         default:

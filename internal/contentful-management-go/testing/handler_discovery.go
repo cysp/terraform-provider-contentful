@@ -55,7 +55,12 @@ func (h *Handler) GetLocale(_ context.Context, params cm.GetLocaleParams) (cm.Ge
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	locale := h.locales.Get(params.SpaceID, h.resolveEnvironmentAlias(params.SpaceID, params.EnvironmentID), params.LocaleID)
+	environmentID := h.resolveEnvironmentAlias(params.SpaceID, params.EnvironmentID)
+	if h.environments.Get(params.SpaceID, environmentID) == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	}
+
+	locale := h.locales.Get(params.SpaceID, environmentID, params.LocaleID)
 	if locale == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
 	}
@@ -168,6 +173,10 @@ func (h *Handler) GetLocales(_ context.Context, params cm.GetLocalesParams) (cm.
 	slices.SortFunc(values, func(a, b *cm.Locale) int { return cmp.Compare(a.Sys.ID, b.Sys.ID) })
 
 	skip, limit := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
+	if limit == 0 {
+		limit = 100
+	}
+
 	if skip < 0 || limit < 1 {
 		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
 	}
