@@ -32,7 +32,7 @@ For decisions about how the provider uses these APIs, see [provider design](../d
 | Editor Interfaces | [Response identity and sidebar values](editor-interfaces.md): list/detail metadata, collection envelope, and absent versus explicit `disabled: false` |
 | UI Config | [Singleton identity and returned configuration](ui-config.md): metadata discrepancies, views, Timeline, and read limits |
 | Configuration discovery | [Spaces and scoped configuration endpoints](configuration-discovery.md): detail/list paths, organization scope, pagination evidence, and response discrepancies |
-| Locales | [Resource identity and raw responses](locales.md): ID versus code, `internal_code`, null fallback, and SDK projection |
+| Locales | [Identity, configuration, and lifecycle](locales.md): identity, discovery, code changes, API flags, fallbacks, and publication |
 | Space access | [Role and TeamSpaceMembership representations](space-access.md): permission unions and static list/detail comparisons |
 | Environments | [Creation readiness](environment-readiness.md): asynchronous status and completion boundaries |
 | Environment aliases | [Routing and response identity](environment-aliases.md): alias/target comparisons and returned environment links |
