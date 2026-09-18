@@ -108,6 +108,17 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			err:      errors.ErrUnsupported,
 			expected: "unsupported operation",
 		},
+		"ValidationFailed with string errors": {
+			response: &cm.ErrorStatusCode{
+				StatusCode: 422,
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
+					Sys:     cm.NewErrorSys("ValidationFailed"),
+					Message: cm.NewOptString("Validation error"),
+					Details: []byte(`{"errors":"AppAction cannot have both parametersSchema and parameters. Please provide just a parametersSchema."}`),
+				}),
+			},
+			expected: "Error: ValidationFailed: Validation error\n  AppAction cannot have both parametersSchema and parameters. Please provide just a parametersSchema.",
+		},
 		"ValidationFailed with detailed errors": {
 			response: &cm.ErrorStatusCode{
 				StatusCode: 422,
@@ -139,6 +150,26 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			actual := util.ErrorDetailFromContentfulManagementResponse(test.response, test.err)
 
 			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
+
+func TestContentfulManagementValidationFailedErrorDetails(t *testing.T) {
+	t.Parallel()
+
+	for name, details := range map[string]string{
+		"missing errors":    `{}`,
+		"null errors":       `{"errors":null}`,
+		"unsupported error": `{"errors":42}`,
+		"invalid JSON":      `{`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			messages, ok := util.ContentfulManagementValidationFailedErrorDetails([]byte(details))
+
+			assert.False(t, ok)
+			assert.Empty(t, messages)
 		})
 	}
 }

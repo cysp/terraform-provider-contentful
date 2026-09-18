@@ -97,7 +97,16 @@ func ContentfulManagementValidationFailedErrorDetails(detailsJSONBytes []byte) (
 	details := ValidationFailedErrorDetails{}
 
 	err := json.Unmarshal(detailsJSONBytes, &details)
-	if err != nil {
+	if err != nil || details.Errors == nil {
+		var message struct {
+			Errors *string `json:"errors"`
+		}
+
+		err := json.Unmarshal(detailsJSONBytes, &message)
+		if err == nil && message.Errors != nil {
+			return []string{*message.Errors}, true
+		}
+
 		return []string{}, false
 	}
 

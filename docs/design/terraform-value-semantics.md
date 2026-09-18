@@ -105,6 +105,13 @@ The affected concept collections are `alt_labels`, `hidden_labels`,
 `notations`, `broader_concept_ids`, and `related_concept_ids`. The affected
 scheme collections are `top_concept_ids` and `concept_ids`.
 
+### App Action category parameters
+
+The App Action resource's `parameters` attribute represents writable Custom
+parameter definitions. It is null for built-in categories; data sources expose
+their complete returned definitions. Resource projection follows the response's
+actual category, including after a contradictory mutation response.
+
 ## Response projection
 
 Response conversion projects remote data into the Terraform schema; it does not
