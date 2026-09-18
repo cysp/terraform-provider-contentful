@@ -105,6 +105,13 @@ The affected concept collections are `alt_labels`, `hidden_labels`,
 `notations`, `broader_concept_ids`, and `related_concept_ids`. The affected
 scheme collections are `top_concept_ids` and `concept_ids`.
 
+### App Action category parameters
+
+App Actions have one category-dependent exception: built-in parameters are
+read-only service definitions. They are omitted from mutations even when planned
+values are known; those values still constrain response reconciliation. Custom
+input contracts follow the shared request rules.
+
 ## Response projection
 
 Response conversion projects remote data into the Terraform schema; it does not

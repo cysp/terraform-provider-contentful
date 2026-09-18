@@ -208,6 +208,8 @@ func (p *ContentfulProvider) Metadata(_ context.Context, _ provider.MetadataRequ
 
 func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		NewAppActionDataSource,
+		NewAppActionsDataSource,
 		NewAppDefinitionDataSource,
 		NewEnvironmentAliasDataSource,
 		NewEnvironmentAliasesDataSource,
@@ -234,6 +236,7 @@ func (p *ContentfulProvider) ListResources(_ context.Context) []func() list.List
 
 func (p *ContentfulProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		NewAppActionResource,
 		NewAppDefinitionResource,
 		NewAppKeyResource,
 		NewAppSigningSecretResource,

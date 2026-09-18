@@ -224,6 +224,9 @@ Mocked acceptance tests use isolated local HTTP servers. Mock-only tests always
 use those servers; live-capable tests use them when `TF_ACC_MOCKED` is nonempty.
 Check the affected test before treating an unset `TF_ACC_MOCKED` as evidence that
 it ran live.
+The App Action lifecycle uses the same organization fixture as App Definition tests
+and creates a temporary App Definition and actions. It requires no additional
+environment variables and exercises definition management, not Function execution.
 The live-only App Key test skips in mocked mode. Live-capable harness calls
 serialize access to the shared account and quota; do not remove that serialization
 merely to speed up tests. Query tests require Terraform 1.14 and skip on 1.13.
