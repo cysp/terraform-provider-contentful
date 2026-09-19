@@ -108,6 +108,17 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 			err:      errors.ErrUnsupported,
 			expected: "unsupported operation",
 		},
+		"ValidationFailed with string errors": {
+			response: &cm.ErrorStatusCode{
+				StatusCode: 422,
+				Response: cm.NewErrorApplicationJSONError(cm.Error{
+					Sys:     cm.NewErrorSys("ValidationFailed"),
+					Message: cm.NewOptString("Validation error"),
+					Details: []byte(`{"errors":"AppAction cannot have both parametersSchema and parameters. Please provide just a parametersSchema."}`),
+				}),
+			},
+			expected: "Error: ValidationFailed: Validation error\n  AppAction cannot have both parametersSchema and parameters. Please provide just a parametersSchema.",
+		},
 		"ValidationFailed with detailed errors": {
 			response: &cm.ErrorStatusCode{
 				StatusCode: 422,

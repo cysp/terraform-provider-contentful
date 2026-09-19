@@ -1,0 +1,22 @@
+AppActionData:
+  type: object
+  properties:
+    name:
+      type: string
+    category:
+      type: string
+    type:
+      type: string
+    description:
+      type: string
+    url:
+      type: string
+    function:
+      $ref: "../links/function-link.yml#/FunctionLink"
+    parameters:
+      description: Legacy parameter definitions. Raw JSON preserves response fields without narrowing future definitions.
+    parametersSchema:
+      description: JSON Schema draft 4 input contract.
+    resultSchema:
+      description: JSON Schema draft 4 result contract.
+  required: [name, category, type]

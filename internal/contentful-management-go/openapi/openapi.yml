@@ -53,6 +53,12 @@ components:
       required: true
       schema:
         type: string
+    app_action_id:
+      in: path
+      name: app_action_id
+      required: true
+      schema:
+        type: string
     key_kid:
       in: path
       name: key_kid
@@ -515,6 +521,91 @@ paths:
     delete:
       operationId: deleteResourceType
       summary: Delete a resource type definition
+      responses:
+        204:
+          $ref: "#/components/responses/no-content"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions/{app_definition_id}/actions:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/app_definition_id"
+    get:
+      operationId: getAppActions
+      parameters:
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        200:
+          description: App Action response
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-action/collection.yml#/AppActionCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    post:
+      operationId: createAppAction
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/app-action/data.yml#/AppActionData"
+      responses:
+        201:
+          description: App Action response
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-action/app-action.yml#/AppAction"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /organizations/{organization_id}/app_definitions/{app_definition_id}/actions/{app_action_id}:
+    parameters:
+      - $ref: "#/components/parameters/organization_id"
+      - $ref: "#/components/parameters/app_definition_id"
+      - $ref: "#/components/parameters/app_action_id"
+    get:
+      operationId: getAppAction
+      responses:
+        200:
+          description: App Action response
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-action/app-action.yml#/AppAction"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    put:
+      operationId: updateAppAction
+      requestBody:
+        required: true
+        content:
+          application/vnd.contentful.management.v1+json:
+            schema:
+              $ref: "./schemas/app-action/data.yml#/AppActionData"
+      responses:
+        200:
+          description: App Action response
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-action/app-action.yml#/AppAction"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+    delete:
+      operationId: deleteAppAction
       responses:
         204:
           $ref: "#/components/responses/no-content"

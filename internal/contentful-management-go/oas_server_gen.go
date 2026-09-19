@@ -14,6 +14,10 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
 	ActivateContentType(ctx context.Context, params ActivateContentTypeParams) (ActivateContentTypeRes, error)
+	// CreateAppAction implements createAppAction operation.
+	//
+	// POST /organizations/{organization_id}/app_definitions/{app_definition_id}/actions
+	CreateAppAction(ctx context.Context, req *AppActionData, params CreateAppActionParams) (CreateAppActionRes, error)
 	// CreateAppDefinition implements createAppDefinition operation.
 	//
 	// Create an app definition.
@@ -98,6 +102,10 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
 	DeactivateContentType(ctx context.Context, params DeactivateContentTypeParams) (DeactivateContentTypeRes, error)
+	// DeleteAppAction implements deleteAppAction operation.
+	//
+	// DELETE /organizations/{organization_id}/app_definitions/{app_definition_id}/actions/{app_action_id}
+	DeleteAppAction(ctx context.Context, params DeleteAppActionParams) (DeleteAppActionRes, error)
 	// DeleteAppDefinition implements deleteAppDefinition operation.
 	//
 	// Delete an app definition.
@@ -242,6 +250,14 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/webhook_settings/signing_secret
 	DeleteWebhookSigningSecret(ctx context.Context, params DeleteWebhookSigningSecretParams) (DeleteWebhookSigningSecretRes, error)
+	// GetAppAction implements getAppAction operation.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/actions/{app_action_id}
+	GetAppAction(ctx context.Context, params GetAppActionParams) (GetAppActionRes, error)
+	// GetAppActions implements getAppActions operation.
+	//
+	// GET /organizations/{organization_id}/app_definitions/{app_definition_id}/actions
+	GetAppActions(ctx context.Context, params GetAppActionsParams) (GetAppActionsRes, error)
 	// GetAppDefinition implements getAppDefinition operation.
 	//
 	// Get one app definition.
@@ -626,6 +642,10 @@ type Handler interface {
 	//
 	// DELETE /spaces/{space_id}/environments/{environment_id}/entries/{entry_id}/published
 	UnpublishEntry(ctx context.Context, params UnpublishEntryParams) (UnpublishEntryRes, error)
+	// UpdateAppAction implements updateAppAction operation.
+	//
+	// PUT /organizations/{organization_id}/app_definitions/{app_definition_id}/actions/{app_action_id}
+	UpdateAppAction(ctx context.Context, req *AppActionData, params UpdateAppActionParams) (UpdateAppActionRes, error)
 	// UpdateDeliveryAPIKey implements updateDeliveryAPIKey operation.
 	//
 	// Update a single delivery api key.
