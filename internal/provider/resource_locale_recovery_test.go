@@ -1,13 +1,20 @@
 package provider_test
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
+	"net/http/httptest"
 	"regexp"
+	"strings"
 	"sync"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -27,58 +34,50 @@ func TestAccLocaleResourceUpdateRecovery(t *testing.T) {
 			var (
 				mutex    sync.Mutex
 				versions []string
+				requests []string
 			)
 
-			name, version := "Original", 7
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+			require.NoError(t, err)
+			server.RegisterSpaceEnvironment("space", "environment")
+
+			var localeID string
+
 			missingReadVersion := false
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				mutex.Lock()
 				defer mutex.Unlock()
 
-				w.Header().Set("Content-Type", "application/json")
+				if r.Method == http.MethodPut {
+					assert.Equal(t, "/spaces/space/environments/environment/locales/"+localeID, r.URL.Path)
+					body, readErr := io.ReadAll(r.Body)
+					assert.NoError(t, readErr)
 
-				versionJSON := fmt.Sprintf(`,"version":%d`, version)
-
-				switch r.Method {
-				case http.MethodPost:
-					w.WriteHeader(http.StatusCreated)
-				case http.MethodGet:
-				case http.MethodDelete:
-					w.WriteHeader(http.StatusNoContent)
-
-					return
-				case http.MethodPut:
-					assert.Equal(t, "/spaces/space/environments/environment/locales/locale", r.URL.Path)
-
-					body, err := io.ReadAll(r.Body)
-					assert.NoError(t, err)
-					assert.JSONEq(t, `{"name":"Planned","code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`, string(body))
-
+					r.Body = io.NopCloser(bytes.NewReader(body))
+					requests = append(requests, string(body))
 					versions = append(versions, r.Header.Get("X-Contentful-Version"))
+				}
 
-					if len(versions) == 1 {
-						name, version = "Returned", 9
+				response := httptest.NewRecorder()
+				server.ServeHTTP(response, r)
+				maps.Copy(w.Header(), response.Header())
 
-						versionJSON = `,"version":9`
-						if missingVersion {
-							versionJSON = ""
-						}
-					} else {
-						name, version = "Planned", 10
-						versionJSON = `,"version":10`
+				raw := response.Body.String()
+				if r.Method == http.MethodPut && len(versions) == 1 {
+					// The server commits Planned. Only the response contradicts it.
+					raw = strings.Replace(raw, `"name":"Planned"`, `"name":"Returned"`, 1)
+					if missingVersion {
+						raw = strings.Replace(raw, `,"version":2`, "", 1)
 					}
-				default:
-					http.Error(w, "unexpected request", http.StatusBadRequest)
-
-					return
 				}
 
-				responseName := name
 				if r.Method == http.MethodGet && missingReadVersion {
-					responseName, versionJSON = "Remote drift", ""
+					raw = strings.Replace(raw, `"name":"Original"`, `"name":"Remote drift"`, 1)
+					raw = strings.Replace(raw, `,"version":1`, "", 1)
 				}
 
-				_, _ = fmt.Fprintf(w, `{"name":%q,"code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false,"default":false,"sys":{"type":"Locale","id":"locale","space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"environment"}}%s}}`, responseName, versionJSON)
+				w.WriteHeader(response.Code)
+				_, _ = io.WriteString(w, raw)
 			})
 
 			configuration := func(name string) string {
@@ -91,15 +90,26 @@ func TestAccLocaleResourceUpdateRecovery(t *testing.T) {
 			}
 
 			const address = "contentful_locale.test"
+
+			identity := statecheck.CompareValue(compare.ValuesSame())
 			// Check persisted state before refresh can repair it.
 			priorStateChecks := func(name string) resource.ConfigPlanChecks {
 				return resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					testAccPriorState{check: statecheck.ExpectKnownValue(address, tfjsonpath.New("name"), knownvalue.StringExact(name))},
-					testAccPriorState{check: statecheck.ExpectKnownValue(address, tfjsonpath.New("id"), knownvalue.StringExact("space/environment/locale"))},
+					testAccPriorState{check: identity.AddStateValue(address, tfjsonpath.New("id"))},
 				}}
 			}
 
-			steps := []resource.TestStep{{Config: configuration("Original")}}
+			steps := []resource.TestStep{{Config: configuration("Original"), ConfigStateChecks: []statecheck.StateCheck{
+				identity.AddStateValue(address, tfjsonpath.New("id")),
+				statecheck.ExpectKnownValue(address, tfjsonpath.New("locale_id"), knownvalue.StringFunc(func(value string) error {
+					mutex.Lock()
+					localeID = value
+					mutex.Unlock()
+
+					return nil
+				})),
+			}}}
 			if missingVersion {
 				steps = append(steps, resource.TestStep{
 					PreConfig: func() {
@@ -125,32 +135,47 @@ func TestAccLocaleResourceUpdateRecovery(t *testing.T) {
 			if missingVersion {
 				steps = append(steps,
 					resource.TestStep{
-						Config:           configuration("Planned"),
+						Config:           configuration("Final"),
 						ConfigPlanChecks: priorStateChecks("Returned"),
 						ExpectError:      regexp.MustCompile("Private version is unavailable"),
 					},
 					resource.TestStep{
 						PreConfig: func() {
 							mutex.Lock()
-							assert.Equal(t, []string{"7"}, versions, "missing private version must stop before a second mutation")
+							assert.Equal(t, []string{"1"}, versions, "missing private version must stop before a second mutation")
 							mutex.Unlock()
 						},
 						RefreshState:       true,
-						ExpectNonEmptyPlan: true, // The returned name still differs from configuration.
+						ExpectNonEmptyPlan: true, // Refresh recovers Planned; configuration still requests Final.
 					},
 				)
 			}
 
+			priorName := "Returned"
+			if missingVersion {
+				priorName = "Planned"
+			}
+
 			steps = append(steps, resource.TestStep{
-				Config:           configuration("Planned"),
-				ConfigPlanChecks: priorStateChecks("Returned"),
+				Config:           configuration("Final"),
+				ConfigPlanChecks: priorStateChecks(priorName),
 			})
 			testAccMockedResource(t, handler, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 				Steps:                steps,
 			})
+			response, getErr := server.Handler().GetLocale(t.Context(), cm.GetLocaleParams{SpaceID: "space", EnvironmentID: "environment", LocaleID: localeID})
+			require.NoError(t, getErr)
+
+			status, ok := response.(*cm.ErrorStatusCode)
+			require.True(t, ok)
+			assert.Equal(t, http.StatusNotFound, status.StatusCode)
+
 			mutex.Lock()
-			assert.Equal(t, []string{"7", "9"}, versions)
+			assert.Equal(t, []string{"1", "2"}, versions)
+			require.Len(t, requests, 2)
+			assert.JSONEq(t, `{"name":"Planned","code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`, requests[0])
+			assert.JSONEq(t, `{"name":"Final","code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`, requests[1])
 			mutex.Unlock()
 		})
 	}
@@ -164,40 +189,33 @@ func TestAccLocaleResourceUpdatePreservesIgnoredDrift(t *testing.T) {
 		requests []string
 	)
 
-	name, optional, version := "Original", false, 1
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+
+	var localeID string
+
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		mutex.Lock()
-		defer mutex.Unlock()
-
-		w.Header().Set("Content-Type", "application/json")
-
-		if r.Method == http.MethodDelete {
-			w.WriteHeader(http.StatusNoContent)
-
-			return
-		}
-
-		if r.Method == http.MethodPost {
-			w.WriteHeader(http.StatusCreated)
-		}
-
 		if r.Method == http.MethodPut {
-			data, err := io.ReadAll(r.Body)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+			data, readErr := io.ReadAll(r.Body)
+			if readErr != nil {
+				http.Error(w, readErr.Error(), http.StatusBadRequest)
 
 				return
 			}
 
+			r.Body = io.NopCloser(bytes.NewReader(data))
+
+			mutex.Lock()
+
 			requests = append(requests, string(data))
-
+			mutex.Unlock()
 			assert.Equal(t, "2", r.Header.Get("X-Contentful-Version"))
-
-			optional, version = true, 3
 		}
 
-		_, _ = fmt.Fprintf(w, `{"name":%q,"code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":%t,"default":false,"sys":{"type":"Locale","id":"locale","space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"environment"}},"version":%d}}`, name, optional, version)
+		server.ServeHTTP(w, r)
 	})
+
 	configuration := func(optional bool) string {
 		return fmt.Sprintf(`resource "contentful_locale" "test" {
   space_id = "space"
@@ -209,16 +227,35 @@ func TestAccLocaleResourceUpdatePreservesIgnoredDrift(t *testing.T) {
 }`, optional)
 	}
 	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
-		{Config: configuration(false)},
+		{Config: configuration(false), ConfigStateChecks: []statecheck.StateCheck{
+			statecheck.ExpectKnownValue("contentful_locale.test", tfjsonpath.New("locale_id"), knownvalue.StringFunc(func(value string) error {
+				localeID = value
+
+				return nil
+			})),
+		}},
 		{
 			PreConfig: func() {
-				mutex.Lock()
-				name, version = "External", 2
-				mutex.Unlock()
+				response, putErr := server.Handler().PutLocale(t.Context(), &cm.LocaleData{
+					Name: "External", Code: "en-AU", FallbackCode: cm.NewNilStringNull(), ContentDeliveryApi: true, ContentManagementApi: true,
+				}, cm.PutLocaleParams{SpaceID: "space", EnvironmentID: "environment", LocaleID: localeID, XContentfulVersion: 1})
+				require.NoError(t, putErr)
+
+				status, ok := response.(*cm.LocaleStatusCode)
+				require.True(t, ok)
+				assert.Equal(t, http.StatusOK, status.StatusCode)
 			},
-			Config: configuration(true),
+			Config:            configuration(true),
+			ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue("contentful_locale.test", tfjsonpath.New("name"), knownvalue.StringExact("External"))},
 		},
 	}})
+	response, getErr := server.Handler().GetLocale(t.Context(), cm.GetLocaleParams{SpaceID: "space", EnvironmentID: "environment", LocaleID: localeID})
+	require.NoError(t, getErr)
+
+	status, ok := response.(*cm.ErrorStatusCode)
+	require.True(t, ok)
+	assert.Equal(t, http.StatusNotFound, status.StatusCode)
+
 	mutex.Lock()
 	defer mutex.Unlock()
 

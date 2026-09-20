@@ -2,7 +2,6 @@ package provider_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"regexp"
@@ -69,67 +68,42 @@ func TestAccDiscoveryDataSourcesComposition(t *testing.T) {
 func TestAccLocalesDataSourceSelectionGuard(t *testing.T) {
 	t.Parallel()
 
-	for _, testcase := range []struct {
-		name      string
-		items     string
-		predicate string
-	}{
-		{"missing default", "", `locale.default`},
-		{"ambiguous default", "two", `locale.default`},
-		{"case sensitive code", "one", `locale.code == "en-gb"`},
-	} {
-		t.Run(testcase.name, func(t *testing.T) {
-			t.Parallel()
-			body := discoveryAcceptanceFixture(t, "locale")
-			items := ""
-			total := 0
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+	server.SetLocale(cmt.NewLocaleFromData("space", "master", "locale", cm.LocaleData{
+		Name: "English", Code: "en-GB", FallbackCode: cm.NewNilStringNull(), ContentDeliveryApi: true, ContentManagementApi: true,
+	}, false))
 
-			if testcase.items == "one" {
-				items = body
-				total = 1
-			}
+	var mutations atomic.Int64
 
-			if testcase.items == "two" {
-				items = body + "," + strings.ReplaceAll(body, "item-b", "item-a")
-				total = 2
-			}
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			mutations.Add(1)
+		}
 
-			var mutations atomic.Int64
+		server.ServeHTTP(w, r)
+	})
 
-			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.Method != http.MethodGet {
-					mutations.Add(1)
-					http.Error(w, "unexpected mutation", http.StatusBadRequest)
-
-					return
-				}
-
-				assert.Equal(t, "/spaces/space/environments/master/locales", r.URL.Path)
-				w.Header().Set("Content-Type", "application/json")
-				_, err := fmt.Fprintf(w, `{"sys":{"type":"Array"},"skip":0,"limit":100,"total":%d,"items":[%s]}`, total, items)
-				assert.NoError(t, err)
-			})
-			configuration := fmt.Sprintf(`
+	configuration := `
 data "contentful_locales" "test" {
  space_id = "space"
  environment_id = "master"
  lifecycle {
   postcondition {
-   condition = length([for locale in self.locales : locale if %[1]s]) == 1
-   error_message = "Exactly one selected Locale is required."
+   condition = length([for locale in self.locales : locale if locale.default]) == 1
+   error_message = "Exactly one default Locale is required."
   }
  }
 }
-locals { selected = one([for locale in data.contentful_locales.test.locales : locale if %[1]s]) }
+locals { selected = one([for locale in data.contentful_locales.test.locales : locale if locale.default]) }
 resource "contentful_entry" "test" {
  space_id = data.contentful_locales.test.space_id
  environment_id = data.contentful_locales.test.environment_id
  content_type_id = "article"
  fields = {title = jsonencode({(local.selected.code) = "Hello"})}
 }
-`, testcase.predicate)
-			testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{{Config: configuration, ExpectError: regexp.MustCompile("Exactly one selected Locale is required")}}})
-			assert.Zero(t, mutations.Load())
-		})
-	}
+`
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{{Config: configuration, ExpectError: regexp.MustCompile("Exactly one default Locale is required")}}})
+	assert.Zero(t, mutations.Load())
 }

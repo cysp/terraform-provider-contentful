@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
+	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -32,7 +35,8 @@ const (
 const testWebhookSigningSecretAddress = "contentful_webhook_signing_secret.test"
 
 type webhookSigningSecretRequest struct {
-	method, path, body string
+	method, path, body, query string
+	header                    http.Header
 }
 type webhookSigningSecretRecorder struct {
 	handler  http.Handler
@@ -51,7 +55,7 @@ func (r *webhookSigningSecretRecorder) ServeHTTP(w http.ResponseWriter, req *htt
 	req.Body = io.NopCloser(bytes.NewReader(body))
 
 	r.mu.Lock()
-	r.requests = append(r.requests, webhookSigningSecretRequest{method: req.Method, path: req.URL.Path, body: string(body)})
+	r.requests = append(r.requests, webhookSigningSecretRequest{method: req.Method, path: req.URL.Path, body: string(body), query: req.URL.RawQuery, header: req.Header.Clone()})
 	r.mu.Unlock()
 	r.handler.ServeHTTP(w, req)
 }
@@ -66,7 +70,18 @@ func (r *webhookSigningSecretRecorder) requireMutations(t *testing.T, paths, bod
 	deleteCount := 0
 
 	for _, req := range r.requests {
+		assert.Empty(t, req.query)
+
+		for _, header := range []string{"X-Contentful-Version", "If-Match", "If-None-Match", "Idempotency-Key"} {
+			assert.Empty(t, req.header.Get(header))
+		}
+
+		if req.method == http.MethodGet {
+			assert.Empty(t, req.body)
+		}
+
 		if req.method == http.MethodPut {
+			assert.Equal(t, "application/vnd.contentful.management.v1+json", req.header.Get("Content-Type"))
 			puts = append(puts, req)
 		}
 
@@ -243,4 +258,66 @@ func TestAccWebhookSigningSecretResourceDisappearsAndReplacesScope(t *testing.T)
 		`{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`,
 		`{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`,
 	}, 2)
+}
+
+func TestAccWebhookSigningSecretResourceAmbiguousUpdate(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+
+	var fail atomic.Bool
+
+	recorder := &webhookSigningSecretRecorder{handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut && fail.Swap(false) {
+			committed := httptest.NewRecorder()
+			server.ServeHTTP(committed, r)
+			assert.Equal(t, http.StatusOK, committed.Code)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = io.WriteString(w, `{"sys":{"type":"Error","id":"ServerError"}}`)
+
+			return
+		}
+
+		server.ServeHTTP(w, r)
+	})}
+	initial := webhookSigningSecretConfig("space", testWebhookSigningSecretValue, "")
+	rotated := webhookSigningSecretConfig("space", testWebhookSigningSecretUpdatedValue, "")
+
+	var beforeFailure int
+
+	testAccMockedResource(t, recorder, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{Config: initial},
+			{PreConfig: func() {
+				recorder.mu.Lock()
+				beforeFailure = len(recorder.requests)
+				recorder.mu.Unlock()
+				fail.Store(true)
+			}, Config: rotated, ExpectError: regexp.MustCompile("Failed to write webhook signing secret")},
+			{PreConfig: func() {
+				recorder.mu.Lock()
+				requestCount := len(recorder.requests) - beforeFailure
+				recorder.mu.Unlock()
+				require.Equal(t, 1, requestCount, "failed update must not replay or issue a recovery GET")
+				remote, getErr := server.Handler().GetWebhookSigningSecret(t.Context(), cm.GetWebhookSigningSecretParams{SpaceID: "space"})
+				require.NoError(t, getErr)
+
+				secret, ok := remote.(*cm.WebhookSigningSecret)
+				require.True(t, ok)
+				assert.Equal(t, "/=_+", secret.RedactedValue, "shared server committed the new value")
+			}, Config: initial, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				testAccPriorState{check: statecheck.ExpectKnownValue(testWebhookSigningSecretAddress, tfjsonpath.New("value"), knownvalue.StringExact(testWebhookSigningSecretValue))},
+				plancheck.ExpectEmptyPlan(),
+			}}},
+			{RefreshState: true, Check: resource.TestCheckResourceAttr(testWebhookSigningSecretAddress, "value", testWebhookSigningSecretValue)},
+		},
+	})
+	recorder.requireMutations(t, []string{"/spaces/space/webhook_settings/signing_secret", "/spaces/space/webhook_settings/signing_secret"}, []string{
+		`{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`,
+		`{"value":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbZy87-/=_+"}`,
+	}, 1)
 }
