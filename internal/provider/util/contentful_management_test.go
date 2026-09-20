@@ -154,6 +154,26 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 	}
 }
 
+func TestContentfulManagementValidationFailedErrorDetails(t *testing.T) {
+	t.Parallel()
+
+	for name, details := range map[string]string{
+		"missing errors":    `{}`,
+		"null errors":       `{"errors":null}`,
+		"unsupported error": `{"errors":42}`,
+		"invalid JSON":      `{`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			messages, ok := util.ContentfulManagementValidationFailedErrorDetails([]byte(details))
+
+			assert.False(t, ok)
+			assert.Empty(t, messages)
+		})
+	}
+}
+
 func TestOptStringToStringValue(t *testing.T) {
 	t.Parallel()
 
