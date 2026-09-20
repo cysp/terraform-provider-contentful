@@ -143,11 +143,16 @@ filter_function_id = "filter"
 
 	steps := make([]resource.TestStep, 0, len(cases)+4)
 	for index, test := range cases {
-		steps = append(steps, resource.TestStep{Config: test.config, ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))}})
+		steps = append(steps, resource.TestStep{Config: test.config, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))}})
 		if index == 0 {
 			steps = append(steps, resource.TestStep{ResourceName: appEventResourceAddress, ImportState: true, ImportStateId: "organization/app", ImportStateVerify: true})
+			steps = append(steps, resource.TestStep{Config: appEventHTTPConfig, ResourceName: appEventResourceAddress, ImportState: true, ImportStateKind: resource.ImportBlockWithResourceIdentity, ImportPlanChecks: resource.ImportPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app")),
+				plancheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")),
+				plancheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("filter_function_id"), knownvalue.Null()),
+			}}})
 			steps = append(steps, resource.TestStep{Config: strings.Replace(appEventHTTPConfig, `["Entry.publish", "Asset.publish"]`, `["Asset.publish", "Entry.publish", "Entry.publish"]`, 1), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}})
-			steps = append(steps, resource.TestStep{Config: strings.Replace(appEventHTTPConfig, "\n}", "\ntimeouts = { update = \"30s\" }\n}", 1), ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}})
+			steps = append(steps, resource.TestStep{Config: strings.Replace(appEventHTTPConfig, "\n}", "\ntimeouts = { update = \"30s\" }\n}", 1)})
 		}
 	}
 
@@ -202,7 +207,7 @@ func TestAccAppEventSubscriptionResourceExistingSingleton(t *testing.T) {
 				steps = append(steps, resource.TestStep{Config: appEventHTTPConfig, PlanOnly: true, ExpectNonEmptyPlan: true}, resource.TestStep{Config: appEventHTTPConfig, ResourceName: appEventResourceAddress, ImportState: true, ImportStateId: "organization/app", ImportStatePersist: true, ImportStateCheck: testAccImportAttributes(map[string]string{"target_url": "https://example.invalid/previous"})})
 			}
 
-			steps = append(steps, resource.TestStep{Config: appEventHTTPConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")), statecheck.ExpectSensitiveValue(appEventResourceAddress, tfjsonpath.New("target_url"))}}, resource.TestStep{Config: appEventHTTPConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}})
+			steps = append(steps, resource.TestStep{Config: appEventHTTPConfig, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")), statecheck.ExpectSensitiveValue(appEventResourceAddress, tfjsonpath.New("target_url"))}}, resource.TestStep{Config: appEventHTTPConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}})
 			testAccMockedResource(t, handler, resource.TestCase{Steps: steps})
 			assert.EqualValues(t, 1, putCount.Load())
 		})
@@ -231,7 +236,7 @@ func TestAccAppEventSubscriptionResourceParentDisappears(t *testing.T) {
 			_, deleteErr := server.Handler().DeleteAppDefinition(context.Background(), cm.DeleteAppDefinitionParams{OrganizationID: "organization", AppDefinitionID: "app"})
 			require.NoError(t, deleteErr)
 		}, Config: appEventHTTPConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}, ExpectError: regexp.MustCompile(`Failed to upsert app event subscription`)},
-		{PreConfig: func() { server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "Restored app"}) }, Config: appEventHTTPConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}, PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+		{PreConfig: func() { server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "Restored app"}) }, Config: appEventHTTPConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}},
 	}})
 	assert.EqualValues(t, 3, putCount.Load())
 }
@@ -287,7 +292,6 @@ func TestAccAppEventSubscriptionResourceRecoveryState(t *testing.T) {
 					testAccPriorState{check: statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))},
 					plancheck.ExpectResourceAction(appEventResourceAddress, action),
 				},
-				PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 			}})
 			testAccMockedResource(t, handler, resource.TestCase{
 				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
@@ -336,8 +340,7 @@ func TestAccAppEventSubscriptionResourceParentReplacement(t *testing.T) {
 			testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 				{Config: initial},
 				{Config: replacement, ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply:             []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, action)},
-					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, action)},
 				}, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("other/replacement"))}},
 			}})
 

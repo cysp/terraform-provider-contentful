@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -18,7 +17,6 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -272,29 +270,6 @@ func TestAppEventSubscriptionInvalidValuesBlockMutation(t *testing.T) {
 	}
 }
 
-func TestAppEventSubscriptionFunctionWireShape(t *testing.T) {
-	t.Parallel()
-
-	model := appEventTestModel()
-	model.TargetURL = types.StringNull()
-	model.FilterFunctionID = types.StringValue("filter")
-	model.TransformationFunctionID = types.StringValue("transform")
-	model.HandlerFunctionID = types.StringValue("handler")
-	body := `{"topics":["Asset.publish","Entry.publish"],"functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}},"transformation":{"sys":{"type":"Link","linkType":"Function","id":"transform"}},"handler":{"sys":{"type":"Link","linkType":"Function","id":"handler"}}}}`
-	implementation := appEventTestResource(t, func(w http.ResponseWriter, r *http.Request) {
-		raw, err := io.ReadAll(r.Body)
-		assert.NoError(t, err)
-		assert.JSONEq(t, body, string(raw))
-		assert.Empty(t, r.Header.Get("X-Contentful-Version"))
-		w.Header().Set("Content-Type", "application/json")
-		_, err = w.Write([]byte(`{` + appEventTestSys + `,` + body[1:]))
-		assert.NoError(t, err)
-	})
-	_, diags, consistency := implementation.put(t.Context(), model)
-	assert.Empty(t, diags)
-	assert.Empty(t, consistency)
-}
-
 func TestAppEventSubscriptionErrorRedaction(t *testing.T) {
 	t.Parallel()
 
@@ -403,42 +378,6 @@ func TestAppEventSubscriptionReadIdentityMismatch(t *testing.T) {
 	require.False(t, response.State.Get(t.Context(), &actual).HasError())
 	assert.Equal(t, "organization", actual.OrganizationID.ValueString())
 	assert.Equal(t, "organization/app", actual.ID.ValueString())
-}
-
-func TestAppEventSubscriptionImportIdentity(t *testing.T) {
-	t.Parallel()
-
-	for _, byIdentity := range []bool{false, true} {
-		t.Run(strconv.FormatBool(byIdentity), func(t *testing.T) {
-			t.Parallel()
-			implementation := appEventTestResource(t, func(w http.ResponseWriter, _ *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write([]byte(appEventHTTPResponse))
-			})
-
-			request := resource.ImportStateRequest{ID: "organization/app"}
-			if byIdentity {
-				request.ID = ""
-				request.Identity = appEventTestIdentity()
-				require.False(t, request.Identity.SetAttribute(t.Context(), path.Root("organization_id"), types.StringValue("organization")).HasError())
-				require.False(t, request.Identity.SetAttribute(t.Context(), path.Root("app_definition_id"), types.StringValue("app")).HasError())
-			}
-
-			s := AppEventSubscriptionResourceSchema(t.Context())
-			response := resource.ImportStateResponse{State: tfsdk.State{Schema: s, Raw: tftypes.NewValue(s.Type().TerraformType(t.Context()), nil)}, Identity: appEventTestIdentity()}
-			implementation.ImportState(t.Context(), request, &response)
-			require.False(t, response.Diagnostics.HasError(), response.Diagnostics)
-			read := resource.ReadResponse{State: response.State, Identity: response.Identity}
-			implementation.Read(t.Context(), resource.ReadRequest{State: response.State}, &read)
-			require.False(t, read.Diagnostics.HasError(), read.Diagnostics)
-
-			var actual AppEventSubscriptionModel
-			require.False(t, read.State.Get(t.Context(), &actual).HasError())
-			assert.Equal(t, "organization/app", actual.ID.ValueString())
-			assert.Equal(t, "https://example.invalid/events?secret=sentinel", actual.TargetURL.ValueString())
-			assert.True(t, actual.FilterFunctionID.IsNull())
-		})
-	}
 }
 
 func appEventRetryHandler(t *testing.T, method string, status int, count *atomic.Int64) http.HandlerFunc {

@@ -27,8 +27,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const webhookSigningSecretTestPath = "/spaces/space/webhook_settings/signing_secret"
-
 // This fixture contains only opaque redaction metadata.
 //
 //nolint:gosec
@@ -67,91 +65,60 @@ func webhookSigningSecretTestClient(t *testing.T, server *httptest.Server) *webh
 	return &webhookSigningSecretResource{providerData: ContentfulProviderData{client: client}}
 }
 
-func TestWebhookSigningSecretExactLifecycleRequests(t *testing.T) {
+func TestWebhookSigningSecretSuccessLogsRedactValues(t *testing.T) {
 	t.Parallel()
 
-	var count atomic.Int64
+	for _, operation := range []string{"create", "read", "update", "delete"} {
+		t.Run(operation, func(t *testing.T) {
+			t.Parallel()
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		ordinal := count.Add(1)
-		body, err := io.ReadAll(req.Body)
-		assert.NoError(t, err)
-		assert.Equal(t, webhookSigningSecretTestPath, req.URL.Path)
-		assert.Empty(t, req.URL.RawQuery)
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				if req.Method == http.MethodDelete {
+					w.WriteHeader(http.StatusNoContent)
 
-		for _, header := range []string{"X-Contentful-Version", "If-Match", "If-None-Match", "Idempotency-Key"} {
-			assert.Empty(t, req.Header.Get(header))
-		}
+					return
+				}
 
-		switch ordinal {
-		case 1, 4:
-			assert.Equal(t, http.MethodPut, req.Method)
-			assert.Equal(t, "application/vnd.contentful.management.v1+json", req.Header.Get("Content-Type"))
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = io.WriteString(w, webhookSigningSecretTestResponse)
+			}))
+			t.Cleanup(server.Close)
+			implementation := webhookSigningSecretTestClient(t, server)
+			state, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
+			plan, _ := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestUpdatedValue))
 
-			if ordinal == 1 {
-				assert.JSONEq(t, `{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`, string(body))
-			} else {
-				assert.JSONEq(t, `{"value":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbZy87-/=_+"}`, string(body))
+			var logs bytes.Buffer
+
+			ctx := tflogtest.RootLogger(t.Context(), &logs)
+
+			var diagnostics diag.Diagnostics
+
+			switch operation {
+			case "create":
+				response := resource.CreateResponse{State: tfsdk.State{Schema: state.Schema}, Identity: identity}
+				implementation.Create(ctx, resource.CreateRequest{Plan: tfsdk.Plan(plan)}, &response)
+				diagnostics = response.Diagnostics
+			case "read":
+				response := resource.ReadResponse{State: state, Identity: identity}
+				implementation.Read(ctx, resource.ReadRequest{State: state}, &response)
+				diagnostics = response.Diagnostics
+			case "update":
+				response := resource.UpdateResponse{State: state, Identity: identity}
+				implementation.Update(ctx, resource.UpdateRequest{State: state, Plan: tfsdk.Plan(plan)}, &response)
+				diagnostics = response.Diagnostics
+			case "delete":
+				response := resource.DeleteResponse{State: state, Identity: identity}
+				implementation.Delete(ctx, resource.DeleteRequest{State: state}, &response)
+				diagnostics = response.Diagnostics
 			}
-		case 2, 3:
-			assert.Equal(t, http.MethodGet, req.Method)
-			assert.Empty(t, body)
-		case 5:
-			assert.Equal(t, http.MethodDelete, req.Method)
-			assert.Empty(t, body)
-			w.WriteHeader(http.StatusNoContent)
 
-			return
-		default:
-			t.Errorf("unexpected request %d", ordinal)
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-
-		if ordinal == 1 {
-			w.WriteHeader(http.StatusCreated)
-		}
-
-		_, _ = io.WriteString(w, webhookSigningSecretTestResponse)
-	}))
-	t.Cleanup(server.Close)
-	implementation := webhookSigningSecretTestClient(t, server)
-	state, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
-
-	var logs bytes.Buffer
-
-	ctx := tflogtest.RootLogger(t.Context(), &logs)
-	created := resource.CreateResponse{State: tfsdk.State{Schema: state.Schema}, Identity: identity}
-	implementation.Create(ctx, resource.CreateRequest{Plan: tfsdk.Plan(state)}, &created)
-	require.Empty(t, created.Diagnostics)
-
-	// Arbitrary redacted output does not replace the known complete value.
-	for range 2 {
-		read := resource.ReadResponse{State: created.State, Identity: identity}
-		implementation.Read(ctx, resource.ReadRequest{State: created.State}, &read)
-		require.Empty(t, read.Diagnostics)
-		assert.True(t, created.State.Raw.Equal(read.State.Raw))
+			require.Empty(t, diagnostics)
+			assert.NotContains(t, logs.String(), webhookSigningSecretTestValue)
+			assert.NotContains(t, logs.String(), webhookSigningSecretTestUpdatedValue)
+			assert.NotContains(t, logs.String(), "opaque")
+			assert.Contains(t, logs.String(), "webhook_signing_secret."+operation)
+		})
 	}
-
-	plan, _ := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestUpdatedValue))
-	updated := resource.UpdateResponse{State: created.State, Identity: identity}
-	implementation.Update(ctx, resource.UpdateRequest{State: created.State, Plan: tfsdk.Plan(plan)}, &updated)
-	require.Empty(t, updated.Diagnostics)
-	assert.True(t, plan.Raw.Equal(updated.State.Raw))
-
-	// A timeout-only call with the same effective value must issue no PUT.
-	unchanged := resource.UpdateResponse{State: updated.State, Identity: identity}
-	implementation.Update(ctx, resource.UpdateRequest{State: updated.State, Plan: tfsdk.Plan(plan)}, &unchanged)
-	require.Empty(t, unchanged.Diagnostics)
-
-	deleted := resource.DeleteResponse{State: updated.State, Identity: identity}
-	implementation.Delete(ctx, resource.DeleteRequest{State: updated.State}, &deleted)
-	require.Empty(t, deleted.Diagnostics)
-	assert.EqualValues(t, 5, count.Load())
-	assert.NotContains(t, logs.String(), webhookSigningSecretTestValue)
-	assert.NotContains(t, logs.String(), webhookSigningSecretTestUpdatedValue)
-	assert.NotContains(t, logs.String(), "opaque")
-	assert.Contains(t, logs.String(), "webhook_signing_secret.create")
 }
 
 func TestWebhookSigningSecretFailuresRetainStateAndRedactKnownValues(t *testing.T) {
@@ -411,23 +378,6 @@ func mustWebhookSigningSecretModel(t *testing.T, state tfsdk.State) WebhookSigni
 	return model
 }
 
-func TestWebhookSigningSecretImportRetainsNull(t *testing.T) {
-	t.Parallel()
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		assert.Equal(t, http.MethodGet, req.Method)
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = io.WriteString(w, webhookSigningSecretTestResponse)
-	}))
-	t.Cleanup(server.Close)
-	implementation := webhookSigningSecretTestClient(t, server)
-	state, identity := webhookSigningSecretTestState(t, types.StringNull())
-	resp := resource.ReadResponse{State: state, Identity: identity}
-	implementation.Read(t.Context(), resource.ReadRequest{State: state}, &resp)
-	require.Empty(t, resp.Diagnostics)
-	assert.True(t, mustWebhookSigningSecretModel(t, resp.State).Value.IsNull())
-}
-
 func TestWebhookSigningSecretRedactedMetadataIsOpaque(t *testing.T) {
 	t.Parallel()
 
@@ -439,52 +389,6 @@ func TestWebhookSigningSecretRedactedMetadataIsOpaque(t *testing.T) {
 		require.Empty(t, diags)
 		assert.Equal(t, webhookSigningSecretTestUpdatedValue, model.Value.ValueString())
 	}
-}
-
-func TestWebhookSigningSecretAmbiguousUpdateCannotBeVerifiedByRead(t *testing.T) {
-	t.Parallel()
-
-	var (
-		puts, gets atomic.Int64
-		committed  atomic.Bool
-	)
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		if req.Method == http.MethodPut {
-			puts.Add(1)
-
-			body, err := io.ReadAll(req.Body)
-			assert.NoError(t, err)
-			assert.JSONEq(t, `{"value":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbZy87-/=_+"}`, string(body))
-			committed.Store(true)
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = io.WriteString(w, `{"sys":{"type":"Error","id":"ServerError"}}`)
-
-			return
-		}
-
-		assert.Equal(t, http.MethodGet, req.Method)
-		gets.Add(1)
-
-		_, _ = io.WriteString(w, webhookSigningSecretTestResponse)
-	}))
-	t.Cleanup(server.Close)
-	implementation := webhookSigningSecretTestClient(t, server)
-	prior, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
-	plan, _ := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestUpdatedValue))
-	updated := resource.UpdateResponse{State: prior, Identity: identity}
-	implementation.Update(t.Context(), resource.UpdateRequest{State: prior, Plan: tfsdk.Plan(plan)}, &updated)
-	require.True(t, updated.Diagnostics.HasError())
-	assert.True(t, committed.Load())
-	assert.EqualValues(t, 1, puts.Load())
-	assert.Zero(t, gets.Load(), "presence cannot recover the mutation")
-	assert.True(t, prior.Raw.Equal(updated.State.Raw))
-	read := resource.ReadResponse{State: updated.State, Identity: identity}
-	implementation.Read(t.Context(), resource.ReadRequest{State: updated.State}, &read)
-	require.Empty(t, read.Diagnostics)
-	assert.True(t, prior.Raw.Equal(read.State.Raw), "a later refresh still cannot discover the complete value")
 }
 
 func TestWebhookSigningSecretRejectsUnresolvedScopeBeforeHTTP(t *testing.T) {

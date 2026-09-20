@@ -15,18 +15,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLocaleCreateCheckpointsResponseAndVersion(t *testing.T) {
+func TestLocaleMutationCheckpointsResponseAndVersion(t *testing.T) {
 	t.Parallel()
 
-	for name, missingVersion := range map[string]bool{
-		"returned version": false,
-		"missing version":  true,
+	for name, testcase := range map[string]struct {
+		update, missingVersion bool
+	}{
+		"create/returned version": {},
+		"create/missing version":  {missingVersion: true},
+		"update/returned version": {update: true},
+		"update/missing version":  {update: true, missingVersion: true},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
 			versionJSON := `,"version":9`
-			if missingVersion {
+			if testcase.missingVersion {
 				versionJSON = ""
 			}
 
@@ -47,7 +51,13 @@ func TestLocaleCreateCheckpointsResponseAndVersion(t *testing.T) {
 				body = string(data)
 
 				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusCreated)
+
+				if testcase.update {
+					w.WriteHeader(http.StatusOK)
+				} else {
+					w.WriteHeader(http.StatusCreated)
+				}
+
 				_, _ = io.WriteString(w, responseJSON)
 			}))
 			t.Cleanup(server.Close)
@@ -66,16 +76,37 @@ func TestLocaleCreateCheckpointsResponseAndVersion(t *testing.T) {
 			model.Timeouts = provider.TimeoutsNull()
 			schema := provider.LocaleResourceSchema(t.Context())
 			prior := nullResourceDynamicValue(t, schema)
+
+			var private []byte
+
+			if testcase.update {
+				model.ID, model.LocaleID, model.Default = types.StringValue("space/environment/locale"), types.StringValue("locale"), types.BoolValue(false)
+				priorModel := model
+				priorModel.Name = types.StringValue("Original")
+				prior = resourceModelDynamicValue(t, schema, priorModel)
+				// The returned version must be stored, not inferred as 7 + 1.
+				private, err = json.Marshal(map[string][]byte{"version": []byte("7")})
+				require.NoError(t, err)
+			}
+
 			plan := resourceModelDynamicValue(t, schema, model)
-			applied, err := protocol.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: "contentful_locale", PriorState: &prior, PlannedState: &plan, Config: &plan})
+			applied, err := protocol.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: "contentful_locale", PriorState: &prior, PlannedState: &plan, Config: &plan, PlannedPrivate: private})
 			require.NoError(t, err)
-			assert.Equal(t, http.MethodPost, method)
-			assert.Equal(t, "/spaces/space/environments/environment/locales", target)
-			assert.Empty(t, version)
+
+			if testcase.update {
+				assert.Equal(t, http.MethodPut, method)
+				assert.Equal(t, "/spaces/space/environments/environment/locales/locale", target)
+				assert.Equal(t, "7", version)
+			} else {
+				assert.Equal(t, http.MethodPost, method)
+				assert.Equal(t, "/spaces/space/environments/environment/locales", target)
+				assert.Empty(t, version)
+			}
+
 			assert.JSONEq(t, `{"name":"Planned","code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`, body)
 
 			expectedDiagnostics := 1
-			if missingVersion {
+			if testcase.missingVersion {
 				expectedDiagnostics++
 			}
 
@@ -99,7 +130,7 @@ func TestLocaleCreateCheckpointsResponseAndVersion(t *testing.T) {
 				require.NoError(t, json.Unmarshal(applied.Private, &values))
 			}
 
-			if missingVersion {
+			if testcase.missingVersion {
 				assert.Empty(t, values["version"])
 				assert.Equal(t, "Missing locale version", applied.Diagnostics[0].Summary)
 			} else {

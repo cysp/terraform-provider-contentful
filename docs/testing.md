@@ -92,10 +92,14 @@ Choose checks for the behavior being proved:
   matter: before apply for planned actions, after refresh for observed drift.
   The library already rejects an unexpected non-empty final plan.
 - Verify CLI import using `ImportStateVerify` against prior applied state when
-  possible; the library does not support this field for import blocks. For pre-existing remote fixtures, persist imported state and use a
-  following configuration step to check its values and plan. An import step
-  runs `ImportStateCheck`, not `Check` or `ConfigStateChecks`; placing config
-  checks directly on that step leaves them unexecuted.
+  possible. For pre-existing remote fixtures, persist imported state and use a
+  following configuration step to check its values and plan. CLI import steps
+  run `ImportStateCheck`, not `Check` or `ConfigStateChecks`.
+- Import-block steps selected through `ImportStateKind` only plan the import;
+  they do not apply it or run `ImportStateCheck`, `ImportStateVerify`, `Check`,
+  or `ConfigStateChecks`. Use `ImportPlanChecks.PreApply` to inspect the planned
+  values. To verify persisted state after applying an import block, put the
+  block in a normal configuration step and use `ConfigStateChecks`.
 - Keep `ImportStateVerifyIgnore` narrow and explain why each value cannot be
   read during import, such as a write-only secret or a configured timeout.
   Cover the import mechanism the provider supports, including resource
