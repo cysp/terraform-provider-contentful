@@ -62,6 +62,10 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
+	_, err = server.Handler().PutAppEventSubscription(t.Context(), &cm.AppEventSubscriptionData{
+		Topics: []string{"Entry.publish", "Asset.publish"}, TargetUrl: cm.NewOptString("https://example.invalid/events"),
+	}, cm.PutAppEventSubscriptionParams{OrganizationID: "organization", AppDefinitionID: "app"})
+	require.NoError(t, err)
 
 	var (
 		requestMutex sync.Mutex
@@ -115,7 +119,6 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 		assert.NoError(t, writeErr)
 	})
 	cases := []struct{ config, body string }{
-		{appEventHTTPConfig, appEventHTTPBody},
 		{appEventBaseConfig + `target_url = "https://example.invalid/events"
 filter_function_id = "filter"
 transformation_function_id = "transform"
@@ -141,19 +144,35 @@ filter_function_id = "filter"
 		{strings.Replace(appEventHTTPConfig, `["Entry.publish", "Asset.publish"]`, `["FutureEntity.futureAction"]`, 1), `{"topics":["FutureEntity.futureAction"],"targetUrl":"https://example.invalid/events"}`},
 	}
 
-	steps := make([]resource.TestStep, 0, len(cases)+4)
-	for index, test := range cases {
+	steps := make([]resource.TestStep, 0, len(cases)+5)
+	steps = append(steps,
+		resource.TestStep{
+			// Apply identity import before exercising updates to the singleton.
+			Config: appEventHTTPConfig + `
+import {
+ to = contentful_app_event_subscription.test
+ identity = {
+  organization_id = "organization"
+  app_definition_id = "app"
+ }
+}`,
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app")),
+				statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")),
+				statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("filter_function_id"), knownvalue.Null()),
+				statecheck.ExpectIdentity(appEventResourceAddress, map[string]knownvalue.Check{
+					"organization_id":   knownvalue.StringExact("organization"),
+					"app_definition_id": knownvalue.StringExact("app"),
+				}),
+			},
+		},
+		resource.TestStep{ResourceName: appEventResourceAddress, ImportState: true, ImportStateId: "organization/app", ImportStateVerify: true},
+		resource.TestStep{Config: strings.Replace(appEventHTTPConfig, `["Entry.publish", "Asset.publish"]`, `["Asset.publish", "Entry.publish", "Entry.publish"]`, 1), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+		resource.TestStep{Config: strings.Replace(appEventHTTPConfig, "\n}", "\ntimeouts = { update = \"30s\" }\n}", 1)},
+	)
+
+	for _, test := range cases {
 		steps = append(steps, resource.TestStep{Config: test.config, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))}})
-		if index == 0 {
-			steps = append(steps, resource.TestStep{ResourceName: appEventResourceAddress, ImportState: true, ImportStateId: "organization/app", ImportStateVerify: true})
-			steps = append(steps, resource.TestStep{Config: appEventHTTPConfig, ResourceName: appEventResourceAddress, ImportState: true, ImportStateKind: resource.ImportBlockWithResourceIdentity, ImportPlanChecks: resource.ImportPlanChecks{PreApply: []plancheck.PlanCheck{
-				plancheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app")),
-				plancheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")),
-				plancheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("filter_function_id"), knownvalue.Null()),
-			}}})
-			steps = append(steps, resource.TestStep{Config: strings.Replace(appEventHTTPConfig, `["Entry.publish", "Asset.publish"]`, `["Asset.publish", "Entry.publish", "Entry.publish"]`, 1), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}})
-			steps = append(steps, resource.TestStep{Config: strings.Replace(appEventHTTPConfig, "\n}", "\ntimeouts = { update = \"30s\" }\n}", 1)})
-		}
 	}
 
 	steps = append(steps, resource.TestStep{PreConfig: func() {

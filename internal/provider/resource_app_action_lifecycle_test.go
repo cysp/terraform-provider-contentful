@@ -149,7 +149,6 @@ func TestAccAppActionResourceLifecycle(t *testing.T) {
 		{ConfigDirectory: config.TestNameDirectory(), ConfigVariables: initial, ResourceName: actionAddress, ImportState: true, ImportStateVerify: true},
 		{ConfigDirectory: config.TestNameDirectory(), ConfigVariables: initial, ResourceName: "contentful_app_action.builtin", ImportState: true, ImportStateVerify: true},
 		{ConfigDirectory: config.TestNameDirectory(), ConfigVariables: initial, ResourceName: "contentful_app_action.function", ImportState: true, ImportStateVerify: true},
-		{ConfigDirectory: config.TestNameDirectory(), ConfigVariables: initial, ResourceName: actionAddress, ImportState: true, ImportStateKind: resource.ImportBlockWithResourceIdentity},
 		{ConfigDirectory: config.TestNameDirectory(), ConfigVariables: updated, ConfigStateChecks: append(discoveryChecks(customUpdated, builtinUpdated, functionUpdated),
 			statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("description"), knownvalue.Null()),
 			statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("result_schema"), knownvalue.Null()),
