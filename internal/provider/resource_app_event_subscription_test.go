@@ -30,7 +30,6 @@ import (
 const (
 	appEventResourceAddress = "contentful_app_event_subscription.test"
 	appEventResourcePath    = "/organizations/organization/app_definitions/app/event_subscription"
-	appEventConfigFile      = "testdata/app_event_subscription/main.tf"
 )
 
 const appEventHTTPBody = `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events"}`
@@ -42,18 +41,14 @@ func TestAccAppEventSubscriptionResourceInvalidTarget(t *testing.T) {
 
 	handler := http.HandlerFunc(func(http.ResponseWriter, *http.Request) { count.Add(1) })
 	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{{
-		ConfigFile: config.StaticFile(appEventConfigFile),
-		ConfigVariables: config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
-			"target_url": config.StringVariable("http://example.invalid/events"),
-		})},
-		ExpectError: regexp.MustCompile("Invalid app event target URL"),
+		ConfigFile:      config.TestNameFile("main.tf"),
+		ConfigVariables: config.Variables{"target_url": config.StringVariable("http://example.invalid/events")},
+		ExpectError:     regexp.MustCompile("Invalid app event target URL"),
 	}}})
 	assert.Zero(t, count.Load())
 }
 
-// TestAccAppEventSubscriptionResourceLifecycle tests the provider against a
-// replacement fixture. Function clearing and switching are mock assumptions;
-// this test is deliberately never selected as live CMA acceptance.
+// Function clearing and switching are fixture assumptions.
 func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
@@ -187,8 +182,7 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 	steps := make([]resource.TestStep, 0, len(cases)+5)
 	steps = append(steps,
 		resource.TestStep{
-			// Apply identity import before exercising updates to the singleton.
-			ConfigDirectory: config.StaticDirectory("testdata/app_event_subscription"),
+			ConfigDirectory: config.TestNameDirectory(),
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app")),
 				statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")),
@@ -200,24 +194,24 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 			},
 		},
 		resource.TestStep{ResourceName: appEventResourceAddress, ImportState: true, ImportStateId: "organization/app", ImportStateVerify: true},
-		resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
+		resource.TestStep{ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
 			"target_url": config.StringVariable("https://example.invalid/events"),
 			"topics":     config.ListVariable(config.StringVariable("Asset.publish"), config.StringVariable("Entry.publish"), config.StringVariable("Entry.publish")),
 		})}, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
-		resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
+		resource.TestStep{ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
 			"target_url": config.StringVariable("https://example.invalid/events"),
 			"timeouts":   config.ObjectVariable(map[string]config.Variable{"update": config.StringVariable("30s")}),
 		})}},
 	)
 
 	for _, test := range cases {
-		steps = append(steps, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(test.subscription)}, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))}})
+		steps = append(steps, resource.TestStep{ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(test.subscription)}, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))}})
 	}
 
 	steps = append(steps, resource.TestStep{PreConfig: func() {
 		_, deleteErr := server.Handler().DeleteAppEventSubscription(context.Background(), cm.DeleteAppEventSubscriptionParams{OrganizationID: "organization", AppDefinitionID: "app"})
 		require.NoError(t, deleteErr)
-	}, ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(cases[len(cases)-1].subscription)}, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}})
+	}, ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(cases[len(cases)-1].subscription)}, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}})
 	testAccMockedResource(t, handler, resource.TestCase{Steps: steps})
 	requestMutex.Lock()
 	defer requestMutex.Unlock()
@@ -239,6 +233,8 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 
 func TestAccAppEventSubscriptionResourceExistingSingleton(t *testing.T) {
 	t.Parallel()
+
+	configFile := config.StaticFile("testdata/" + t.Name() + "/main.tf")
 
 	for _, importFirst := range []bool{false, true} {
 		t.Run(strconv.FormatBool(importFirst), func(t *testing.T) {
@@ -262,10 +258,10 @@ func TestAccAppEventSubscriptionResourceExistingSingleton(t *testing.T) {
 
 			steps := []resource.TestStep{}
 			if importFirst {
-				steps = append(steps, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), PlanOnly: true, ExpectNonEmptyPlan: true}, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ResourceName: appEventResourceAddress, ImportState: true, ImportStateId: "organization/app", ImportStatePersist: true, ImportStateCheck: testAccImportAttributes(map[string]string{"target_url": "https://example.invalid/previous"})})
+				steps = append(steps, resource.TestStep{ConfigFile: configFile, PlanOnly: true, ExpectNonEmptyPlan: true}, resource.TestStep{ConfigFile: configFile, ResourceName: appEventResourceAddress, ImportState: true, ImportStateId: "organization/app", ImportStatePersist: true, ImportStateCheck: testAccImportAttributes(map[string]string{"target_url": "https://example.invalid/previous"})})
 			}
 
-			steps = append(steps, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")), statecheck.ExpectSensitiveValue(appEventResourceAddress, tfjsonpath.New("target_url"))}}, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}})
+			steps = append(steps, resource.TestStep{ConfigFile: configFile, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")), statecheck.ExpectSensitiveValue(appEventResourceAddress, tfjsonpath.New("target_url"))}}, resource.TestStep{ConfigFile: configFile, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}})
 			testAccMockedResource(t, handler, resource.TestCase{Steps: steps})
 			assert.EqualValues(t, 1, putCount.Load())
 		})
@@ -289,18 +285,20 @@ func TestAccAppEventSubscriptionResourceParentDisappears(t *testing.T) {
 		server.ServeHTTP(w, r)
 	})
 	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
-		{ConfigFile: config.StaticFile(appEventConfigFile)},
+		{ConfigFile: config.TestNameFile("main.tf")},
 		{PreConfig: func() {
 			_, deleteErr := server.Handler().DeleteAppDefinition(context.Background(), cm.DeleteAppDefinitionParams{OrganizationID: "organization", AppDefinitionID: "app"})
 			require.NoError(t, deleteErr)
-		}, ConfigFile: config.StaticFile(appEventConfigFile), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}, ExpectError: regexp.MustCompile(`Failed to upsert app event subscription`)},
-		{PreConfig: func() { server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "Restored app"}) }, ConfigFile: config.StaticFile(appEventConfigFile), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}},
+		}, ConfigFile: config.TestNameFile("main.tf"), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}, ExpectError: regexp.MustCompile(`Failed to upsert app event subscription`)},
+		{PreConfig: func() { server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "Restored app"}) }, ConfigFile: config.TestNameFile("main.tf"), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}},
 	}})
 	assert.EqualValues(t, 3, putCount.Load())
 }
 
 func TestAccAppEventSubscriptionResourceRecoveryState(t *testing.T) {
 	t.Parallel()
+
+	configFile := config.StaticFile("testdata/" + t.Name() + "/main.tf")
 
 	for _, update := range []bool{false, true} {
 		t.Run(strconv.FormatBool(update), func(t *testing.T) {
@@ -340,14 +338,12 @@ func TestAccAppEventSubscriptionResourceRecoveryState(t *testing.T) {
 
 			steps := []resource.TestStep{}
 			if update {
-				steps = append(steps, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile)})
+				steps = append(steps, resource.TestStep{ConfigFile: configFile})
 			}
 
-			planned := config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
-				"target_url": config.StringVariable("https://example.invalid/planned"),
-			})}
+			planned := config.Variables{"target_url": config.StringVariable("https://example.invalid/planned")}
 			steps = append(steps, resource.TestStep{
-				PreConfig: func() { contradict.Store(true) }, ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: planned,
+				PreConfig: func() { contradict.Store(true) }, ConfigFile: configFile, ConfigVariables: planned,
 				ExpectError: regexp.MustCompile("Contentful returned a different target_url"),
 			})
 
@@ -356,7 +352,7 @@ func TestAccAppEventSubscriptionResourceRecoveryState(t *testing.T) {
 				action = plancheck.ResourceActionUpdate
 			}
 
-			steps = append(steps, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: planned, ConfigPlanChecks: resource.ConfigPlanChecks{
+			steps = append(steps, resource.TestStep{ConfigFile: configFile, ConfigVariables: planned, ConfigPlanChecks: resource.ConfigPlanChecks{
 				PreApply: []plancheck.PlanCheck{
 					testAccPriorState{check: statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/returned"))},
 					testAccPriorState{check: statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))},
@@ -373,6 +369,8 @@ func TestAccAppEventSubscriptionResourceRecoveryState(t *testing.T) {
 
 func TestAccAppEventSubscriptionResourceParentReplacement(t *testing.T) {
 	t.Parallel()
+
+	fixtureDirectory := "testdata/" + t.Name()
 
 	for _, createBeforeDestroy := range []bool{false, true} {
 		t.Run(strconv.FormatBool(createBeforeDestroy), func(t *testing.T) {
@@ -398,18 +396,17 @@ func TestAccAppEventSubscriptionResourceParentReplacement(t *testing.T) {
 
 				server.ServeHTTP(w, r)
 			})
-			fixture := appEventConfigFile
+			fixture := fixtureDirectory + "/main.tf"
 			action := plancheck.ResourceActionDestroyBeforeCreate
 
 			if createBeforeDestroy {
-				fixture = "testdata/TestAccAppEventSubscriptionResourceParentReplacement/create_before_destroy.tf"
+				fixture = fixtureDirectory + "/create_before_destroy.tf"
 				action = plancheck.ResourceActionCreateBeforeDestroy
 			}
 
-			replacement := config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
+			replacement := config.Variables{
 				"organization_id": config.StringVariable("other"), "app_definition_id": config.StringVariable("replacement"),
-				"target_url": config.StringVariable("https://example.invalid/events"),
-			})}
+			}
 			testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 				{ConfigFile: config.StaticFile(fixture)},
 				{ConfigFile: config.StaticFile(fixture), ConfigVariables: replacement, ConfigPlanChecks: resource.ConfigPlanChecks{
