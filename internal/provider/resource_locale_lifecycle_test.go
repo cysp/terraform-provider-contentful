@@ -45,8 +45,8 @@ func TestAccLocaleResourceLifecycle(t *testing.T) {
 	restored := config.Variables{"locale": config.ObjectVariable(map[string]config.Variable{
 		"code": config.StringVariable("de-AT"),
 	})}
-	identity := statecheck.CompareValue(compare.ValuesSame())
-	recreatedIdentity := statecheck.CompareValue(compare.ValuesDiffer())
+	localeIDCheck := statecheck.CompareValue(compare.ValuesSame())
+	recreatedLocaleIDCheck := statecheck.CompareValue(compare.ValuesDiffer())
 
 	resourceIdentity := statecheck.ExpectIdentity(resourceAddress, map[string]knownvalue.Check{
 		"space_id":       knownvalue.StringExact("space"),
@@ -63,14 +63,13 @@ func TestAccLocaleResourceLifecycle(t *testing.T) {
 
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{
-			// A normal configuration step applies the import and persists state.
 			ConfigDirectory: config.TestNameDirectory(),
 			ConfigVariables: initial,
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction(resourceAddress, plancheck.ResourceActionNoop),
 			}},
 			ConfigStateChecks: append([]statecheck.StateCheck{
-				identity.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
+				localeIDCheck.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
 				resourceIdentity,
 				statecheck.ExpectKnownValue(resourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("space/environment/imported-locale")),
 				statecheck.ExpectKnownValue(resourceAddress, tfjsonpath.New("locale_id"), knownvalue.StringExact(localeID)),
@@ -87,7 +86,7 @@ func TestAccLocaleResourceLifecycle(t *testing.T) {
 			ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: updated,
 			ConfigStateChecks: []statecheck.StateCheck{
 				resourceIdentity,
-				identity.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
+				localeIDCheck.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
 			},
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction(resourceAddress, plancheck.ResourceActionUpdate),
@@ -102,15 +101,15 @@ func TestAccLocaleResourceLifecycle(t *testing.T) {
 				"code": config.StringVariable("de-AT"), "content_delivery_api": config.BoolVariable(false),
 			})},
 			ConfigStateChecks: []statecheck.StateCheck{
-				identity.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
+				localeIDCheck.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
 				statecheck.ExpectKnownValue(resourceAddress, tfjsonpath.New("content_management_api"), knownvalue.Bool(true)),
 			},
 		},
 		{
 			ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: restored,
 			ConfigStateChecks: append([]statecheck.StateCheck{
-				identity.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
-				recreatedIdentity.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
+				localeIDCheck.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
+				recreatedLocaleIDCheck.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
 			}, defaults...),
 		},
 		{
@@ -124,7 +123,7 @@ func TestAccLocaleResourceLifecycle(t *testing.T) {
 				plancheck.ExpectResourceAction(resourceAddress, plancheck.ResourceActionCreate),
 			}},
 			ConfigStateChecks: append([]statecheck.StateCheck{
-				recreatedIdentity.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
+				recreatedLocaleIDCheck.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
 			}, defaults...),
 		},
 	}})

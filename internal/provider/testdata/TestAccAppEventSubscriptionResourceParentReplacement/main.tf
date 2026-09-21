@@ -13,8 +13,4 @@ resource "contentful_app_event_subscription" "test" {
   app_definition_id = var.app_definition_id
   topics            = ["Entry.publish", "Asset.publish"]
   target_url        = "https://example.invalid/events"
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
