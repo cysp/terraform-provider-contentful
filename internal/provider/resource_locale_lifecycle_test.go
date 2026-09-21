@@ -118,12 +118,16 @@ func TestAccLocaleResourceLifecycle(t *testing.T) {
 				require.NoError(t, err)
 				require.IsType(t, &cm.NoContent{}, response)
 			},
-			ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: restored,
+			ConfigFile: config.TestNameFile("main.tf"),
+			ConfigVariables: config.Variables{"locale": config.ObjectVariable(map[string]config.Variable{
+				"code": config.StringVariable("de-AT"), "fallback_code": config.StringVariable("en-US"),
+			})},
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction(resourceAddress, plancheck.ResourceActionCreate),
 			}},
 			ConfigStateChecks: append([]statecheck.StateCheck{
 				recreatedLocaleIDCheck.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
+				statecheck.ExpectKnownValue(resourceAddress, tfjsonpath.New("fallback_code"), knownvalue.StringExact("en-US")),
 			}, defaults...),
 		},
 	}})
