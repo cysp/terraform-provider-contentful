@@ -9,14 +9,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"slices"
 	"strconv"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -29,15 +30,9 @@ import (
 const (
 	appEventResourceAddress = "contentful_app_event_subscription.test"
 	appEventResourcePath    = "/organizations/organization/app_definitions/app/event_subscription"
-	appEventBaseConfig      = `resource "contentful_app_event_subscription" "test" {
- organization_id = "organization"
- app_definition_id = "app"
- topics = ["Entry.publish", "Asset.publish"]
-`
+	appEventConfigFile      = "testdata/app_event_subscription/main.tf"
 )
 
-const appEventHTTPConfig = appEventBaseConfig + `target_url = "https://example.invalid/events"
-}`
 const appEventHTTPBody = `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events"}`
 
 func TestAccAppEventSubscriptionResourceInvalidTarget(t *testing.T) {
@@ -47,7 +42,10 @@ func TestAccAppEventSubscriptionResourceInvalidTarget(t *testing.T) {
 
 	handler := http.HandlerFunc(func(http.ResponseWriter, *http.Request) { count.Add(1) })
 	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{{
-		Config:      strings.Replace(appEventHTTPConfig, "https://", "http://", 1),
+		ConfigFile: config.StaticFile(appEventConfigFile),
+		ConfigVariables: config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
+			"target_url": config.StringVariable("http://example.invalid/events"),
+		})},
 		ExpectError: regexp.MustCompile("Invalid app event target URL"),
 	}}})
 	assert.Zero(t, count.Load())
@@ -103,7 +101,12 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 				return
 			}
 
-			if !bytes.Contains(body["topics"], []byte("FutureEntity")) {
+			var topics []string
+			if !assert.NoError(t, json.Unmarshal(body["topics"], &topics)) {
+				return
+			}
+
+			if !slices.Contains(topics, "FutureEntity.futureAction") {
 				// A fixed independently authored response order opposes sorted requests.
 				body["topics"] = json.RawMessage(`["Entry.publish","Asset.publish"]`)
 			}
@@ -118,44 +121,74 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 		_, writeErr := w.Write(raw)
 		assert.NoError(t, writeErr)
 	})
-	cases := []struct{ config, body string }{
-		{appEventBaseConfig + `target_url = "https://example.invalid/events"
-filter_function_id = "filter"
-transformation_function_id = "transform"
-}`, `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events","functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}},"transformation":{"sys":{"type":"Link","linkType":"Function","id":"transform"}}}}`},
-		{appEventBaseConfig + `target_url = "https://example.invalid/events"
-transformation_function_id = "transform"
-}`, `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events","functions":{"transformation":{"sys":{"type":"Link","linkType":"Function","id":"transform"}}}}`},
-		{appEventBaseConfig + `filter_function_id = "filter"
-transformation_function_id = "transform"
-handler_function_id = "handler"
-}`, `{"topics":["Asset.publish","Entry.publish"],"functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}},"transformation":{"sys":{"type":"Link","linkType":"Function","id":"transform"}},"handler":{"sys":{"type":"Link","linkType":"Function","id":"handler"}}}}`},
-		{appEventBaseConfig + `filter_function_id = "filter"
-handler_function_id = "handler"
-}`, `{"topics":["Asset.publish","Entry.publish"],"functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}},"handler":{"sys":{"type":"Link","linkType":"Function","id":"handler"}}}}`},
-		{appEventBaseConfig + `handler_function_id = "handler"
-}`, `{"topics":["Asset.publish","Entry.publish"],"functions":{"handler":{"sys":{"type":"Link","linkType":"Function","id":"handler"}}}}`},
-		{appEventBaseConfig + `target_url = "https://example.invalid/events"
-filter_function_id = "filter"
-}`, `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events","functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}}}}`},
-		{appEventHTTPConfig, appEventHTTPBody},
-		// A synthetic future topic is a provider forward-compatibility oracle, not
-		// an assertion that the real CMA accepts this topic.
-		{strings.Replace(appEventHTTPConfig, `["Entry.publish", "Asset.publish"]`, `["FutureEntity.futureAction"]`, 1), `{"topics":["FutureEntity.futureAction"],"targetUrl":"https://example.invalid/events"}`},
+	cases := []struct {
+		subscription map[string]config.Variable
+		body         string
+	}{
+		{
+			subscription: map[string]config.Variable{
+				"target_url":                 config.StringVariable("https://example.invalid/events"),
+				"filter_function_id":         config.StringVariable("filter"),
+				"transformation_function_id": config.StringVariable("transform"),
+			},
+			body: `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events","functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}},"transformation":{"sys":{"type":"Link","linkType":"Function","id":"transform"}}}}`,
+		},
+		{
+			subscription: map[string]config.Variable{
+				"target_url":                 config.StringVariable("https://example.invalid/events"),
+				"transformation_function_id": config.StringVariable("transform"),
+			},
+			body: `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events","functions":{"transformation":{"sys":{"type":"Link","linkType":"Function","id":"transform"}}}}`,
+		},
+		{
+			subscription: map[string]config.Variable{
+				"filter_function_id":         config.StringVariable("filter"),
+				"transformation_function_id": config.StringVariable("transform"),
+				"handler_function_id":        config.StringVariable("handler"),
+			},
+			body: `{"topics":["Asset.publish","Entry.publish"],"functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}},"transformation":{"sys":{"type":"Link","linkType":"Function","id":"transform"}},"handler":{"sys":{"type":"Link","linkType":"Function","id":"handler"}}}}`,
+		},
+		{
+			subscription: map[string]config.Variable{
+				"filter_function_id":  config.StringVariable("filter"),
+				"handler_function_id": config.StringVariable("handler"),
+			},
+			body: `{"topics":["Asset.publish","Entry.publish"],"functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}},"handler":{"sys":{"type":"Link","linkType":"Function","id":"handler"}}}}`,
+		},
+		{
+			subscription: map[string]config.Variable{
+				"handler_function_id": config.StringVariable("handler"),
+			},
+			body: `{"topics":["Asset.publish","Entry.publish"],"functions":{"handler":{"sys":{"type":"Link","linkType":"Function","id":"handler"}}}}`,
+		},
+		{
+			subscription: map[string]config.Variable{
+				"target_url":         config.StringVariable("https://example.invalid/events"),
+				"filter_function_id": config.StringVariable("filter"),
+			},
+			body: `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events","functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}}}}`,
+		},
+		{
+			subscription: map[string]config.Variable{
+				"target_url": config.StringVariable("https://example.invalid/events"),
+			},
+			body: appEventHTTPBody,
+		},
+		// A synthetic future topic tests provider extensibility, not CMA acceptance.
+		{
+			subscription: map[string]config.Variable{
+				"target_url": config.StringVariable("https://example.invalid/events"),
+				"topics":     config.ListVariable(config.StringVariable("FutureEntity.futureAction")),
+			},
+			body: `{"topics":["FutureEntity.futureAction"],"targetUrl":"https://example.invalid/events"}`,
+		},
 	}
 
 	steps := make([]resource.TestStep, 0, len(cases)+5)
 	steps = append(steps,
 		resource.TestStep{
 			// Apply identity import before exercising updates to the singleton.
-			Config: appEventHTTPConfig + `
-import {
- to = contentful_app_event_subscription.test
- identity = {
-  organization_id = "organization"
-  app_definition_id = "app"
- }
-}`,
+			ConfigDirectory: config.StaticDirectory("testdata/app_event_subscription"),
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app")),
 				statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")),
@@ -167,18 +200,24 @@ import {
 			},
 		},
 		resource.TestStep{ResourceName: appEventResourceAddress, ImportState: true, ImportStateId: "organization/app", ImportStateVerify: true},
-		resource.TestStep{Config: strings.Replace(appEventHTTPConfig, `["Entry.publish", "Asset.publish"]`, `["Asset.publish", "Entry.publish", "Entry.publish"]`, 1), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
-		resource.TestStep{Config: strings.Replace(appEventHTTPConfig, "\n}", "\ntimeouts = { update = \"30s\" }\n}", 1)},
+		resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
+			"target_url": config.StringVariable("https://example.invalid/events"),
+			"topics":     config.ListVariable(config.StringVariable("Asset.publish"), config.StringVariable("Entry.publish"), config.StringVariable("Entry.publish")),
+		})}, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+		resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
+			"target_url": config.StringVariable("https://example.invalid/events"),
+			"timeouts":   config.ObjectVariable(map[string]config.Variable{"update": config.StringVariable("30s")}),
+		})}},
 	)
 
 	for _, test := range cases {
-		steps = append(steps, resource.TestStep{Config: test.config, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))}})
+		steps = append(steps, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(test.subscription)}, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))}})
 	}
 
 	steps = append(steps, resource.TestStep{PreConfig: func() {
 		_, deleteErr := server.Handler().DeleteAppEventSubscription(context.Background(), cm.DeleteAppEventSubscriptionParams{OrganizationID: "organization", AppDefinitionID: "app"})
 		require.NoError(t, deleteErr)
-	}, Config: cases[len(cases)-1].config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}})
+	}, ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(cases[len(cases)-1].subscription)}, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}})
 	testAccMockedResource(t, handler, resource.TestCase{Steps: steps})
 	requestMutex.Lock()
 	defer requestMutex.Unlock()
@@ -223,10 +262,10 @@ func TestAccAppEventSubscriptionResourceExistingSingleton(t *testing.T) {
 
 			steps := []resource.TestStep{}
 			if importFirst {
-				steps = append(steps, resource.TestStep{Config: appEventHTTPConfig, PlanOnly: true, ExpectNonEmptyPlan: true}, resource.TestStep{Config: appEventHTTPConfig, ResourceName: appEventResourceAddress, ImportState: true, ImportStateId: "organization/app", ImportStatePersist: true, ImportStateCheck: testAccImportAttributes(map[string]string{"target_url": "https://example.invalid/previous"})})
+				steps = append(steps, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), PlanOnly: true, ExpectNonEmptyPlan: true}, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ResourceName: appEventResourceAddress, ImportState: true, ImportStateId: "organization/app", ImportStatePersist: true, ImportStateCheck: testAccImportAttributes(map[string]string{"target_url": "https://example.invalid/previous"})})
 			}
 
-			steps = append(steps, resource.TestStep{Config: appEventHTTPConfig, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")), statecheck.ExpectSensitiveValue(appEventResourceAddress, tfjsonpath.New("target_url"))}}, resource.TestStep{Config: appEventHTTPConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}})
+			steps = append(steps, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/events")), statecheck.ExpectSensitiveValue(appEventResourceAddress, tfjsonpath.New("target_url"))}}, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}})
 			testAccMockedResource(t, handler, resource.TestCase{Steps: steps})
 			assert.EqualValues(t, 1, putCount.Load())
 		})
@@ -250,12 +289,12 @@ func TestAccAppEventSubscriptionResourceParentDisappears(t *testing.T) {
 		server.ServeHTTP(w, r)
 	})
 	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
-		{Config: appEventHTTPConfig},
+		{ConfigFile: config.StaticFile(appEventConfigFile)},
 		{PreConfig: func() {
 			_, deleteErr := server.Handler().DeleteAppDefinition(context.Background(), cm.DeleteAppDefinitionParams{OrganizationID: "organization", AppDefinitionID: "app"})
 			require.NoError(t, deleteErr)
-		}, Config: appEventHTTPConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}, ExpectError: regexp.MustCompile(`Failed to upsert app event subscription`)},
-		{PreConfig: func() { server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "Restored app"}) }, Config: appEventHTTPConfig, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}},
+		}, ConfigFile: config.StaticFile(appEventConfigFile), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}, ExpectError: regexp.MustCompile(`Failed to upsert app event subscription`)},
+		{PreConfig: func() { server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "Restored app"}) }, ConfigFile: config.StaticFile(appEventConfigFile), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}},
 	}})
 	assert.EqualValues(t, 3, putCount.Load())
 }
@@ -278,25 +317,37 @@ func TestAccAppEventSubscriptionResourceRecoveryState(t *testing.T) {
 				server.ServeHTTP(rec, r)
 				maps.Copy(w.Header(), rec.Header())
 
-				raw := rec.Body.String()
+				raw := rec.Body.Bytes()
+
 				if r.Method == http.MethodPut && contradict.Swap(false) {
 					// Change only the response: a GET cannot supply this checkpoint.
-					raw = strings.Replace(raw, "https://example.invalid/planned", "https://example.invalid/returned", 1)
+					var body map[string]json.RawMessage
+					if !assert.NoError(t, json.Unmarshal(raw, &body)) {
+						return
+					}
+
+					body["targetUrl"] = json.RawMessage(`"https://example.invalid/returned"`)
+					encoded, err := json.Marshal(body)
+					assert.NoError(t, err)
+
+					raw = encoded
 				}
 
 				w.WriteHeader(rec.Code)
-				_, writeErr := io.WriteString(w, raw)
+				_, writeErr := w.Write(raw)
 				assert.NoError(t, writeErr)
 			})
 
 			steps := []resource.TestStep{}
 			if update {
-				steps = append(steps, resource.TestStep{Config: appEventHTTPConfig})
+				steps = append(steps, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile)})
 			}
 
-			planned := strings.Replace(appEventHTTPConfig, "/events", "/planned", 1)
+			planned := config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
+				"target_url": config.StringVariable("https://example.invalid/planned"),
+			})}
 			steps = append(steps, resource.TestStep{
-				PreConfig: func() { contradict.Store(true) }, Config: planned,
+				PreConfig: func() { contradict.Store(true) }, ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: planned,
 				ExpectError: regexp.MustCompile("Contentful returned a different target_url"),
 			})
 
@@ -305,7 +356,7 @@ func TestAccAppEventSubscriptionResourceRecoveryState(t *testing.T) {
 				action = plancheck.ResourceActionUpdate
 			}
 
-			steps = append(steps, resource.TestStep{Config: planned, ConfigPlanChecks: resource.ConfigPlanChecks{
+			steps = append(steps, resource.TestStep{ConfigFile: config.StaticFile(appEventConfigFile), ConfigVariables: planned, ConfigPlanChecks: resource.ConfigPlanChecks{
 				PreApply: []plancheck.PlanCheck{
 					testAccPriorState{check: statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("target_url"), knownvalue.StringExact("https://example.invalid/returned"))},
 					testAccPriorState{check: statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("organization/app"))},
@@ -347,18 +398,21 @@ func TestAccAppEventSubscriptionResourceParentReplacement(t *testing.T) {
 
 				server.ServeHTTP(w, r)
 			})
-			initial := appEventHTTPConfig
+			fixture := appEventConfigFile
 			action := plancheck.ResourceActionDestroyBeforeCreate
 
 			if createBeforeDestroy {
-				initial = strings.Replace(initial, "\n}", "\nlifecycle { create_before_destroy = true }\n}", 1)
+				fixture = "testdata/TestAccAppEventSubscriptionResourceParentReplacement/create_before_destroy.tf"
 				action = plancheck.ResourceActionCreateBeforeDestroy
 			}
 
-			replacement := strings.NewReplacer(`"organization"`, `"other"`, `"app"`, `"replacement"`).Replace(initial)
+			replacement := config.Variables{"subscription": config.ObjectVariable(map[string]config.Variable{
+				"organization_id": config.StringVariable("other"), "app_definition_id": config.StringVariable("replacement"),
+				"target_url": config.StringVariable("https://example.invalid/events"),
+			})}
 			testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
-				{Config: initial},
-				{Config: replacement, ConfigPlanChecks: resource.ConfigPlanChecks{
+				{ConfigFile: config.StaticFile(fixture)},
+				{ConfigFile: config.StaticFile(fixture), ConfigVariables: replacement, ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, action)},
 				}, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appEventResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact("other/replacement"))}},
 			}})
