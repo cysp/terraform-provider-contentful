@@ -1,12 +1,12 @@
 package provider_test
 
 import (
-	"fmt"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -36,18 +36,15 @@ func TestAccLocaleResourceLifecycle(t *testing.T) {
 		ContentDeliveryApi: true, ContentManagementApi: true,
 	}, false))
 
-	configuration := func(code, attributes string) string {
-		return fmt.Sprintf(`resource "contentful_locale" "test" {
-  space_id = "space"
-  environment_id = "environment"
-  name = "German"
-  code = %[1]q
-  %[2]s
-}`, code, attributes)
-	}
-	initial := configuration("de-DE", `fallback_code = "en-US"`)
-	updated := configuration("de-AT", `content_management_api = false
- optional = true`)
+	initial := config.Variables{"locale": config.ObjectVariable(map[string]config.Variable{
+		"code": config.StringVariable("de-DE"), "fallback_code": config.StringVariable("en-US"),
+	})}
+	updated := config.Variables{"locale": config.ObjectVariable(map[string]config.Variable{
+		"code": config.StringVariable("de-AT"), "content_management_api": config.BoolVariable(false), "optional": config.BoolVariable(true),
+	})}
+	restored := config.Variables{"locale": config.ObjectVariable(map[string]config.Variable{
+		"code": config.StringVariable("de-AT"),
+	})}
 	identity := statecheck.CompareValue(compare.ValuesSame())
 	recreatedIdentity := statecheck.CompareValue(compare.ValuesDiffer())
 
@@ -67,15 +64,8 @@ func TestAccLocaleResourceLifecycle(t *testing.T) {
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{
 			// A normal configuration step applies the import and persists state.
-			Config: initial + `
-import {
- to = contentful_locale.test
- identity = {
-  space_id = "space"
-  environment_id = "environment"
-  locale_id = "imported-locale"
- }
-}`,
+			ConfigDirectory: config.TestNameDirectory(),
+			ConfigVariables: initial,
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction(resourceAddress, plancheck.ResourceActionNoop),
 			}},
@@ -88,13 +78,13 @@ import {
 			}, defaults...),
 		},
 		{
-			Config: initial,
+			ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: initial,
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectEmptyPlan(),
 			}},
 		},
 		{
-			Config: updated,
+			ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: updated,
 			ConfigStateChecks: []statecheck.StateCheck{
 				resourceIdentity,
 				identity.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
@@ -104,17 +94,20 @@ import {
 			}},
 		},
 		{
-			Config: updated, ResourceName: resourceAddress, ImportState: true, ImportStateVerify: true,
+			ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: updated, ResourceName: resourceAddress, ImportState: true, ImportStateVerify: true,
 		},
 		{
-			Config: configuration("de-AT", `content_delivery_api = false`),
+			ConfigFile: config.TestNameFile("main.tf"),
+			ConfigVariables: config.Variables{"locale": config.ObjectVariable(map[string]config.Variable{
+				"code": config.StringVariable("de-AT"), "content_delivery_api": config.BoolVariable(false),
+			})},
 			ConfigStateChecks: []statecheck.StateCheck{
 				identity.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
 				statecheck.ExpectKnownValue(resourceAddress, tfjsonpath.New("content_management_api"), knownvalue.Bool(true)),
 			},
 		},
 		{
-			Config: configuration("de-AT", ""),
+			ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: restored,
 			ConfigStateChecks: append([]statecheck.StateCheck{
 				identity.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
 				recreatedIdentity.AddStateValue(resourceAddress, tfjsonpath.New("locale_id")),
@@ -126,7 +119,7 @@ import {
 				require.NoError(t, err)
 				require.IsType(t, &cm.NoContent{}, response)
 			},
-			Config: configuration("de-AT", ""),
+			ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: restored,
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction(resourceAddress, plancheck.ResourceActionCreate),
 			}},

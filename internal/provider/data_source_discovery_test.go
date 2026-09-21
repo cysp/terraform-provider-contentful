@@ -2,11 +2,9 @@ package provider_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"regexp"
-	"strings"
 	"sync/atomic"
 	"testing"
 
@@ -22,13 +20,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func discoveryAcceptanceFixture(t *testing.T, name string) string {
+func discoveryAcceptanceFixture(t *testing.T, name string) []byte {
 	t.Helper()
 
 	body, err := os.ReadFile("testdata/discovery/" + name + ".json")
 	require.NoError(t, err)
 
-	return strings.TrimSpace(string(body))
+	return body
 }
 
 func TestAccDiscoveryDataSourcesComposition(t *testing.T) {
@@ -38,14 +36,16 @@ func TestAccDiscoveryDataSourcesComposition(t *testing.T) {
 	require.NoError(t, err)
 
 	var space cm.Space
-	require.NoError(t, json.Unmarshal([]byte(strings.ReplaceAll(discoveryAcceptanceFixture(t, "space"), "item-b", "space")), &space))
+	require.NoError(t, json.Unmarshal(discoveryAcceptanceFixture(t, "space"), &space))
+	space.Sys.ID = "space"
 	server.SetSpace(space)
 	server.RegisterSpaceEnvironment("space", "master")
 	server.RegisterSpaceEnvironment("space", "target")
 	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData("space", "master", cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink("target")}))
 
 	var locale cm.Locale
-	require.NoError(t, json.Unmarshal([]byte(strings.ReplaceAll(discoveryAcceptanceFixture(t, "locale"), `"id":"master"`, `"id":"target"`)), &locale))
+	require.NoError(t, json.Unmarshal(discoveryAcceptanceFixture(t, "locale"), &locale))
+	locale.Sys.Environment = cm.NewEnvironmentLink("target")
 	server.SetLocale(locale)
 	server.SetContentType("space", "target", "article", cm.ContentTypeRequestData{Name: "Article", Fields: []cm.ContentTypeRequestDataFieldsItem{}})
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
@@ -69,19 +69,33 @@ func TestAccDiscoveryDataSourcesComposition(t *testing.T) {
 func TestAccLocalesDataSourceSelectionGuard(t *testing.T) {
 	t.Parallel()
 
-	locale := discoveryAcceptanceFixture(t, "locale")
+	var locale cm.Locale
+	require.NoError(t, json.Unmarshal(discoveryAcceptanceFixture(t, "locale"), &locale))
+
+	nondefault := locale
+	nondefault.Default = false
+	second := locale
+	second.Sys.ID = "item-a"
+	second.Code = "fr-FR"
+
 	for _, test := range []struct {
-		name      string
-		items     []string
-		predicate string
+		name  string
+		items []cm.Locale
+		file  string
 	}{
-		{"missing default", []string{strings.Replace(locale, `"default":true`, `"default":false`, 1)}, `locale.default`},
+		{"missing default", []cm.Locale{nondefault}, "default.tf"},
 		// Two defaults are an adversarial discovery response, not normal CMA state.
-		{"ambiguous default", []string{locale, strings.NewReplacer("item-b", "item-a", "en-GB", "fr-FR").Replace(locale)}, `locale.default`},
-		{"case sensitive code", []string{locale}, `locale.code == "en-gb"`},
+		{"ambiguous default", []cm.Locale{locale, second}, "default.tf"},
+		{"case sensitive code", []cm.Locale{locale}, "code.tf"},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+
+			body, err := json.Marshal(&cm.LocaleCollection{
+				Sys:  cm.LocaleCollectionSys{Type: cm.LocaleCollectionSysTypeArray},
+				Skip: cm.NewOptInt(0), Limit: cm.NewOptInt(100), Total: cm.NewOptInt(len(test.items)), Items: test.items,
+			})
+			require.NoError(t, err)
 
 			var mutations atomic.Int64
 
@@ -95,29 +109,11 @@ func TestAccLocalesDataSourceSelectionGuard(t *testing.T) {
 
 				assert.Equal(t, "/spaces/space/environments/master/locales", r.URL.Path)
 				w.Header().Set("Content-Type", "application/json")
-				_, err := fmt.Fprintf(w, `{"sys":{"type":"Array"},"skip":0,"limit":100,"total":%d,"items":[%s]}`, len(test.items), strings.Join(test.items, ","))
+				_, err := w.Write(body)
 				assert.NoError(t, err)
 			})
-			configuration := fmt.Sprintf(`
-data "contentful_locales" "test" {
- space_id = "space"
- environment_id = "master"
- lifecycle {
-  postcondition {
-   condition = length([for locale in self.locales : locale if %[1]s]) == 1
-   error_message = "Exactly one selected Locale is required."
-  }
- }
-}
-locals { selected = one([for locale in data.contentful_locales.test.locales : locale if %[1]s]) }
-resource "contentful_entry" "test" {
- space_id = data.contentful_locales.test.space_id
- environment_id = data.contentful_locales.test.environment_id
- content_type_id = "article"
- fields = {title = jsonencode({(local.selected.code) = "Hello"})}
-}
-`, test.predicate)
-			testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{{Config: configuration, ExpectError: regexp.MustCompile("Exactly one selected Locale is required")}}})
+
+			testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{{ConfigFile: config.StaticFile("testdata/TestAccLocalesDataSourceSelectionGuard/" + test.file), ExpectError: regexp.MustCompile("Exactly one selected Locale is required")}}})
 			assert.Zero(t, mutations.Load())
 		})
 	}
