@@ -117,10 +117,9 @@ Redacted metadata does not establish equality of complete secrets.
 **Coverage:** [Wire tests](../../internal/contentful-management-go/testing/handler_webhook_signing_secret_http_test.go)
 check status, response shape, replacement, deletion, absence, invalid-request
 classification, and rejected-create nonmutation.
-[Exact-request tests](../../internal/provider/resource_webhook_signing_secret_internal_test.go)
-verify that the provider sends no version or conditional headers.
 [Provider lifecycle tests](../../internal/provider/resource_webhook_signing_secret_test.go)
-assert literal request bodies independently of the fake's redacted storage, and
+verify that the provider sends no version or conditional headers, assert literal
+request bodies independently of the fake's redacted storage, and
 cover rotation, imports, ignored values, timeout changes, and scope replacement.
 
 ### Webhook topics
