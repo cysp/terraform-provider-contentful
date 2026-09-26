@@ -63,7 +63,7 @@ Read-Only:
 
 Read-Only:
 
-- `items` (Attributes List) For Array fields, the type of items in the array. (see [below for nested schema](#nestedatt--locations--field_types--items))
+- `items` (Attributes List) For Array fields, a one-element list when Contentful supplies an item definition; null otherwise. Check for null before accessing `items[0].type` or `items[0].link_type`. (see [below for nested schema](#nestedatt--locations--field_types--items))
 - `link_type` (String) For Link fields, the type of linked resource.
 - `type` (String) The field type.
 
