@@ -3,12 +3,12 @@
 page_title: "contentful_app_definition Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration.
+  Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration. See array item access and migration ../guides/app-definition-items for items expressions.
 ---
 
 # contentful_app_definition (Data Source)
 
-Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration.
+Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration. See [array item access and migration](../guides/app-definition-items) for `items` expressions.
 
 ## Example Usage
 
@@ -17,6 +17,15 @@ data "contentful_app_definition" "this" {
   organization_id = var.contentful_organization_id
 
   app_definition_id = "app-definition-id"
+}
+
+locals {
+  array_item_types = flatten([
+    for location in coalesce(data.contentful_app_definition.this.locations, []) : [
+      for field in coalesce(location.field_types, []) : field.items.type
+      if field.items != null
+    ]
+  ])
 }
 ```
 
@@ -63,7 +72,7 @@ Read-Only:
 
 Read-Only:
 
-- `items` (Attributes List) For Array fields, the type of items in the array. (see [below for nested schema](#nestedatt--locations--field_types--items))
+- `items` (Attributes) Array item definition returned by Contentful, or null when absent. Check for null before accessing `items.type` or `items.link_type`. (see [below for nested schema](#nestedatt--locations--field_types--items))
 - `link_type` (String) For Link fields, the type of linked resource.
 - `type` (String) The field type.
 
