@@ -42,6 +42,7 @@ func discoveryTestFamilies() []discoveryTestFamily {
 		{"environment", NewEnvironmentDataSource, NewEnvironmentsDataSource, map[string]any{"space_id": "space"}, "environment_id", "environments", "/spaces/space/environments", "", `{"environment_id":"item-b","name":"Second","status":"queued","aliased_environment_id":"target"}`},
 		{"environment_alias", NewEnvironmentAliasDataSource, NewEnvironmentAliasesDataSource, map[string]any{"space_id": "space"}, "environment_alias_id", "environment_aliases", "/spaces/space/environment_aliases", "", `{"environment_alias_id":"item-b","target_environment_id":"target"}`},
 		{"locale", NewLocaleDataSource, NewLocalesDataSource, map[string]any{"space_id": "space", "environment_id": "master"}, "locale_id", "locales", "/spaces/space/environments/master/locales", "", `{"locale_id":"item-b","name":"Second","code":"en-GB","default":true,"fallback_code":null,"optional":false,"content_management_api":true,"content_delivery_api":false}`},
+		{"role", NewRoleDataSource, NewRolesDataSource, map[string]any{"space_id": "space"}, "role_id", "roles", "/spaces/space/roles", "", `{"role_id":"item-b","name":"Second","description":null,"permissions":{"ContentDelivery":["all"],"ContentModel":["read","read"],"Tags":[]},"policies":[{"actions":["all"],"constraint":"{\"a\":[1,2],\"z\":1}","effect":"allow"},{"actions":["read","read"],"constraint":null,"effect":"deny"}]}`},
 	}
 }
 
@@ -197,7 +198,11 @@ func TestDiscoveryDataSourcesPagination(t *testing.T) {
 			assert.Equal(t, []string{"0", "1"}, offsets)
 
 			first := strings.ReplaceAll(strings.ReplaceAll(family.expected, "item-b", "item-a"), "Second", "First")
-			discoveryStateAttribute(t, response, family.collection, "["+first+","+family.expected+"]")
+			if family.name == "role" {
+				discoveryStateAttribute(t, response, family.collection, "["+family.expected+","+first+"]")
+			} else {
+				discoveryStateAttribute(t, response, family.collection, "["+first+","+family.expected+"]")
+			}
 		})
 	}
 }
@@ -687,6 +692,16 @@ func discoveryPlainValue(t *testing.T, value tftypes.Value) any {
 		}
 
 		return result
+	case tftypes.Map:
+		var fields map[string]tftypes.Value
+		require.NoError(t, value.As(&fields))
+
+		result := make(map[string]any, len(fields))
+		for name, field := range fields {
+			result[name] = discoveryPlainValue(t, field)
+		}
+
+		return result
 	case tftypes.List:
 		var items []tftypes.Value
 		require.NoError(t, value.As(&items))
@@ -802,7 +817,11 @@ func TestDiscoveryCollectionsPreserveIrregularItemIDs(t *testing.T) {
 					assert.Equal(t, 2, count)
 
 					expected := strings.ReplaceAll(family.expected, "item-b", returnedID)
-					discoveryStateAttribute(t, response, family.collection, "["+expected+","+expected+","+family.expected+"]")
+					if family.name == "role" {
+						discoveryStateAttribute(t, response, family.collection, "["+family.expected+","+expected+","+expected+"]")
+					} else {
+						discoveryStateAttribute(t, response, family.collection, "["+expected+","+expected+","+family.expected+"]")
+					}
 
 					var attributes map[string]tftypes.Value
 					require.NoError(t, response.State.Raw.As(&attributes))
@@ -810,8 +829,13 @@ func TestDiscoveryCollectionsPreserveIrregularItemIDs(t *testing.T) {
 					var items []tftypes.Value
 					require.NoError(t, attributes[family.collection].As(&items))
 
+					itemIndex := 0
+					if family.name == "role" {
+						itemIndex = 1
+					}
+
 					var item map[string]tftypes.Value
-					require.NoError(t, items[0].As(&item))
+					require.NoError(t, items[itemIndex].As(&item))
 
 					var discoveredID string
 					require.NoError(t, item[family.id].As(&discoveredID))
@@ -837,7 +861,7 @@ func TestDiscoveryDataSourcesPreserveComputedReferences(t *testing.T) {
 	t.Parallel()
 
 	for _, family := range discoveryTestFamilies() {
-		if family.name == "locale" {
+		if family.name == "locale" || family.name == "role" {
 			continue
 		}
 

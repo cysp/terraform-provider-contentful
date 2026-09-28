@@ -1,8 +1,9 @@
 # Configuration data sources
 
-Space, Environment, Environment Alias, and Locale data sources provide read-only
+Space, Environment, Environment Alias, Locale, and Role data sources provide read-only
 reference and discovery. Singular forms require addressing IDs. Plural forms use
-scoped offset collections and return lists sorted by the entity's addressing ID.
+scoped offset collections. Space, Environment, Environment Alias, and Locale
+plural forms sort by addressing ID; Role preserves collection response order.
 The [practitioner guide](../guides/existing-configuration.md) supplies composition
 and exact-name/code/default selection patterns.
 
@@ -33,6 +34,17 @@ these schemas. Other advertised Locale fields are required by the curated
 response decoder. The [Locale evidence](../research/locales.md) separates raw
 observations from SDK projection.
 
+Role data sources expose the Role entity's name, nullable description,
+permissions map of typed action lists, and ordered policies with typed actions,
+effect, and nullable normalized JSON constraint. Scalar `"all"` projects as
+`["all"]`; list order and duplicate values are retained. The singular
+addressing Role ID and returned Space link must match the request. Collection
+items retain decoded IDs even if unsuitable as future lookup inputs. The raw
+response projection is shared with the Role resource; data-source reads do not
+run mutation reconciliation or use private version state. The published
+[Role detail][role-detail] and [collection][role-collection] references and the
+[first-party management SDK][role-sdk] ground the endpoint and item shape.
+
 Environment and Environment Alias use the same generated HTTP operations and
 entity decoders as their managed counterparts. Data-source schemas and timeouts
 are separate from resource planning and lifecycle ownership; singular and plural
@@ -51,7 +63,7 @@ live-verified assertion that every collection/detail response contains those fie
 
 ## Offset traversal
 
-Teams, Spaces, Environments, Environment Aliases, and Locales share one collection
+Teams, Spaces, Environments, Environment Aliases, Locales, and Roles share one collection
 reader. Each endpoint decodes its generated response into a typed collection or
 diagnostics before traversal. The collection element type and item projection
 input must agree at compile time. As with
@@ -59,7 +71,7 @@ Terraform list resources, traversal advances by the number of returned items and
 stops on an empty page or when the latest reported total is reached. Generated
 collection decoders require `sys` and `items`; pagination metadata is optional.
 Returned `skip` and `limit` do not control progress. Changing totals and duplicate
-IDs are accepted, and duplicates are retained in the sorted result.
+IDs are accepted, and duplicates are retained in the result.
 
 Empty successful collections produce empty lists. Request, decoding, and
 projection errors abort the lookup without publishing partial state; not-found
@@ -69,6 +81,15 @@ All pages share the data source's operation timeout and the existing
 [read retry policy](contentful-http-retry-policy.md). No cursor or continuation
 URLs are followed, and no N+1 detail reads fill list results. Offset support is
 grounded in the [family endpoint evidence](../research/configuration-discovery.md).
+
+Role collection reads collect decoded items before nested projection, so
+warnings identify the published `roles[index]` paths. The generated
+decoder rejects some response shapes before projection, including unknown
+policy effects and non-string/non-array action alternatives. Such decoding
+failures are errors, while representable typed irregularities retain their
+projection warnings. Contentful has [announced a future cursor transition for
+this endpoint][role-cursor-change]; the current implementation follows the
+documented `skip`/`limit` collection and cannot traverse a cursor-only response.
 
 Offset traversal does not establish a snapshot. Concurrent edits can cause
 omissions or duplicates, and alias reads do not establish uninterrupted target
@@ -94,3 +115,7 @@ not establish multipage behavior or stability during concurrent changes.
 
 [environment-detail]: https://www.contentful.com/developers/docs/references/content-management-api/environments/get-an-environment/
 [aliases]: https://www.contentful.com/developers/docs/references/content-management-api/environment-aliases/#new-environment-properties-when-using-aliases
+[role-detail]: https://www.contentful.com/developers/docs/references/content-management-api/roles/get-a-role/
+[role-collection]: https://www.contentful.com/developers/docs/references/content-management-api/roles/get-all-roles/
+[role-sdk]: https://github.com/contentful/contentful-management.js/blob/310c01216a2eaa5041dbac8263e9cbba47eb2fb2/lib/adapters/REST/endpoints/role.ts
+[role-cursor-change]: https://www.contentful.com/developers/api-changes/space-roles-collection-endpoints-update/

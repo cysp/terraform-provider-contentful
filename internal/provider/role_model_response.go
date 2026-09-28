@@ -16,6 +16,10 @@ func NewRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleMo
 }
 
 func newRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleModel, diag.Diagnostics, diag.Diagnostics, diag.Diagnostics) {
+	return newRoleResourceModelFromResponseAtPath(ctx, role, path.Empty())
+}
+
+func newRoleResourceModelFromResponseAtPath(ctx context.Context, role cm.Role, root path.Path) (RoleModel, diag.Diagnostics, diag.Diagnostics, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := role.Sys.Space.Sys.ID
@@ -32,12 +36,12 @@ func newRoleResourceModelFromResponse(ctx context.Context, role cm.Role) (RoleMo
 	model.Name = types.StringValue(role.Name)
 	model.Description = types.StringPointerValue(role.Description.ValueStringPointer())
 
-	permissionsMapValue, permissionsMapValueDiags := NewPermissionsMapValueFromResponse(ctx, path.Root("permissions"), role.Permissions)
+	permissionsMapValue, permissionsMapValueDiags := NewPermissionsMapValueFromResponse(ctx, root.AtName("permissions"), role.Permissions)
 	diags.Append(permissionsMapValueDiags...)
 
 	model.Permissions = permissionsMapValue
 
-	policiesListValue, policiesListValueDiags := NewPoliciesListValueFromResponse(ctx, path.Root("policies"), role.Policies)
+	policiesListValue, policiesListValueDiags := NewPoliciesListValueFromResponse(ctx, root.AtName("policies"), role.Policies)
 	diags.Append(policiesListValueDiags...)
 
 	model.Policies = policiesListValue
