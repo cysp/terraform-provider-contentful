@@ -16,13 +16,13 @@ func roleDataSourceItemAttributes(ctx context.Context) map[string]schema.Attribu
 		"name":        schema.StringAttribute{Description: "Name of the role.", Computed: true},
 		"description": schema.StringAttribute{Description: "Description of the role, or null when absent.", Computed: true},
 		"permissions": schema.MapAttribute{
-			Description: "Contentful permission names mapped to action lists. Scalar `\"all\"` is represented as `[\"all\"]`; empty lists and duplicate actions are preserved.",
+			Description: "Permission names mapped to value lists. Contentful's scalar `\"all\"` appears as `[\"all\"]`; empty lists and duplicate values are preserved.",
 			ElementType: NewTypedListNull[types.String]().Type(ctx),
 			CustomType:  NewTypedMapNull[TypedList[types.String]]().CustomType(ctx),
 			Computed:    true,
 		},
 		"policies": schema.ListNestedAttribute{
-			Description: "Policies in the order returned by Contentful; each policy contains actions, effect, and an optional normalized JSON constraint.",
+			Description: "Policies that allow or deny actions on selected resources, in the order returned by Contentful.",
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"actions": schema.ListAttribute{
@@ -32,7 +32,7 @@ func roleDataSourceItemAttributes(ctx context.Context) map[string]schema.Attribu
 						Computed:    true,
 					},
 					"constraint": schema.StringAttribute{Description: "Normalized JSON constraint, or null when absent.", CustomType: jsontypes.NormalizedType{}, Computed: true},
-					"effect":     schema.StringAttribute{Description: "Policy effect returned by Contentful.", Computed: true},
+					"effect":     schema.StringAttribute{Description: "Policy effect: `allow` or `deny` for the specified actions.", Computed: true},
 				},
 				CustomType: NewTypedObjectUnknown[RolePolicyValue]().CustomType(ctx),
 			},
@@ -46,7 +46,7 @@ func RoleDataSourceSchema(ctx context.Context) schema.Schema {
 	attributes := roleDataSourceItemAttributes(ctx)
 	attributes["space_id"] = schema.StringAttribute{Description: "ID of the space containing the role.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["role_id"] = schema.StringAttribute{Description: "System ID of the role to look up.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
-	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform lookup identifier in `space_id/role_id` form.", Computed: true}
+	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/role_id` form.", Computed: true}
 	attributes["timeouts"] = timeouts.Attributes(ctx)
 
 	return schema.Schema{Description: "Retrieves an existing Contentful Role in a space.", Attributes: attributes}
@@ -54,11 +54,11 @@ func RoleDataSourceSchema(ctx context.Context) schema.Schema {
 
 func RolesDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Retrieves all Contentful Roles in a space using the CMA offset collection. Results preserve response order across pages; concurrent changes during pagination can affect the inventory.",
+		Description: "Retrieves all Contentful Roles in a space.",
 		Attributes: map[string]schema.Attribute{
 			"space_id": schema.StringAttribute{Description: "ID of the space containing the roles.", Required: true, Validators: []validator.String{discoveryIDValidator{}}},
-			"id":       schema.StringAttribute{Description: "Terraform lookup identifier equal to `space_id`.", Computed: true},
-			"roles":    schema.ListNestedAttribute{Description: "Roles in Contentful response order across pages, retaining duplicate IDs. An empty collection returns an empty list.", Computed: true, NestedObject: schema.NestedAttributeObject{Attributes: roleDataSourceItemAttributes(ctx)}},
+			"id":       schema.StringAttribute{Description: "Terraform identifier equal to `space_id`.", Computed: true},
+			"roles":    schema.ListNestedAttribute{Description: "Roles in the order returned by Contentful. An empty collection returns an empty list.", Computed: true, NestedObject: schema.NestedAttributeObject{Attributes: roleDataSourceItemAttributes(ctx)}},
 			"timeouts": timeouts.Attributes(ctx),
 		},
 	}

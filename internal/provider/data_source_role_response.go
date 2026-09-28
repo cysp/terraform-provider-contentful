@@ -25,7 +25,7 @@ func newRoleDataSourceItem(ctx context.Context, entity cm.Role, root path.Path) 
 func readRoles(ctx context.Context, client *cm.Client, spaceID string) ([]RoleDataSourceItemModel, diag.Diagnostics) {
 	const errorTitle = "Failed to read roles"
 
-	// Collect decoded entities before projection, so nested diagnostics use published indices.
+	// Project after pagination so diagnostics use the final roles[index] paths.
 	roles, diagnostics := readContentfulCollection(ctx, errorTitle,
 		func(ctx context.Context, skip int64) (contentfulCollection[cm.Role], diag.Diagnostics) {
 			response, err := client.GetRoles(ctx, cm.GetRolesParams{SpaceID: spaceID, Skip: cm.NewOptInt64(skip), Limit: cm.NewOptInt64(defaultPageLimit)})
