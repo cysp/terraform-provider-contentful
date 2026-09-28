@@ -72,8 +72,8 @@ Read-Only:
 
 Read-Only:
 
-- `items` (Attributes) Array item definition returned by Contentful, or null when absent. Check for null before accessing `items.type` or `items.link_type`. (see [below for nested schema](#nestedatt--locations--field_types--items))
-- `link_type` (String) For Link fields, the type of linked resource.
+- `items` (Attributes) Array item definition, or null when absent. Check for null before accessing `items.type` or `items.link_type`. (see [below for nested schema](#nestedatt--locations--field_types--items))
+- `link_type` (String) Type of linked resource for `Link` or `ResourceLink` fields, or null when absent.
 - `type` (String) The field type.
 
 <a id="nestedatt--locations--field_types--items"></a>
@@ -81,7 +81,7 @@ Read-Only:
 
 Read-Only:
 
-- `link_type` (String) For arrays of Links, the type of linked resource.
+- `link_type` (String) Type of linked resource for `Link` or `ResourceLink` array items, or null when absent.
 - `type` (String) The type of array items.
 
 

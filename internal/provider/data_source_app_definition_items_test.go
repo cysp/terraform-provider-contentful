@@ -37,6 +37,7 @@ func TestAccAppDefinitionDataSourceArrayItems(t *testing.T) {
 					Name: "App page", Path: "/app-page",
 				}),
 			},
+			{Location: "dialog", FieldTypes: []cm.AppDefinitionDataLocationsItemFieldTypesItem{}},
 		},
 		Parameters: cm.NewOptAppDefinitionParameters(cm.AppDefinitionParameters{
 			Installation: []cm.AppDefinitionParameter{{ID: "client-id", Type: "Symbol", Name: "Client ID", Required: cm.NewOptBool(true)}},
@@ -87,6 +88,8 @@ output "asset_item_link_type" {
 					statecheck.ExpectKnownValue(address, locations.AtSliceIndex(1).AtMapKey("field_types"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(address, locations.AtSliceIndex(1).AtMapKey("navigation_item").AtMapKey("name"), knownvalue.StringExact("App page")),
 					statecheck.ExpectKnownValue(address, locations.AtSliceIndex(1).AtMapKey("navigation_item").AtMapKey("path"), knownvalue.StringExact("/app-page")),
+					statecheck.ExpectKnownValue(address, locations.AtSliceIndex(2).AtMapKey("location"), knownvalue.StringExact("dialog")),
+					statecheck.ExpectKnownValue(address, locations.AtSliceIndex(2).AtMapKey("field_types"), knownvalue.ListExact([]knownvalue.Check{})),
 					statecheck.ExpectKnownValue(address, parameters.AtMapKey("installation").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("client-id")),
 					statecheck.ExpectKnownValue(address, parameters.AtMapKey("installation").AtSliceIndex(0).AtMapKey("type"), knownvalue.StringExact("Symbol")),
 					statecheck.ExpectKnownValue(address, parameters.AtMapKey("installation").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact("Client ID")),
