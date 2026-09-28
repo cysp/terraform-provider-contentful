@@ -13,5 +13,3 @@ data "contentful_content_types" "existing" {
 locals {
   article = one([for content_type in data.contentful_content_types.existing.content_types : content_type if content_type.name == "Article"])
 }
-
-# Use local.article.content_type_id to address the selected Content Type.

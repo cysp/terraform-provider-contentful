@@ -13,9 +13,6 @@ import (
 func newContentTypeDataSourceItem(ctx context.Context, root path.Path, entity cm.ContentType, spaceID, environmentID string) (ContentTypeDataSourceItemModel, diag.Diagnostics) {
 	var item ContentTypeDataSourceItemModel
 
-	// The endpoint scope is the lookup identity. A different environment link
-	// might be a concrete alias target, but Content Type link behavior is not
-	// established, so do not silently replace or accept the requested scope.
 	if entity.Sys.Space.Sys.ID != spaceID {
 		return item, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(root.AtName("content_type_id"), "Unexpected response identity", "Content Type "+entity.Sys.ID+" returned a Space link outside the requested scope.")}
 	}
@@ -45,8 +42,7 @@ func newContentTypeDataSourceItem(ctx context.Context, root path.Path, entity cm
 func readContentTypes(ctx context.Context, client *cm.Client, spaceID, environmentID string) ([]ContentTypeDataSourceItemModel, diag.Diagnostics) {
 	const errorTitle = "Failed to read content types"
 
-	// Collect decoded entities before projection so a later page failure never
-	// publishes a partial inventory.
+	// Project after paging so nested diagnostics use returned list indexes.
 	entities, diagnostics := readContentfulCollection(ctx, errorTitle,
 		func(ctx context.Context, skip int64) (contentfulCollection[cm.ContentType], diag.Diagnostics) {
 			response, err := client.GetContentTypes(ctx, cm.GetContentTypesParams{
