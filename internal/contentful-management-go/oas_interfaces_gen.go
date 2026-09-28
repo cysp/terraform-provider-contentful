@@ -285,6 +285,10 @@ type GetRoleRes interface {
 	getRoleRes()
 }
 
+type GetRolesRes interface {
+	getRolesRes()
+}
+
 type GetSpaceEnablementsRes interface {
 	getSpaceEnablementsRes()
 }

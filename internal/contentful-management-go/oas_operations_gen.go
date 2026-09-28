@@ -77,6 +77,7 @@ const (
 	GetResourceProviderOperation            OperationName = "GetResourceProvider"
 	GetResourceTypeOperation                OperationName = "GetResourceType"
 	GetRoleOperation                        OperationName = "GetRole"
+	GetRolesOperation                       OperationName = "GetRoles"
 	GetSpaceOperation                       OperationName = "GetSpace"
 	GetSpaceEnablementsOperation            OperationName = "GetSpaceEnablements"
 	GetSpacesOperation                      OperationName = "GetSpaces"

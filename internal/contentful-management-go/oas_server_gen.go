@@ -426,6 +426,12 @@ type Handler interface {
 	//
 	// GET /spaces/{space_id}/roles/{role_id}
 	GetRole(ctx context.Context, params GetRoleParams) (GetRoleRes, error)
+	// GetRoles implements getRoles operation.
+	//
+	// Get all roles in a space.
+	//
+	// GET /spaces/{space_id}/roles
+	GetRoles(ctx context.Context, params GetRolesParams) (GetRolesRes, error)
 	// GetSpace implements getSpace operation.
 	//
 	// Read Space.

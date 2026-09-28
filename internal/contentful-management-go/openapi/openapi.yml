@@ -1983,6 +1983,23 @@ paths:
   /spaces/{space_id}/roles:
     parameters:
       - $ref: "#/components/parameters/space_id"
+    get:
+      operationId: getRoles
+      summary: Get all roles in a space
+      parameters:
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        200:
+          description: Role collection
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/role/collection.yml#/RoleCollection"
+        401:
+          $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
     post:
       operationId: createRole
       summary: Create a role

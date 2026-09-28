@@ -2642,6 +2642,7 @@ func (*ApplicationJSONError) getPreviewEnvironmentRes()          {}
 func (*ApplicationJSONError) getResourceProviderRes()            {}
 func (*ApplicationJSONError) getResourceTypeRes()                {}
 func (*ApplicationJSONError) getRoleRes()                        {}
+func (*ApplicationJSONError) getRolesRes()                       {}
 func (*ApplicationJSONError) getSpaceEnablementsRes()            {}
 func (*ApplicationJSONError) getSpaceRes()                       {}
 func (*ApplicationJSONError) getSpacesRes()                      {}
@@ -5548,6 +5549,7 @@ func (*ErrorStatusCode) getPreviewEnvironmentRes()          {}
 func (*ErrorStatusCode) getResourceProviderRes()            {}
 func (*ErrorStatusCode) getResourceTypeRes()                {}
 func (*ErrorStatusCode) getRoleRes()                        {}
+func (*ErrorStatusCode) getRolesRes()                       {}
 func (*ErrorStatusCode) getSpaceEnablementsRes()            {}
 func (*ErrorStatusCode) getSpaceRes()                       {}
 func (*ErrorStatusCode) getSpacesRes()                      {}
@@ -11088,6 +11090,115 @@ func (s *Role) SetPolicies(val []RolePoliciesItem) {
 }
 
 func (*Role) getRoleRes() {}
+
+// Ref: #/RoleCollection
+type RoleCollection struct {
+	Sys   RoleCollectionSys `json:"sys"`
+	Total OptInt            `json:"total"`
+	Skip  OptInt            `json:"skip"`
+	Limit OptInt            `json:"limit"`
+	Items []Role            `json:"items"`
+}
+
+// GetSys returns the value of Sys.
+func (s *RoleCollection) GetSys() RoleCollectionSys {
+	return s.Sys
+}
+
+// GetTotal returns the value of Total.
+func (s *RoleCollection) GetTotal() OptInt {
+	return s.Total
+}
+
+// GetSkip returns the value of Skip.
+func (s *RoleCollection) GetSkip() OptInt {
+	return s.Skip
+}
+
+// GetLimit returns the value of Limit.
+func (s *RoleCollection) GetLimit() OptInt {
+	return s.Limit
+}
+
+// GetItems returns the value of Items.
+func (s *RoleCollection) GetItems() []Role {
+	return s.Items
+}
+
+// SetSys sets the value of Sys.
+func (s *RoleCollection) SetSys(val RoleCollectionSys) {
+	s.Sys = val
+}
+
+// SetTotal sets the value of Total.
+func (s *RoleCollection) SetTotal(val OptInt) {
+	s.Total = val
+}
+
+// SetSkip sets the value of Skip.
+func (s *RoleCollection) SetSkip(val OptInt) {
+	s.Skip = val
+}
+
+// SetLimit sets the value of Limit.
+func (s *RoleCollection) SetLimit(val OptInt) {
+	s.Limit = val
+}
+
+// SetItems sets the value of Items.
+func (s *RoleCollection) SetItems(val []Role) {
+	s.Items = val
+}
+
+func (*RoleCollection) getRolesRes() {}
+
+type RoleCollectionSys struct {
+	Type RoleCollectionSysType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *RoleCollectionSys) GetType() RoleCollectionSysType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *RoleCollectionSys) SetType(val RoleCollectionSysType) {
+	s.Type = val
+}
+
+type RoleCollectionSysType string
+
+const (
+	RoleCollectionSysTypeArray RoleCollectionSysType = "Array"
+)
+
+// AllValues returns all RoleCollectionSysType values.
+func (RoleCollectionSysType) AllValues() []RoleCollectionSysType {
+	return []RoleCollectionSysType{
+		RoleCollectionSysTypeArray,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s RoleCollectionSysType) MarshalText() ([]byte, error) {
+	switch s {
+	case RoleCollectionSysTypeArray:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *RoleCollectionSysType) UnmarshalText(data []byte) error {
+	switch RoleCollectionSysType(data) {
+	case RoleCollectionSysTypeArray:
+		*s = RoleCollectionSysTypeArray
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
 
 // Ref: #/RoleData
 type RoleData struct {
