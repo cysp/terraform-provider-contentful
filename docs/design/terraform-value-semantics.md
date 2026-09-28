@@ -15,7 +15,7 @@ implementation uses the Framework version pinned in [`go.mod`](../../go.mod).
 | Mutation reconciliation | [Role](#role-mutation-decisions), [Editor Interface](#editor-interface-mutation-decisions), and [Webhook](#webhook-mutation-decisions) |
 | Locking and retries | [Editor Interface preconditions](#editor-interface-version-preconditions), [private optimistic-lock barrier](#provider-private-optimistic-lock-barrier), [taxonomy locking](#taxonomy-optimistic-version-locking), and [HTTP retry policy](contentful-http-retry-policy.md) |
 | Taxonomy values | [Collection ownership](#taxonomy-optionalcomputed-collection-ownership) and [response canonicalization](#taxonomy-response-canonicalization) |
-| Other resource contracts | [Webhook signing secret](webhook-signing-secret.md), [Webhook password](#webhook-basic-password), [Delivery API key environments](#delivery-api-key-environments), [Extension sources](#extension-sources), [Space Enablements](#space-enablements), and [Live Preview variables](#live-preview-variables) |
+| Other resource contracts | [App Definition locations](#app-definition-locations), [Webhook signing secret](webhook-signing-secret.md), [Webhook password](#webhook-basic-password), [Delivery API key environments](#delivery-api-key-environments), [Extension sources](#extension-sources), [Space Enablements](#space-enablements), and [Live Preview variables](#live-preview-variables) |
 
 `Config`, `Plan`, and `State` in the tables refer to Terraform configuration, the
 effective plan after lifecycle processing, and prior state. A known planned value is
@@ -104,6 +104,26 @@ them as present empty arrays after an omitted request.
 The affected concept collections are `alt_labels`, `hidden_labels`,
 `notations`, `broader_concept_ids`, and `related_concept_ids`. The affected
 scheme collections are `top_concept_ids` and `concept_ids`.
+
+### App Definition locations
+
+Configuration validation checks established location and field-type relationships
+while deferring unknown values. Create and Update validate the complete final
+plan, including values retained by `ignore_changes`, and require known values
+and valid required children before mutation. Read and import preserve
+representable values without applying request validation.
+
+Effective location values are not rejected during plan modification. Terraform
+can first propose an update with ignored prior values, then determine that
+replacement is required and plan creation from the original configuration.
+Rejecting the intermediate proposal would block a valid replacement. See
+[Terraform's replacement planning](https://github.com/hashicorp/terraform/blob/v1.16.0/internal/terraform/node_resource_abstract_instance.go#L1195-L1244).
+An unrelated update retaining invalid locations can therefore plan successfully
+and fail before its Contentful write; other resources may already have changed.
+
+Location and field-type strings remain open. Structural validation does not
+establish service support for a type or target. See the [App Definition API
+evidence](../research/app-framework/configuration.md#app-definition-nested-location-configuration).
 
 ### App Action category parameters
 

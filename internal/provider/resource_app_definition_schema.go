@@ -43,7 +43,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"src": schema.StringAttribute{
-				Description: "Public URL of the app. Must be non-empty and use HTTPS, except that Contentful accepts HTTP on localhost for development.",
+				Description: "Public URL of the app. Must be non-empty and use HTTPS, except that Contentful accepts HTTP on localhost for development. During in-place updates, omitting this argument retains the URL recorded in Terraform state; removing it does not clear that URL. To retain the same URL when replacing the definition, configure `src` explicitly.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
@@ -62,7 +62,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"locations": schema.ListNestedAttribute{
-				Description: "Locations where the app can be rendered in the Contentful web app.",
+				Description: "Locations where the app can be rendered in the Contentful web app. Use `[]` for no locations. Rendering locations require a frontend hosting source. When the provider sends a `src` URL, including one retained from state, Contentful requires at least one location other than `dialog`.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"location": schema.StringAttribute{
@@ -70,7 +70,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 							Required:    true,
 						},
 						"field_types": schema.ListNestedAttribute{
-							Description: "Field types that this location supports.",
+							Description: "Field types for which this app can be used as an `entry-field` editor. At least one definition is required. Omit for other locations. Contentful validates the configured field types and link targets.",
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"type": schema.StringAttribute{
@@ -78,18 +78,18 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 										Required:    true,
 									},
 									"link_type": schema.StringAttribute{
-										Description: "Type of linked resource (Entry or Asset).",
+										Description: "Type of linked resource. Required for `Link` and `ResourceLink` fields; omit for other field types. For `Link`, use `Entry` or `Asset`. For linked array items, configure `items.link_type`. See [Field types](#field-types) for the ResourceLink support limitation.",
 										Optional:    true,
 									},
 									"items": schema.SingleNestedAttribute{
-										Description: "Item type definition for Array fields.",
+										Description: "Required item type definition for `Array` fields. Omit for other field types.",
 										Attributes: map[string]schema.Attribute{
 											"type": schema.StringAttribute{
-												Description: "Type of array items.",
+												Description: "Type of array items, such as `Symbol` or `Link`. Contentful validates which item types are supported.",
 												Required:    true,
 											},
 											"link_type": schema.StringAttribute{
-												Description: "Link type for array items (Entry or Asset).",
+												Description: "Type of linked resource. Required for `Link` and `ResourceLink` items; omit for other item types. For `Link`, use `Entry` or `Asset`. See [Field types](#field-types) for the ResourceLink support limitation.",
 												Optional:    true,
 											},
 										},
@@ -103,14 +103,14 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						"navigation_item": schema.SingleNestedAttribute{
-							Description: "Navigation item configuration for page locations.",
+							Description: "Navigation item configuration for `page` locations. Omit for other locations. When configured, both `name` and `path` must be nonempty. Omitting this object removes existing navigation item configuration.",
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "Display name for the navigation item.",
 									Required:    true,
 								},
 								"path": schema.StringAttribute{
-									Description: "URL path for the navigation item.",
+									Description: "Path for the navigation item, beginning with `/`, for example `/dashboard`.",
 									Required:    true,
 								},
 							},
@@ -121,6 +121,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				Required: true,
 				Validators: []validator.List{
 					listvalidator.NoNullValues(),
+					appDefinitionLocationsValidator{},
 				},
 			},
 			"parameters": schema.SingleNestedAttribute{
