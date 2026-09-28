@@ -1,4 +1,4 @@
-//nolint:dupl // Framework lifecycle wiring mirrors Content Type; a generic runner adds no production behavior.
+//nolint:dupl // Keep endpoint-specific data source reads explicit.
 package provider
 
 import (

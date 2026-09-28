@@ -89,9 +89,9 @@ Use `role_id` from a Role data source when assigning roles with [`contentful_tea
 
 ## Reference a Content Type
 
-When the ID is known, use `contentful_content_type` and pass its `content_type_id` to an Entry or Editor Interface configuration. To discover an ID by name, filter `contentful_content_types.content_types` and require exactly one match with a postcondition and `one(...)`, as in the [plural example](../data-sources/content_types). Names are mutable, so use the Contentful system ID for the dependent lookup.
+When the ID is known, use `contentful_content_type` and pass its `content_type_id` to an Entry or Editor Interface configuration. To find an ID by name, see the [plural example](../data-sources/content_types).
 
-Both data sources read the current CMA Content Type model, which may include unactivated changes. `published_version` reports the most recently activated version when present; it does not establish that the returned fields are the activated model. The lookups do not activate, publish, import, or change Content Types. Import a discovered Content Type into the [`contentful_content_type` resource](../resources/content_type) to manage it.
+Both data sources may return unactivated changes. `published_version` reports the most recently activated version when present; it does not mean the returned fields match that version. To manage a discovered Content Type, import it into the [`contentful_content_type` resource](../resources/content_type).
 
 ## Use environment aliases
 
@@ -101,7 +101,7 @@ Alias lookups refresh on later plans, so a resolved target can change. To keep l
 
 Locale lookups also accept an environment alias ID as `environment_id`. The provider currently supports responses whose environment link identifies that alias; other responses produce an identity error. Use the target environment ID if you encounter this error.
 
-Content Type lookups retain the requested `environment_id` and require the returned environment link to echo it. An alias-routed Content Type response with a different link produces an unsupported response-identity error. Content Type response-link behavior through aliases has not been verified live; use a concrete environment ID when the alias route cannot meet this check.
+If a Content Type lookup through an alias returns a different environment ID, the provider reports an identity error. Use the concrete environment ID for that lookup.
 
 ## Collection reads
 

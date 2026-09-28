@@ -1,9 +1,10 @@
 # Configuration data sources
 
-Space, Environment, Environment Alias, Locale, Role, and Content Type data sources provide read-only
-reference and discovery. Singular forms require addressing IDs. Plural forms use
-scoped offset collections. Role and Content Type collections preserve returned item order;
-Space, Environment, Environment Alias, and Locale sort by their addressing IDs.
+Space, Environment, Environment Alias, Locale, Role, and Content Type data sources
+provide read-only reference and discovery. Singular forms require addressing
+IDs. Plural forms use scoped offset collections. Space, Environment, Environment
+Alias, and Locale results are sorted by addressing ID; Role and Content Type results
+retain response order.
 The [practitioner guide](../guides/existing-configuration.md) supplies composition
 and exact-name/code/default selection patterns.
 
@@ -34,25 +35,16 @@ these schemas. Other advertised Locale fields are required by the curated
 response decoder. The [Locale evidence](../research/locales.md) separates raw
 observations from SDK projection.
 
-Content Type detail and collection reads use the current CMA model, including
-unactivated changes. `published_version` is the decoded `sys.publishedVersion`
-or null; it does not prove the returned fields match an activated version. The
-data sources preserve omitted or null description as Terraform null and an
-explicit empty description as empty. The curated decoder requires
-`displayField` to be present, but permits null or an empty string; these map to
-Terraform null and empty respectively. The managed Content Type resource and
-list resource continue to map absent description or null displayField to empty
-strings. Nested response conversion is shared without applying request
-validators or defaults to computed output.
+Unlike the managed Content Type resource and list resource, the data sources map
+omitted description and null displayField to Terraform null; explicit empty
+strings remain empty. The generated decoder requires `displayField` to be
+present but permits null or empty. Nested values reuse response conversion
+without applying request validators or defaults to computed output.
 
-Content Type response Space links and environment links must echo the requested
-addressing scope. Singular `sys.id` must equal the requested `content_type_id`.
-A different environment link is diagnosed as unsupported response identity,
-even if it could identify a concrete environment behind an alias. The provider
-keeps the requested address and performs no alias resolution or preflight read.
-The published [alias guide](https://www.contentful.com/developers/docs/concepts/environment-aliases/)
-establishes routing for environment-aware resources but not Content Type
-response-link behavior. The latter has not been verified live.
+Content Type response environment links must echo the requested address.
+A different link is diagnosed as unsupported response identity, even when it
+may identify an alias target. The [endpoint evidence](../research/configuration-discovery.md)
+does not establish Content Type response-link behavior through aliases.
 
 Environment and Environment Alias use the same generated HTTP operations and
 entity decoders as their managed counterparts. Data-source schemas and timeouts
@@ -72,11 +64,11 @@ live-verified assertion that every collection/detail response contains those fie
 
 ## Offset traversal
 
-Teams, Spaces, Environments, Environment Aliases, Locales, Roles, and Content Types share one collection
-reader. Each endpoint decodes its generated response into a typed collection or
-diagnostics before traversal. The collection element type and item projection
-input must agree at compile time. As with
-Terraform list resources, traversal advances by the number of returned items and
+Teams, Spaces, Environments, Environment Aliases, Locales, Roles, and Content Types
+share one collection reader. Each endpoint decodes its generated response into
+a typed collection or diagnostics before traversal. The collection element
+type and item projection input must agree at compile time. As with Terraform
+list resources, traversal advances by the number of returned items and
 stops on an empty page or when the latest reported total is reached. Generated
 collection decoders require `sys` and `items`; pagination metadata is optional.
 Returned `skip` and `limit` do not control progress. Changing totals and duplicate
@@ -91,12 +83,6 @@ All pages share the data source's operation timeout and the existing
 URLs are followed, and no N+1 detail reads fill list results. Offset support is
 grounded in the [family endpoint evidence](../research/configuration-discovery.md).
 
-Content Types collect decoded pages before projecting nested values. This keeps
-diagnostics at actual `content_types[index]` paths, preserves returned item
-order, duplicate IDs, and nested order, and publishes no partial inventory
-after a later-page failure. The endpoint does not promise stable order across
-separate reads.
-
 Offset traversal does not establish a snapshot. Concurrent edits can cause
 omissions or duplicates, and alias reads do not establish uninterrupted target
 stability. A single-read Environment alias projection avoids a resolution race
@@ -109,8 +95,7 @@ projection, error handling, and publication. Mocked Terraform tests cover
 apply-time unknown inputs, repeat plans, Entry composition, and cardinality
 postconditions that stop dependent mutations. The in-process server and literal
 fixtures establish provider behavior against those responses; they do not
-establish live endpoint conformance or access policy. No live Content Type
-discovery operations were performed.
+establish live endpoint conformance or access policy.
 
 The read-only live acceptance test uses the shared acceptance Space to exercise
 Space, Environment, and Locale detail and collection reads, plus the Environment

@@ -39,10 +39,10 @@ func contentTypeDataSourceFieldAttributes(ctx context.Context) map[string]schema
 		"name":          schema.StringAttribute{Description: "Name of the field.", Computed: true},
 		"type":          schema.StringAttribute{Description: "Contentful field type.", Computed: true},
 		"link_type":     schema.StringAttribute{Description: "Linked resource type for a Link field, or null when absent.", Computed: true},
-		"disabled":      schema.BoolAttribute{Description: "Whether the field is hidden in the entry editor, or null when absent.", Computed: true},
-		"omitted":       schema.BoolAttribute{Description: "Whether the field is omitted from Delivery and Preview responses, or null when absent.", Computed: true},
-		"required":      schema.BoolAttribute{Description: "Whether an Entry needs a value before publication, or null when absent.", Computed: true},
-		"localized":     schema.BoolAttribute{Description: "Whether the field supports localized values, or null when absent.", Computed: true},
+		"disabled":      schema.BoolAttribute{Description: "Whether the field is hidden in the entry editor.", Computed: true},
+		"omitted":       schema.BoolAttribute{Description: "Whether the field is omitted from Delivery and Preview responses.", Computed: true},
+		"required":      schema.BoolAttribute{Description: "Whether an Entry needs a value before publication.", Computed: true},
+		"localized":     schema.BoolAttribute{Description: "Whether the field supports localized values.", Computed: true},
 		"default_value": schema.StringAttribute{Description: "Normalized JSON object of locale defaults, or null when absent.", Computed: true, CustomType: jsontypes.NormalizedType{}},
 		"items": schema.SingleNestedAttribute{
 			Description: "Array item type and validations, or null for other fields.",
@@ -94,15 +94,15 @@ func contentTypeDataSourceTaxonomyAttributes(ctx context.Context) map[string]sch
 func contentTypeDataSourceItemAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"content_type_id": schema.StringAttribute{Description: "System ID of the content type.", Computed: true},
-		"name":            schema.StringAttribute{Description: "Current CMA name of the content type.", Computed: true},
-		"description":     schema.StringAttribute{Description: "Current CMA description; null when omitted, and empty when explicitly empty.", Computed: true},
-		"display_field":   schema.StringAttribute{Description: "Current CMA display field ID; null when explicitly null, and empty when explicitly empty. The curated decoder rejects an omitted displayField.", Computed: true},
+		"name":            schema.StringAttribute{Description: "Name of the content type.", Computed: true},
+		"description":     schema.StringAttribute{Description: "Description of the content type, or null when absent.", Computed: true},
+		"display_field":   schema.StringAttribute{Description: "Field ID used as the display field for entries, or null when unset.", Computed: true},
 		"published_version": schema.Int64Attribute{
-			Description: "Most recently activated Contentful version, or null when never activated. This does not prove the returned fields match the activated version.",
+			Description: "Contentful version most recently activated, or null when not returned.",
 			Computed:    true,
 		},
 		"fields": schema.ListNestedAttribute{
-			Description: "Current CMA fields in returned order, including unactivated draft changes.",
+			Description: "Fields in the order returned by Contentful.",
 			Computed:    true,
 			CustomType:  NewTypedListUnknown[TypedObject[ContentTypeFieldValue]]().CustomType(ctx),
 			NestedObject: schema.NestedAttributeObject{
@@ -111,7 +111,7 @@ func contentTypeDataSourceItemAttributes(ctx context.Context) map[string]schema.
 			},
 		},
 		"metadata": schema.SingleNestedAttribute{
-			Description: "Current CMA annotations and taxonomy, or null when metadata is absent.",
+			Description: "Content Type annotations and taxonomy, or null when absent.",
 			Computed:    true,
 			CustomType:  NewTypedObjectNull[ContentTypeMetadataValue]().CustomType(ctx),
 			Attributes: map[string]schema.Attribute{
@@ -132,25 +132,25 @@ func contentTypeDataSourceItemAttributes(ctx context.Context) map[string]schema.
 
 func ContentTypeDataSourceSchema(ctx context.Context) schema.Schema {
 	attributes := contentTypeDataSourceItemAttributes(ctx)
-	attributes["space_id"] = schema.StringAttribute{Description: "ID of the Space used to address the content type.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
-	attributes["environment_id"] = schema.StringAttribute{Description: "ID of the environment or environment alias used to address the content type. A returned environment link that differs from this ID is rejected as unsupported response identity.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
-	attributes["content_type_id"] = schema.StringAttribute{Description: "ID of the content type to retrieve.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
-	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform lookup ID in `space_id/environment_id/content_type_id` form.", Computed: true}
+	attributes["space_id"] = schema.StringAttribute{Description: "ID of the space.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
+	attributes["environment_id"] = schema.StringAttribute{Description: "ID of the environment or environment alias.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
+	attributes["content_type_id"] = schema.StringAttribute{Description: "System ID of the content type.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
+	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/environment_id/content_type_id` form.", Computed: true}
 	attributes["timeouts"] = timeouts.Attributes(ctx)
 
-	return schema.Schema{Description: "Reads a Contentful Content Type's current CMA model without activating or changing it. Alias routes require the response environment link to echo the requested alias ID; this Content Type behavior has not been verified live.", Attributes: attributes}
+	return schema.Schema{Description: "Retrieves a Contentful Content Type, including unactivated changes. See [Using environment aliases](../guides/existing-configuration#use-environment-aliases) for alias lookups.", Attributes: attributes}
 }
 
 func ContentTypesDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Reads all Contentful Content Types in an environment from the current CMA model, including unactivated draft changes. No snapshot is promised across pages. Alias routes require returned environment links to echo the requested alias ID; this Content Type behavior has not been verified live.",
+		Description: "Retrieves Contentful Content Types in an environment, including unactivated changes. See [Using environment aliases](../guides/existing-configuration#use-environment-aliases) for alias lookups.",
 		Attributes: map[string]schema.Attribute{
-			"space_id":       schema.StringAttribute{Description: "ID of the Space used to address the collection.", Required: true, Validators: []validator.String{discoveryIDValidator{}}},
-			"environment_id": schema.StringAttribute{Description: "ID of the environment or environment alias used to address the collection. Mismatched returned environment links are rejected as unsupported response identity.", Required: true, Validators: []validator.String{discoveryIDValidator{}}},
-			"id":             schema.StringAttribute{Description: "Composite Terraform lookup ID in `space_id/environment_id` form.", Computed: true},
+			"space_id":       schema.StringAttribute{Description: "ID of the space.", Required: true, Validators: []validator.String{discoveryIDValidator{}}},
+			"environment_id": schema.StringAttribute{Description: "ID of the environment or environment alias.", Required: true, Validators: []validator.String{discoveryIDValidator{}}},
+			"id":             schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/environment_id` form.", Computed: true},
 			"timeouts":       timeouts.Attributes(ctx),
 			"content_types": schema.ListNestedAttribute{
-				Description: "Current CMA content types in returned order. Duplicate IDs are retained; an empty collection returns an empty list. Order is not promised across reads.",
+				Description: "Content Types in the order returned by Contentful; empty when none are returned.",
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: contentTypeDataSourceItemAttributes(ctx),
