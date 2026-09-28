@@ -1,10 +1,10 @@
 ---
-page_title: "Reference existing Spaces, Environments, aliases, and Locales"
+page_title: "Reference existing Contentful configuration"
 description: |-
   Use Contentful data sources to compose configuration with objects managed elsewhere.
 ---
 
-# Reference existing Spaces, Environments, aliases, and Locales
+# Reference existing Contentful configuration
 
 Look up existing Contentful configuration by ID, or select an object from a scoped collection:
 
@@ -14,6 +14,7 @@ Look up existing Contentful configuration by ID, or select an object from a scop
 | Environment | [`contentful_environment`](../data-sources/environment) | [`contentful_environments`](../data-sources/environments): one Space |
 | Environment Alias | [`contentful_environment_alias`](../data-sources/environment_alias) | [`contentful_environment_aliases`](../data-sources/environment_aliases): one Space |
 | Locale | [`contentful_locale`](../data-sources/locale) | [`contentful_locales`](../data-sources/locales): one Space and Environment |
+| Role | [`contentful_role`](../data-sources/role) | [`contentful_roles`](../data-sources/roles): one Space |
 
 ## Read existing configuration
 
@@ -32,6 +33,8 @@ Filter collection results by name, locale code, or another returned attribute. T
 The postcondition requires exactly one match before dependent expressions use it: `one([])` returns null, while multiple matches produce an error. Apply the same pattern to `self.spaces` and `space.name` to select a Space by name, using `organization_id` to narrow the search when needed.
 
 Use `locale_id` for a Locale lookup and `code` for localized content. To manage a discovered Locale, import it into the [`contentful_locale` resource](../resources/locale). For bulk import and configuration generation, use the [Locale list resource](../list-resources/locale).
+
+For Roles, use `role_id` from an exact lookup or a uniquely selected item in `contentful_roles` when assigning roles in a [`contentful_team_space_membership` resource](../resources/team_space_membership). The Role data sources read permissions and policies; they do not assign permissions or membership.
 
 ## Use environment aliases
 

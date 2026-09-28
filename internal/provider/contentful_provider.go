@@ -220,6 +220,8 @@ func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.
 		NewLocalesDataSource,
 		NewMarketplaceAppDefinitionDataSource,
 		NewPreviewAPIKeyDataSource,
+		NewRoleDataSource,
+		NewRolesDataSource,
 		NewSpaceDataSource,
 		NewSpacesDataSource,
 		NewTeamsDataSource,

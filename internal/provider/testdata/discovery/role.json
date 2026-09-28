@@ -1,0 +1,1 @@
+{"sys":{"id":"item-b","type":"Role","version":7,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}}},"name":"Second","description":null,"permissions":{"ContentDelivery":"all","ContentModel":["read","read"],"Tags":[]},"policies":[{"effect":"allow","actions":"all","constraint":{"z":1,"a":[1,2]}},{"effect":"deny","actions":["read","read"]}]}
