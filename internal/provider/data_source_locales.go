@@ -1,3 +1,4 @@
+//nolint:dupl // Framework lifecycle wiring mirrors Content Type; a generic runner adds no production behavior.
 package provider
 
 import (

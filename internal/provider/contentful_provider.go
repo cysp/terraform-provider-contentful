@@ -211,6 +211,8 @@ func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.
 		NewAppActionDataSource,
 		NewAppActionsDataSource,
 		NewAppDefinitionDataSource,
+		NewContentTypeDataSource,
+		NewContentTypesDataSource,
 		NewEnvironmentAliasDataSource,
 		NewEnvironmentAliasesDataSource,
 		NewEnvironmentDataSource,
