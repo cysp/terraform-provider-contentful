@@ -17,18 +17,18 @@ func appDefinitionDataSourceLocationAttributes() map[string]schema.Attribute {
 						Computed:    true,
 					},
 					"link_type": schema.StringAttribute{
-						Description: "For Link fields, the type of linked resource.",
+						Description: "Type of linked resource for `Link` or `ResourceLink` fields, or null when absent.",
 						Computed:    true,
 					},
 					"items": schema.SingleNestedAttribute{
-						Description: "Array item definition returned by Contentful, or null when absent. Check for null before accessing `items.type` or `items.link_type`.",
+						Description: "Array item definition, or null when absent. Check for null before accessing `items.type` or `items.link_type`.",
 						Attributes: map[string]schema.Attribute{
 							"type": schema.StringAttribute{
 								Description: "The type of array items.",
 								Computed:    true,
 							},
 							"link_type": schema.StringAttribute{
-								Description: "For arrays of Links, the type of linked resource.",
+								Description: "Type of linked resource for `Link` or `ResourceLink` array items, or null when absent.",
 								Computed:    true,
 							},
 						},
