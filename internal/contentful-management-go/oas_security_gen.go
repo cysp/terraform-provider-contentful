@@ -105,6 +105,7 @@ var operationRolesAccessToken = map[string][]string{
 	GetResourceProviderOperation:            []string{},
 	GetResourceTypeOperation:                []string{},
 	GetRoleOperation:                        []string{},
+	GetRolesOperation:                       []string{},
 	GetSpaceOperation:                       []string{},
 	GetSpaceEnablementsOperation:            []string{},
 	GetSpacesOperation:                      []string{},

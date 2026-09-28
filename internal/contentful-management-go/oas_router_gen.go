@@ -184,6 +184,7 @@ var (
 		"PUT":    "Authorization,Content-Type,X-Contentful-Version",
 	}
 	rn27AllowedHeaders = map[string]string{
+		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
 	}
 	rn57AllowedHeaders = map[string]string{
@@ -2057,13 +2058,17 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 							if len(elem) == 0 {
 								switch r.Method {
+								case "GET":
+									s.handleGetRolesRequest([1]string{
+										args[0],
+									}, elemIsEscaped, w, r)
 								case "POST":
 									s.handleCreateRoleRequest([1]string{
 										args[0],
 									}, elemIsEscaped, w, r)
 								default:
 									s.notAllowed(w, r, notAllowedParams{
-										allowedMethods: "POST",
+										allowedMethods: "GET,POST",
 										allowedHeaders: rn27AllowedHeaders,
 										acceptPost:     "application/vnd.contentful.management.v1+json",
 										acceptPatch:    "",
@@ -4395,6 +4400,15 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 							if len(elem) == 0 {
 								switch method {
+								case "GET":
+									r.name = GetRolesOperation
+									r.summary = "Get all roles in a space"
+									r.operationID = "getRoles"
+									r.operationGroup = ""
+									r.pathPattern = "/spaces/{space_id}/roles"
+									r.args = args
+									r.count = 1
+									return r, true
 								case "POST":
 									r.name = CreateRoleOperation
 									r.summary = "Create a role"
