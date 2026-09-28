@@ -1,0 +1,64 @@
+{
+  "sys": {
+    "type": "ContentType",
+    "id": "article",
+    "version": 5,
+    "publishedVersion": 3,
+    "space": {"sys": {"type": "Link", "linkType": "Space", "id": "space"}},
+    "environment": {"sys": {"type": "Link", "linkType": "Environment", "id": "master"}}
+  },
+  "name": "Article draft",
+  "description": "Editorial article",
+  "displayField": "title",
+  "fields": [
+    {
+      "id": "title",
+      "name": "Title",
+      "type": "Symbol",
+      "localized": false,
+      "required": true,
+      "disabled": true,
+      "omitted": false,
+      "defaultValue": {"en-US": "Untitled"},
+      "validations": [{"size": {"min": 1}}]
+    },
+    {
+      "id": "authors",
+      "name": "Authors",
+      "type": "Array",
+      "localized": false,
+      "required": false,
+      "items": {"type": "Link", "linkType": "Entry", "validations": [{"linkContentType": ["author"]}]},
+      "validations": [{"size": {"max": 3}}]
+    },
+    {
+      "id": "hero",
+      "name": "Hero image",
+      "type": "Link",
+      "linkType": "Asset",
+      "localized": false,
+      "required": false
+    },
+    {
+      "id": "source",
+      "name": "Source",
+      "type": "ResourceLink",
+      "localized": false,
+      "required": false,
+      "allowedResources": [
+        {"type": "Contentful:Entry", "source": "crn:contentful:::content:spaces/space/environments/master", "contentTypes": ["author", "article"]},
+        {"type": "External:Product"}
+      ]
+    }
+  ],
+  "metadata": {
+    "annotations": {
+      "ContentType": [{"sys": {"type": "Link", "linkType": "Annotation", "id": "Contentful:AggregateRoot"}}],
+      "ContentTypeField": {"authors": [{"sys": {"type": "Link", "linkType": "Annotation", "id": "Contentful:AggregateComponent"}}]}
+    },
+    "taxonomy": [
+      {"sys": {"type": "Link", "linkType": "TaxonomyConcept", "id": "topic"}, "required": true},
+      {"sys": {"type": "Link", "linkType": "TaxonomyConceptScheme", "id": "topics"}, "required": false}
+    ]
+  }
+}

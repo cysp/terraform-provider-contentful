@@ -15,6 +15,7 @@ Look up existing Contentful configuration by ID, or select an object from a scop
 | Environment Alias | [`contentful_environment_alias`](../data-sources/environment_alias) | [`contentful_environment_aliases`](../data-sources/environment_aliases): one Space |
 | Locale | [`contentful_locale`](../data-sources/locale) | [`contentful_locales`](../data-sources/locales): one Space and Environment |
 | Role | [`contentful_role`](../data-sources/role) | [`contentful_roles`](../data-sources/roles): one Space |
+| Content Type | [`contentful_content_type`](../data-sources/content_type) | [`contentful_content_types`](../data-sources/content_types): one Space and Environment |
 
 ## Read existing configuration
 
@@ -86,6 +87,12 @@ Use `locale_id` for a Locale lookup and `code` for localized content. To manage 
 
 Use `role_id` from a Role data source when assigning roles with [`contentful_team_space_membership`](../resources/team_space_membership).
 
+## Reference a Content Type
+
+When the ID is known, use `contentful_content_type` and pass its `content_type_id` to an Entry or Editor Interface configuration. To discover an ID by name, filter `contentful_content_types.content_types` and require exactly one match with a postcondition and `one(...)`, as in the [plural example](../data-sources/content_types). Names are mutable, so use the Contentful system ID for the dependent lookup.
+
+Both data sources read the current CMA Content Type model, which may include unactivated changes. `published_version` reports the most recently activated version when present; it does not establish that the returned fields are the activated model. The lookups do not activate, publish, import, or change Content Types. Import a discovered Content Type into the [`contentful_content_type` resource](../resources/content_type) to manage it.
+
 ## Use environment aliases
 
 An Environment lookup accepts an alias ID and returns its target as `aliased_environment_id` when Contentful supplies it. An Environment Alias lookup returns `target_environment_id`. Using the resolved target ID makes dependent requests address that environment directly.
@@ -93,6 +100,8 @@ An Environment lookup accepts an alias ID and returns its target as `aliased_env
 Alias lookups refresh on later plans, so a resolved target can change. To keep lookups tied to one environment across alias changes, use a concrete environment ID.
 
 Locale lookups also accept an environment alias ID as `environment_id`. The provider currently supports responses whose environment link identifies that alias; other responses produce an identity error. Use the target environment ID if you encounter this error.
+
+Content Type lookups retain the requested `environment_id` and require the returned environment link to echo it. An alias-routed Content Type response with a different link produces an unsupported response-identity error. Content Type response-link behavior through aliases has not been verified live; use a concrete environment ID when the alias route cannot meet this check.
 
 ## Collection reads
 

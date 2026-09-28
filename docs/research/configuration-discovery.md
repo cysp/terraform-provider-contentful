@@ -1,8 +1,8 @@
-# Space and configuration discovery endpoints
+# Configuration discovery endpoints
 
 These Content Management API operations address existing Spaces, Environments,
-Environment Aliases, Locales, and Roles. Evidence here is limited to published
-references and pinned SDK source; direct observations are linked separately.
+Environment Aliases, Locales, Roles, and Content Types. Evidence here is limited to
+published references and pinned SDK source; direct observations are linked separately.
 
 | Family | Detail and collection addressing | Collection evidence |
 | --- | --- | --- |
@@ -11,6 +11,7 @@ references and pinned SDK source; direct observations are linked separately.
 | Environment Alias | `/spaces/{space_id}/environment_aliases/{environment_alias_id}` and parent collection | [Listing reference][aliases] shows an offset envelope and a `limit` SDK example; the family adapter forwards `PaginationQueryParams`. |
 | Locale | `/spaces/{space_id}/environments/{environment_id}/locales/{locale_id}` and parent collection | [Listing reference][locales] shows an offset envelope and a `limit` SDK example; the family adapter forwards `QueryParams`. |
 | Role | `/spaces/{space_id}/roles/{role_id}` and parent collection | [Detail][role] and [listing][roles] references show the routes and offset envelope; the [pinned adapter][role-adapter] forwards pagination query parameters. |
+| Content Type | `/spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}` and parent collection | [Detail][content-type] and [listing][content-types] references show these GET routes; the listing example includes `skip`, `limit`, `total`, and `items`. The provider's generated `GetContentTypes` client accepts `skip` and `limit`. |
 
 The [CMA overview][overview] describes offset traversal using `skip`, `limit`,
 `total`, and `items`. Family adapters corroborate the routes and query forwarding;
@@ -43,6 +44,14 @@ includes ID, code, default, fallback and editing/delivery/optional flags. See
 and the wrapper's removal of `internal_code`. A single static list/detail
 comparison does not establish universal equivalence across these families.
 
+Content Type detail and ordinary collection reads address the current CMA
+model. The [activated collection][activated-content-types] is a distinct
+`/public/content_types` endpoint that ignores changes since the last
+activation. Published examples do not establish how Content Type
+`sys.environment` is represented on an alias-routed response. The [environment
+alias guide][alias-guide] establishes routing for environment-aware resources,
+not a Content Type-specific response-link guarantee.
+
 ## First-party source
 
 The JavaScript evidence is pinned to
@@ -70,3 +79,7 @@ Their projections are client behavior, not raw response schemas.
 [role-adapter]: https://github.com/contentful/contentful-management.js/blob/310c01216a2eaa5041dbac8263e9cbba47eb2fb2/lib/adapters/REST/endpoints/role.ts
 [role-cursor]: https://www.contentful.com/developers/api-changes/space-roles-collection-endpoints-update/
 [overview]: https://www.contentful.com/developers/docs/references/content-management-api/overview/#collection-resources-and-pagination
+[content-type]: https://www.contentful.com/developers/docs/references/content-management-api/content-types/get-a-content-type/
+[content-types]: https://www.contentful.com/developers/docs/references/content-management-api/content-types/get-all-content-types-of-a-space/
+[activated-content-types]: https://www.contentful.com/developers/docs/references/content-management-api/content-types/get-all-activated-content-types-of-a-space/
+[alias-guide]: https://www.contentful.com/developers/docs/concepts/environment-aliases/

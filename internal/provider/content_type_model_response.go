@@ -12,6 +12,10 @@ import (
 )
 
 func NewContentTypeResourceModelFromResponse(ctx context.Context, contentType cm.ContentType) (ContentTypeModel, diag.Diagnostics) {
+	return newContentTypeResourceModelFromResponseAt(ctx, path.Empty(), contentType)
+}
+
+func newContentTypeResourceModelFromResponseAt(ctx context.Context, root path.Path, contentType cm.ContentType) (ContentTypeModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := contentType.Sys.Space.Sys.ID
@@ -37,12 +41,12 @@ func NewContentTypeResourceModelFromResponse(ctx context.Context, contentType cm
 		model.PublishedVersion = types.Int64Null()
 	}
 
-	fieldsList, fieldsListDiags := NewFieldsListFromResponse(ctx, path.Root("fields"), contentType.Fields)
+	fieldsList, fieldsListDiags := NewFieldsListFromResponse(ctx, root.AtName("fields"), contentType.Fields)
 	diags.Append(fieldsListDiags...)
 
 	model.Fields = fieldsList
 
-	metadata, metadataDiags := NewContentTypeMetadataFromResponse(ctx, path.Root("metadata"), contentType.Metadata)
+	metadata, metadataDiags := NewContentTypeMetadataFromResponse(ctx, root.AtName("metadata"), contentType.Metadata)
 	diags.Append(metadataDiags...)
 
 	model.Metadata = metadata
