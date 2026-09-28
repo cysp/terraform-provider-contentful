@@ -7,6 +7,19 @@ resource "contentful_app_definition" "this" {
 
   locations = [
     { location = "app-config" },
+    {
+      location = "entry-field"
+      field_types = [
+        { type = "Symbol" },
+        { type = "Link", link_type = "Entry" },
+        { type = "Array", items = { type = "Symbol" } },
+        { type = "Array", items = { type = "Link", link_type = "Asset" } },
+      ]
+    },
+    {
+      location        = "page"
+      navigation_item = { name = "Editorial tools", path = "/editorial-tools" }
+    },
   ]
 
   parameters = {

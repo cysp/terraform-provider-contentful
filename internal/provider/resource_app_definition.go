@@ -57,6 +57,12 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 		config AppDefinitionResourceModel
 	)
 
+	resp.Diagnostics.Append(validateAppDefinitionPlannedLocations(ctx, req.Plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
@@ -182,6 +188,12 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 		plan   AppDefinitionResourceModel
 		config AppDefinitionResourceModel
 	)
+
+	resp.Diagnostics.Append(validateAppDefinitionPlannedLocations(ctx, req.Plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)

@@ -70,6 +70,58 @@ Marketplace installation terms acceptance uses `X-Contentful-Marketplace` with
 when the SDK's `acceptAllTerms` is true. Looking up a definition does not supply that
 installation header. [Installation adapter][installation-sdk].
 
+### App Definition nested location configuration
+
+The [SDK location types][definition-entity] require `fieldTypes` for `entry-field`
+and allow an optional `navigationItem: {name, path}` for `page`. The [field-type
+union][field-types] defines Array `items` as an object and requires `linkType` for
+Link and ResourceLink. ResourceLink targets are strings in this SDK, unlike the
+Entry/Asset alternatives for Link.
+
+On 2026-09-27 and 2026-09-28, each nested-configuration probe began with a
+temporary uninstalled definition restored to a valid baseline. Nested-attribute
+changes retained a valid hosting source and rendered location. GET confirmed successful changes and that rejected requests
+left the definition unchanged.
+
+| Submitted configuration | Observed result |
+| --- | --- |
+| entry-field with absent, null, or empty fieldTypes | 422 |
+| Array with absent, null, empty-object, or list-valued items | 422 |
+| Link or Array-of-Link without linkType | 422 |
+| Symbol with items or linkType | 422 |
+| Page navigation omitted | 200; previous navigationItem removed |
+| Page navigation null, empty object, or empty name/path | 422 |
+| fieldTypes on page | 422 |
+| fieldTypes or navigationItem on dialog, experience-sidebar, or component-sidebar alongside app-config | 200; supplied member removed |
+| navigationItem on home | 200; navigationItem removed |
+| Valid mixed scalar/Array Symbol and Link definitions, or reordered distinct locations | 200; submitted values and order preserved |
+| Array changed to Symbol with items omitted | 200; items absent |
+| Duplicate field definitions or repeated app-config locations | 422 (uniqueness validation) |
+| ResourceLink or Array-of-ResourceLink with Example:Record or Contentful:Entry | 422 |
+| Link or ResourceLink with empty linkType | 422 |
+| Array item definitions using type Integer, or type Array with linkType | 422 |
+| Page navigation name containing only a space | 200; preserved |
+| Page navigation path containing only a space, a relative path without a leading slash, or an absolute HTTPS URL | 422 |
+| Page navigation path `/`, or `/probe` with a query, fragment, or space suffix | 200; preserved |
+
+The accepted experience-sidebar and component-sidebar locations supplement the
+pinned SDK's location vocabulary. The agent location was rejected as available
+only to internal Contentful apps.
+
+The rejected ResourceLink requests produced validation alternatives that did not
+include ResourceLink. The SDK declares these forms, but the probes establish no
+accepted App Definition ResourceLink configuration or account-dependent
+availability. Full uniqueness rules and browser behavior for accepted navigation
+paths were not established.
+
+Name-only creation returned locations `[]`. PUT omitting both `src` and locations,
+or supplying locations `[]` with `src` omitted, removed the previous `src` and
+returned locations `[]`. Retaining `src` with absent/empty locations or only a
+dialog location failed a value dependency requiring a non-dialog location. A
+page location without `src` or a bundle failed a value dependency requiring a
+hosting source. The diagnostics also referred to frontend bundles; bundle-hosting
+behavior was not tested.
+
 ### Observed installation reads
 
 The [supplied read-only study](README.md#source-metadata) covered environment-scoped
@@ -198,3 +250,4 @@ The evidence does not establish:
 [grant-create]: https://www.contentful.com/developers/docs/references/content-management-api/app-access-grants/create-one-access-grant/
 [grant-concept]: https://www.contentful.com/developers/docs/extensibility/app-framework/access-grant/
 [limits]: https://www.contentful.com/developers/docs/platform/technical-limits/
+[field-types]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/field-type.ts
