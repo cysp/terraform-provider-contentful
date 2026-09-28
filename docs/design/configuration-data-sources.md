@@ -79,8 +79,8 @@ but does not promise stability after that response.
 ## Verification boundary
 
 Raw fixture tests check literal methods, paths, headers, page progression,
-projection, error handling, and publication. Mocked Terraform tests cover all
-eight sources, apply-time unknown inputs, stable repeat plans, localized Entry
+projection, error handling, and publication. Mocked Terraform tests cover each
+source, apply-time unknown inputs, stable repeat plans, localized Entry
 composition, and cardinality postconditions that stop dependent mutations. Shared
 decoder and resource/waiter regression checks guard compatibility. The in-process
 server's explicit fixture stores and alias-context projection model these tested
