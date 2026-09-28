@@ -18,7 +18,6 @@ data "contentful_role" "editor" {
   role_id  = "existing-role-id"
 }
 
-# The lookup only reads the Role. This resource assigns its ID to an existing team.
 resource "contentful_team_space_membership" "editor" {
   space_id = "your-space-id"
   team_id  = "existing-team-id"
@@ -43,10 +42,10 @@ resource "contentful_team_space_membership" "editor" {
 ### Read-Only
 
 - `description` (String) Description of the role, or null when absent.
-- `id` (String) Composite Terraform lookup identifier in `space_id/role_id` form.
+- `id` (String) Composite Terraform identifier in `space_id/role_id` form.
 - `name` (String) Name of the role.
-- `permissions` (Map of List of String) Contentful permission names mapped to action lists. Scalar `"all"` is represented as `["all"]`; empty lists and duplicate actions are preserved.
-- `policies` (Attributes List) Policies in the order returned by Contentful; each policy contains actions, effect, and an optional normalized JSON constraint. (see [below for nested schema](#nestedatt--policies))
+- `permissions` (Map of List of String) Permission names mapped to value lists. Contentful's scalar `"all"` appears as `["all"]`; empty lists and duplicate values are preserved.
+- `policies` (Attributes List) Policies that allow or deny actions on selected resources, in the order returned by Contentful. (see [below for nested schema](#nestedatt--policies))
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -63,4 +62,4 @@ Read-Only:
 
 - `actions` (List of String) Actions allowed or denied by this policy. Scalar `"all"` is represented as `["all"]`; action order and duplicates are preserved.
 - `constraint` (String) Normalized JSON constraint, or null when absent.
-- `effect` (String) Policy effect returned by Contentful.
+- `effect` (String) Policy effect: `allow` or `deny` for the specified actions.

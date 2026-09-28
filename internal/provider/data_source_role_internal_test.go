@@ -15,8 +15,7 @@ import (
 func TestRoleDataSourceResponseOrderWarningPaths(t *testing.T) {
 	t.Parallel()
 
-	// Unknown effects cannot pass the generated decoder. Typed responses still
-	// exercise the shared projector and its published paths after collection.
+	// Unknown effects fail decoding; typed values exercise projector warning paths.
 	firstRole := cm.Role{Sys: cm.NewRoleSys("space", "item-a"), Name: "First", Permissions: cm.RolePermissions{}, Policies: []cm.RolePoliciesItem{}}
 	warningRole := cm.Role{Sys: cm.NewRoleSys("space", "item-b"), Name: "Second", Permissions: cm.RolePermissions{}, Policies: []cm.RolePoliciesItem{{Effect: cm.RolePoliciesItemEffect("future"), Actions: cm.NewStringRolePoliciesItemActions("all")}}}
 

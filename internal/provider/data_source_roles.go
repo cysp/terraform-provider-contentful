@@ -1,4 +1,4 @@
-//nolint:dupl // Framework lifecycle wiring stays typed; family policy lives in shared projections and collection reading.
+//nolint:dupl // Keep endpoint-specific data source reads explicit.
 package provider
 
 import (

@@ -9,7 +9,6 @@ data "contentful_roles" "existing" {
   }
 }
 
-# Names are not lookup IDs; use the selected Role's role_id.
 locals {
   selected_role = one([
     for role in data.contentful_roles.existing.roles : role

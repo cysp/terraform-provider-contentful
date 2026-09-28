@@ -1,9 +1,8 @@
 # Space and configuration discovery endpoints
 
 These Content Management API operations address existing Spaces, Environments,
-Environment Aliases, and Locales. Published reference pages were examined on
-2026-09-13. SDK source below is pinned. Evidence here is limited to published
-references and SDK source; direct observations are linked separately.
+Environment Aliases, Locales, and Roles. Evidence here is limited to published
+references and pinned SDK source; direct observations are linked separately.
 
 | Family | Detail and collection addressing | Collection evidence |
 | --- | --- | --- |
@@ -11,11 +10,15 @@ references and SDK source; direct observations are linked separately.
 | Environment | `/spaces/{space_id}/environments/{environment_id}` and parent collection | [Listing reference][environments] shows an offset envelope and a `limit` SDK example; the family adapter forwards `PaginationQueryParams`. |
 | Environment Alias | `/spaces/{space_id}/environment_aliases/{environment_alias_id}` and parent collection | [Listing reference][aliases] shows an offset envelope and a `limit` SDK example; the family adapter forwards `PaginationQueryParams`. |
 | Locale | `/spaces/{space_id}/environments/{environment_id}/locales/{locale_id}` and parent collection | [Listing reference][locales] shows an offset envelope and a `limit` SDK example; the family adapter forwards `QueryParams`. |
+| Role | `/spaces/{space_id}/roles/{role_id}` and parent collection | [Detail][role] and [listing][roles] references show the routes and offset envelope; the [pinned adapter][role-adapter] forwards pagination query parameters. |
 
 The [CMA overview][overview] describes offset traversal using `skip`, `limit`,
 `total`, and `items`. Family adapters corroborate the routes and query forwarding;
 their TypeScript signatures alone do not establish raw server validation or order
 stability. Pagination does not establish a transactionally consistent inventory.
+
+Contentful has [announced a cursor transition for Role collections][role-cursor].
+The current Role reader uses offsets and cannot traverse a cursor-only response.
 
 Space `query` matches an exact Space ID or a partial Space name. A returned fuzzy
 match therefore does not establish unique identity. The [Space detail reference][space]
@@ -62,4 +65,8 @@ Their projections are client behavior, not raw response schemas.
 [aliases]: https://www.contentful.com/developers/docs/references/content-management-api/environment-aliases/get-all-environment-aliases-of-a-space/
 [alias-family]: https://www.contentful.com/developers/docs/references/content-management-api/environment-aliases/
 [locales]: https://www.contentful.com/developers/docs/references/content-management-api/locales/get-all-locales-of-a-space/
+[roles]: https://www.contentful.com/developers/docs/references/content-management-api/roles/get-all-roles/
+[role]: https://www.contentful.com/developers/docs/references/content-management-api/roles/get-a-role/
+[role-adapter]: https://github.com/contentful/contentful-management.js/blob/310c01216a2eaa5041dbac8263e9cbba47eb2fb2/lib/adapters/REST/endpoints/role.ts
+[role-cursor]: https://www.contentful.com/developers/api-changes/space-roles-collection-endpoints-update/
 [overview]: https://www.contentful.com/developers/docs/references/content-management-api/overview/#collection-resources-and-pagination

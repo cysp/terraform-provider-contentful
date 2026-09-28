@@ -3,12 +3,12 @@
 page_title: "contentful_roles Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves all Contentful Roles in a space using the CMA offset collection. Results preserve response order across pages; concurrent changes during pagination can affect the inventory.
+  Retrieves all Contentful Roles in a space.
 ---
 
 # contentful_roles (Data Source)
 
-Retrieves all Contentful Roles in a space using the CMA offset collection. Results preserve response order across pages; concurrent changes during pagination can affect the inventory.
+Retrieves all Contentful Roles in a space.
 
 ## Example Usage
 
@@ -24,7 +24,6 @@ data "contentful_roles" "existing" {
   }
 }
 
-# Names are not lookup IDs; use the selected Role's role_id.
 locals {
   selected_role = one([
     for role in data.contentful_roles.existing.roles : role
@@ -46,8 +45,8 @@ locals {
 
 ### Read-Only
 
-- `id` (String) Terraform lookup identifier equal to `space_id`.
-- `roles` (Attributes List) Roles in Contentful response order across pages, retaining duplicate IDs. An empty collection returns an empty list. (see [below for nested schema](#nestedatt--roles))
+- `id` (String) Terraform identifier equal to `space_id`.
+- `roles` (Attributes List) Roles in the order returned by Contentful. An empty collection returns an empty list. (see [below for nested schema](#nestedatt--roles))
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -64,8 +63,8 @@ Read-Only:
 
 - `description` (String) Description of the role, or null when absent.
 - `name` (String) Name of the role.
-- `permissions` (Map of List of String) Contentful permission names mapped to action lists. Scalar `"all"` is represented as `["all"]`; empty lists and duplicate actions are preserved.
-- `policies` (Attributes List) Policies in the order returned by Contentful; each policy contains actions, effect, and an optional normalized JSON constraint. (see [below for nested schema](#nestedatt--roles--policies))
+- `permissions` (Map of List of String) Permission names mapped to value lists. Contentful's scalar `"all"` appears as `["all"]`; empty lists and duplicate values are preserved.
+- `policies` (Attributes List) Policies that allow or deny actions on selected resources, in the order returned by Contentful. (see [below for nested schema](#nestedatt--roles--policies))
 - `role_id` (String) System ID of the role.
 
 <a id="nestedatt--roles--policies"></a>
@@ -75,4 +74,4 @@ Read-Only:
 
 - `actions` (List of String) Actions allowed or denied by this policy. Scalar `"all"` is represented as `["all"]`; action order and duplicates are preserved.
 - `constraint` (String) Normalized JSON constraint, or null when absent.
-- `effect` (String) Policy effect returned by Contentful.
+- `effect` (String) Policy effect: `allow` or `deny` for the specified actions.

@@ -84,7 +84,7 @@ The postcondition requires exactly one match before dependent expressions use it
 
 Use `locale_id` for a Locale lookup and `code` for localized content. To manage a discovered Locale, import it into the [`contentful_locale` resource](../resources/locale). For bulk import and configuration generation, use the [Locale list resource](../list-resources/locale).
 
-For Roles, use `role_id` from an exact lookup or a uniquely selected item in `contentful_roles` when assigning roles in a [`contentful_team_space_membership` resource](../resources/team_space_membership). The Role data sources read permissions and policies; they do not assign permissions or membership.
+Use `role_id` from a Role data source when assigning roles with [`contentful_team_space_membership`](../resources/team_space_membership).
 
 ## Use environment aliases
 

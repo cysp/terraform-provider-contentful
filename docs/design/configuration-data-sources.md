@@ -34,17 +34,6 @@ these schemas. Other advertised Locale fields are required by the curated
 response decoder. The [Locale evidence](../research/locales.md) separates raw
 observations from SDK projection.
 
-Role data sources expose the Role entity's name, nullable description,
-permissions map of typed action lists, and ordered policies with typed actions,
-effect, and nullable normalized JSON constraint. Scalar `"all"` projects as
-`["all"]`; list order and duplicate values are retained. The singular
-addressing Role ID and returned Space link must match the request. Collection
-items retain decoded IDs even if unsuitable as future lookup inputs. The raw
-response projection is shared with the Role resource; data-source reads do not
-run mutation reconciliation or use private version state. The published
-[Role detail][role-detail] and [collection][role-collection] references and the
-[first-party management SDK][role-sdk] ground the endpoint and item shape.
-
 Environment and Environment Alias use the same generated HTTP operations and
 entity decoders as their managed counterparts. Data-source schemas and timeouts
 are separate from resource planning and lifecycle ownership; singular and plural
@@ -82,15 +71,6 @@ All pages share the data source's operation timeout and the existing
 URLs are followed, and no N+1 detail reads fill list results. Offset support is
 grounded in the [family endpoint evidence](../research/configuration-discovery.md).
 
-Role collection reads collect decoded items before nested projection, so
-warnings identify the published `roles[index]` paths. The generated
-decoder rejects some response shapes before projection, including unknown
-policy effects and non-string/non-array action alternatives. Such decoding
-failures are errors, while representable typed irregularities retain their
-projection warnings. Contentful has [announced a future cursor transition for
-this endpoint][role-cursor-change]; the current implementation follows the
-documented `skip`/`limit` collection and cannot traverse a cursor-only response.
-
 Offset traversal does not establish a snapshot. Concurrent edits can cause
 omissions or duplicates, and alias reads do not establish uninterrupted target
 stability. A single-read Environment alias projection avoids a resolution race
@@ -115,7 +95,3 @@ not establish multipage behavior or stability during concurrent changes.
 
 [environment-detail]: https://www.contentful.com/developers/docs/references/content-management-api/environments/get-an-environment/
 [aliases]: https://www.contentful.com/developers/docs/references/content-management-api/environment-aliases/#new-environment-properties-when-using-aliases
-[role-detail]: https://www.contentful.com/developers/docs/references/content-management-api/roles/get-a-role/
-[role-collection]: https://www.contentful.com/developers/docs/references/content-management-api/roles/get-all-roles/
-[role-sdk]: https://github.com/contentful/contentful-management.js/blob/310c01216a2eaa5041dbac8263e9cbba47eb2fb2/lib/adapters/REST/endpoints/role.ts
-[role-cursor-change]: https://www.contentful.com/developers/api-changes/space-roles-collection-endpoints-update/
