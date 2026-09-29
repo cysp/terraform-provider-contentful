@@ -19,10 +19,8 @@ RoleCollection:
       properties:
         next:
           type: string
-          minLength: 1
         prev:
           type: string
-          minLength: 1
     items:
       type: array
       items:

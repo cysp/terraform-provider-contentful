@@ -79,8 +79,8 @@ projection errors abort the lookup without publishing partial state; not-found
 and permission errors are not reclassified as empty inventories.
 
 All pages share the data source's operation timeout and the existing
-[read retry policy](contentful-http-retry-policy.md). No N+1 detail reads fill
-list results. Offset support is
+[read retry policy](contentful-http-retry-policy.md). No cursor or continuation
+URLs are followed, and no N+1 detail reads fill list results. Offset support is
 grounded in the [family endpoint evidence](../research/configuration-discovery.md).
 
 Offset traversal does not establish a snapshot. Concurrent edits can cause
@@ -107,9 +107,9 @@ or HTTP(S) absolute links; it never follows their authority. Every request uses
 the configured client, API base path, original space and fixed page limit.
 Userinfo, fragments, malformed URLs/queries, `skip`, and `pagePrev` in forward
 links are rejected. Other link query parameters are not forwarded. Repeated
-cursor values after URL query decoding, including longer cycles, are errors. An empty intermediate
-page with a fresh next cursor is followed; continually changing cursors remain
-bounded by the operation deadline.
+cursor values after URL query decoding, including longer cycles, are errors.
+An empty intermediate page with a fresh next cursor is followed; continually
+changing cursors remain bounded by the operation deadline.
 
 Role response order and duplicate IDs are retained, with existing Space-link
 validation and projection diagnostics. All pages and retries share one read

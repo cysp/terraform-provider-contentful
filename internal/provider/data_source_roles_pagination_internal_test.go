@@ -18,13 +18,13 @@ func TestRolesCursorPagination(t *testing.T) {
 	t.Parallel()
 
 	body := discoveryFixture(t, "role")
-	for _, terminal := range []string{`"pages":{},`, `"pages":{"prev":"/spaces/space/roles?pagePrev=back"},`, ""} {
+	for _, terminal := range []string{`"pages":{},`, `"pages":{"prev":""},`, `"pages":{"prev":"/spaces/space/roles?pagePrev=back"},`, ""} {
 		t.Run(terminal, func(t *testing.T) {
 			t.Parallel()
 
 			queries := []string{"limit=100", "limit=100&pageNext=a%2Bb%2Fc%3D", "limit=100&pageNext=last"}
 			pages := []string{
-				`{"sys":{"type":"Array"},"limit":1,"items":[` + body + `],"pages":{"next":"/spaces/space/roles?pageNext=a%2Bb%2Fc%3D&limit=1"}}`,
+				`{"sys":{"type":"Array"},"limit":1,"items":[` + body + `],"pages":{"next":"/spaces/space/roles?pageNext=a%2Bb%2Fc%3D&limit=1","prev":""}}`,
 				// An empty intermediate page with a new cursor must still be followed.
 				`{"sys":{"type":"Array"},"items":[],"pages":{"next":"https://untrusted.invalid/spaces/space/roles?pageNext=last"}}`,
 				`{"sys":{"type":"Array"},` + terminal + `"items":[` + strings.Replace(body, "Second", "Last arrival", 1) + `]}`,
@@ -66,7 +66,7 @@ func TestRolesCursorPaginationErrorsDoNotPublish(t *testing.T) {
 		status int
 		want   string
 	}{
-		{"empty next", `"pages":{"next":""}`, 200, "decode"},
+		{"empty next", `"pages":{"next":""}`, 200, "pages.next"},
 		{"null next", `"pages":{"next":null}`, 200, "decode"},
 		{"null pages", `"pages":null`, 200, "decode"},
 		{"wrong next type", `"pages":{"next":42}`, 200, "decode"},

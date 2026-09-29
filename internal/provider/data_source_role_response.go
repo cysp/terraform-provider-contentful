@@ -92,11 +92,10 @@ func readRoles(ctx context.Context, client *cm.Client, spaceID string) ([]RoleDa
 
 		seen[cursor] = struct{}{}
 
-		params.Skip.Reset()
 		params.PageNext = cm.NewOptString(cursor)
 	}
 
-	// Project only the complete collection, preserving final diagnostic indexes.
+	// Project after pagination so diagnostics use the final roles[index] paths.
 	return projectRoles(ctx, roles)
 }
 
