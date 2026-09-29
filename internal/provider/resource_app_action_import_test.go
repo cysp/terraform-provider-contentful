@@ -25,7 +25,7 @@ func TestAccAppActionResourceIdentityImport(t *testing.T) {
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
-	result, err := server.Handler().CreateAppAction(t.Context(), &cm.AppActionData{Name: "Action", Category: "Custom", Type: "endpoint", URL: cm.NewOptString("https://example.invalid/action"), Parameters: []byte(`[]`)}, cm.CreateAppActionParams{OrganizationID: "org", AppDefinitionID: "app"})
+	result, err := server.Handler().CreateAppAction(t.Context(), &cm.AppActionCreateData{Name: "Action", Category: "Custom", Type: "endpoint", URL: cm.NewOptString("https://example.invalid/action"), Parameters: []byte(`[]`)}, cm.CreateAppActionParams{OrganizationID: "org", AppDefinitionID: "app"})
 	require.NoError(t, err)
 
 	action, ok := result.(*cm.AppAction)

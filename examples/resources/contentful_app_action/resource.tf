@@ -25,6 +25,7 @@ resource "contentful_app_action" "this" {
 resource "contentful_app_action" "function" {
   organization_id   = var.contentful_organization_id
   app_definition_id = var.app_definition_id
+  app_action_id     = "processEntries"
   name              = "Process entries"
   category          = "Entries.v1.0"
   type              = "function-invocation"

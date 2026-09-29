@@ -58,6 +58,13 @@ func TestAppActionMutationNoReplay(t *testing.T) {
 				})
 				plan := appActionTestPlan(t, appActionTestModel())
 				config := tfsdk.Config(plan)
+
+				if method == http.MethodPost {
+					unconfigured := appActionTestModel()
+					unconfigured.AppActionID = types.StringNull()
+					config = tfsdk.Config(appActionTestPlan(t, unconfigured))
+				}
+
 				previous := appActionTestModel()
 				previous.Name = types.StringValue("Previous")
 				state := tfsdk.State(appActionTestPlan(t, previous))
@@ -118,7 +125,9 @@ func TestAppActionCreateRejectsUnaddressableID(t *testing.T) {
 			model.AppActionID = types.StringUnknown()
 			plan := appActionTestPlan(t, model)
 			response := resource.CreateResponse{State: tfsdk.State{Schema: plan.Schema}}
-			implementation.Create(t.Context(), resource.CreateRequest{Plan: plan, Config: tfsdk.Config(plan)}, &response)
+			configModel := model
+			configModel.AppActionID = types.StringNull()
+			implementation.Create(t.Context(), resource.CreateRequest{Plan: plan, Config: tfsdk.Config(appActionTestPlan(t, configModel))}, &response)
 			require.Len(t, response.Diagnostics, 1)
 			require.True(t, response.Diagnostics.HasError())
 			assert.Equal(t, "Invalid App Action response identity", response.Diagnostics[0].Summary())
@@ -156,6 +165,7 @@ func TestAppActionValidateConfigUnknownValues(t *testing.T) {
 
 			model := appActionTestModel()
 			test.alter(&model)
+			model.AppActionID = types.StringNull()
 			request := resource.ValidateConfigRequest{Config: tfsdk.Config(appActionTestPlan(t, model))}
 			response := resource.ValidateConfigResponse{}
 			implementation := &appActionResource{}

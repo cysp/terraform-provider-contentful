@@ -15,7 +15,7 @@ implementation uses the Framework version pinned in [`go.mod`](../../go.mod).
 | Mutation reconciliation | [Role](#role-mutation-decisions), [Editor Interface](#editor-interface-mutation-decisions), and [Webhook](#webhook-mutation-decisions) |
 | Locking and retries | [Editor Interface preconditions](#editor-interface-version-preconditions), [private optimistic-lock barrier](#provider-private-optimistic-lock-barrier), [taxonomy locking](#taxonomy-optimistic-version-locking), and [HTTP retry policy](contentful-http-retry-policy.md) |
 | Taxonomy values | [Collection ownership](#taxonomy-optionalcomputed-collection-ownership) and [response canonicalization](#taxonomy-response-canonicalization) |
-| Other resource contracts | [App Definition locations](#app-definition-locations), [Webhook signing secret](webhook-signing-secret.md), [Webhook password](#webhook-basic-password), [Delivery API key environments](#delivery-api-key-environments), [Extension sources](#extension-sources), [Space Enablements](#space-enablements), and [Live Preview variables](#live-preview-variables) |
+| Other resource contracts | [App Definition locations](#app-definition-locations), [App Action identity](#app-action-identity), [Webhook signing secret](webhook-signing-secret.md), [Webhook password](#webhook-basic-password), [Delivery API key environments](#delivery-api-key-environments), [Extension sources](#extension-sources), [Space Enablements](#space-enablements), and [Live Preview variables](#live-preview-variables) |
 
 `Config`, `Plan`, and `State` in the tables refer to Terraform configuration, the
 effective plan after lifecycle processing, and prior state. A known planned value is
@@ -131,6 +131,22 @@ The App Action resource's `parameters` attribute represents writable Custom
 parameter definitions. It is null for built-in categories; data sources expose
 their complete returned definitions. Resource projection follows the response's
 actual category, including after a contradictory mutation response.
+
+### App Action identity
+
+`app_action_id` is Optional+Computed. Create sends the known planned ID in the
+POST body when configured; otherwise Contentful assigns the ID. The provider
+does not restrict the ID by action type. Contentful currently accepts a
+caller-supplied ID for a `function-invocation` action and rejects one for an
+`endpoint` action. Update never sends an ID in its body. Removing a configured
+ID retains the existing identity, and changing it requires replacement. A
+Function action updated to an endpoint retains its ID, including when that ID
+remains configured; a subsequent Create with that endpoint configuration would
+currently be rejected by Contentful.
+
+Create posts directly with the configured ID. Contentful may overwrite an
+existing Function action with that ID; the tested conditional headers did not
+prevent this. See the [App Action API evidence](../research/app-framework/actions.md).
 
 ## Response projection
 

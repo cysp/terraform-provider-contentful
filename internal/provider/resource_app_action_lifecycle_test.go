@@ -110,12 +110,13 @@ func TestAccAppActionResourceLifecycle(t *testing.T) {
 	builtinUpdated["parameters"] = builtinParameters("message", "recipient")
 
 	function := map[string]knownvalue.Check{
-		"name":        knownvalue.StringExact("Function action"),
-		"category":    knownvalue.StringExact("Custom"),
-		"type":        knownvalue.StringExact("function-invocation"),
-		"url":         knownvalue.Null(),
-		"function_id": knownvalue.StringExact("acceptancefunction"),
-		"description": knownvalue.StringExact(""),
+		"app_action_id": knownvalue.StringExact("acceptanceFunction"),
+		"name":          knownvalue.StringExact("Function action"),
+		"category":      knownvalue.StringExact("Custom"),
+		"type":          knownvalue.StringExact("function-invocation"),
+		"url":           knownvalue.Null(),
+		"function_id":   knownvalue.StringExact("acceptancefunction"),
+		"description":   knownvalue.StringExact(""),
 		"parameters": knownvalue.StringFunc(func(actual string) error {
 			return checkJSONEqual(`[{"id":"text","name":"Text","type":"Symbol"},{"id":"number","name":"Number","type":"Number","required":false,"default":0},{"id":"flag","name":"Flag","type":"Boolean","default":false},{"id":"choice","name":"Choice","type":"Enum","options":["a","b"]}]`, actual)
 		}),

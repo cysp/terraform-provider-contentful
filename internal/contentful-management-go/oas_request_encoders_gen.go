@@ -11,7 +11,7 @@ import (
 )
 
 func encodeCreateAppActionRequest(
-	req *AppActionData,
+	req *AppActionCreateData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"

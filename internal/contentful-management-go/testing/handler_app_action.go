@@ -11,7 +11,7 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) CreateAppAction(_ context.Context, req *cm.AppActionData, params cm.CreateAppActionParams) (cm.CreateAppActionRes, error) {
+func (ts *Handler) CreateAppAction(_ context.Context, req *cm.AppActionCreateData, params cm.CreateAppActionParams) (cm.CreateAppActionRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -19,7 +19,21 @@ func (ts *Handler) CreateAppAction(_ context.Context, req *cm.AppActionData, par
 		return appDefinitionDoesNotExistError(), nil
 	}
 
-	action, validation := newAppAction(params.OrganizationID, params.AppDefinitionID, generateResourceID(), *req)
+	if req.ID.Set && req.Type != "function-invocation" {
+		return NewContentfulManagementErrorStatusCodeValidationFailed(new("The property \"id\" is not expected"), nil), nil
+	}
+
+	actionID := generateResourceID()
+	if req.ID.Set {
+		actionID = req.ID.Value
+	}
+
+	data := cm.AppActionData{
+		Name: req.Name, Category: req.Category, Type: req.Type, Description: req.Description, URL: req.URL, Function: req.Function,
+		Parameters: req.Parameters, ParametersSchema: req.ParametersSchema, ResultSchema: req.ResultSchema,
+	}
+
+	action, validation := newAppAction(params.OrganizationID, params.AppDefinitionID, actionID, data)
 	if validation != nil {
 		return validation, nil
 	}

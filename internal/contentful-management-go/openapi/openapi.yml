@@ -555,7 +555,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./schemas/app-action/data.yml#/AppActionData"
+              $ref: "./schemas/app-action/create-data.yml#/AppActionCreateData"
       responses:
         201:
           description: App Action response

@@ -4,14 +4,14 @@ page_title: "contentful_app_action Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
   Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately.
-  Create, Update, and Delete are not automatically retried, including after rate limiting. If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again to avoid duplicates. After a failed update or delete, refresh state and review the plan before retrying.
+  Create, Update, and Delete are not automatically retried, including after rate limiting. If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again. After a failed update or delete, refresh state and review the plan before retrying.
 ---
 
 # contentful_app_action (Resource)
 
 Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately.
 
-Create, Update, and Delete are not automatically retried, including after rate limiting. If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again to avoid duplicates. After a failed update or delete, refresh state and review the plan before retrying.
+Create, Update, and Delete are not automatically retried, including after rate limiting. If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again. After a failed update or delete, refresh state and review the plan before retrying.
 
 ## Example Usage
 
@@ -43,6 +43,7 @@ resource "contentful_app_action" "this" {
 resource "contentful_app_action" "function" {
   organization_id   = var.contentful_organization_id
   app_definition_id = var.app_definition_id
+  app_action_id     = "processEntries"
   name              = "Process entries"
   category          = "Entries.v1.0"
   type              = "function-invocation"
@@ -64,6 +65,7 @@ resource "contentful_app_action" "function" {
 
 ### Optional
 
+- `app_action_id` (String) System ID of the App Action. Omit to let Contentful generate an ID. On create, the provider sends a configured ID to Contentful, which currently accepts it for `function-invocation` actions and rejects it for `endpoint` actions. Changing the ID replaces the resource; removing it from configuration retains the existing ID. Reusing an existing Function action's ID can overwrite that action in Contentful.
 - `description` (String) Description of the App Action. Omission removes an existing description on update.
 - `function_id` (String) ID of an `appaction.call` Function. Required when `type` is `function-invocation`; omit it for `endpoint`.
 - `parameters` (String) Legacy parameter definitions for `Custom` actions, encoded as a JSON array. Each definition requires `id`, `name`, and `type` (`Boolean`, `Symbol`, `Number`, or `Enum`). `[]` defines no arguments. Built-in parameter definitions are available through the App Action data sources.
@@ -74,7 +76,6 @@ resource "contentful_app_action" "function" {
 
 ### Read-Only
 
-- `app_action_id` (String) System ID of the App Action, allocated by Contentful.
 - `id` (String) Composite Terraform resource identifier in `organization_id/app_definition_id/app_action_id` form.
 
 <a id="nestedatt--timeouts"></a>

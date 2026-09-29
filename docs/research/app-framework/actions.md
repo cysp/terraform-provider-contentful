@@ -54,10 +54,12 @@ parameter types][parameter-types].
 
 The action adapter passes request fields directly, so construct a writable body rather
 than sending response `sys`. Function actions use a raw `function` link; the CLI's
-`functionId` is a manifest convenience converted before the request. The SDK only
-declares caller-supplied `id` in its Function creation branch, while the CLI carries it
-in both branches; chosen-ID support for every action form is therefore not established.
-[Action adapter][action-sdk], [CLI conversion][action-conversion].
+`functionId` is a manifest convenience converted before the request. The SDK declares
+caller-supplied `id` only in its Function creation branch. Although the CLI's common
+manifest type carries `id` for both action forms, its upsert path rejects a new endpoint
+action with a supplied ID. It writes the returned `sys.id` into the manifest after
+creation, without deriving an ID from `name`. [Action adapter][action-sdk], [SDK
+type][action-entity], [CLI conversion][action-conversion], [CLI upsert][action-upsert].
 
 The schema-based alternative exercised successfully was:
 
@@ -113,6 +115,31 @@ unrecorded; the shared study dates do not establish when these probes ran.
 | PUT switching that action to an endpoint | 200 and GET omitted the Function link. |
 
 Function deployment and execution remain unverified.
+
+### AppAction ID creation behavior
+
+Direct CMA probes on 2026-09-29 used disposable, uninstalled App Definitions,
+HTTPS endpoint actions, and Function actions linked to synthetic, undeployed
+Function IDs. Successful creations were confirmed by detail or collection GET.
+
+| Request | Observed result |
+| --- | --- |
+| Create two `Custom` endpoint actions with the same name and no `id` | Both POSTs returned 201 with distinct, 22-character `sys.id` values. Neither matched the camel case form of the name. |
+| Create an endpoint action with `id` | POST returned 422 with validation path `["id"]`: `The property "id" is not expected`. |
+| Create a `Custom` Function action without `id` | POST returned 201 with a generated ID. |
+| Create Function actions with `id` in the `Custom`, `Entries.v1.0`, and `Notification.v1.0` categories | Each POST returned 201; GET returned the requested `sys.id`. |
+| Create a Function action with an ID already in use | POST returned 201; GET showed the second request's name and Function link. |
+| Repeat that duplicate POST with `If-None-Match: *` or `X-Contentful-Version: 0` | Both returned 201 and overwrote the existing action. |
+| PUT a nonexistent ID with an endpoint or Function body, without a conditional header, with `X-Contentful-Version: 0`, or with `If-None-Match: *` | Every PUT returned 404; GET before and after each request returned 404. |
+| PUT an existing endpoint or Function action using the same bodies | Both returned 200. |
+| Update a chosen-ID Function action to an endpoint, omitting `id` from PUT | PUT returned 200; GET retained the ID and endpoint URL, and omitted the Function link. |
+
+The tested requests show that Contentful accepts a chosen ID on Function creation
+and can overwrite an existing Function action with that ID. They do not establish the
+complete ID validation rules or every possible server-side precondition. Direct
+endpoint creation with a chosen ID was rejected, although an endpoint can retain
+an ID chosen when it was created as a Function action. The tested PUT requests did
+not create an action with a chosen ID. Function invocation was not tested.
 
 Schema object key order changed on GET; compare JSON structurally, not as raw text. The
 observations do not cover every JSON Schema keyword, built-in/schema combination, or
@@ -193,8 +220,8 @@ treated as a configurable persistent action definition.
 
 ## Unresolved behavior
 
-Every JSON Schema keyword and built-in/schema combination, chosen-ID support across
-action forms, execution/result validation, caller permissions, and the complete
+Every JSON Schema keyword and built-in/schema combination, the full chosen-ID
+validation rules, execution/result validation, caller permissions, and the complete
 raw-response wire shape. No call retention, cancellation, replay, or list contract was
 established.
 
@@ -204,6 +231,7 @@ No authoritative AppAction count quota was established.
 [action-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/app-action.ts
 [parameter-types]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/widget-parameters.ts
 [action-conversion]: https://github.com/contentful/create-contentful-app/blob/909e37a3e55a1e5851bdc35f49ac9c5c34b64d4e/packages/contentful--app-scripts/src/upsert-actions/make-cma-payload.ts
+[action-upsert]: https://github.com/contentful/create-contentful-app/blob/909e37a3e55a1e5851bdc35f49ac9c5c34b64d4e/packages/contentful--app-scripts/src/upsert-actions/upsert-actions.ts
 [categories]: https://www.contentful.com/developers/docs/references/content-management-api/app-action-categories/get-app-action-categories/
 [call-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-action-call.ts
 [call-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/app-action-call.ts

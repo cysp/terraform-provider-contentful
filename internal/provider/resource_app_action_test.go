@@ -72,6 +72,7 @@ func TestAccAppActionResourceInvalidConfig(t *testing.T) {
 		{"builtin parameters", strings.Replace(actionLegacyConfig, `"Custom"`, `"Entries.v1.0"`, 1), "Built-in App Action parameters are read-only"},
 		{"both executors", strings.Replace(actionLegacyConfig, "\n}", "\n function_id=\"fn\"\n}", 1), "Invalid App Action configuration"},
 		{"HTTP URL", strings.Replace(actionLegacyConfig, "https://", "http://", 1), "Invalid App Action URL"},
+		{"invalid ID", strings.Replace(actionFunctionConfig, "\n}", "\n app_action_id=\"../chosen\"\n}", 1), "Invalid lookup ID"},
 		{"null schema", strings.Replace(actionLegacyConfig, "\n}", "\n result_schema=\"null\"\n}", 1), "Invalid App Action JSON"},
 	} {
 		t.Run(test.name, func(t *testing.T) {
