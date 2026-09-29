@@ -27,10 +27,16 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 	// The fixture store is a map; choose a repeatable response order for tests.
 	slices.SortFunc(values, func(a, b *cm.Role) int { return cmp.Compare(a.Sys.ID, b.Sys.ID) })
 
-	skip, limit := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
+	skip64, limit64 := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
 	if params.PageNext.IsSet() && params.PagePrev.IsSet() || params.Skip.IsSet() && (params.PageNext.IsSet() || params.PagePrev.IsSet()) {
 		return NewContentfulManagementErrorStatusCodeBadRequest(new("Conflicting pagination parameters"), nil), nil
 	}
+
+	if skip64 < 0 || skip64 > math.MaxInt || limit64 < 1 || limit64 > math.MaxInt {
+		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
+	}
+
+	skip, limit := int(skip64), int(limit64)
 
 	cursor := params.PageNext
 	if params.PagePrev.IsSet() {
@@ -43,38 +49,34 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 			return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid cursor"), nil), nil
 		}
 
-		skip, err = strconv.ParseInt(string(decoded), 10, 64)
-		if err != nil {
+		skip, err = strconv.Atoi(string(decoded))
+		if err != nil || skip < 0 {
 			return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid cursor"), nil), nil
 		}
 	}
 
-	if skip < 0 || skip > math.MaxInt || limit < 1 || limit > math.MaxInt {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
-	}
-
-	start := min(skip, int64(len(values)))
-	end := start + min(limit, int64(len(values))-start)
+	start := min(skip, len(values))
+	end := start + min(limit, len(values)-start)
 
 	items := make([]cm.Role, 0, end-start)
 	for _, value := range values[start:end] {
 		items = append(items, *value)
 	}
 
-	collection := &cm.RoleCollection{Sys: cm.RoleCollectionSys{Type: cm.RoleCollectionSysTypeArray}, Limit: cm.NewOptInt(int(limit)), Items: items}
+	collection := &cm.RoleCollection{Sys: cm.RoleCollectionSys{Type: cm.RoleCollectionSysTypeArray}, Limit: cm.NewOptInt(limit), Items: items}
 	// Explicit skip selects the legacy fixture; otherwise model cursor responses.
 	if params.Skip.IsSet() {
-		collection.Skip = cm.NewOptInt(int(skip))
+		collection.Skip = cm.NewOptInt(skip)
 		collection.Total = cm.NewOptInt(len(values))
 	} else {
 		pages := cm.RoleCollectionPages{}
 
-		link := func(parameter string, offset int64) string {
-			token := base64.RawURLEncoding.EncodeToString([]byte(strconv.FormatInt(offset, 10)))
+		link := func(parameter string, offset int) string {
+			token := base64.RawURLEncoding.EncodeToString([]byte(strconv.Itoa(offset)))
 
 			return fmt.Sprintf("/spaces/%s/roles?%s=%s&limit=%d", url.PathEscape(params.SpaceID), parameter, token, limit)
 		}
-		if end < int64(len(values)) {
+		if end < len(values) {
 			pages.Next = cm.NewOptString(link("pageNext", end))
 		}
 
