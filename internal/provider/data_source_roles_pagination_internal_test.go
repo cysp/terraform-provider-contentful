@@ -87,6 +87,7 @@ func TestRolesCursorPaginationErrorsDoNotPublish(t *testing.T) {
 		{"offset link", `"pages":{"next":"/spaces/space/roles?pageNext=x&skip=2"}`, 200, "pageNext"},
 		{"repeat", `"pages":{"next":"/spaces/space/roles?limit=42&pageNext=first"}`, 200, "repeats"},
 		{"mixed", `"total":10,"pages":{}`, 200, "mixes"},
+		{"cursor after offset", `"pages":{"next":"/spaces/space/roles?pageNext=next"}`, 200, "mixes"},
 		{"offset after cursor", `"total":10,"skip":1`, 200, "mixes"},
 		{"later denied", "", 403, "AccessDenied"},
 	}
@@ -100,8 +101,21 @@ func TestRolesCursorPaginationErrorsDoNotPublish(t *testing.T) {
 				require.LessOrEqual(t, count, 2)
 
 				if count == 1 {
+					assert.Equal(t, "limit=100", request.URL.RawQuery)
+
+					if test.name == "cursor after offset" {
+						return discoveryHTTPResponse(request, 200, `{"sys":{"type":"Array"},"skip":0,"total":2,"items":[`+body+`]}`), nil
+					}
+
 					return discoveryHTTPResponse(request, 200, first), nil
 				}
+
+				expectedQuery := "limit=100&pageNext=first"
+				if test.name == "cursor after offset" {
+					expectedQuery = "limit=100&skip=1"
+				}
+
+				assert.Equal(t, expectedQuery, request.URL.RawQuery)
 
 				page := `{"sys":{"type":"Array"},"items":[` + body + `],` + test.page + `}`
 				if test.name == "wrong item space" {
@@ -188,4 +202,35 @@ func TestRolesOffsetWithoutTotal(t *testing.T) {
 	}))
 	require.Empty(t, response.Diagnostics)
 	assert.Equal(t, 2, count)
+}
+
+func TestRolesOffsetPaginationRetainsModeWithoutMetadata(t *testing.T) {
+	t.Parallel()
+
+	body := discoveryFixture(t, "role")
+	pages := []string{
+		`{"sys":{"type":"Array"},"total":3,"skip":0,"items":[` + body + `]}`,
+		`{"sys":{"type":"Array"},"items":[` + strings.Replace(body, "Second", "Middle", 1) + `]}`,
+		`{"sys":{"type":"Array"},"items":[` + strings.Replace(body, "Second", "Last", 1) + `]}`,
+		`{"sys":{"type":"Array"},"items":[]}`,
+	}
+	queries := []string{"limit=100", "limit=100&skip=1", "limit=100&skip=2", "limit=100&skip=3"}
+	count := 0
+	response := discoveryReadTest(t.Context(), t, NewRolesDataSource, map[string]any{"space_id": "space"}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		require.Less(t, count, len(pages))
+		assert.Equal(t, queries[count], request.URL.RawQuery)
+		page := pages[count]
+		count++
+
+		return discoveryHTTPResponse(request, 200, page), nil
+	}))
+	require.Empty(t, response.Diagnostics)
+	assert.Equal(t, 4, count)
+
+	var data RolesDataSourceModel
+	require.Empty(t, response.State.Get(t.Context(), &data))
+	require.Len(t, data.Roles, 3)
+	assert.Equal(t, "Second", data.Roles[0].Name.ValueString())
+	assert.Equal(t, "Middle", data.Roles[1].Name.ValueString())
+	assert.Equal(t, "Last", data.Roles[2].Name.ValueString())
 }

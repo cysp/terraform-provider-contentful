@@ -1,7 +1,6 @@
 package cmtesting_test
 
 import (
-	"encoding/base64"
 	"math"
 	"net/http/httptest"
 	"strconv"
@@ -37,9 +36,9 @@ func TestGetRolesPagination(t *testing.T) {
 		prev   string
 		offset bool
 	}{
-		{"first", cm.GetRolesParams{SpaceID: "space", Limit: cm.NewOptInt64(2)}, []string{"a", "b"}, "/spaces/space/roles?pageNext=Mg&limit=2", "", false},
-		{"next", cm.GetRolesParams{SpaceID: "space", Limit: cm.NewOptInt64(2), PageNext: cm.NewOptString("Mg")}, []string{"c"}, "", "/spaces/space/roles?pagePrev=MA&limit=2", false},
-		{"previous", cm.GetRolesParams{SpaceID: "space", Limit: cm.NewOptInt64(2), PagePrev: cm.NewOptString("MA")}, []string{"a", "b"}, "/spaces/space/roles?pageNext=Mg&limit=2", "", false},
+		{"first", cm.GetRolesParams{SpaceID: "space", Limit: cm.NewOptInt64(2)}, []string{"a", "b"}, "/spaces/space/roles?pageNext=2&limit=2", "", false},
+		{"next", cm.GetRolesParams{SpaceID: "space", Limit: cm.NewOptInt64(2), PageNext: cm.NewOptString("2")}, []string{"c"}, "", "/spaces/space/roles?pagePrev=0&limit=2", false},
+		{"previous", cm.GetRolesParams{SpaceID: "space", Limit: cm.NewOptInt64(2), PagePrev: cm.NewOptString("0")}, []string{"a", "b"}, "/spaces/space/roles?pageNext=2&limit=2", "", false},
 		{"maximum offset", cm.GetRolesParams{SpaceID: "space", Limit: cm.NewOptInt64(2), Skip: cm.NewOptInt64(math.MaxInt)}, []string{}, "", "", true},
 		{"maximum limit", cm.GetRolesParams{SpaceID: "space", Limit: cm.NewOptInt64(math.MaxInt), Skip: cm.NewOptInt64(0)}, []string{"a", "b", "c"}, "", "", true},
 		{"offset", cm.GetRolesParams{SpaceID: "space", Limit: cm.NewOptInt64(2), Skip: cm.NewOptInt64(1)}, []string{"b", "c"}, "", "", true},
@@ -73,14 +72,13 @@ func TestGetRolesPagination(t *testing.T) {
 	}
 
 	invalid := []cm.GetRolesParams{
-		{SpaceID: "space", PageNext: cm.NewOptString("!")},
-		{SpaceID: "space", PageNext: cm.NewOptString(base64.RawURLEncoding.EncodeToString([]byte("not-an-integer")))},
-		{SpaceID: "space", PageNext: cm.NewOptString(base64.RawURLEncoding.EncodeToString([]byte("9223372036854775808")))},
-		{SpaceID: "space", PagePrev: cm.NewOptString("LTE")},
+		{SpaceID: "space", PageNext: cm.NewOptString("not-an-integer")},
+		{SpaceID: "space", PageNext: cm.NewOptString("9223372036854775808")},
+		{SpaceID: "space", PagePrev: cm.NewOptString("-1")},
 		{SpaceID: "space", Skip: cm.NewOptInt64(-1)},
 		{SpaceID: "space", Limit: cm.NewOptInt64(0)},
-		{SpaceID: "space", PageNext: cm.NewOptString("Mg"), PagePrev: cm.NewOptString("MA")},
-		{SpaceID: "space", PageNext: cm.NewOptString("Mg"), Skip: cm.NewOptInt64(0)},
+		{SpaceID: "space", PageNext: cm.NewOptString("2"), PagePrev: cm.NewOptString("0")},
+		{SpaceID: "space", PageNext: cm.NewOptString("2"), Skip: cm.NewOptInt64(0)},
 	}
 	// On 32-bit platforms, int64 query values and cursor offsets can exceed
 	// the int fields in the response. Keep these cases runnable on those targets.
@@ -88,7 +86,7 @@ func TestGetRolesPagination(t *testing.T) {
 		invalid = append(invalid,
 			cm.GetRolesParams{SpaceID: "space", Skip: cm.NewOptInt64(2147483648)},
 			cm.GetRolesParams{SpaceID: "space", Limit: cm.NewOptInt64(2147483648)},
-			cm.GetRolesParams{SpaceID: "space", PageNext: cm.NewOptString("MjE0NzQ4MzY0OA")},
+			cm.GetRolesParams{SpaceID: "space", PageNext: cm.NewOptString("2147483648")},
 		)
 	}
 

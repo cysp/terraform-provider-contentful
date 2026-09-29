@@ -3,7 +3,6 @@ package cmtesting
 import (
 	"cmp"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"math"
 	"net/http"
@@ -44,12 +43,9 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 	}
 
 	if cursor.IsSet() {
-		decoded, err := base64.RawURLEncoding.DecodeString(cursor.Value)
-		if err != nil {
-			return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid cursor"), nil), nil
-		}
+		var err error
 
-		skip, err = strconv.Atoi(string(decoded))
+		skip, err = strconv.Atoi(cursor.Value)
 		if err != nil || skip < 0 {
 			return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid cursor"), nil), nil
 		}
@@ -72,9 +68,7 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 		pages := cm.RoleCollectionPages{}
 
 		link := func(parameter string, offset int) string {
-			token := base64.RawURLEncoding.EncodeToString([]byte(strconv.Itoa(offset)))
-
-			return fmt.Sprintf("/spaces/%s/roles?%s=%s&limit=%d", url.PathEscape(params.SpaceID), parameter, token, limit)
+			return fmt.Sprintf("/spaces/%s/roles?%s=%d&limit=%d", url.PathEscape(params.SpaceID), parameter, offset, limit)
 		}
 		if end < len(values) {
 			pages.Next = cm.NewOptString(link("pageNext", end))

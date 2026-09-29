@@ -3,12 +3,12 @@
 page_title: "contentful_roles Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves all Contentful Roles in a space, automatically following offset or cursor pagination within the read timeout. A failed page read does not publish a partial collection.
+  Retrieves all Contentful Roles in a space. The read timeout covers all pages, and a failed page causes the lookup to fail.
 ---
 
 # contentful_roles (Data Source)
 
-Retrieves all Contentful Roles in a space, automatically following offset or cursor pagination within the read timeout. A failed page read does not publish a partial collection.
+Retrieves all Contentful Roles in a space. The read timeout covers all pages, and a failed page causes the lookup to fail.
 
 ## Example Usage
 

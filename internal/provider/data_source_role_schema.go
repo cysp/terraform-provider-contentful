@@ -54,7 +54,7 @@ func RoleDataSourceSchema(ctx context.Context) schema.Schema {
 
 func RolesDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Retrieves all Contentful Roles in a space, automatically following offset or cursor pagination within the read timeout. A failed page read does not publish a partial collection.",
+		Description: "Retrieves all Contentful Roles in a space. The read timeout covers all pages, and a failed page causes the lookup to fail.",
 		Attributes: map[string]schema.Attribute{
 			"space_id": schema.StringAttribute{Description: "ID of the space containing the roles.", Required: true, Validators: []validator.String{discoveryIDValidator{}}},
 			"id":       schema.StringAttribute{Description: "Terraform identifier equal to `space_id`.", Computed: true},

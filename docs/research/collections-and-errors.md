@@ -60,20 +60,21 @@ shows root-relative URL strings in `pages.next` and `pages.prev`, carrying
 `pageNext` and `pagePrev` opaque tokens. Forward traversal ends when `next`
 is absent. It permits changing `limit` between pages. Its general opt-in
 `cursor=true` example concerns Entries; the Role announcement describes an
-endpoint migration and does not require that opt-in.
+endpoint migration and does not mention that parameter.
 
 The [Role endpoint reference](https://www.contentful.com/developers/docs/references/content-management-api/roles/get-all-roles/)
 still shows an offset envelope. The SDK
 [Role adapter](https://github.com/contentful/contentful-management.js/blob/5ed646919c0663e2da7676979afae0fd15c11587/lib/adapters/REST/endpoints/role.ts)
 still returns `CollectionProp<RoleProps>`; its shared
 [cursor collection type](https://github.com/contentful/contentful-management.js/blob/5ed646919c0663e2da7676979afae0fd15c11587/lib/common-types.ts)
-omits `total`/`skip` and makes `pages`, `next`, and `prev` optional strings.
+omits `total`/`skip` and defines an optional `pages` object containing optional
+`next` and `prev` strings.
 That supports representing absent terminal navigation, but is not proof of
 the eventual Role wire shape.
 
 The provider's [Role traversal policy](../design/configuration-data-sources.md#role-traversal)
-supports these documented representations. Raw local fixtures establish provider
-behavior, not deployment of the announced change or the service's cursor encoding.
+uses these published cursor conventions alongside the existing offset behavior.
+Raw local fixtures establish provider behavior, not deployment of the announced change or the service's cursor encoding.
 
 ## Endpoint-specific collection observations
 

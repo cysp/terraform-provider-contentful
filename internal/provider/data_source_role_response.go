@@ -57,9 +57,10 @@ func readRoles(ctx context.Context, client *cm.Client, spaceID string) ([]RoleDa
 			roles = append(roles, entity)
 		}
 
-		// Offset metadata distinguishes legacy responses from terminal cursor pages,
-		// where the SDK permits pages to be omitted entirely.
-		offset := collection.Total.IsSet() || collection.Skip.IsSet()
+		// An offset request retains legacy traversal when later metadata is omitted.
+		// On the initial request, offset metadata distinguishes legacy responses
+		// from terminal cursor pages, where the SDK permits pages to be absent.
+		offset := params.Skip.IsSet() || collection.Total.IsSet() || collection.Skip.IsSet()
 		if offset && (collection.Pages.IsSet() || params.PageNext.IsSet()) {
 			return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, "Role collection mixes offset and cursor pagination.")}
 		}
