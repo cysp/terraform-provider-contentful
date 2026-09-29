@@ -45,6 +45,36 @@ A successful out-of-range response from the team endpoint was not established by
 retained evidence. The documented requested-offset meaning remains independent of that
 unverified status and item behavior.
 
+## Space Role cursor migration
+
+Checked against primary sources on 2026-09-29; no live migration probe was run.
+
+The [Space Role announcement](https://www.contentful.com/developers/api-changes/space-roles-collection-endpoints-update/)
+says the space Role collection will replace `total` and `skip` with `pages`
+navigation, accept `pageNext` and `pagePrev`, and retain `limit`. Its body says
+February 15, 2027; its header says February 14. The scope is
+`GET /spaces/{space_id}/roles`, not singular Role reads or mutations.
+
+The [CMA cursor overview](https://www.contentful.com/developers/docs/references/content-management-api/overview/#cursor-pagination)
+shows root-relative URL strings in `pages.next` and `pages.prev`, carrying
+`pageNext` and `pagePrev` opaque tokens. Forward traversal ends when `next`
+is absent. It permits changing `limit` between pages. Its general opt-in
+`cursor=true` example concerns Entries; the Role announcement describes an
+endpoint migration and does not require that opt-in.
+
+The [Role endpoint reference](https://www.contentful.com/developers/docs/references/content-management-api/roles/get-all-roles/)
+still shows an offset envelope. The SDK
+[Role adapter](https://github.com/contentful/contentful-management.js/blob/5ed646919c0663e2da7676979afae0fd15c11587/lib/adapters/REST/endpoints/role.ts)
+still returns `CollectionProp<RoleProps>`; its shared
+[cursor collection type](https://github.com/contentful/contentful-management.js/blob/5ed646919c0663e2da7676979afae0fd15c11587/lib/common-types.ts)
+omits `total`/`skip` and makes `pages`, `next`, and `prev` optional strings.
+That supports representing absent terminal navigation, but is not proof of
+the eventual Role wire shape.
+
+The provider's [Role traversal policy](../design/configuration-data-sources.md#role-traversal)
+supports these documented representations. Raw local fixtures establish provider
+behavior, not deployment of the announced change or the service's cursor encoding.
+
 ## Endpoint-specific collection observations
 
 Observed: 2026-09-09 (UTC), passive configuration reads. These samples demonstrate

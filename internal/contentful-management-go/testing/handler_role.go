@@ -3,8 +3,12 @@ package cmtesting
 import (
 	"cmp"
 	"context"
+	"encoding/base64"
+	"fmt"
 	"net/http"
+	"net/url"
 	"slices"
+	"strconv"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
@@ -23,6 +27,27 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 	slices.SortFunc(values, func(a, b *cm.Role) int { return cmp.Compare(a.Sys.ID, b.Sys.ID) })
 
 	skip, limit := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
+	if params.PageNext.IsSet() && params.PagePrev.IsSet() || params.Skip.IsSet() && (params.PageNext.IsSet() || params.PagePrev.IsSet()) {
+		return NewContentfulManagementErrorStatusCodeBadRequest(new("Conflicting pagination parameters"), nil), nil
+	}
+
+	cursor := params.PageNext
+	if params.PagePrev.IsSet() {
+		cursor = params.PagePrev
+	}
+
+	if cursor.IsSet() {
+		decoded, err := base64.RawURLEncoding.DecodeString(cursor.Value)
+		if err != nil {
+			return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid cursor"), nil), nil
+		}
+
+		skip, err = strconv.ParseInt(string(decoded), 10, 64)
+		if err != nil {
+			return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid cursor"), nil), nil
+		}
+	}
+
 	if skip < 0 || limit < 1 {
 		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
 	}
@@ -35,7 +60,31 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 		items = append(items, *value)
 	}
 
-	return &cm.RoleCollection{Sys: cm.RoleCollectionSys{Type: cm.RoleCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}, nil
+	collection := &cm.RoleCollection{Sys: cm.RoleCollectionSys{Type: cm.RoleCollectionSysTypeArray}, Limit: cm.NewOptInt(int(limit)), Items: items}
+	// Explicit skip selects the legacy fixture; otherwise model cursor responses.
+	if params.Skip.IsSet() {
+		collection.Skip = cm.NewOptInt(int(skip))
+		collection.Total = cm.NewOptInt(len(values))
+	} else {
+		pages := cm.RoleCollectionPages{}
+
+		link := func(parameter string, offset int64) string {
+			token := base64.RawURLEncoding.EncodeToString([]byte(strconv.FormatInt(offset, 10)))
+
+			return fmt.Sprintf("/spaces/%s/roles?%s=%s&limit=%d", url.PathEscape(params.SpaceID), parameter, token, limit)
+		}
+		if end < int64(len(values)) {
+			pages.Next = cm.NewOptString(link("pageNext", end))
+		}
+
+		if start > 0 {
+			pages.Prev = cm.NewOptString(link("pagePrev", max(0, start-limit)))
+		}
+
+		collection.Pages = cm.NewOptRoleCollectionPages(pages)
+	}
+
+	return collection, nil
 }
 
 //nolint:ireturn
