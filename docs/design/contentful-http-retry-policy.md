@@ -91,9 +91,10 @@ across another actor's changes without a version precondition. These mutations
 therefore use the same no-retry boundary. See
 [replacement and recovery](../resources/app_event_subscription.md#replacement-and-recovery).
 
-AppAction POST creates a server-assigned identity; PUT/DELETE mutate an unversioned
-definition. These calls use the same no-retry boundary, including explicit 429
-responses and redirects.
+AppAction POST creates a server-assigned identity unless a Function action has a
+caller-supplied ID. Repeating a POST with the same supplied ID can overwrite the
+existing Function action. PUT/DELETE mutate an unversioned definition. These calls use
+the same no-retry boundary, including explicit 429 responses and redirects.
 
 ## Backoff and final errors
 

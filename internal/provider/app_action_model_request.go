@@ -22,6 +22,13 @@ func appActionScope(model AppActionBaseModel) diag.Diagnostics {
 	return diags
 }
 
+func appActionCreateData(data cm.AppActionData) cm.AppActionCreateData {
+	return cm.AppActionCreateData{
+		Name: data.Name, Category: data.Category, Type: data.Type, Description: data.Description, URL: data.URL, Function: data.Function,
+		Parameters: data.Parameters, ParametersSchema: data.ParametersSchema, ResultSchema: data.ResultSchema,
+	}
+}
+
 func (model AppActionModel) ToAppActionData() (cm.AppActionData, diag.Diagnostics) {
 	var data cm.AppActionData
 

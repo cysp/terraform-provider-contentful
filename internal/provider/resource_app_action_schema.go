@@ -16,7 +16,7 @@ func AppActionResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: "Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately.\n\n" +
 			"Create, Update, and Delete are not automatically retried, including after rate limiting. " +
-			"If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again to avoid duplicates. " +
+			"If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again. " +
 			"After a failed update or delete, refresh state and review the plan before retrying.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -37,9 +37,11 @@ func AppActionResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"app_action_id": schema.StringAttribute{
-				Description:   "System ID of the App Action, allocated by Contentful.",
+				Description:   "System ID of the App Action. Omit to let Contentful generate an ID. On create, the provider sends a configured ID to Contentful, which currently accepts it for `function-invocation` actions and rejects it for `endpoint` actions. Changing the ID replaces the resource; removing it from configuration retains the existing ID. Reusing an existing Function action's ID can overwrite that action in Contentful.",
+				Optional:      true,
 				Computed:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+				Validators:    []validator.String{discoveryIDValidator{}},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplaceIfConfigured(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name of the App Action.",

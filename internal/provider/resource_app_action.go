@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var (
@@ -61,16 +62,36 @@ func (r *appActionResource) ValidateConfig(ctx context.Context, req resource.Val
 }
 
 func (r *appActionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan AppActionModel
+	var (
+		plan         AppActionModel
+		configuredID types.String
+	)
+
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("app_action_id"), &configuredID)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(appActionScope(plan.AppActionBaseModel)...)
+
+	if configuredID.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(path.Root("app_action_id"), "Unknown App Action ID", "The configured App Action ID must be known before creating the action.")
+	}
+
 	body, diags := plan.ToAppActionData()
 	resp.Diagnostics.Append(diags...)
+
+	createBody := appActionCreateData(body)
+
+	if !configuredID.IsNull() {
+		resp.Diagnostics.Append(requireDiscoveryID(path.Root("app_action_id"), plan.AppActionID)...)
+
+		if !resp.Diagnostics.HasError() {
+			createBody.ID = cm.NewOptString(plan.AppActionID.ValueString())
+		}
+	}
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -85,11 +106,11 @@ func (r *appActionResource) Create(ctx context.Context, req resource.CreateReque
 
 	defer cancel()
 
-	response, err := r.providerData.client.CreateAppAction(withContentfulRequestNoRetry(ctx), &body, cm.CreateAppActionParams{OrganizationID: plan.OrganizationID.ValueString(), AppDefinitionID: plan.AppDefinitionID.ValueString()})
+	response, err := r.providerData.client.CreateAppAction(withContentfulRequestNoRetry(ctx), &createBody, cm.CreateAppActionParams{OrganizationID: plan.OrganizationID.ValueString(), AppDefinitionID: plan.AppDefinitionID.ValueString()})
 
 	result, ok := response.(*cm.AppAction)
 	if err != nil || !ok || result == nil {
-		resp.Diagnostics.AddError("Failed to create app action", util.ErrorDetailFromContentfulManagementResponse(response, err)+" The action may have been created even though the request failed. Check this App Definition in Contentful and import any action created by this request before applying again.")
+		resp.Diagnostics.AddError("Failed to create app action", util.ErrorDetailFromContentfulManagementResponse(response, err)+" Before retrying, check this App Definition in Contentful. Import the action if the request created one.")
 
 		return
 	}

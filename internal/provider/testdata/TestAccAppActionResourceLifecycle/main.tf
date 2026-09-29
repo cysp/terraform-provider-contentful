@@ -65,6 +65,7 @@ resource "contentful_app_action" "builtin" {
 resource "contentful_app_action" "function" {
   organization_id   = contentful_app_definition.test.organization_id
   app_definition_id = contentful_app_definition.test.app_definition_id
+  app_action_id     = "acceptanceFunction"
   name              = "Function action"
   category          = "Custom"
   type              = var.function_target.type

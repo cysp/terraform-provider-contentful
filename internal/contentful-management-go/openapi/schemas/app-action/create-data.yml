@@ -1,0 +1,8 @@
+AppActionCreateData:
+  allOf:
+    - $ref: "./data.yml#/AppActionData"
+    - type: object
+      properties:
+        id:
+          description: Optional caller-supplied App Action ID.
+          type: string

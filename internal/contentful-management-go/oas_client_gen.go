@@ -90,7 +90,7 @@ type Invoker interface {
 	// CreateAppAction invokes createAppAction operation.
 	//
 	// POST /organizations/{organization_id}/app_definitions/{app_definition_id}/actions
-	CreateAppAction(ctx context.Context, request *AppActionData, params CreateAppActionParams, options ...RequestOption) (CreateAppActionRes, error)
+	CreateAppAction(ctx context.Context, request *AppActionCreateData, params CreateAppActionParams, options ...RequestOption) (CreateAppActionRes, error)
 	// CreateAppDefinition invokes createAppDefinition operation.
 	//
 	// Create an app definition.
@@ -932,12 +932,12 @@ func (c *Client) sendActivateContentType(ctx context.Context, params ActivateCon
 // CreateAppAction invokes createAppAction operation.
 //
 // POST /organizations/{organization_id}/app_definitions/{app_definition_id}/actions
-func (c *Client) CreateAppAction(ctx context.Context, request *AppActionData, params CreateAppActionParams, options ...RequestOption) (CreateAppActionRes, error) {
+func (c *Client) CreateAppAction(ctx context.Context, request *AppActionCreateData, params CreateAppActionParams, options ...RequestOption) (CreateAppActionRes, error) {
 	res, err := c.sendCreateAppAction(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateAppAction(ctx context.Context, request *AppActionData, params CreateAppActionParams, requestOptions ...RequestOption) (res CreateAppActionRes, err error) {
+func (c *Client) sendCreateAppAction(ctx context.Context, request *AppActionCreateData, params CreateAppActionParams, requestOptions ...RequestOption) (res CreateAppActionRes, err error) {
 
 	var reqCfg requestConfig
 	reqCfg.setDefaults(c.baseClient)

@@ -490,6 +490,126 @@ func (s *AppActionCollectionSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Merged schema.
+// Ref: #/AppActionCreateData
+type AppActionCreateData struct {
+	Name        string          `json:"name"`
+	Category    string          `json:"category"`
+	Type        string          `json:"type"`
+	Description OptString       `json:"description"`
+	URL         OptString       `json:"url"`
+	Function    OptFunctionLink `json:"function"`
+	// Legacy parameter definitions. Raw JSON preserves response fields without narrowing future
+	// definitions.
+	Parameters jx.Raw `json:"parameters"`
+	// JSON Schema draft 4 input contract.
+	ParametersSchema jx.Raw `json:"parametersSchema"`
+	// JSON Schema draft 4 result contract.
+	ResultSchema jx.Raw `json:"resultSchema"`
+	// Optional caller-supplied App Action ID.
+	ID OptString `json:"id"`
+}
+
+// GetName returns the value of Name.
+func (s *AppActionCreateData) GetName() string {
+	return s.Name
+}
+
+// GetCategory returns the value of Category.
+func (s *AppActionCreateData) GetCategory() string {
+	return s.Category
+}
+
+// GetType returns the value of Type.
+func (s *AppActionCreateData) GetType() string {
+	return s.Type
+}
+
+// GetDescription returns the value of Description.
+func (s *AppActionCreateData) GetDescription() OptString {
+	return s.Description
+}
+
+// GetURL returns the value of URL.
+func (s *AppActionCreateData) GetURL() OptString {
+	return s.URL
+}
+
+// GetFunction returns the value of Function.
+func (s *AppActionCreateData) GetFunction() OptFunctionLink {
+	return s.Function
+}
+
+// GetParameters returns the value of Parameters.
+func (s *AppActionCreateData) GetParameters() jx.Raw {
+	return s.Parameters
+}
+
+// GetParametersSchema returns the value of ParametersSchema.
+func (s *AppActionCreateData) GetParametersSchema() jx.Raw {
+	return s.ParametersSchema
+}
+
+// GetResultSchema returns the value of ResultSchema.
+func (s *AppActionCreateData) GetResultSchema() jx.Raw {
+	return s.ResultSchema
+}
+
+// GetID returns the value of ID.
+func (s *AppActionCreateData) GetID() OptString {
+	return s.ID
+}
+
+// SetName sets the value of Name.
+func (s *AppActionCreateData) SetName(val string) {
+	s.Name = val
+}
+
+// SetCategory sets the value of Category.
+func (s *AppActionCreateData) SetCategory(val string) {
+	s.Category = val
+}
+
+// SetType sets the value of Type.
+func (s *AppActionCreateData) SetType(val string) {
+	s.Type = val
+}
+
+// SetDescription sets the value of Description.
+func (s *AppActionCreateData) SetDescription(val OptString) {
+	s.Description = val
+}
+
+// SetURL sets the value of URL.
+func (s *AppActionCreateData) SetURL(val OptString) {
+	s.URL = val
+}
+
+// SetFunction sets the value of Function.
+func (s *AppActionCreateData) SetFunction(val OptFunctionLink) {
+	s.Function = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *AppActionCreateData) SetParameters(val jx.Raw) {
+	s.Parameters = val
+}
+
+// SetParametersSchema sets the value of ParametersSchema.
+func (s *AppActionCreateData) SetParametersSchema(val jx.Raw) {
+	s.ParametersSchema = val
+}
+
+// SetResultSchema sets the value of ResultSchema.
+func (s *AppActionCreateData) SetResultSchema(val jx.Raw) {
+	s.ResultSchema = val
+}
+
+// SetID sets the value of ID.
+func (s *AppActionCreateData) SetID(val OptString) {
+	s.ID = val
+}
+
 // Ref: #/AppActionData
 type AppActionData struct {
 	Name        string          `json:"name"`

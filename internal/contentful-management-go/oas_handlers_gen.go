@@ -278,7 +278,7 @@ func (s *Server) handleCreateAppActionRequest(args [2]string, argsEscaped bool, 
 		}
 
 		type (
-			Request  = *AppActionData
+			Request  = *AppActionCreateData
 			Params   = CreateAppActionParams
 			Response = CreateAppActionRes
 		)

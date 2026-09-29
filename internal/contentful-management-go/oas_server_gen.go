@@ -17,7 +17,7 @@ type Handler interface {
 	// CreateAppAction implements createAppAction operation.
 	//
 	// POST /organizations/{organization_id}/app_definitions/{app_definition_id}/actions
-	CreateAppAction(ctx context.Context, req *AppActionData, params CreateAppActionParams) (CreateAppActionRes, error)
+	CreateAppAction(ctx context.Context, req *AppActionCreateData, params CreateAppActionParams) (CreateAppActionRes, error)
 	// CreateAppDefinition implements createAppDefinition operation.
 	//
 	// Create an app definition.
