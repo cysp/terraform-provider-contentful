@@ -8,7 +8,7 @@ description: |-
 
 Use list resources to discover existing [`contentful_entry`](../list-resources/entry), [`contentful_content_type`](../list-resources/content_type), and [`contentful_locale`](../list-resources/locale) objects and generate configuration for import. This workflow requires Terraform 1.14 or later and a configured Contentful provider.
 
-If you already know an object's ID, use the Import section on its resource page. For a lookup without managing an object's lifecycle, use [configuration data sources](existing-configuration) for Spaces, Environments, Environment Aliases, and Locales. Entries and Content Types are discoverable through list resources; they do not have individual data sources.
+If you already know an object's ID, use the Import section on its resource page. For a lookup without managing an object's lifecycle, use [configuration data sources](existing-configuration) for Spaces, Environments, Environment Aliases, Locales, Roles, and Content Types. Entries are discoverable through list resources; they do not have individual data sources.
 
 ## 1. Define the query
 
