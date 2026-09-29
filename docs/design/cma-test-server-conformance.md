@@ -514,7 +514,8 @@ selects its legacy offset response; otherwise it emits `pages.next` and
 encode fixture offsets using base64url. This is a test convention, not Contentful's
 token encoding or a claim that live Roles use query presence to choose their
 pagination protocol. Conflicting directions, mixing skip with a cursor, invalid
-tokens, negative offsets and nonpositive limits fail.
+tokens, negative offsets, nonpositive limits and values that exceed the native
+integer range of the response metadata fail.
 
 Conformance tests cover forward, backward, offset and invalid requests through
 the generated HTTP client/server. Independent provider fixtures cover actual

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"math"
 	"net/http"
 	"net/url"
 	"slices"
@@ -48,7 +49,7 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 		}
 	}
 
-	if skip < 0 || limit < 1 {
+	if skip < 0 || skip > math.MaxInt || limit < 1 || limit > math.MaxInt {
 		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
 	}
 
