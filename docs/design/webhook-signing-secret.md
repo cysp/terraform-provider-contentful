@@ -7,7 +7,8 @@ equals `space_id`.
 The resource accepts GET 200, PUT 200/201, and DELETE 204 success. GET/PUT responses
 must contain `sys.type: WebhookSigningSecret`, a Space link, and a string
 `redactedValue`. The resource checks that the returned space matches the request.
-The client models no secret-specific `sys.id`, timestamps, users, or version.
+The client models optional creation/update timestamps but no secret-specific
+`sys.id`, users, or version.
 
 [API research](../research/webhook-signing-secret.md) records the external evidence
 and its limitations. [Terraform value semantics](terraform-value-semantics.md)
