@@ -88,15 +88,25 @@ func TestAccAppActionResourceInvalidConfig(t *testing.T) {
 func TestAccAppActionDataSources(t *testing.T) {
 	t.Parallel()
 
-	const (
-		actionBuiltinResponse = `{"name":"Action","category":"Entries.v1.0","type":"endpoint","url":"https://example.invalid/action","parameters":[{"id":"entryIds","name":"Entry Ids","description":"Ids of the entries you want to trigger the action for","type":"Symbol","required":true}]}`
-		actionResponseSys     = `"sys":{"id":"action","type":"AppAction","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}},"appDefinition":{"sys":{"type":"Link","linkType":"AppDefinition","id":"app"}}}`
-		functionBody          = `{"name":"Function Action","category":"Future.v2.0","type":"function-invocation","description":"A full definition","function":{"sys":{"type":"Link","linkType":"Function","id":"function"}},"parameters":[],"parametersSchema":{"type":"object"},"resultSchema":{"type":"string"}}`
-		functionID            = "z-function"
-	)
+	const functionID = "z-function"
 
-	functionResponse := strings.Replace("{"+actionResponseSys+","+strings.TrimPrefix(functionBody, "{"), `"id":"action"`, `"id":"z-function"`, 1)
-	endpointResponse := "{" + actionResponseSys + "," + strings.TrimPrefix(actionBuiltinResponse, "{")
+	functionResponse := cm.AppAction{
+		Sys: cm.AppActionSys{
+			ID: functionID, Type: cm.AppActionSysTypeAppAction,
+			Organization: cm.NewOrganizationLink("org"), AppDefinition: cm.NewAppDefinitionLink("app"),
+		},
+		Name: "Function Action", Category: "Future.v2.0", Type: "function-invocation", Description: cm.NewOptString("A full definition"),
+		Function:   cm.NewOptFunctionLink(cm.NewFunctionLink("function")),
+		Parameters: []byte(`[]`), ParametersSchema: []byte(`{"type":"object"}`), ResultSchema: []byte(`{"type":"string"}`),
+	}
+	endpointResponse := cm.AppAction{
+		Sys: cm.AppActionSys{
+			ID: "action", Type: cm.AppActionSysTypeAppAction,
+			Organization: cm.NewOrganizationLink("org"), AppDefinition: cm.NewAppDefinitionLink("app"),
+		},
+		Name: "Action", Category: "Entries.v1.0", Type: "endpoint", URL: cm.NewOptString("https://example.invalid/action"),
+		Parameters: []byte(`[{"id":"entryIds","name":"Entry Ids","description":"Ids of the entries you want to trigger the action for","type":"Symbol","required":true}]`),
+	}
 
 	var requestMutex sync.Mutex
 
@@ -106,7 +116,7 @@ func TestAccAppActionDataSources(t *testing.T) {
 		assert.Equal(t, http.MethodGet, r.Method)
 
 		if r.URL.Path == actionCollectionPath+"/"+functionID {
-			_, _ = w.Write([]byte(functionResponse))
+			assert.NoError(t, json.NewEncoder(w).Encode(&functionResponse))
 
 			return
 		}
@@ -120,17 +130,18 @@ func TestAccAppActionDataSources(t *testing.T) {
 		pageRequests++
 		requestMutex.Unlock()
 
-		action := json.RawMessage(functionResponse)
-
-		page := map[string]any{"sys": map[string]any{"type": "Array"}, "total": 2, "skip": 0, "limit": 1, "items": []json.RawMessage{action}}
+		page := cm.AppActionCollection{
+			Sys:   cm.AppActionCollectionSys{Type: cm.AppActionCollectionSysTypeArray},
+			Total: cm.NewOptInt(2), Skip: cm.NewOptInt(0), Limit: cm.NewOptInt(1), Items: []cm.AppAction{functionResponse},
+		}
 		if skip == "1" {
-			page["skip"] = 1
-			page["items"] = []json.RawMessage{json.RawMessage(endpointResponse)}
+			page.Skip = cm.NewOptInt(1)
+			page.Items = []cm.AppAction{endpointResponse}
 		} else {
 			assert.Equal(t, "0", skip)
 		}
 
-		assert.NoError(t, json.NewEncoder(w).Encode(page))
+		assert.NoError(t, json.NewEncoder(w).Encode(&page))
 	})
 	functionFields := map[string]knownvalue.Check{
 		"app_action_id":     knownvalue.StringExact("z-function"),

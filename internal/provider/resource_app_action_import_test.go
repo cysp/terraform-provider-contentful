@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -118,10 +119,16 @@ func TestAccAppActionResourceExternalDefinitions(t *testing.T) {
 			writeFields += `,"resultSchema":` + result
 			fields += fmt.Sprintf(" result_schema=%q\n", result)
 
-			responseFields := writeFields
-			if test.category != "Custom" {
-				responseFields += `,"parameters":` + test.parameters
+			response := cm.AppAction{
+				Sys: cm.AppActionSys{
+					ID: "external", Type: cm.AppActionSysTypeAppAction,
+					Organization: cm.NewOrganizationLink("org"), AppDefinition: cm.NewAppDefinitionLink("app"),
+				},
+				Name: "Action", Category: test.category, Type: "endpoint",
+				URL: cm.NewOptString("https://example.invalid/external"), Description: cm.NewOptString(""),
+				Parameters: []byte(test.parameters), ParametersSchema: []byte(test.schema), ResultSchema: []byte(result),
 			}
+			notFound := cmt.NewContentfulManagementError(cm.ErrorSysIDNotFound, nil, nil)
 
 			configuration := actionConfigPrefix + fields + "}"
 			imported := configuration + `
@@ -161,17 +168,16 @@ import {
 
 				if deleted {
 					w.WriteHeader(http.StatusNotFound)
-					_, _ = io.WriteString(w, `{"sys":{"type":"Error","id":"NotFound"}}`)
+					assert.NoError(t, json.NewEncoder(w).Encode(&notFound))
 
 					return
 				}
 
-				name := "Action"
 				if renamed {
-					name = "Renamed"
+					response.Name = "Renamed"
 				}
 
-				_, _ = fmt.Fprintf(w, `{"sys":{"id":"external","type":"AppAction","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}},"appDefinition":{"sys":{"type":"Link","linkType":"AppDefinition","id":"app"}}},"name":%q%s}`, name, responseFields)
+				assert.NoError(t, json.NewEncoder(w).Encode(&response))
 			})
 			changed := strings.Replace(configuration, `name = "Action"`, `name = "Renamed"`, 1)
 
