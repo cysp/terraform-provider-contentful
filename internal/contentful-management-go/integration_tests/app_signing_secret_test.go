@@ -26,7 +26,7 @@ func TestGetAppSigningSecretTreatsRedactedValueAsOpaqueMetadata(t *testing.T) {
 		assert.Equal(t, "/organizations/organization-id/app_definitions/app-definition-id/signing_secret", r.URL.Path)
 
 		w.Header().Set("Content-Type", "application/json")
-		assert.NoError(t, json.NewEncoder(w).Encode(secret))
+		assert.NoError(t, json.NewEncoder(w).Encode(&secret))
 	}))
 	t.Cleanup(testServer.Close)
 
@@ -57,7 +57,7 @@ func TestPutAppSigningSecretTreatsRedactedValueAsOpaqueMetadata(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		assert.NoError(t, json.NewEncoder(w).Encode(secret))
+		assert.NoError(t, json.NewEncoder(w).Encode(&secret))
 	}))
 	t.Cleanup(testServer.Close)
 

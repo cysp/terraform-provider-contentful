@@ -14,6 +14,7 @@ import (
 
 var (
 	_ resource.Resource                = (*webhookSigningSecretResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*webhookSigningSecretResource)(nil)
 	_ resource.ResourceWithConfigure   = (*webhookSigningSecretResource)(nil)
 	_ resource.ResourceWithIdentity    = (*webhookSigningSecretResource)(nil)
 	_ resource.ResourceWithImportState = (*webhookSigningSecretResource)(nil)
@@ -206,6 +207,10 @@ func (r *webhookSigningSecretResource) Delete(ctx context.Context, req resource.
 	}
 
 	resp.Diagnostics.AddError("Failed to delete webhook signing secret", signingSecretErrorDetail(response, err, state.Value)+webhookSigningSecretMutationRecovery)
+}
+
+func (r *webhookSigningSecretResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	modifySigningSecretPlan(ctx, req, resp)
 }
 
 func (r *webhookSigningSecretResource) put(ctx context.Context, plan WebhookSigningSecretModel, priorValue types.String) (WebhookSigningSecretModel, diag.Diagnostics) {

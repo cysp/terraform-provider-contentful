@@ -35,7 +35,9 @@ A replacement in the same space with `create_before_destroy` can delete the newl
 
 ### Read-Only
 
+- `created_at` (String) Contentful creation timestamp in RFC 3339 format, or null when omitted. It can change when the signing secret is replaced.
 - `id` (String) Terraform resource identifier, equal to `space_id`.
+- `updated_at` (String) Contentful update timestamp in RFC 3339 format, or null when omitted.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

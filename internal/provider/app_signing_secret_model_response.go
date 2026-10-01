@@ -2,6 +2,7 @@ package provider
 
 import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -14,6 +15,9 @@ func NewAppSigningSecretResourceModelFromResponse(res cm.AppSigningSecret) AppSi
 		OrganizationID:  types.StringValue(organizationID),
 		AppDefinitionID: types.StringValue(appDefinitionID),
 	}
+
+	model.CreatedAt = timetypes.NewRFC3339TimePointerValue(res.Sys.CreatedAt.ValueTimePointer())
+	model.UpdatedAt = timetypes.NewRFC3339TimePointerValue(res.Sys.UpdatedAt.ValueTimePointer())
 
 	return model
 }
