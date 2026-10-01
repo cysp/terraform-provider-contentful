@@ -81,10 +81,11 @@ client has its own default policy and can follow a redirect returned by an inner
 policy using http.ErrUseLastResponse. A caller-supplied policy cannot authorize
 mutation redirects.
 
-WebhookSigningSecret mutations are unversioned space-wide overwrites/deletions.
-A read cannot establish complete-secret equality, so this resource cannot recover
-an ambiguous PUT by observing presence or safely replay a mutation across another
-actor's changes. See its [lifecycle contract](webhook-signing-secret.md).
+AppSigningSecret and WebhookSigningSecret mutations are unversioned singleton
+overwrites/deletions. A read cannot establish complete-secret equality, so neither
+resource can recover an ambiguous PUT by observing presence. See the
+[signing-secret acknowledgement boundary](signing-secret-write-only.md#mutation-boundary)
+and [webhook ownership contract](webhook-signing-secret.md).
 
 AppEventSubscription PUT/DELETE similarly overwrite or delete an unversioned
 singleton. Its configuration is readable, but reads cannot authorize a replay

@@ -9,6 +9,7 @@ import (
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,10 +17,13 @@ import (
 func TestAppSigningSecretMutationRequiresConfirmedIdentity(t *testing.T) {
 	t.Parallel()
 
-	for name, response := range map[string]struct{ organizationID, appDefinitionID string }{
-		"organization":   {"other-org", "app"},
-		"app definition": {"org", "other-app"},
-		"both":           {"other-org", "other-app"},
+	for name, response := range map[string]struct {
+		organizationID, appDefinitionID string
+		diagnosticAttributes            []string
+	}{
+		"organization":   {"other-org", "app", []string{"organization_id"}},
+		"app definition": {"org", "other-app", []string{"app_definition_id"}},
+		"both":           {"other-org", "other-app", []string{"organization_id", "app_definition_id"}},
 	} {
 		for _, update := range []bool{false, true} {
 			t.Run(fmt.Sprintf("%s/update=%t", name, update), func(t *testing.T) {
@@ -58,9 +62,18 @@ func TestAppSigningSecretMutationRequiresConfirmedIdentity(t *testing.T) {
 				})
 				require.NoError(t, err)
 				require.EqualValues(t, 1, calls.Load(), result.Diagnostics)
-				require.Len(t, result.Diagnostics, 1)
-				assert.Equal(t, tfprotov6.DiagnosticSeverityError, result.Diagnostics[0].Severity)
-				assert.Equal(t, "Unconfirmed app signing secret mutation", result.Diagnostics[0].Summary)
+				require.Len(t, result.Diagnostics, len(response.diagnosticAttributes)+1)
+
+				for index, attribute := range response.diagnosticAttributes {
+					diagnostic := result.Diagnostics[index]
+					assert.Equal(t, tfprotov6.DiagnosticSeverityError, diagnostic.Severity)
+					assert.Equal(t, "Unexpected app signing secret identity", diagnostic.Summary)
+					assert.Equal(t, tftypes.NewAttributePath().WithAttributeName(attribute), diagnostic.Attribute)
+				}
+
+				recoveryDiagnostic := result.Diagnostics[len(response.diagnosticAttributes)]
+				assert.Equal(t, tfprotov6.DiagnosticSeverityError, recoveryDiagnostic.Severity)
+				assert.Equal(t, "Unconfirmed app signing secret write", recoveryDiagnostic.Summary)
 				require.NotNil(t, result.NewState)
 				priorRaw, err := prior.Unmarshal(resourceSchema.Type().TerraformType(t.Context()))
 				require.NoError(t, err)

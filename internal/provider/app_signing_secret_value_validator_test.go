@@ -70,7 +70,7 @@ func appSigningSecretValueAttribute(t *testing.T) schema.StringAttribute {
 	resourceSchema := provider.AppSigningSecretResourceSchema(t.Context())
 	valueAttribute, ok := resourceSchema.Attributes["value"].(schema.StringAttribute)
 	require.True(t, ok)
-	require.Len(t, valueAttribute.Validators, 1)
+	require.NotEmpty(t, valueAttribute.Validators)
 
 	return valueAttribute
 }

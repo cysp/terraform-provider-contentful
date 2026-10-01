@@ -4,14 +4,31 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewAppSigningSecretResourceModelFromResponse(res cm.AppSigningSecret) AppSigningSecretModel {
-	organizationID := res.Sys.Organization.Sys.ID
-	appDefinitionID := res.Sys.AppDefinition.Sys.ID
+func NewAppSigningSecretResourceModelFromResponse(res cm.AppSigningSecret, organizationID, appDefinitionID string, value types.String) (AppSigningSecretModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	if res.Sys.Organization.Sys.ID != organizationID || organizationID == "" {
+		diags.AddAttributeError(path.Root("organization_id"), "Unexpected app signing secret identity", "Contentful did not return the requested organization identity. No new state was published.")
+	}
+
+	if res.Sys.AppDefinition.Sys.ID != appDefinitionID || appDefinitionID == "" {
+		diags.AddAttributeError(path.Root("app_definition_id"), "Unexpected app signing secret identity", "Contentful did not return the requested App Definition identity. No new state was published.")
+	}
+
+	if value.IsUnknown() {
+		diags.AddAttributeError(path.Root("value"), "Unexpected unknown signing secret value", "The retained signing secret value must be known or null.")
+	}
+
+	if diags.HasError() {
+		return AppSigningSecretModel{}, diags
+	}
 
 	model := AppSigningSecretModel{
+		Value:           value,
+		ValueWO:         types.StringNull(),
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, appDefinitionID),
 		OrganizationID:  types.StringValue(organizationID),
 		AppDefinitionID: types.StringValue(appDefinitionID),
@@ -20,18 +37,5 @@ func NewAppSigningSecretResourceModelFromResponse(res cm.AppSigningSecret) AppSi
 	model.CreatedAt = timetypes.NewRFC3339TimePointerValue(res.Sys.CreatedAt.ValueTimePointer())
 	model.UpdatedAt = timetypes.NewRFC3339TimePointerValue(res.Sys.UpdatedAt.ValueTimePointer())
 
-	return model
-}
-
-// A response from another singleton does not acknowledge the secret sent to the
-// requested endpoint. Callers retain prior state on failure; Create has none.
-func appSigningSecretMutationResponse(response cm.AppSigningSecret, plan AppSigningSecretModel) (AppSigningSecretModel, diag.Diagnostics) {
-	model := NewAppSigningSecretResourceModelFromResponse(response)
-	if !model.OrganizationID.Equal(plan.OrganizationID) || !model.AppDefinitionID.Equal(plan.AppDefinitionID) {
-		return model, diag.Diagnostics{diag.NewErrorDiagnostic("Unconfirmed app signing secret mutation", "Contentful returned an identity that differs from the requested App Signing Secret endpoint. Terraform did not acknowledge the new secret value. Any prior secret state was retained. Check the secret in Contentful before applying again.")}
-	}
-
-	model.Value = plan.Value
-
-	return model, nil
+	return model, diags
 }

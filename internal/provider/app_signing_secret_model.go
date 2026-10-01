@@ -15,7 +15,8 @@ type AppSigningSecretModel struct {
 	IDIdentityModel
 	AppSigningSecretIdentityModel
 
-	Value types.String `tfsdk:"value"`
+	Value   types.String `tfsdk:"value"`
+	ValueWO types.String `tfsdk:"value_wo"`
 
 	CreatedAt timetypes.RFC3339 `tfsdk:"created_at"`
 	UpdatedAt timetypes.RFC3339 `tfsdk:"updated_at"`

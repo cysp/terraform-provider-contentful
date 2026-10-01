@@ -10,8 +10,8 @@ Restrict access to Terraform state and saved plans when managing credentials. Se
 
 | Value | Refresh | Import |
 | --- | --- | --- |
-| [Webhook signing secret](#webhook-signing-secrets) | Preserves stored value | `value` is null |
-| [App signing secret](#app-signing-secrets) | Preserves stored value | `value` is null |
+| [Webhook signing secret](#webhook-signing-secrets) | Preserves ordinary `value` or the write-only verifier | Neither secret argument has a value |
+| [App signing secret](#app-signing-secrets) | Preserves ordinary `value` or the write-only verifier | Neither secret argument has a value |
 | [Webhook Basic password](#basic-authentication) | Preserves managed password | `http_basic_password` is null |
 | [Secret webhook header](#secret-custom-headers) | Preserves managed value for matching header | Unreadable value is null |
 | [App Installation `Secret` parameter](#app-installation-secrets), read with a personal access token | Can retain prior state for an all-asterisk response | Retains mask; original value unavailable |
@@ -29,16 +29,77 @@ Coordinate receivers before rotating the space's secret. Contentful describes ho
 
 [`contentful_app_signing_secret`](../resources/app_signing_secret) manages the signing secret for an App Definition. Use one resource per App Definition.
 
+## Write-only signing secrets
+
+Both signing-secret resources accept exactly one of `value` or `value_wo`. Use `value_wo` with Terraform 1.11.1 or later to keep the complete value out of this resource's plan and state. Use an ephemeral input variable to keep that input out of saved plans and state. See the [App Signing Secret example](../resources/app_signing_secret#write-only-signing-secret) or the [Webhook Signing Secret example](../resources/webhook_signing_secret#write-only-signing-secret).
+
+Use cryptographically generated signing secrets and protect Terraform state, saved plans, and backups. The provider checks the API's 64-character alphabet rule; it does not reject weak, format-valid secrets.
+
+Terraform retains an Argon2 hash for comparison with the last successfully applied secret. This adds protection against guessing, but it is not encryption or a guarantee that weak secrets cannot be recovered. Someone with access to state can test guesses. Refresh cannot detect external rotation. Historical state snapshots can still contain ordinary values saved before migration.
+
+Managing many write-only signing secrets can require substantial memory during both plan and apply. On a memory-constrained runner, reduce Terraform's `-parallelism` for both commands. This also reduces concurrency for other resources in that operation.
+
+## Migrating signing-secret values
+
+To change how Terraform stores a signing secret, replace `value` with `value_wo`, or the reverse, and supply exactly the same secret Terraform last successfully applied. Plan and apply the change. Moving to `value_wo` removes the complete value from new state; moving to `value` stores it again. Neither migration rotates the remote secret. Supplying a different secret rotates it.
+
+Remove any `ignore_changes` rule for these arguments before migrating. An ignore rule can suppress the storage change or retain an ordinary value that conflicts with `value_wo`. Migration does not remove the secret from historical state snapshots.
+
+## Planning and rotating write-only signing secrets
+
+Create a fresh plan when rotating a write-only secret. The secret supplied at apply can differ from the one supplied during planning. If the resource has a planned update, the provider compares the apply-time secret with the last successfully applied value and writes it only when it differs or no comparison value exists. This includes updates caused by a timeout change.
+
+During a write-only timeout update, `created_at` and `updated_at` become unknown in the plan even when the supplied secret is unchanged. Resources that use these timestamps as replacement triggers can be replaced even though the provider sends no secret PUT and the final timestamps remain unchanged. Treat timestamps as observations, not a rotation counter or proof of secret equality.
+
+Applying a saved **no-op** plan does not update the resource. Supplying a different ephemeral secret when applying that plan cannot rotate it.
+
+`ignore_changes = [value_wo]` can suppress an update caused solely by changing the secret. It does not prevent rotation when another change causes an update. Do not use this rule to keep an externally managed secret unchanged during other updates. Ordinary `value` follows Terraform's usual `ignore_changes` behavior.
+
+## Recovering an uncertain signing-secret write
+
+Both signing-secret resources retry explicit rate limiting (HTTP 429) with the same request within the operation timeout. Connection errors and server errors (HTTP 5xx) are not automatically retried, and writes and deletion do not follow redirects. Reads retain their normal retry behavior. Separate applies can still repeat a mutation.
+
+After a failed write, Terraform keeps the previous successfully applied value for comparison, even if Contentful accepted the new secret. Reverting configuration to the previous secret can therefore produce no change while Contentful uses the new one. Refresh cannot resolve this ambiguity. Coordinate recovery with the consumers of the secret before rotating again.
+
+To recover by deliberately installing a known value:
+
+1. Prepare consumers to accept the recovery secret alongside any keys they must continue accepting during the transition. Use a secret different from the last value Terraform successfully applied. You can reuse the unacknowledged replacement if it differs from that value.
+2. Supply that secret and create a fresh plan. Review that the signing-secret resource will update, then apply with the intended secret. A saved no-op plan cannot perform this recovery.
+3. Verify a new Contentful-generated signature with the intended secret at the consumer, then retire superseded keys according to the consumer's rotation procedure. A redacted suffix or a subsequent no-op Terraform plan alone does not establish complete-secret equality.
+
+Coordinate all writers during recovery. Another actor can rotate the secret after verification.
+
+## Downgrading the provider
+
+Before selecting a provider version that does not support `value_wo`, migrate back to ordinary `value` using the current provider:
+
+1. Replace `value_wo` with `value`, supplying exactly the same secret Terraform last successfully applied. Remove any `ignore_changes` rule that would suppress this migration. Ordinary `value` cannot use an ephemeral variable; remove `ephemeral = true` from that input and keep `sensitive = true`.
+2. Plan and apply the storage change. The complete secret is stored in state again; protect state, saved plans, and their backups accordingly.
+3. Remove references to attributes unsupported by the target version. For example, v0.0.69 does not expose `created_at` or `updated_at` on signing-secret resources.
+4. Select the older provider version, run `terraform init -upgrade` to update the dependency lock file, and review a fresh plan before applying.
+
+A direct downgrade from write-only state can rotate the secret because the older provider cannot compare it with the stored hash. This behavior was verified with v0.0.69. Resolve any [uncertain write](#recovering-an-uncertain-signing-secret-write) before downgrading. Check the target version's documentation for other resource constraints.
+
 ## Importing signing secrets
 
-Contentful supports one webhook signing secret per space and one app signing secret per App Definition. Creating a secret overwrites any existing value at that scope. Destroying the resource deletes the current secret, including one rotated outside Terraform. If a replacement at the same scope uses `create_before_destroy`, the final delete removes the newly written secret. To rotate in place, change `value` and apply.
+Contentful supports one webhook signing secret per space and one app signing secret per App Definition. Creating a secret overwrites any existing value at that scope. Destroying the resource deletes the current secret, including one rotated outside Terraform. If a replacement at the same scope uses `create_before_destroy`, the final delete removes the newly written secret. To rotate in place, supply the new secret through the configured argument and apply a fresh plan.
 
-After an uncertain write, Contentful can confirm that a signing secret exists but cannot return its full value. Refresh preserves the last value Terraform wrote, so an external rotation can go undetected.
+Import or refresh can confirm a signing secret exists. Contentful returns only redacted metadata. For a write with an uncertain outcome, follow the [recovery procedure](#recovering-an-uncertain-signing-secret-write).
 
 Import leaves `value` null. Choose who will manage rotation before applying:
 
-- **Terraform.** Configure the complete secret to install. Applying can replace the existing value in the same operation as the import.
+- **Terraform.** Configure the secret to install. Import supplies neither an ordinary value nor a verifier. Applying either argument can replace the remote secret in the same operation as the import.
 - **An external system.** Set `ignore_changes = [value]` to preserve the existing secret on updates. Supply a valid `value` for creation or replacement, including recreation after remote deletion. Destroy still deletes the current secret. Remove `ignore_changes` when you want Terraform to rotate it.
+
+## Recovering invalid signing-secret state
+
+An **Invalid write-only secret private state** diagnostic means Terraform's stored comparison data cannot be used and no known ordinary value supplies the comparison. In-place updates fail before writing the secret. Planning can warn about this problem and still succeed; other resources may change during apply before the signing-secret update fails.
+
+When state already contains a known ordinary `value`, updates compare against it and discard obsolete verifier data after success. Migrating to `value_wo` prepares fresh comparison data; matching secret bytes require no PUT.
+
+Restore valid Terraform state before updating the resource. Explicit replacement and destruction remain available without repairing the comparison data. Destruction deletes the current remote secret.
+
+For replacement recovery, review the plan and require destruction of the old instance before creation of its replacement (`-/+`). Both resources manage a singleton: one secret per App Definition or space. With `create_before_destroy`, deleting the old instance deletes the newly written secret, even when Terraform reports a successful apply. This lifecycle setting can propagate from dependent resources even when it is absent from the signing-secret configuration. Adjust the relevant lifecycle settings and create a fresh plan; do not apply the recovery replacement until its plan shows destroy before create. Coordinate with consumers for the interval without a secret and the subsequent installation of the configured key.
 
 ## Webhook credentials and secret headers
 
