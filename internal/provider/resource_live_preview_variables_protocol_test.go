@@ -11,6 +11,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -55,6 +56,15 @@ func livePreviewVariablesModelFromDynamicValue(t *testing.T, value *tfprotov6.Dy
 	return model
 }
 
+func livePreviewVariablesResponseJSON(t *testing.T, response json.Marshaler) string {
+	t.Helper()
+
+	body, err := response.MarshalJSON()
+	require.NoError(t, err)
+
+	return string(body)
+}
+
 func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 	t.Parallel()
 
@@ -76,6 +86,13 @@ func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 
 				var requests atomic.Int64
 
+				body := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariables{
+					Sys: cm.LivePreviewVariablesSys{
+						Space: cm.NewSpaceLink(test.spaceID), Environment: cm.NewEnvironmentLink(test.environmentID), Version: 43,
+					},
+					Variables: []byte(test.variables),
+				})
+
 				providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					requests.Add(1)
 					assert.Equal(t, http.MethodPut, r.Method)
@@ -87,11 +104,11 @@ func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 					}
 
 					assert.Equal(t, version, r.Header.Get("X-Contentful-Version"))
-					body, err := io.ReadAll(r.Body)
+					requestBody, err := io.ReadAll(r.Body)
 					assert.NoError(t, err)
-					assert.JSONEq(t, `{"variables":{"a":"VALUE_DO_NOT_ECHO","b":null}}`, string(body))
+					assert.JSONEq(t, `{"variables":{"a":"VALUE_DO_NOT_ECHO","b":null}}`, string(requestBody))
 					w.Header().Set("Content-Type", "application/json")
-					_, _ = fmt.Fprintf(w, `{"sys":{"space":{"sys":{"type":"Link","linkType":"Space","id":%q}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":%q}},"version":43},"variables":%s}`, test.spaceID, test.environmentID, test.variables)
+					_, _ = io.WriteString(w, body)
 				}))
 				model := livePreviewVariablesModel(` { "a": "VALUE_DO_NOT_ECHO", "b": null } `)
 
@@ -158,17 +175,17 @@ func TestLivePreviewVariablesErrorsAndAbsence(t *testing.T) {
 
 	for _, operation := range []string{"create", "update", "read", "delete"} {
 		for name, test := range map[string]livePreviewVariablesErrorTest{
-			"missing document":               {status: 404, body: `{"sys":{"type":"Error","id":"NotFound"},"message":"The resource could not be found."}`, absent: true},
-			"missing parent":                 {status: 404, body: `{"sys":{"type":"Error","id":"NotFound"},"message":"Missing environment","details":{"type":"Environment","id":"environment"}}`, absent: true},
-			"enterprise feature unavailable": {status: 403, body: `{"statusCode":403,"error":"Forbidden","message":"previewLocalization is not enabled"}`},
-			"service not found":              {status: 404, body: `{"statusCode":404,"error":"Not Found","message":"Not Found"}`},
+			"missing document":               {status: 404, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError(cm.ErrorSysIDNotFound, new("The resource could not be found."), nil))), absent: true},
+			"missing parent":                 {status: 404, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError(cm.ErrorSysIDNotFound, new("Missing environment"), []byte(`{"type":"Environment","id":"environment"}`)))), absent: true},
+			"enterprise feature unavailable": {status: 403, body: livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusForbidden, Error: "Forbidden", Message: "previewLocalization is not enabled"})},
+			"service not found":              {status: 404, body: livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusNotFound, Error: "Not Found", Message: "Not Found"})},
 			"wrong CMA ID":                   {status: 404, body: `{"sys":{"type":"Error","id":"AccessDenied"},"message":"Denied"}`},
-			"denied":                         {status: 403, body: `{"sys":{"type":"Error","id":"AccessDenied"},"message":"Denied"}`},
+			"denied":                         {status: 403, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError("AccessDenied", new("Denied"), nil)))},
 			"wrong status for NotFound":      {status: 400, body: `{"sys":{"type":"Error","id":"NotFound"},"message":"Bad response"}`},
-			"conflict":                       {status: 409, body: `{"sys":{"type":"Error","id":"VersionMismatch"},"message":"Version mismatch"}`, conflict: true},
-			"other conflict":                 {status: 409, body: `{"sys":{"type":"Error","id":"Conflict"},"message":"Other conflict"}`},
-			"validation value omitted from diagnostics": {status: 422, body: `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"name":"type","value":"VALUE_DO_NOT_ECHO","details":"Expected Text","path":["variable","en-US"]}]}}`},
-			"server failure": {status: 500, body: `{"statusCode":500,"error":"Internal Server Error","message":"Internal error"}`},
+			"conflict":                       {status: 409, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError(cm.ErrorSysIDVersionMismatch, new("Version mismatch"), nil))), conflict: true},
+			"other conflict":                 {status: 409, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError(cm.ErrorSysIDConflict, new("Other conflict"), nil)))},
+			"validation value omitted from diagnostics": {status: 422, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError("ValidationFailed", new("Validation error"), []byte(`{"errors":[{"name":"type","value":"VALUE_DO_NOT_ECHO","details":"Expected Text","path":["variable","en-US"]}]}`))))},
+			"server failure": {status: 500, body: livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusInternalServerError, Error: "Internal Server Error", Message: "Internal error"})},
 			"malformed":      {status: 200, body: `{`},
 		} {
 			// The shared transport suite owns read retries; this server error exercises mutation guidance.
@@ -303,6 +320,9 @@ func TestLivePreviewVariablesUsesDefaultMutationRetryPolicy(t *testing.T) {
 
 	var requests atomic.Int64
 
+	rateLimitedBody := livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError("RateLimitExceeded", new("Rate limited"), nil)))
+	serverErrorBody := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusInternalServerError, Error: "Internal Server Error", Message: "Unknown outcome"})
+
 	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPut, r.Method)
 		assert.Equal(t, "0", r.Header.Get("X-Contentful-Version"))
@@ -311,13 +331,13 @@ func TestLivePreviewVariablesUsesDefaultMutationRetryPolicy(t *testing.T) {
 		if requests.Add(1) == 1 {
 			w.Header().Set("X-Contentful-Ratelimit-Reset", "0")
 			w.WriteHeader(http.StatusTooManyRequests)
-			_, _ = io.WriteString(w, `{"sys":{"type":"Error","id":"RateLimitExceeded"},"message":"Rate limited"}`)
+			_, _ = io.WriteString(w, rateLimitedBody)
 
 			return
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = io.WriteString(w, `{"statusCode":500,"error":"Internal Server Error","message":"Unknown outcome"}`)
+		_, _ = io.WriteString(w, serverErrorBody)
 	}))
 	resourceSchema := LivePreviewVariablesResourceSchema(t.Context())
 	prior := nullResourceDynamicValue(t, resourceSchema)
@@ -337,12 +357,19 @@ func TestLivePreviewVariablesReadProjectsResponse(t *testing.T) {
 
 			var requests atomic.Int64
 
+			body := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariables{
+				Sys: cm.LivePreviewVariablesSys{
+					Space: cm.NewSpaceLink("returned-space"), Environment: cm.NewEnvironmentLink("returned-environment"), Version: 29,
+				},
+				Variables: []byte(`{"remote":"new"}`),
+			})
+
 			providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				requests.Add(1)
 				assert.Equal(t, http.MethodGet, r.Method)
 				assert.Equal(t, "/spaces/space/environments/environment/live_preview/variables", r.URL.Path)
 				w.Header().Set("Content-Type", "application/json")
-				_, _ = io.WriteString(w, `{"sys":{"space":{"sys":{"type":"Link","linkType":"Space","id":"returned-space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"returned-environment"}},"version":29},"variables":{"remote":"new"}}`)
+				_, _ = io.WriteString(w, body)
 			}))
 			state := resourceModelDynamicValue(t, LivePreviewVariablesResourceSchema(t.Context()), livePreviewVariablesModel(`{"before":"old"}`))
 
@@ -384,6 +411,12 @@ func TestLivePreviewVariablesMultipleValidationErrorDiagnostics(t *testing.T) {
 
 	var requests atomic.Int64
 
+	body := livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError("ValidationFailed", new("Validation error"), []byte(`{"errors":[
+			{"name":"type","type":"Text","value":981723,"details":"The type of \"value\" is incorrect, expected type: Text","path":["global"]},
+			{"name":"type","type":"Text","value":["REJECTED_ARRAY_VALUE"],"details":"The type of \"value\" is incorrect, expected type: Text","path":["localized","en-US"]},
+			{"name":"unknown","value":"REJECTED_LOCALE_VALUE","details":"The property \"zz-ZZ\" is not allowed here.","path":["localized","zz-ZZ"]}
+		]}`))))
+
 	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
 		assert.Equal(t, http.MethodPut, r.Method)
@@ -391,11 +424,7 @@ func TestLivePreviewVariablesMultipleValidationErrorDiagnostics(t *testing.T) {
 		assert.Equal(t, "17", r.Header.Get("X-Contentful-Version"))
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		_, _ = io.WriteString(w, `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[
-			{"name":"type","type":"Text","value":981723,"details":"The type of \"value\" is incorrect, expected type: Text","path":["global"]},
-			{"name":"type","type":"Text","value":["REJECTED_ARRAY_VALUE"],"details":"The type of \"value\" is incorrect, expected type: Text","path":["localized","en-US"]},
-			{"name":"unknown","value":"REJECTED_LOCALE_VALUE","details":"The property \"zz-ZZ\" is not allowed here.","path":["localized","zz-ZZ"]}
-		]}}`)
+		_, _ = io.WriteString(w, body)
 	}))
 	resourceSchema := LivePreviewVariablesResourceSchema(t.Context())
 	prior := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(`{"before":"old"}`))
@@ -418,6 +447,19 @@ func TestLivePreviewVariablesReadFeedsTheNextUpdateVersion(t *testing.T) {
 
 	var requests atomic.Int64
 
+	readBody := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariables{
+		Sys: cm.LivePreviewVariablesSys{
+			Space: cm.NewSpaceLink("space"), Environment: cm.NewEnvironmentLink("routing-id"), Version: 29,
+		},
+		Variables: []byte(`{"remote":{"future":[true,9007199254740993]}}`),
+	})
+	updateBody := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariables{
+		Sys: cm.LivePreviewVariablesSys{
+			Space: cm.NewSpaceLink("space"), Environment: cm.NewEnvironmentLink("routing-id"), Version: 30,
+		},
+		Variables: []byte(`{}`),
+	})
+
 	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestNumber := requests.Add(1)
 
@@ -427,7 +469,7 @@ func TestLivePreviewVariablesReadFeedsTheNextUpdateVersion(t *testing.T) {
 		if requestNumber == 1 {
 			assert.Equal(t, http.MethodGet, r.Method)
 
-			_, _ = io.WriteString(w, `{"sys":{"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"routing-id"}},"version":29},"variables":{"remote":{"future":[true,9007199254740993]}}}`)
+			_, _ = io.WriteString(w, readBody)
 
 			return
 		}
@@ -435,7 +477,7 @@ func TestLivePreviewVariablesReadFeedsTheNextUpdateVersion(t *testing.T) {
 		assert.Equal(t, http.MethodPut, r.Method)
 		assert.Equal(t, "29", r.Header.Get("X-Contentful-Version"))
 
-		_, _ = io.WriteString(w, `{"sys":{"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"routing-id"}},"version":30},"variables":{}}`)
+		_, _ = io.WriteString(w, updateBody)
 	}))
 	resourceSchema := LivePreviewVariablesResourceSchema(t.Context())
 	model := livePreviewVariablesModel(`{"old":"value"}`)
