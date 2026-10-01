@@ -10,12 +10,19 @@ import (
 )
 
 func (m *WebhookSigningSecretModel) ToWebhookSigningSecretRequest(_ context.Context, modelPath path.Path) (cm.WebhookSigningSecretRequestData, diag.Diagnostics) {
-	value, diags := requestRequiredString(m.Value, modelPath.AtName("value"))
+	selected, valuePath, diags := resolveSigningSecretValue(m.Value, m.ValueWO, modelPath)
 	if diags.HasError() {
 		return cm.WebhookSigningSecretRequestData{}, diags
 	}
 
-	diags.Append(validateWebhookSigningSecretValue(value, modelPath.AtName("value"))...)
+	value, valueDiags := requestRequiredString(selected, valuePath)
+	diags.Append(valueDiags...)
+
+	if diags.HasError() {
+		return cm.WebhookSigningSecretRequestData{}, diags
+	}
+
+	diags.Append(validateWebhookSigningSecretValue(value, valuePath)...)
 
 	return cm.WebhookSigningSecretRequestData{Value: value}, diags
 }

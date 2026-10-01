@@ -13,6 +13,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -59,7 +60,7 @@ func TestAppSigningSecretLifecycleRuntimeOutputExcludesValues(t *testing.T) {
 		State:    tfsdk.State{Schema: resourceSchema},
 		Identity: appSigningSecretTestIdentity(ctx),
 	}
-	implementation.Create(ctx, resource.CreateRequest{Plan: createPlan}, &createResponse)
+	implementation.Create(ctx, resource.CreateRequest{Plan: createPlan, Config: tfsdk.Config(createPlan)}, &createResponse)
 	require.False(t, createResponse.Diagnostics.HasError(), createResponse.Diagnostics.Errors())
 
 	readResponse := resource.ReadResponse{
@@ -75,6 +76,8 @@ func TestAppSigningSecretLifecycleRuntimeOutputExcludesValues(t *testing.T) {
 	var updateModel AppSigningSecretModel
 	require.False(t, readResponse.State.Get(ctx, &updateModel).HasError())
 	updateModel.Value = types.StringValue(updatedValue)
+	updateModel.CreatedAt = timetypes.NewRFC3339Unknown()
+	updateModel.UpdatedAt = timetypes.NewRFC3339Unknown()
 	updatePlan := appSigningSecretTestPlan(ctx, t, resourceSchema, updateModel)
 	updateResponse := resource.UpdateResponse{
 		State:    tfsdk.State{Raw: updatePlan.Raw, Schema: resourceSchema},
@@ -82,6 +85,7 @@ func TestAppSigningSecretLifecycleRuntimeOutputExcludesValues(t *testing.T) {
 	}
 	implementation.Update(ctx, resource.UpdateRequest{
 		Plan:     updatePlan,
+		Config:   tfsdk.Config(updatePlan),
 		State:    readResponse.State,
 		Identity: readResponse.Identity,
 	}, &updateResponse)
@@ -134,7 +138,7 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 				t.Helper()
 
 				response := resource.CreateResponse{State: tfsdk.State{Schema: plan.Schema}, Identity: identity}
-				implementation.Create(tflogtest.RootLogger(t.Context(), logs), resource.CreateRequest{Plan: plan}, &response)
+				implementation.Create(tflogtest.RootLogger(t.Context(), logs), resource.CreateRequest{Plan: plan, Config: tfsdk.Config(plan)}, &response)
 
 				return response.Diagnostics
 			},
@@ -156,10 +160,12 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 				t.Helper()
 
 				// Import leaves value null; adopting the planned value must write.
+				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), timetypes.NewRFC3339Unknown()))
+				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), timetypes.NewRFC3339Unknown()))
 				require.False(t, state.SetAttribute(t.Context(), path.Root("value"), types.StringNull()).HasError())
 
 				response := resource.UpdateResponse{State: tfsdk.State(plan), Identity: identity}
-				implementation.Update(tflogtest.RootLogger(t.Context(), logs), resource.UpdateRequest{Plan: plan, State: state, Identity: identity}, &response)
+				implementation.Update(tflogtest.RootLogger(t.Context(), logs), resource.UpdateRequest{Plan: plan, State: state, Identity: identity, Config: tfsdk.Config(plan)}, &response)
 
 				return response.Diagnostics
 			},
@@ -251,7 +257,7 @@ func TestAppSigningSecretCMAErrorDiagnosticRedactsValue(t *testing.T) {
 		Identity: appSigningSecretTestIdentity(ctx),
 	}
 	implementation := appSigningSecretResource{providerData: ContentfulProviderData{client: client}}
-	implementation.Create(ctx, resource.CreateRequest{Plan: plan}, &response)
+	implementation.Create(ctx, resource.CreateRequest{Plan: plan, Config: tfsdk.Config(plan)}, &response)
 
 	require.True(t, response.Diagnostics.HasError())
 	assertAppSigningSecretOperationLogs(t, logOutput.Bytes(), "app_signing_secret.create")
