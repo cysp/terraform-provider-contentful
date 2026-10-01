@@ -43,7 +43,9 @@ resource "random_password" "contentful_app_signing_secret" {
 
 ### Read-Only
 
+- `created_at` (String) Contentful creation timestamp in RFC 3339 format, or null when omitted. It can change when the signing secret is replaced.
 - `id` (String) Composite Terraform resource identifier in `organization_id/app_definition_id` form.
+- `updated_at` (String) Contentful update timestamp in RFC 3339 format, or null when omitted.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

@@ -12,6 +12,7 @@ import (
 
 var (
 	_ resource.Resource                = (*appSigningSecretResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*appSigningSecretResource)(nil)
 	_ resource.ResourceWithConfigure   = (*appSigningSecretResource)(nil)
 	_ resource.ResourceWithIdentity    = (*appSigningSecretResource)(nil)
 	_ resource.ResourceWithImportState = (*appSigningSecretResource)(nil)
@@ -321,4 +322,8 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 
 		resp.Diagnostics.AddError("Failed to delete app signing secret", signingSecretErrorDetail(response, err, state.Value))
 	}
+}
+
+func (r *appSigningSecretResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	modifySigningSecretPlan(ctx, req, resp)
 }

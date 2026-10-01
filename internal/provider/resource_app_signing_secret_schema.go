@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -75,6 +76,16 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.String{
 					appSigningSecretValueValidator{},
 				},
+			},
+			"created_at": schema.StringAttribute{
+				Description: "Contentful creation timestamp in RFC 3339 format, or null when omitted. It can change when the signing secret is replaced.",
+				CustomType:  timetypes.RFC3339Type{},
+				Computed:    true,
+			},
+			"updated_at": schema.StringAttribute{
+				Description: "Contentful update timestamp in RFC 3339 format, or null when omitted.",
+				CustomType:  timetypes.RFC3339Type{},
+				Computed:    true,
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
 		},
