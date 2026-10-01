@@ -21,6 +21,7 @@ type signingSecretFixture struct {
 	timestamps bool
 	exists     bool
 	values     []string
+	mutations  []string
 }
 
 func (s *signingSecretFixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -54,8 +55,10 @@ func (s *signingSecretFixture) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		}
 
 		s.values = append(s.values, body.Value)
+		s.mutations = append(s.mutations, r.Method)
 		s.exists = true
 	case http.MethodDelete:
+		s.mutations = append(s.mutations, r.Method)
 		s.exists = false
 
 		w.WriteHeader(http.StatusNoContent)
@@ -139,4 +142,12 @@ app_definition_id = "app"`
 	}
 
 	return fmt.Sprintf("resource \"contentful_%s_signing_secret\" \"test\" {\n%s\n%s\n}\n", kind, scope, arguments)
+}
+
+func (s *signingSecretFixture) requireMutations(t *testing.T, methods ...string) {
+	t.Helper()
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	require.Equal(t, methods, s.mutations)
 }
