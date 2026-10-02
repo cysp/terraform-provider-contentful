@@ -27,7 +27,7 @@ func TestAccAppActionResourceTransitions(t *testing.T) {
 	t.Parallel()
 
 	fullConfig := strings.Replace(actionSchemaConfig, "\n}", "\n description = \"Description\"\n result_schema = jsonencode({type=\"object\"})\n}", 1)
-	fullBody := strings.TrimSuffix(actionSchemaBody, "}") + `,"description":"Description","resultSchema":{"type":"object"}}`
+	fullBody := `{"name":"Action","category":"Custom","type":"endpoint","url":"https://example.invalid/action","parametersSchema":{"type":"object","properties":{"message":{"type":"string"}}},"description":"Description","resultSchema":{"type":"object"}}`
 	functionConfig := actionConfigPrefix + `category="Custom"
  type="function-invocation"
  function_id="function"
@@ -49,9 +49,10 @@ func TestAccAppActionResourceBuiltinSchema(t *testing.T) {
 	t.Parallel()
 
 	config := strings.Replace(actionBuiltinConfig, "\n}", "\n parameters_schema=jsonencode({type=\"object\"})\n result_schema=jsonencode({type=\"object\"})\n}", 1)
-	body := strings.TrimSuffix(actionBuiltinBody, "}") + `,"parametersSchema":{"type":"object"},"resultSchema":{"type":"object"}}`
+	body := `{"name":"Action","category":"Entries.v1.0","type":"endpoint","url":"https://example.invalid/action","parametersSchema":{"type":"object"},"resultSchema":{"type":"object"}}`
+	updatedBody := `{"name":"Action","category":"Notification.v1.0","type":"endpoint","url":"https://example.invalid/action","parametersSchema":{"type":"object"},"resultSchema":{"type":"object"}}`
 	updatedConfig := strings.Replace(config, "Entries.v1.0", "Notification.v1.0", 1)
-	testActionLifecycle(t, []actionMutationFixture{{config, body}, {updatedConfig, strings.Replace(body, "Entries.v1.0", "Notification.v1.0", 1)}})
+	testActionLifecycle(t, []actionMutationFixture{{config, body}, {updatedConfig, updatedBody}})
 }
 
 func TestAccAppActionResourceIgnoreChanges(t *testing.T) {
@@ -59,7 +60,7 @@ func TestAccAppActionResourceIgnoreChanges(t *testing.T) {
 
 	config := strings.Replace(actionLegacyConfig, "\n}", "\n lifecycle { ignore_changes = [parameters] }\n}", 1)
 	update := strings.Replace(strings.Replace(config, `name = "Action"`, `name = "Updated"`, 1), `jsonencode([])`, `jsonencode([{id="x", name="X", type="Symbol"}])`, 1)
-	body := strings.Replace(actionLegacyBody, `"Action"`, `"Updated"`, 1)
+	body := `{"name":"Updated","category":"Custom","type":"endpoint","url":"https://example.invalid/action","parameters":[]}`
 	testActionLifecycle(t, []actionMutationFixture{{config, actionLegacyBody}, {update, body}})
 }
 
@@ -197,7 +198,7 @@ func TestAccAppActionResourceIgnoreCategory(t *testing.T) {
 	config := strings.Replace(actionBuiltinConfig, "\n}", "\n lifecycle { ignore_changes = [category] }\n}", 1)
 	update := strings.Replace(strings.Replace(config, `"Entries.v1.0"`, `"Custom"`, 1), `name = "Action"`, `name = "Updated"`, 1)
 	update = strings.Replace(update, "\n}", "\n parameters_schema=jsonencode({type=\"object\"})\n}", 1)
-	body := strings.TrimSuffix(strings.Replace(actionBuiltinBody, `"Action"`, `"Updated"`, 1), "}") + `,"parametersSchema":{"type":"object"}}`
+	body := `{"name":"Updated","category":"Entries.v1.0","type":"endpoint","url":"https://example.invalid/action","parametersSchema":{"type":"object"}}`
 	testActionLifecycle(t, []actionMutationFixture{{config, actionBuiltinBody}, {update, body}})
 }
 
@@ -229,7 +230,7 @@ func TestAccAppActionResourceIgnoreBuiltinParameters(t *testing.T) {
 	config := strings.Replace(actionBuiltinConfig, "\n}", "\n lifecycle { ignore_changes = [category, parameters] }\n}", 1)
 	update := strings.Replace(strings.Replace(config, `"Entries.v1.0"`, `"Custom"`, 1), `name = "Action"`, `name = "Updated"`, 1)
 	update = strings.Replace(update, "\n}", "\n parameters=jsonencode([])\n}", 1)
-	body := strings.Replace(actionBuiltinBody, `"Action"`, `"Updated"`, 1)
+	body := `{"name":"Updated","category":"Entries.v1.0","type":"endpoint","url":"https://example.invalid/action"}`
 	testActionLifecycle(t, []actionMutationFixture{{config, actionBuiltinBody}, {update, body}})
 }
 
