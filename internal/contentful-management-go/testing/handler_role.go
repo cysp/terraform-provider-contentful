@@ -3,8 +3,12 @@ package cmtesting
 import (
 	"cmp"
 	"context"
+	"fmt"
+	"math"
 	"net/http"
+	"net/url"
 	"slices"
+	"strconv"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
@@ -22,20 +26,62 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 	// The fixture store is a map; choose a repeatable response order for tests.
 	slices.SortFunc(values, func(a, b *cm.Role) int { return cmp.Compare(a.Sys.ID, b.Sys.ID) })
 
-	skip, limit := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
-	if skip < 0 || limit < 1 {
+	skip64, limit64 := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
+	if params.PageNext.IsSet() && params.PagePrev.IsSet() || params.Skip.IsSet() && (params.PageNext.IsSet() || params.PagePrev.IsSet()) {
+		return NewContentfulManagementErrorStatusCodeBadRequest(new("Conflicting pagination parameters"), nil), nil
+	}
+
+	if skip64 < 0 || skip64 > math.MaxInt || limit64 < 1 || limit64 > math.MaxInt {
 		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
 	}
 
-	start := min(skip, int64(len(values)))
-	end := start + min(limit, int64(len(values))-start)
+	skip, limit := int(skip64), int(limit64)
+
+	cursor := params.PageNext
+	if params.PagePrev.IsSet() {
+		cursor = params.PagePrev
+	}
+
+	if cursor.IsSet() {
+		var err error
+
+		skip, err = strconv.Atoi(cursor.Value)
+		if err != nil || skip < 0 {
+			return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid cursor"), nil), nil
+		}
+	}
+
+	start := min(skip, len(values))
+	end := start + min(limit, len(values)-start)
 
 	items := make([]cm.Role, 0, end-start)
 	for _, value := range values[start:end] {
 		items = append(items, *value)
 	}
 
-	return &cm.RoleCollection{Sys: cm.RoleCollectionSys{Type: cm.RoleCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}, nil
+	collection := &cm.RoleCollection{Sys: cm.RoleCollectionSys{Type: cm.RoleCollectionSysTypeArray}, Limit: cm.NewOptInt(limit), Items: items}
+	// Explicit skip selects the legacy fixture; otherwise model cursor responses.
+	if params.Skip.IsSet() {
+		collection.Skip = cm.NewOptInt(skip)
+		collection.Total = cm.NewOptInt(len(values))
+	} else {
+		pages := cm.RoleCollectionPages{}
+
+		link := func(parameter string, offset int) string {
+			return fmt.Sprintf("/spaces/%s/roles?%s=%d&limit=%d", url.PathEscape(params.SpaceID), parameter, offset, limit)
+		}
+		if end < len(values) {
+			pages.Next = cm.NewOptString(link("pageNext", end))
+		}
+
+		if start > 0 {
+			pages.Prev = cm.NewOptString(link("pagePrev", max(0, start-limit)))
+		}
+
+		collection.Pages = cm.NewOptRoleCollectionPages(pages)
+	}
+
+	return collection, nil
 }
 
 //nolint:ireturn

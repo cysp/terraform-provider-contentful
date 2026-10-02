@@ -442,8 +442,8 @@ unverified behavior. Updating a fake does not refresh the external evidence.
   for polling, timeout, and terminal-failure behavior.
 - The fake does not reproduce Contentful's internal ordering for list endpoints.
   It uses deterministic ID order where pagination tests require stable pages.
-- Cursor pagination is not implemented. The generic fake also does not
-  interpret arbitrary entry query filters or configurable order. An exact HTTP
+- Collections other than Roles do not model cursor pagination. The generic fake
+  does not interpret arbitrary entry query filters or configurable order. An exact HTTP
   request test covers the provider's forwarding of those values; fake lifecycle
   tests do not claim their result-set semantics.
 - Rate limiting models the documented second-level contract only. It does not
@@ -505,3 +505,22 @@ the exact mutation addresses. Recovery tests inspect Terraform's saved state aft
 errored Create and Update without a refresh masking the checkpoint. Update fault
 tests also verify prior-state preservation after malformed or ambiguous responses. A
 synthetic future topic tests provider extensibility without asserting server acceptance.
+
+## Role collection pagination
+
+The Role fixture sorts by ID for deterministic pages. An explicit `skip`
+selects its legacy offset response; otherwise it emits `pages.next` and
+`pages.prev` links and accepts the matching query parameters. Fixture cursor
+tokens are decimal offsets. This convention does not model Contentful's opaque
+token format or establish how the live endpoint selects its pagination protocol.
+Conflicting directions, mixing skip with a cursor, invalid tokens, negative
+offsets, nonpositive limits and values that exceed the native
+integer range of the response metadata fail.
+
+Conformance tests cover forward, backward, offset and invalid requests through
+the generated HTTP client/server. Independent provider fixtures cover
+opaque-token forwarding, malformed navigation, cycles, absent terminal
+navigation, empty intermediate pages and operation deadlines. Terraform tests
+exercise duplicate-preserving state, a later-page rate-limit retry and a later-page
+failure. The [migration evidence](../research/collections-and-errors.md#space-role-cursor-migration)
+distinguishes published behavior from fixture conventions.

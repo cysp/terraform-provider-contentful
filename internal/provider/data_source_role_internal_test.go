@@ -90,7 +90,7 @@ func TestRolesDataSourceStableDuplicateIDs(t *testing.T) {
 	second := strings.Replace(body, "Second", "Second arrival", 1)
 
 	response := discoveryReadTest(t.Context(), t, NewRolesDataSource, map[string]any{"space_id": "space"}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
-		if request.URL.Query().Get("skip") == "0" {
+		if request.URL.Query().Get("skip") == "" {
 			return discoveryHTTPResponse(request, 200, discoveryPage(0, 1, 2, first)), nil
 		}
 

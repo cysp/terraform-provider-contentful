@@ -1,7 +1,10 @@
 package provider_test
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"regexp"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -89,4 +92,62 @@ func TestAccRoleDataSourcesComposition(t *testing.T) {
 
 	assert.Positive(t, roleReads.Load())
 	assert.Zero(t, roleMutations.Load())
+}
+
+func TestAccRolesCursorPagination(t *testing.T) {
+	t.Parallel()
+
+	body, err := os.ReadFile("testdata/discovery/role.json")
+	require.NoError(t, err)
+
+	var (
+		fail, retried atomic.Bool
+		nextReads     atomic.Int64
+	)
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		assert.Equal(t, http.MethodGet, request.Method)
+		assert.Equal(t, "/spaces/space/roles", request.URL.Path)
+		w.Header().Set("Content-Type", "application/json")
+
+		switch request.URL.RawQuery {
+		case "limit=100":
+			fmt.Fprintf(w, `{"sys":{"type":"Array"},"items":[%s],"pages":{"next":"/spaces/space/roles?pageNext=opaque%%2Btoken"}}`, body)
+		case "limit=100&pageNext=opaque%2Btoken":
+			nextReads.Add(1)
+
+			if fail.Load() {
+				w.WriteHeader(http.StatusForbidden)
+				fmt.Fprint(w, `{"sys":{"type":"Error","id":"AccessDenied"},"message":"later page denied"}`)
+
+				return
+			}
+
+			if retried.CompareAndSwap(false, true) {
+				w.Header().Set("X-Contentful-Ratelimit-Reset", "0")
+				w.WriteHeader(http.StatusTooManyRequests)
+				fmt.Fprint(w, `{"sys":{"type":"Error","id":"RateLimitExceeded"}}`)
+
+				return
+			}
+
+			fmt.Fprintf(w, `{"sys":{"type":"Array"},"items":[%s],"pages":{}}`, strings.Replace(string(body), "Second", "Last arrival", 1))
+		default:
+			t.Errorf("Unexpected Role query: %s", request.URL.RawQuery)
+			w.WriteHeader(http.StatusBadRequest)
+		}
+	})
+
+	const configuration = `data "contentful_roles" "all" { space_id = "space" }`
+	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
+		{Config: configuration, ConfigStateChecks: []statecheck.StateCheck{
+			statecheck.ExpectKnownValue("data.contentful_roles.all", tfjsonpath.New("roles").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact("Second")),
+			statecheck.ExpectKnownValue("data.contentful_roles.all", tfjsonpath.New("roles").AtSliceIndex(1).AtMapKey("name"), knownvalue.StringExact("Last arrival")),
+			statecheck.ExpectKnownValue("data.contentful_roles.all", tfjsonpath.New("roles").AtSliceIndex(1).AtMapKey("role_id"), knownvalue.StringExact("item-b")),
+		}, Check: resource.TestCheckResourceAttr("data.contentful_roles.all", "roles.#", "2")},
+		{Config: configuration, PlanOnly: true},
+		{PreConfig: func() { fail.Store(true) }, Config: configuration, PlanOnly: true, ExpectError: regexp.MustCompile("later page denied")},
+	}})
+	assert.True(t, retried.Load())
+	assert.Greater(t, nextReads.Load(), int64(1))
 }
