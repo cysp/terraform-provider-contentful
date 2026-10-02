@@ -65,6 +65,25 @@ func livePreviewVariablesResponseJSON(t *testing.T, response json.Marshaler) str
 	return string(body)
 }
 
+func livePreviewVariablesJSON(t *testing.T, spaceID, environmentID string, version int, variables string) string {
+	t.Helper()
+
+	return livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariables{
+		Sys: cm.LivePreviewVariablesSys{
+			Space: cm.NewSpaceLink(spaceID), Environment: cm.NewEnvironmentLink(environmentID), Version: version,
+		},
+		Variables: []byte(variables),
+	})
+}
+
+func livePreviewVariablesErrorJSON(t *testing.T, id, message string, details []byte) string {
+	t.Helper()
+
+	response := cmt.NewContentfulManagementError(id, new(message), details)
+
+	return livePreviewVariablesResponseJSON(t, &response)
+}
+
 func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 	t.Parallel()
 
@@ -86,12 +105,7 @@ func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 
 				var requests atomic.Int64
 
-				body := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariables{
-					Sys: cm.LivePreviewVariablesSys{
-						Space: cm.NewSpaceLink(test.spaceID), Environment: cm.NewEnvironmentLink(test.environmentID), Version: 43,
-					},
-					Variables: []byte(test.variables),
-				})
+				body := livePreviewVariablesJSON(t, test.spaceID, test.environmentID, 43, test.variables)
 
 				providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					requests.Add(1)
@@ -175,16 +189,16 @@ func TestLivePreviewVariablesErrorsAndAbsence(t *testing.T) {
 
 	for _, operation := range []string{"create", "update", "read", "delete"} {
 		for name, test := range map[string]livePreviewVariablesErrorTest{
-			"missing document":               {status: 404, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError(cm.ErrorSysIDNotFound, new("The resource could not be found."), nil))), absent: true},
-			"missing parent":                 {status: 404, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError(cm.ErrorSysIDNotFound, new("Missing environment"), []byte(`{"type":"Environment","id":"environment"}`)))), absent: true},
+			"missing document":               {status: 404, body: livePreviewVariablesErrorJSON(t, cm.ErrorSysIDNotFound, "The resource could not be found.", nil), absent: true},
+			"missing parent":                 {status: 404, body: livePreviewVariablesErrorJSON(t, cm.ErrorSysIDNotFound, "Missing environment", []byte(`{"type":"Environment","id":"environment"}`)), absent: true},
 			"enterprise feature unavailable": {status: 403, body: livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusForbidden, Error: "Forbidden", Message: "previewLocalization is not enabled"})},
 			"service not found":              {status: 404, body: livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusNotFound, Error: "Not Found", Message: "Not Found"})},
 			"wrong CMA ID":                   {status: 404, body: `{"sys":{"type":"Error","id":"AccessDenied"},"message":"Denied"}`},
-			"denied":                         {status: 403, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError("AccessDenied", new("Denied"), nil)))},
+			"denied":                         {status: 403, body: livePreviewVariablesErrorJSON(t, "AccessDenied", "Denied", nil)},
 			"wrong status for NotFound":      {status: 400, body: `{"sys":{"type":"Error","id":"NotFound"},"message":"Bad response"}`},
-			"conflict":                       {status: 409, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError(cm.ErrorSysIDVersionMismatch, new("Version mismatch"), nil))), conflict: true},
-			"other conflict":                 {status: 409, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError(cm.ErrorSysIDConflict, new("Other conflict"), nil)))},
-			"validation value omitted from diagnostics": {status: 422, body: livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError("ValidationFailed", new("Validation error"), []byte(`{"errors":[{"name":"type","value":"VALUE_DO_NOT_ECHO","details":"Expected Text","path":["variable","en-US"]}]}`))))},
+			"conflict":                       {status: 409, body: livePreviewVariablesErrorJSON(t, cm.ErrorSysIDVersionMismatch, "Version mismatch", nil), conflict: true},
+			"other conflict":                 {status: 409, body: livePreviewVariablesErrorJSON(t, cm.ErrorSysIDConflict, "Other conflict", nil)},
+			"validation value omitted from diagnostics": {status: 422, body: livePreviewVariablesErrorJSON(t, "ValidationFailed", "Validation error", []byte(`{"errors":[{"name":"type","value":"VALUE_DO_NOT_ECHO","details":"Expected Text","path":["variable","en-US"]}]}`))},
 			"server failure": {status: 500, body: livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusInternalServerError, Error: "Internal Server Error", Message: "Internal error"})},
 			"malformed":      {status: 200, body: `{`},
 		} {
@@ -320,7 +334,7 @@ func TestLivePreviewVariablesUsesDefaultMutationRetryPolicy(t *testing.T) {
 
 	var requests atomic.Int64
 
-	rateLimitedBody := livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError("RateLimitExceeded", new("Rate limited"), nil)))
+	rateLimitedBody := livePreviewVariablesErrorJSON(t, "RateLimitExceeded", "Rate limited", nil)
 	serverErrorBody := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusInternalServerError, Error: "Internal Server Error", Message: "Unknown outcome"})
 
 	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -357,12 +371,7 @@ func TestLivePreviewVariablesReadProjectsResponse(t *testing.T) {
 
 			var requests atomic.Int64
 
-			body := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariables{
-				Sys: cm.LivePreviewVariablesSys{
-					Space: cm.NewSpaceLink("returned-space"), Environment: cm.NewEnvironmentLink("returned-environment"), Version: 29,
-				},
-				Variables: []byte(`{"remote":"new"}`),
-			})
+			body := livePreviewVariablesJSON(t, "returned-space", "returned-environment", 29, `{"remote":"new"}`)
 
 			providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				requests.Add(1)
@@ -411,11 +420,11 @@ func TestLivePreviewVariablesMultipleValidationErrorDiagnostics(t *testing.T) {
 
 	var requests atomic.Int64
 
-	body := livePreviewVariablesResponseJSON(t, new(cmt.NewContentfulManagementError("ValidationFailed", new("Validation error"), []byte(`{"errors":[
+	body := livePreviewVariablesErrorJSON(t, "ValidationFailed", "Validation error", []byte(`{"errors":[
 			{"name":"type","type":"Text","value":981723,"details":"The type of \"value\" is incorrect, expected type: Text","path":["global"]},
 			{"name":"type","type":"Text","value":["REJECTED_ARRAY_VALUE"],"details":"The type of \"value\" is incorrect, expected type: Text","path":["localized","en-US"]},
 			{"name":"unknown","value":"REJECTED_LOCALE_VALUE","details":"The property \"zz-ZZ\" is not allowed here.","path":["localized","zz-ZZ"]}
-		]}`))))
+		]}`))
 
 	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
@@ -447,18 +456,8 @@ func TestLivePreviewVariablesReadFeedsTheNextUpdateVersion(t *testing.T) {
 
 	var requests atomic.Int64
 
-	readBody := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariables{
-		Sys: cm.LivePreviewVariablesSys{
-			Space: cm.NewSpaceLink("space"), Environment: cm.NewEnvironmentLink("routing-id"), Version: 29,
-		},
-		Variables: []byte(`{"remote":{"future":[true,9007199254740993]}}`),
-	})
-	updateBody := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariables{
-		Sys: cm.LivePreviewVariablesSys{
-			Space: cm.NewSpaceLink("space"), Environment: cm.NewEnvironmentLink("routing-id"), Version: 30,
-		},
-		Variables: []byte(`{}`),
-	})
+	readBody := livePreviewVariablesJSON(t, "space", "routing-id", 29, `{"remote":{"future":[true,9007199254740993]}}`)
+	updateBody := livePreviewVariablesJSON(t, "space", "routing-id", 30, `{}`)
 
 	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestNumber := requests.Add(1)
