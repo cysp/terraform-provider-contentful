@@ -89,10 +89,22 @@ func TestAccAppActionResourceExternalDefinitions(t *testing.T) {
 		legacy  = `[{"id":"text","name":"Text","type":"Symbol","description":"","default":""},{"id":"number","name":"Number","type":"Number","required":false,"default":0},{"id":"flag","name":"Flag","type":"Boolean","default":false},{"id":"choice","name":"Choice","type":"Enum","options":["a","b"]}]`
 		builtin = `[{"id":"entryIds","name":"Entry Ids","description":"Ids of the entries you want to trigger the action for","type":"Symbol","required":true}]`
 	)
-	for _, test := range []struct{ name, category, parameters, schema string }{
-		{"legacy", "Custom", legacy, ""},
-		{"schema", "Custom", "", nested},
-		{"builtin", "Entries.v1.0", builtin, nested},
+	for _, test := range []struct{ name, category, parameters, schema, request string }{
+		{"legacy", "Custom", legacy, "", `{
+ "name":"Renamed","category":"Custom","type":"endpoint","url":"https://example.invalid/external","description":"",
+ "parameters":[{"id":"text","name":"Text","type":"Symbol","description":"","default":""},{"id":"number","name":"Number","type":"Number","required":false,"default":0},{"id":"flag","name":"Flag","type":"Boolean","default":false},{"id":"choice","name":"Choice","type":"Enum","options":["a","b"]}],
+ "resultSchema":{"type":"object","properties":{"count":{"type":"integer"},"warnings":{"type":"array","items":{"type":"string"}}},"required":["count"]}
+}`},
+		{"schema", "Custom", "", nested, `{
+ "name":"Renamed","category":"Custom","type":"endpoint","url":"https://example.invalid/external","description":"",
+ "parametersSchema":{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","properties":{"enabled":{"type":"boolean","default":false},"count":{"type":"number","minimum":0}},"required":["count"],"additionalProperties":false}}},"required":["items"],"additionalProperties":false},
+ "resultSchema":{"type":"object","properties":{"count":{"type":"integer"},"warnings":{"type":"array","items":{"type":"string"}}},"required":["count"]}
+}`},
+		{"builtin", "Entries.v1.0", builtin, nested, `{
+ "name":"Renamed","category":"Entries.v1.0","type":"endpoint","url":"https://example.invalid/external","description":"",
+ "parametersSchema":{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","properties":{"enabled":{"type":"boolean","default":false},"count":{"type":"number","minimum":0}},"required":["count"],"additionalProperties":false}}},"required":["items"],"additionalProperties":false},
+ "resultSchema":{"type":"object","properties":{"count":{"type":"integer"},"warnings":{"type":"array","items":{"type":"string"}}},"required":["count"]}
+}`},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
@@ -103,20 +115,15 @@ func TestAccAppActionResourceExternalDefinitions(t *testing.T) {
 
 			var mutations []string
 
-			writeFields := fmt.Sprintf(`,"category":%q,"type":"endpoint","url":"https://example.invalid/external","description":""`, test.category)
-
 			fields := fmt.Sprintf(" category=%q\n type=\"endpoint\"\n url=\"https://example.invalid/external\"\n description=\"\"\n", test.category)
 			if test.parameters != "" && test.category == "Custom" {
-				writeFields += `,"parameters":` + test.parameters
 				fields += fmt.Sprintf(" parameters=%q\n", test.parameters)
 			}
 
 			if test.schema != "" {
-				writeFields += `,"parametersSchema":` + test.schema
 				fields += fmt.Sprintf(" parameters_schema=%q\n", test.schema)
 			}
 
-			writeFields += `,"resultSchema":` + result
 			fields += fmt.Sprintf(" result_schema=%q\n", result)
 
 			response := cm.AppAction{
@@ -152,7 +159,7 @@ import {
 				case http.MethodPut:
 					body, err := io.ReadAll(r.Body)
 					assert.NoError(t, err)
-					assert.JSONEq(t, `{"name":"Renamed"`+writeFields+`}`, string(body))
+					assert.JSONEq(t, test.request, string(body))
 
 					renamed = true
 				case http.MethodDelete:
