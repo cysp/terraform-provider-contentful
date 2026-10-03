@@ -15,6 +15,7 @@ import (
 	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -86,6 +87,8 @@ func TestWebhookSigningSecretSuccessLogsRedactValues(t *testing.T) {
 			implementation := webhookSigningSecretTestClient(t, server)
 			state, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
 			plan, _ := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestUpdatedValue))
+			require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), timetypes.NewRFC3339Unknown()))
+			require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), timetypes.NewRFC3339Unknown()))
 
 			var logs bytes.Buffer
 
@@ -96,7 +99,7 @@ func TestWebhookSigningSecretSuccessLogsRedactValues(t *testing.T) {
 			switch operation {
 			case "create":
 				response := resource.CreateResponse{State: tfsdk.State{Schema: state.Schema}, Identity: identity}
-				implementation.Create(ctx, resource.CreateRequest{Plan: tfsdk.Plan(plan)}, &response)
+				implementation.Create(ctx, resource.CreateRequest{Plan: tfsdk.Plan(plan), Config: tfsdk.Config(plan)}, &response)
 				diagnostics = response.Diagnostics
 			case "read":
 				response := resource.ReadResponse{State: state, Identity: identity}
@@ -104,7 +107,7 @@ func TestWebhookSigningSecretSuccessLogsRedactValues(t *testing.T) {
 				diagnostics = response.Diagnostics
 			case "update":
 				response := resource.UpdateResponse{State: state, Identity: identity}
-				implementation.Update(ctx, resource.UpdateRequest{State: state, Plan: tfsdk.Plan(plan)}, &response)
+				implementation.Update(ctx, resource.UpdateRequest{State: state, Plan: tfsdk.Plan(plan), Config: tfsdk.Config(plan)}, &response)
 				diagnostics = response.Diagnostics
 			case "delete":
 				response := resource.DeleteResponse{State: state, Identity: identity}
@@ -183,6 +186,9 @@ func TestWebhookSigningSecretFailuresRetainStateAndRedactKnownValues(t *testing.
 				implementation := webhookSigningSecretTestClient(t, server)
 				state, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
 				plan, _ := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestUpdatedValue))
+				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), timetypes.NewRFC3339Unknown()))
+				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), timetypes.NewRFC3339Unknown()))
+
 				identityBefore := identity.Raw.Copy()
 
 				var logs bytes.Buffer
@@ -195,12 +201,12 @@ func TestWebhookSigningSecretFailuresRetainStateAndRedactKnownValues(t *testing.
 				case "create":
 					nullState := tfsdk.State{Schema: state.Schema, Raw: tftypes.NewValue(state.Schema.Type().TerraformType(ctx), nil)}
 					resp := resource.CreateResponse{State: nullState, Identity: identity}
-					implementation.Create(ctx, resource.CreateRequest{Plan: tfsdk.Plan(plan)}, &resp)
+					implementation.Create(ctx, resource.CreateRequest{Plan: tfsdk.Plan(plan), Config: tfsdk.Config(plan)}, &resp)
 					diagnostics = resp.Diagnostics
 					assert.True(t, resp.State.Raw.IsNull())
 				case "update":
 					resp := resource.UpdateResponse{State: state, Identity: identity}
-					implementation.Update(ctx, resource.UpdateRequest{State: state, Plan: tfsdk.Plan(plan)}, &resp)
+					implementation.Update(ctx, resource.UpdateRequest{State: state, Plan: tfsdk.Plan(plan), Config: tfsdk.Config(plan)}, &resp)
 					diagnostics = resp.Diagnostics
 					assert.True(t, state.Raw.Equal(resp.State.Raw))
 				case "read":
@@ -265,7 +271,7 @@ func TestWebhookSigningSecretNotFoundLifecycle(t *testing.T) {
 			require.Empty(t, deleted.Diagnostics)
 
 			created := resource.CreateResponse{State: tfsdk.State{Schema: state.Schema}, Identity: identity}
-			implementation.Create(t.Context(), resource.CreateRequest{Plan: tfsdk.Plan(state)}, &created)
+			implementation.Create(t.Context(), resource.CreateRequest{Plan: tfsdk.Plan(state), Config: tfsdk.Config(state)}, &created)
 			require.True(t, created.Diagnostics.HasError())
 		})
 	}
@@ -314,7 +320,7 @@ func TestWebhookSigningSecretValueValidationAndRequestBoundary(t *testing.T) {
 			t.Cleanup(server.Close)
 			state, identity := webhookSigningSecretTestState(t, test.value)
 			resp := resource.CreateResponse{State: tfsdk.State{Schema: state.Schema}, Identity: identity}
-			webhookSigningSecretTestClient(t, server).Create(t.Context(), resource.CreateRequest{Plan: tfsdk.Plan(state)}, &resp)
+			webhookSigningSecretTestClient(t, server).Create(t.Context(), resource.CreateRequest{Plan: tfsdk.Plan(state), Config: tfsdk.Config(state)}, &resp)
 			assert.True(t, resp.Diagnostics.HasError())
 			assert.Zero(t, requests.Load())
 		})
@@ -348,8 +354,11 @@ func TestWebhookSigningSecretTransportFailureAndCancellation(t *testing.T) {
 				state, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
 
 				var diags diag.Diagnostics
+
 				if operation == "put" {
-					_, diags = implementation.put(t.Context(), mustWebhookSigningSecretModel(t, state), types.StringNull())
+					resp := resource.CreateResponse{State: tfsdk.State{Schema: state.Schema}, Identity: identity}
+					implementation.Create(t.Context(), resource.CreateRequest{Plan: tfsdk.Plan(state), Config: tfsdk.Config(state)}, &resp)
+					diags = resp.Diagnostics
 				} else {
 					resp := resource.DeleteResponse{State: state, Identity: identity}
 					implementation.Delete(t.Context(), resource.DeleteRequest{State: state}, &resp)
@@ -367,15 +376,6 @@ func TestWebhookSigningSecretTransportFailureAndCancellation(t *testing.T) {
 			})
 		}
 	}
-}
-
-func mustWebhookSigningSecretModel(t *testing.T, state tfsdk.State) WebhookSigningSecretModel {
-	t.Helper()
-
-	var model WebhookSigningSecretModel
-	require.Empty(t, state.Get(t.Context(), &model))
-
-	return model
 }
 
 func TestWebhookSigningSecretRedactedMetadataIsOpaque(t *testing.T) {
@@ -406,7 +406,7 @@ func TestWebhookSigningSecretRejectsUnresolvedScopeBeforeHTTP(t *testing.T) {
 		require.Empty(t, state.SetAttribute(t.Context(), path.Root("space_id"), spaceID))
 		implementation := webhookSigningSecretTestClient(t, server)
 		resp := resource.CreateResponse{State: tfsdk.State{Schema: state.Schema}, Identity: identity}
-		implementation.Create(t.Context(), resource.CreateRequest{Plan: tfsdk.Plan(state)}, &resp)
+		implementation.Create(t.Context(), resource.CreateRequest{Plan: tfsdk.Plan(state), Config: tfsdk.Config(state)}, &resp)
 		require.True(t, resp.Diagnostics.HasError())
 		assert.Zero(t, count.Load())
 

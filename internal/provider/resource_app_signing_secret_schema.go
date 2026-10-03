@@ -2,18 +2,20 @@ package provider
 
 import (
 	"context"
-	"regexp"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-const appSigningValueDescription = "Symmetric key shared between Contentful and an app backend. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value."
-
-var appSigningSecretValuePattern = regexp.MustCompile(`^[0-9a-zA-Z+/=_-]+$`)
+const appSigningValueDescription = "Symmetric key shared between Contentful and an app backend. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Exactly one of `value` and `value_wo` is required. Stored in Terraform state. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value."
 
 type appSigningSecretValueValidator struct{}
 
@@ -25,21 +27,21 @@ func (v appSigningSecretValueValidator) MarkdownDescription(ctx context.Context)
 	return v.Description(ctx)
 }
 
-func (v appSigningSecretValueValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+func (appSigningSecretValueValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
 	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
 		return
 	}
 
-	value := req.ConfigValue.ValueString()
-	if len(value) == 64 && appSigningSecretValuePattern.MatchString(value) {
-		return
+	resp.Diagnostics.Append(validateAppSigningSecretValue(req.ConfigValue.ValueString(), req.Path)...)
+}
+
+func validateAppSigningSecretValue(value string, valuePath path.Path) diag.Diagnostics {
+	request := cm.AppSigningSecretRequestData{Value: value}
+	if request.Validate() != nil {
+		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Invalid app signing secret value", "The app signing secret must be exactly 64 characters and contain only letters, digits, +, /, =, _, or -.")}
 	}
 
-	resp.Diagnostics.AddAttributeError(
-		req.Path,
-		"Invalid app signing secret value",
-		v.Description(ctx)+".",
-	)
+	return nil
 }
 
 func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
@@ -70,11 +72,30 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 			"value": schema.StringAttribute{
 				Description:         appSigningValueDescription,
 				MarkdownDescription: appSigningValueDescription + " See [importing signing secrets](../guides/secrets-and-state#importing-signing-secrets).",
-				Required:            true,
+				Optional:            true,
 				Sensitive:           true,
 				Validators: []validator.String{
 					appSigningSecretValueValidator{},
+					stringvalidator.ExactlyOneOf(path.MatchRoot("value_wo")),
 				},
+			},
+			"value_wo": schema.StringAttribute{
+				Description:         signingSecretWriteOnlyDescription,
+				MarkdownDescription: signingSecretWriteOnlyDescription + " See [write-only signing secrets](../guides/secrets-and-state#write-only-signing-secrets) for rotation and saved-plan behavior.",
+				Optional:            true,
+				Sensitive:           true,
+				WriteOnly:           true,
+				Validators:          []validator.String{appSigningSecretValueValidator{}},
+			},
+			"created_at": schema.StringAttribute{
+				Description: "Contentful creation timestamp in RFC 3339 format, or null when omitted. It can change when the signing secret is replaced.",
+				CustomType:  timetypes.RFC3339Type{},
+				Computed:    true,
+			},
+			"updated_at": schema.StringAttribute{
+				Description: "Contentful update timestamp in RFC 3339 format, or null when omitted.",
+				CustomType:  timetypes.RFC3339Type{},
+				Computed:    true,
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
 		},

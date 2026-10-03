@@ -15,6 +15,7 @@ when simplifying code or tests.
 | Change | Read |
 | --- | --- |
 | Schemas, planning, request conversion, response projection, or state publication | [Terraform value semantics](terraform-value-semantics.md) |
+| App and webhook signing-secret values, comparison, or state publication | [Signing secret values and acknowledgement](signing-secret-write-only.md) and [Terraform lifecycle evidence](signing-secret-planning.md) |
 | HTTP retries, deadlines, or mutation recovery | [Contentful HTTP retry policy](contentful-http-retry-policy.md) |
 | Entry publication recovery | [Entry publication contract](terraform-value-semantics.md#entry-publication-ownership-and-partial-field-ownership) and [Terraform lifecycle evidence](entry-publication-evidence.md) |
 | Content preview platform representation and requests (`contentful_preview_environment`) | [Configuration and reconciliation](content-preview-environments.md) |

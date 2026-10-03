@@ -7,7 +7,8 @@ equals `space_id`.
 The resource accepts GET 200, PUT 200/201, and DELETE 204 success. GET/PUT responses
 must contain `sys.type: WebhookSigningSecret`, a Space link, and a string
 `redactedValue`. The resource checks that the returned space matches the request.
-The client models no secret-specific `sys.id`, timestamps, users, or version.
+The client models optional creation/update timestamps but no secret-specific
+`sys.id`, users, or version.
 
 [API research](../research/webhook-signing-secret.md) records the external evidence
 and its limitations. [Terraform value semantics](terraform-value-semantics.md)
@@ -26,13 +27,19 @@ no complete secret. Changing the space replaces the resource. Multiple resources
 can target the same space and overwrite or delete one another's secret. A
 same-space `create_before_destroy` replacement can delete the newly written secret.
 
-The required sensitive `value` persists in Terraform state and saved plans.
-The [OpenAPI request schema](../../internal/contentful-management-go/openapi/schemas/webhook-signing-secret/request-data.yml)
+Exactly one of sensitive ordinary `value` or write-only `value_wo` is configured.
+The shared [signing secret value contract](signing-secret-write-only.md) defines
+comparison, private verifier storage, representation changes, ignored inputs,
+and state publication after acknowledgement. The
+[OpenAPI request schema](../../internal/contentful-management-go/openapi/schemas/webhook-signing-secret/request-data.yml)
 defines the format constraint; configuration validation and request conversion
-use its generated validator with fixed safe diagnostics. Configuration validation
-defers null/unknown. Mutation conversion rejects null, unknown, and invalid known
-values, including the known-empty string. It never substitutes configuration for
-the effective plan.
+use its generated validator with fixed safe diagnostics. Mutation conversion
+rejects null, unknown, and invalid known values, including the known-empty string.
+Ordinary values come from effective Plan; write-only values come from Config only
+when the effective plan permits a possible mutation.
+
+The following table covers ordinary `value`, excluding migrations to or from
+`value_wo`. Those migrations follow the shared contract.
 
 | Operation | Remote action | Published value |
 | --- | --- | --- |
@@ -54,8 +61,9 @@ not an independent equality proof.
 
 CLI import alone does not rotate. An import block with a configured value can
 rotate during the same apply. `ignore_changes = [value]` preserves the imported
-null and prevents that PUT. The Update equality check skips request conversion
-for unchanged values, including null/null; GET and DELETE need no secret value.
+null and prevents that PUT. With `ignore_changes = [value]`, Update skips the
+secret PUT, so the null value left by import does not cause a missing-value error.
+GET and DELETE also require no secret value.
 The setting does not affect Create: creation and replacement require the complete
 configured value. The [import guide](../guides/secrets-and-state.md#importing-signing-secrets)
 explains the ownership choice. Ordinary timeout changes preserve the remote secret
@@ -87,8 +95,9 @@ The resource's CRUD log calls emit operation names without request or response
 fields. Shared HTTP retry logs can include method, status, retry ordinal, and
 timing. Resource diagnostics use the same upstream error formatter and literal
 secret redaction as App Signing Secret. Exact occurrences of known secret values
-are replaced with `***`: the planned value for Create, the prior value for Read
-and Delete, and both values for Update. Other upstream detail is retained.
+are replaced with `***`: the effective ordinary or actual write-only value for
+Create, the prior ordinary value for Read and Delete, and prior/candidate values
+for Update. Other upstream detail is retained.
 Encoded, partial, or unknown secret values are outside this redaction policy.
 Schema sensitivity does not remove secrets from stored Terraform state, plans,
 or external tooling.
