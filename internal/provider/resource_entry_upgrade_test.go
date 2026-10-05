@@ -31,7 +31,7 @@ func TestAccEntryResourceLegacyStateDoesNotAuthorizePublication(t *testing.T) {
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.SetEntry("space", "environment", "article", "entry", cm.EntryRequest{
-		Fields:   cm.NewOptEntryFields(cm.EntryFields{"managed": []byte(`{"en-US":"one"}`)}),
+		Fields:   cm.NewOptEntryFields(cm.EntryFields{"managed": []byte(testJSON(map[string]any{"en-US": "one"}))}),
 		Metadata: cm.NewOptEntryMetadata(cm.EntryMetadata{Concepts: []cm.TaxonomyConceptLink{}, Tags: []cm.TagLink{}}),
 	})
 

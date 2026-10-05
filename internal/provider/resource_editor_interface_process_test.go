@@ -66,7 +66,7 @@ provider "contentful" {
 	response, err := server.Handler().PutEditorInterface(t.Context(), &cm.EditorInterfaceData{
 		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{{
 			FieldId: "name", WidgetNamespace: cm.NewOptString("builtin"), WidgetId: cm.NewOptString("singleLine"),
-			Settings: []byte(`{"helpText":"external"}`),
+			Settings: []byte(testJSON(map[string]any{"helpText": "external"})),
 		}}),
 	}, cm.PutEditorInterfaceParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "editor-offset", XContentfulVersion: 6,
@@ -92,7 +92,7 @@ provider "contentful" {
 	controls, ok := editorInterface.Controls.Get()
 	require.True(t, ok)
 	require.Len(t, controls, 1)
-	require.JSONEq(t, `{"helpText":"external"}`, string(controls[0].Settings))
+	require.JSONEq(t, testJSON(map[string]any{"helpText": "external"}), string(controls[0].Settings))
 
 	output, err = runtime.run(t.Context(), "destroy", "-auto-approve", "-input=false", "-no-color")
 	require.NoError(t, err, output)

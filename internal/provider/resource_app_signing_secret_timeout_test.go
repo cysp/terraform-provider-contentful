@@ -196,6 +196,6 @@ func (r *appSigningSecretPutRecorder) requireValues(t *testing.T, values ...stri
 	for i, value := range values {
 		const path = "/organizations/organization/app_definitions/app/signing_secret "
 		require.True(t, strings.HasPrefix(r.bodies[i], path))
-		assert.JSONEq(t, fmt.Sprintf(`{"value":%q}`, value), strings.TrimPrefix(r.bodies[i], path))
+		assert.JSONEq(t, testJSON(map[string]any{"value": value}), strings.TrimPrefix(r.bodies[i], path))
 	}
 }

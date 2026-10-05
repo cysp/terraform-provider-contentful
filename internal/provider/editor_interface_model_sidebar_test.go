@@ -21,7 +21,7 @@ func TestSidebarValueToEditorInterfaceDataSidebarItem(t *testing.T) {
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
 		"disabled":         types.BoolNull(),
-		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(testJSON(map[string]any{"foo": "bar"}))),
 	}))
 
 	item, diags := model.Value().ToEditorInterfaceDataSidebarItem(path)
@@ -61,14 +61,14 @@ func TestNewEditorInterfaceSidebarValueFromResponse(t *testing.T) {
 	item := cm.EditorInterfaceSidebarItem{
 		WidgetNamespace: "widget_namespace",
 		WidgetId:        "widget_id",
-		Settings:        []byte(`{"foo":"bar"}`),
+		Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 	}
 
 	value, valueDiags := NewEditorInterfaceSidebarValueFromResponse(path, item)
 
 	assert.Equal(t, "widget_namespace", value.Value().WidgetNamespace.ValueString())
 	assert.Equal(t, "widget_id", value.Value().WidgetID.ValueString())
-	assert.JSONEq(t, `{"foo":"bar"}`, value.Value().Settings.ValueString())
+	assert.JSONEq(t, testJSON(map[string]any{"foo": "bar"}), value.Value().Settings.ValueString())
 
 	assert.Empty(t, valueDiags)
 }

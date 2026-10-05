@@ -34,7 +34,7 @@ func TestRequiredPrivateVersionRequiresReadableValue(t *testing.T) {
 		"null":     {value: []byte("null")},
 		"missing":  {hasError: true},
 		"malformed": {
-			value:    []byte(`"invalid"`),
+			value:    []byte(testJSON("invalid")),
 			hasError: true,
 		},
 	}
@@ -64,7 +64,7 @@ func TestOptionalPrivateVersionDistinguishesAbsenceFromDecodedValues(t *testing.
 		"negative":  {value: []byte("-1"), want: -1, found: true},
 		"null":      {value: []byte("null"), found: true},
 		"missing":   {},
-		"malformed": {value: []byte(`"invalid"`), found: true, hasError: true},
+		"malformed": {value: []byte(testJSON("invalid")), found: true, hasError: true},
 	}
 
 	for name, test := range tests {

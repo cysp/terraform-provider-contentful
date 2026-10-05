@@ -142,7 +142,7 @@ func (h *entryCreateDefaultingAdapter) ServeHTTP(responseWriter http.ResponseWri
 		return
 	}
 
-	fields["defaulted"] = json.RawMessage(`{"en-US":"content-type default"}`)
+	fields["defaulted"] = json.RawMessage(testJSON(map[string]any{"en-US": "content-type default"}))
 
 	payload["fields"], err = json.Marshal(fields)
 	if err != nil {
@@ -303,7 +303,7 @@ func (h *entryAdditionalUpdateFieldAdapter) ServeHTTP(responseWriter http.Respon
 		return
 	}
 
-	responseFields["response-only"] = json.RawMessage(`{"en-US":"unexpected"}`)
+	responseFields["response-only"] = json.RawMessage(testJSON(map[string]any{"en-US": "unexpected"}))
 
 	fields, err := json.Marshal(responseFields)
 	if err != nil {
@@ -670,7 +670,7 @@ func (h *entryAdditionalPublishFieldAdapter) ServeHTTP(responseWriter http.Respo
 	}
 
 	fields := maps.Clone(responseFields)
-	fields["response-only"] = jx.Raw(`{"en-US":"unexpected"}`)
+	fields["response-only"] = jx.Raw(testJSON(map[string]any{"en-US": "unexpected"}))
 	entry.Fields = cm.NewOptEntryFields(fields)
 
 	writeEntryAdapterResponse(responseWriter, recorder, &entry, h.errorSink)

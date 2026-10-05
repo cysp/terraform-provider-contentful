@@ -20,23 +20,22 @@ import (
 
 var errWebhookBasicPasswordLifecycle = errors.New("webhook Basic password lifecycle mismatch")
 
-//nolint:gosec // Raw response fixture deliberately contains no password.
-const rawWebhookWithoutBasicPassword = `{
-  "sys": {
-    "space": {"sys": {"type": "Link", "linkType": "Space", "id": "space"}},
-    "type": "WebhookDefinition",
-    "id": "raw-webhook",
-    "version": 1
-  },
-  "name": "Basic webhook",
-  "url": "https://example.com/webhook",
-  "topics": ["Entry.publish"],
-  "filters": null,
-  "httpBasicUsername": "user",
-  "headers": [],
-  "transformation": null,
-  "active": true
-}`
+var rawWebhookWithoutBasicPassword = testJSON(map[string]any{
+	"sys": map[string]any{
+		"space":   map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+		"type":    "WebhookDefinition",
+		"id":      "raw-webhook",
+		"version": 1,
+	},
+	"name":              "Basic webhook",
+	"url":               "https://example.com/webhook",
+	"topics":            []any{"Entry.publish"},
+	"filters":           nil,
+	"httpBasicUsername": "user",
+	"headers":           []any{},
+	"transformation":    nil,
+	"active":            true,
+})
 
 func TestAccWebhookResourceBasicPasswordOmittedFromRawCMAResponse(t *testing.T) {
 	t.Parallel()

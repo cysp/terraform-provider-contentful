@@ -292,5 +292,5 @@ resource "contentful_app_signing_secret" "test" {
 
 	require.NoError(t, readErr)
 	require.Len(t, recordedPutBodies, 1)
-	assert.JSONEq(t, fmt.Sprintf(`{"value":%q}`, testAppSigningSecretValue), string(recordedPutBodies[0]))
+	assert.JSONEq(t, testJSON(map[string]any{"value": testAppSigningSecretValue}), string(recordedPutBodies[0]))
 }

@@ -29,12 +29,19 @@ func TestLocaleMutationCheckpointsResponseAndVersion(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			versionJSON := `,"version":9`
-			if testcase.missingVersion {
-				versionJSON = ""
+			sys := map[string]any{
+				"type": "Locale", "id": "locale",
+				"space":       map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+				"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "environment"}},
+			}
+			if !testcase.missingVersion {
+				sys["version"] = 9
 			}
 
-			responseJSON := `{"name":"Returned","code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false,"default":false,"sys":{"type":"Locale","id":"locale","space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"environment"}}` + versionJSON + `}}`
+			responseJSON := testJSON(map[string]any{
+				"name": "Returned", "code": "en-AU", "fallbackCode": nil,
+				"contentDeliveryApi": true, "contentManagementApi": true, "optional": false, "default": false, "sys": sys,
+			})
 
 			var method, target, version, body string
 
@@ -103,7 +110,14 @@ func TestLocaleMutationCheckpointsResponseAndVersion(t *testing.T) {
 				assert.Empty(t, version)
 			}
 
-			assert.JSONEq(t, `{"name":"Planned","code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`, body)
+			assert.JSONEq(t, testJSON(map[string]any{
+				"name":                 "Planned",
+				"code":                 "en-AU",
+				"fallbackCode":         nil,
+				"contentDeliveryApi":   true,
+				"contentManagementApi": true,
+				"optional":             false,
+			}), body)
 
 			expectedDiagnostics := 1
 			if testcase.missingVersion {

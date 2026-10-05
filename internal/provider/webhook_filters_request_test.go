@@ -25,15 +25,15 @@ func TestWebhookFilterArrayPreservesNullAndEmptyAndRejectsUnknownContainer(t *te
 		"null is explicit null": {
 			value:               NewTypedListNull[TypedObject[WebhookFilterValue]](),
 			expected:            cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-			expectedWire:        `null`,
-			expectedRequestWire: `{"name":"","url":"","topics":[],"filters":null}`,
+			expectedWire:        testJSON(nil),
+			expectedRequestWire: testJSON(map[string]any{"name": "", "url": "", "topics": []any{}, "filters": nil}),
 			expectedPaths:       []string{},
 		},
 		"known empty list is preserved": {
 			value:               NewTypedList([]TypedObject[WebhookFilterValue]{}),
 			expected:            cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{}),
-			expectedWire:        `[]`,
-			expectedRequestWire: `{"name":"","url":"","topics":[],"filters":[]}`,
+			expectedWire:        testJSON([]any{}),
+			expectedRequestWire: testJSON(map[string]any{"name": "", "url": "", "topics": []any{}, "filters": []any{}}),
 			expectedPaths:       []string{},
 		},
 		"unknown is rejected": {
@@ -59,7 +59,7 @@ func TestWebhookFilterArrayPreservesNullAndEmptyAndRejectsUnknownContainer(t *te
 				request := cm.WebhookDefinitionData{Filters: actual}
 				encodedRequest, err := request.MarshalJSON()
 				require.NoError(t, err)
-				assert.Equal(t, test.expectedRequestWire, string(encodedRequest))
+				assert.JSONEq(t, test.expectedRequestWire, string(encodedRequest))
 			}
 		})
 	}
@@ -98,7 +98,7 @@ func TestWebhookFilterRequiresExactlyOneKnownAlternative(t *testing.T) {
 			value: webhookFilterValue(not, NewTypedObjectNull[WebhookFilterEqualsValue](), NewTypedObjectNull[WebhookFilterInValue](), NewTypedObjectNull[WebhookFilterRegexpValue]()),
 			expected: cm.WebhookDefinitionFilter{
 				Not: cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{
-					Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)},
+					Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Entry"))},
 				}),
 			},
 			expectedPaths: []string{},
@@ -106,21 +106,21 @@ func TestWebhookFilterRequiresExactlyOneKnownAlternative(t *testing.T) {
 		"equals": {
 			value: webhookFilterValue(NewTypedObjectNull[WebhookFilterNotValue](), equals, NewTypedObjectNull[WebhookFilterInValue](), NewTypedObjectNull[WebhookFilterRegexpValue]()),
 			expected: cm.WebhookDefinitionFilter{
-				Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)},
+				Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Entry"))},
 			},
 			expectedPaths: []string{},
 		},
 		"in": {
 			value: webhookFilterValue(NewTypedObjectNull[WebhookFilterNotValue](), NewTypedObjectNull[WebhookFilterEqualsValue](), inFilter, NewTypedObjectNull[WebhookFilterRegexpValue]()),
 			expected: cm.WebhookDefinitionFilter{
-				In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.id"}`), []byte(`["entry"]`)},
+				In: cm.WebhookDefinitionFilterIn{[]byte(testJSON(map[string]any{"doc": "sys.id"})), []byte(testJSON([]any{"entry"}))},
 			},
 			expectedPaths: []string{},
 		},
 		"regexp": {
 			value: webhookFilterValue(NewTypedObjectNull[WebhookFilterNotValue](), NewTypedObjectNull[WebhookFilterEqualsValue](), NewTypedObjectNull[WebhookFilterInValue](), regexp),
 			expected: cm.WebhookDefinitionFilter{
-				Regexp: cm.WebhookDefinitionFilterRegexp{[]byte(`{"doc":"sys.id"}`), []byte(`{"pattern":"entry.*"}`)},
+				Regexp: cm.WebhookDefinitionFilterRegexp{[]byte(testJSON(map[string]any{"doc": "sys.id"})), []byte(testJSON(map[string]any{"pattern": "entry.*"}))},
 			},
 			expectedPaths: []string{},
 		},
@@ -165,17 +165,17 @@ func TestWebhookFilterNotRequiresExactlyOneKnownAlternative(t *testing.T) {
 	}{
 		"equals": {
 			value:         webhookNotValue(equals, NewTypedObjectNull[WebhookFilterInValue](), NewTypedObjectNull[WebhookFilterRegexpValue]()),
-			expected:      cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)}}),
+			expected:      cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Entry"))}}),
 			expectedPaths: []string{},
 		},
 		"in": {
 			value:         webhookNotValue(NewTypedObjectNull[WebhookFilterEqualsValue](), inFilter, NewTypedObjectNull[WebhookFilterRegexpValue]()),
-			expected:      cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.id"}`), []byte(`["entry"]`)}}),
+			expected:      cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{In: cm.WebhookDefinitionFilterIn{[]byte(testJSON(map[string]any{"doc": "sys.id"})), []byte(testJSON([]any{"entry"}))}}),
 			expectedPaths: []string{},
 		},
 		"regexp": {
 			value:         webhookNotValue(NewTypedObjectNull[WebhookFilterEqualsValue](), NewTypedObjectNull[WebhookFilterInValue](), regexp),
-			expected:      cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{Regexp: cm.WebhookDefinitionFilterRegexp{[]byte(`{"doc":"sys.id"}`), []byte(`{"pattern":"entry.*"}`)}}),
+			expected:      cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{Regexp: cm.WebhookDefinitionFilterRegexp{[]byte(testJSON(map[string]any{"doc": "sys.id"})), []byte(testJSON(map[string]any{"pattern": "entry.*"}))}}),
 			expectedPaths: []string{},
 		},
 		"none": {
@@ -240,7 +240,7 @@ func TestWebhookFilterEqualsOperands(t *testing.T) {
 
 	encodedResult, err := result.MarshalJSON()
 	require.NoError(t, err)
-	assert.JSONEq(t, `[{"doc":""},""]`, string(encodedResult))
+	assert.JSONEq(t, testJSON([]any{map[string]any{"doc": ""}, ""}), string(encodedResult))
 
 	filter, filterDiags := ToWebhookDefinitionFilter(
 		path.Root("filters").AtListIndex(0),
@@ -255,7 +255,7 @@ func TestWebhookFilterEqualsOperands(t *testing.T) {
 
 	encodedFilter, err := filter.MarshalJSON()
 	require.NoError(t, err)
-	assert.JSONEq(t, `{"equals":[{"doc":""},""]}`, string(encodedFilter))
+	assert.JSONEq(t, testJSON(map[string]any{"equals": []any{map[string]any{"doc": ""}, ""}}), string(encodedFilter))
 }
 
 func TestWebhookFilterInOperands(t *testing.T) {
@@ -309,7 +309,7 @@ func TestWebhookFilterInOperands(t *testing.T) {
 
 	encodedResult, err := result.MarshalJSON()
 	require.NoError(t, err)
-	assert.JSONEq(t, `[{"doc":"sys.id"},[]]`, string(encodedResult))
+	assert.JSONEq(t, testJSON([]any{map[string]any{"doc": "sys.id"}, []any{}}), string(encodedResult))
 
 	filter, filterDiags := ToWebhookDefinitionFilter(
 		path.Root("filters").AtListIndex(0),
@@ -324,7 +324,7 @@ func TestWebhookFilterInOperands(t *testing.T) {
 
 	encodedFilter, err := filter.MarshalJSON()
 	require.NoError(t, err)
-	assert.JSONEq(t, `{"in":[{"doc":"sys.id"},[]]}`, string(encodedFilter))
+	assert.JSONEq(t, testJSON(map[string]any{"in": []any{map[string]any{"doc": "sys.id"}, []any{}}}), string(encodedFilter))
 }
 
 func TestWebhookFilterRegexpOperands(t *testing.T) {

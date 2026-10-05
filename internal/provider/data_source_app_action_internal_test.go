@@ -11,8 +11,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const actionDiscoveryFixture = `{"sys":{"id":"action","type":"AppAction","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}},"appDefinition":{"sys":{"type":"Link","linkType":"AppDefinition","id":"app"}}},"name":"Action","category":"Custom","type":"endpoint","url":"https://example.invalid/action","parameters":[]}`
+var actionDiscoveryFixture = testJSON(map[string]any{
+	"sys": map[string]any{
+		"id":            "action",
+		"type":          "AppAction",
+		"organization":  map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}},
+		"appDefinition": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "AppDefinition", "id": "app"}},
+	},
+	"name":       "Action",
+	"category":   "Custom",
+	"type":       "endpoint",
+	"url":        "https://example.invalid/action",
+	"parameters": []any{},
+})
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestAppActionDiscoveryRejectsPartialResults(t *testing.T) {
 	t.Parallel()
 
@@ -21,9 +34,12 @@ func TestAppActionDiscoveryRejectsPartialResults(t *testing.T) {
 		status int
 		page   string
 	}{
-		{"later error", http.StatusForbidden, `{"sys":{"type":"Error","id":"AccessDenied"}}`},
-		{"invalid response JSON", http.StatusOK, discoveryPage(1, 1, 2, strings.Replace(actionDiscoveryFixture, `"parameters":[]`, `"parameters":[invalid]`, 1))},
-		{"wrong scope", http.StatusOK, discoveryPage(1, 1, 2, strings.Replace(strings.Replace(actionDiscoveryFixture, `"id":"action"`, `"id":"second"`, 1), `"id":"org"`, `"id":"wrong"`, 1))},
+		{"later error", http.StatusForbidden, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "AccessDenied"}})},
+		{"invalid response JSON", http.StatusOK, strings.Replace(discoveryPage(1, 1, 2, actionDiscoveryFixture), `"parameters":[]`, `"parameters":[invalid]`, 1)},
+		{"wrong scope", http.StatusOK, discoveryPage(1, 1, 2, mutateTestJSON(actionDiscoveryFixture, func(document map[string]any) {
+			document["sys"].(map[string]any)["id"] = "second"
+			document["sys"].(map[string]any)["organization"].(map[string]any)["sys"].(map[string]any)["id"] = "wrong"
+		}))},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
@@ -47,7 +63,7 @@ func TestAppActionDiscoveryRejectsPartialResults(t *testing.T) {
 func TestAppActionDiscoveryEmptyAndNotFound(t *testing.T) {
 	t.Parallel()
 	response := discoveryReadTest(t.Context(), t, NewAppActionsDataSource, map[string]any{"organization_id": "org", "app_definition_id": "app"}, contentfulRetryTestRoundTripper(func(req *http.Request) (*http.Response, error) {
-		return discoveryHTTPResponse(req, http.StatusOK, discoveryPage(0, 100, 0, "")), nil
+		return discoveryHTTPResponse(req, http.StatusOK, discoveryPage(0, 100, 0)), nil
 	}))
 	require.False(t, response.Diagnostics.HasError(), "%v", response.Diagnostics)
 
@@ -56,7 +72,7 @@ func TestAppActionDiscoveryEmptyAndNotFound(t *testing.T) {
 	assert.NotNil(t, data.AppActions)
 	assert.Empty(t, data.AppActions)
 	response = discoveryReadTest(t.Context(), t, NewAppActionDataSource, map[string]any{"organization_id": "org", "app_definition_id": "app", "app_action_id": "action"}, contentfulRetryTestRoundTripper(func(req *http.Request) (*http.Response, error) {
-		return discoveryHTTPResponse(req, http.StatusNotFound, `{"sys":{"type":"Error","id":"NotFound"}}`), nil
+		return discoveryHTTPResponse(req, http.StatusNotFound, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "NotFound"}})), nil
 	}))
 	require.True(t, response.Diagnostics.HasError())
 	assert.True(t, response.State.Raw.IsNull())
@@ -98,6 +114,7 @@ func TestAppActionDiscoveryCancellation(t *testing.T) {
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestAppActionDiscoveryPreservesIrregularIDs(t *testing.T) {
 	t.Parallel()
 
@@ -105,7 +122,7 @@ func TestAppActionDiscoveryPreservesIrregularIDs(t *testing.T) {
 		t.Run(actionID, func(t *testing.T) {
 			t.Parallel()
 
-			body := strings.Replace(actionDiscoveryFixture, `"id":"action"`, `"id":"`+actionID+`"`, 1)
+			body := mutateTestJSON(actionDiscoveryFixture, func(document map[string]any) { document["sys"].(map[string]any)["id"] = actionID })
 			response := discoveryReadTest(t.Context(), t, NewAppActionsDataSource, map[string]any{"organization_id": "org", "app_definition_id": "app"}, contentfulRetryTestRoundTripper(func(req *http.Request) (*http.Response, error) {
 				return discoveryHTTPResponse(req, http.StatusOK, discoveryPage(0, 100, 1, body)), nil
 			}))

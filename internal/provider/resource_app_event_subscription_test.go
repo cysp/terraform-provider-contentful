@@ -32,7 +32,10 @@ const (
 	appEventResourcePath    = "/organizations/organization/app_definitions/app/event_subscription"
 )
 
-const appEventHTTPBody = `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events"}`
+var appEventHTTPBody = testJSON(map[string]any{
+	"topics":    []any{"Asset.publish", "Entry.publish"},
+	"targetUrl": "https://example.invalid/events",
+})
 
 func TestAccAppEventSubscriptionResourceInvalidTarget(t *testing.T) {
 	t.Parallel()
@@ -49,6 +52,8 @@ func TestAccAppEventSubscriptionResourceInvalidTarget(t *testing.T) {
 }
 
 // Function clearing and switching are fixture assumptions.
+//
+//nolint:maintidx // Keep lifecycle cases and their independent payload expectations together.
 func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
@@ -103,7 +108,7 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 
 			if !slices.Contains(topics, "FutureEntity.futureAction") {
 				// A fixed independently authored response order opposes sorted requests.
-				body["topics"] = json.RawMessage(`["Entry.publish","Asset.publish"]`)
+				body["topics"] = json.RawMessage(testJSON([]any{"Entry.publish", "Asset.publish"}))
 			}
 
 			encoded, encodeErr := json.Marshal(body)
@@ -126,14 +131,27 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 				"filter_function_id":         config.StringVariable("filter"),
 				"transformation_function_id": config.StringVariable("transform"),
 			},
-			body: `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events","functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}},"transformation":{"sys":{"type":"Link","linkType":"Function","id":"transform"}}}}`,
+			body: testJSON(map[string]any{
+				"topics":    []any{"Asset.publish", "Entry.publish"},
+				"targetUrl": "https://example.invalid/events",
+				"functions": map[string]any{
+					"filter":         map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "filter"}},
+					"transformation": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "transform"}},
+				},
+			}),
 		},
 		{
 			subscription: map[string]config.Variable{
 				"target_url":                 config.StringVariable("https://example.invalid/events"),
 				"transformation_function_id": config.StringVariable("transform"),
 			},
-			body: `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events","functions":{"transformation":{"sys":{"type":"Link","linkType":"Function","id":"transform"}}}}`,
+			body: testJSON(map[string]any{
+				"topics":    []any{"Asset.publish", "Entry.publish"},
+				"targetUrl": "https://example.invalid/events",
+				"functions": map[string]any{
+					"transformation": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "transform"}},
+				},
+			}),
 		},
 		{
 			subscription: map[string]config.Variable{
@@ -141,27 +159,51 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 				"transformation_function_id": config.StringVariable("transform"),
 				"handler_function_id":        config.StringVariable("handler"),
 			},
-			body: `{"topics":["Asset.publish","Entry.publish"],"functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}},"transformation":{"sys":{"type":"Link","linkType":"Function","id":"transform"}},"handler":{"sys":{"type":"Link","linkType":"Function","id":"handler"}}}}`,
+			body: testJSON(map[string]any{
+				"topics": []any{"Asset.publish", "Entry.publish"},
+				"functions": map[string]any{
+					"filter":         map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "filter"}},
+					"transformation": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "transform"}},
+					"handler":        map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "handler"}},
+				},
+			}),
 		},
 		{
 			subscription: map[string]config.Variable{
 				"filter_function_id":  config.StringVariable("filter"),
 				"handler_function_id": config.StringVariable("handler"),
 			},
-			body: `{"topics":["Asset.publish","Entry.publish"],"functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}},"handler":{"sys":{"type":"Link","linkType":"Function","id":"handler"}}}}`,
+			body: testJSON(map[string]any{
+				"topics": []any{"Asset.publish", "Entry.publish"},
+				"functions": map[string]any{
+					"filter":  map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "filter"}},
+					"handler": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "handler"}},
+				},
+			}),
 		},
 		{
 			subscription: map[string]config.Variable{
 				"handler_function_id": config.StringVariable("handler"),
 			},
-			body: `{"topics":["Asset.publish","Entry.publish"],"functions":{"handler":{"sys":{"type":"Link","linkType":"Function","id":"handler"}}}}`,
+			body: testJSON(map[string]any{
+				"topics": []any{"Asset.publish", "Entry.publish"},
+				"functions": map[string]any{
+					"handler": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "handler"}},
+				},
+			}),
 		},
 		{
 			subscription: map[string]config.Variable{
 				"target_url":         config.StringVariable("https://example.invalid/events"),
 				"filter_function_id": config.StringVariable("filter"),
 			},
-			body: `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events","functions":{"filter":{"sys":{"type":"Link","linkType":"Function","id":"filter"}}}}`,
+			body: testJSON(map[string]any{
+				"topics":    []any{"Asset.publish", "Entry.publish"},
+				"targetUrl": "https://example.invalid/events",
+				"functions": map[string]any{
+					"filter": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "filter"}},
+				},
+			}),
 		},
 		{
 			subscription: map[string]config.Variable{
@@ -175,7 +217,7 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 				"target_url": config.StringVariable("https://example.invalid/events"),
 				"topics":     config.ListVariable(config.StringVariable("FutureEntity.futureAction")),
 			},
-			body: `{"topics":["FutureEntity.futureAction"],"targetUrl":"https://example.invalid/events"}`,
+			body: testJSON(map[string]any{"topics": []any{"FutureEntity.futureAction"}, "targetUrl": "https://example.invalid/events"}),
 		},
 	}
 
@@ -324,7 +366,7 @@ func TestAccAppEventSubscriptionResourceRecoveryState(t *testing.T) {
 						return
 					}
 
-					body["targetUrl"] = json.RawMessage(`"https://example.invalid/returned"`)
+					body["targetUrl"] = json.RawMessage(testJSON("https://example.invalid/returned"))
 					encoded, err := json.Marshal(body)
 					assert.NoError(t, err)
 

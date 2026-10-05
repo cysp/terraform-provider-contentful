@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -49,8 +48,8 @@ func TestContentTypeDataSourcesProjectCurrentModel(t *testing.T) {
 	title := single.Fields.Elements()[0].Value()
 	assert.Equal(t, "title", title.ID.ValueString())
 	assert.Equal(t, "Symbol", title.FieldType.ValueString())
-	assert.JSONEq(t, `{"en-US":"Untitled"}`, title.DefaultValue.ValueString())
-	assert.JSONEq(t, `{"size":{"min":1}}`, title.Validations.Elements()[0].ValueString())
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": "Untitled"}), title.DefaultValue.ValueString())
+	assert.JSONEq(t, testJSON(map[string]any{"size": map[string]any{"min": 1}}), title.Validations.Elements()[0].ValueString())
 	assert.True(t, title.Disabled.ValueBool())
 	assert.False(t, title.Omitted.ValueBool())
 	assert.True(t, title.Required.ValueBool())
@@ -61,8 +60,8 @@ func TestContentTypeDataSourcesProjectCurrentModel(t *testing.T) {
 	assert.Equal(t, "Array", array.FieldType.ValueString())
 	assert.Equal(t, "Link", array.Items.Value().ItemsType.ValueString())
 	assert.Equal(t, "Entry", array.Items.Value().LinkType.ValueString())
-	assert.JSONEq(t, `{"linkContentType":["author"]}`, array.Items.Value().Validations.Elements()[0].ValueString())
-	assert.JSONEq(t, `{"size":{"max":3}}`, array.Validations.Elements()[0].ValueString())
+	assert.JSONEq(t, testJSON(map[string]any{"linkContentType": []any{"author"}}), array.Items.Value().Validations.Elements()[0].ValueString())
+	assert.JSONEq(t, testJSON(map[string]any{"size": map[string]any{"max": 3}}), array.Validations.Elements()[0].ValueString())
 	link := single.Fields.Elements()[2].Value()
 	assert.Equal(t, "Link", link.FieldType.ValueString())
 	assert.Equal(t, "Asset", link.LinkType.ValueString())
@@ -78,7 +77,7 @@ func TestContentTypeDataSourcesProjectCurrentModel(t *testing.T) {
 	assert.True(t, resource.AllowedResources.Elements()[1].Value().ContentfulEntry.IsNull())
 	assert.Equal(t, "External:Product", resource.AllowedResources.Elements()[1].Value().External.Value().TypeID.ValueString())
 	metadata := single.Metadata.Value()
-	assert.Contains(t, metadata.Annotations.ValueString(), `"Contentful:AggregateRoot"`)
+	assert.Contains(t, metadata.Annotations.ValueString(), testJSON("Contentful:AggregateRoot"))
 	require.Len(t, metadata.Taxonomy.Elements(), 2)
 	assert.Equal(t, "topic", metadata.Taxonomy.Elements()[0].Value().TaxonomyConcept.Value().ID.ValueString())
 	assert.True(t, metadata.Taxonomy.Elements()[0].Value().TaxonomyConcept.Value().Required.ValueBool())
@@ -112,9 +111,33 @@ func TestContentTypeDataSourcesPreserveNullAndEmptyStrings(t *testing.T) {
 
 	// displayField is required but nullable in the generated decoder. Its
 	// omission is a decoding error; description is optional and may be absent.
-	const (
-		missing = `{"sys":{"type":"ContentType","id":"article","version":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"master"}}},"name":"Draft","displayField":null,"fields":[]}`
-		empty   = `{"sys":{"type":"ContentType","id":"article","version":2,"publishedVersion":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"master"}}},"name":"Draft","description":"","displayField":"","fields":[]}`
+	var (
+		missing = testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":        "ContentType",
+				"id":          "article",
+				"version":     1,
+				"space":       map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+				"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "master"}},
+			},
+			"name":         "Draft",
+			"displayField": nil,
+			"fields":       []any{},
+		})
+		empty = testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":             "ContentType",
+				"id":               "article",
+				"version":          2,
+				"publishedVersion": 1,
+				"space":            map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+				"environment":      map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "master"}},
+			},
+			"name":         "Draft",
+			"description":  "",
+			"displayField": "",
+			"fields":       []any{},
+		})
 	)
 
 	for _, test := range []struct {
@@ -150,11 +173,24 @@ func TestContentTypeDataSourcesPreserveNullAndEmptyStrings(t *testing.T) {
 func TestContentTypesDataSourcePagesPreserveResponseOrderAndDuplicates(t *testing.T) {
 	t.Parallel()
 
-	const item = `{"sys":{"type":"ContentType","id":"%s","version":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"master"}}},"name":"%s","displayField":null,"fields":[]}`
+	item := func(id, name string) string {
+		return testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":        "ContentType",
+				"id":          id,
+				"version":     1,
+				"space":       map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+				"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "master"}},
+			},
+			"name":         name,
+			"displayField": nil,
+			"fields":       []any{},
+		})
+	}
 
-	zeta := fmt.Sprintf(item, "zeta", "First zeta")
-	alpha := fmt.Sprintf(item, "alpha", "Alpha")
-	zetaAgain := fmt.Sprintf(item, "zeta", "Second zeta")
+	zeta := item("zeta", "First zeta")
+	alpha := item("alpha", "Alpha")
+	zetaAgain := item("zeta", "Second zeta")
 
 	var offsets []string
 
@@ -164,7 +200,7 @@ func TestContentTypesDataSourcePagesPreserveResponseOrderAndDuplicates(t *testin
 			return discoveryHTTPResponse(request, 200, discoveryPage(0, 1, 3, zeta)), nil
 		}
 
-		return discoveryHTTPResponse(request, 200, discoveryPage(1, 2, 3, alpha+","+zetaAgain)), nil
+		return discoveryHTTPResponse(request, 200, discoveryPage(1, 2, 3, alpha, zetaAgain)), nil
 	}))
 	require.False(t, response.Diagnostics.HasError(), response.Diagnostics)
 	assert.Equal(t, []string{"0", "1"}, offsets)
@@ -177,14 +213,30 @@ func TestContentTypesDataSourcePagesPreserveResponseOrderAndDuplicates(t *testin
 	assert.Equal(t, "Second zeta", model.ContentTypes[2].Name.ValueString())
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestContentTypeDataSourcesRejectResponseIdentity(t *testing.T) {
 	t.Parallel()
 
-	const item = `{"sys":{"type":"ContentType","id":"article","version":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"master"}}},"name":"Draft","displayField":null,"fields":[]}`
+	item := testJSON(map[string]any{
+		"sys": map[string]any{
+			"type":        "ContentType",
+			"id":          "article",
+			"version":     1,
+			"space":       map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+			"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "master"}},
+		},
+		"name":         "Draft",
+		"displayField": nil,
+		"fields":       []any{},
+	})
 	for _, test := range []struct{ name, body, want string }{
-		{"content type", strings.Replace(item, `"id":"article"`, `"id":"different"`, 1), "requested ID"},
-		{"space", strings.Replace(item, `"id":"space"`, `"id":"other"`, 1), "outside the requested scope"},
-		{"environment", strings.Replace(item, `"id":"master"`, `"id":"target"`, 1), "cannot establish alias routing"},
+		{"content type", mutateTestJSON(item, func(document map[string]any) { document["sys"].(map[string]any)["id"] = "different" }), "requested ID"},
+		{"space", mutateTestJSON(item, func(document map[string]any) {
+			document["sys"].(map[string]any)["space"].(map[string]any)["sys"].(map[string]any)["id"] = "other"
+		}), "outside the requested scope"},
+		{"environment", mutateTestJSON(item, func(document map[string]any) {
+			document["sys"].(map[string]any)["environment"].(map[string]any)["sys"].(map[string]any)["id"] = "target"
+		}), "cannot establish alias routing"},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
@@ -201,14 +253,25 @@ func TestContentTypeDataSourcesRejectResponseIdentity(t *testing.T) {
 func TestContentTypesDataSourceLaterPageFailurePublishesNothing(t *testing.T) {
 	t.Parallel()
 
-	const first = `{"sys":{"type":"ContentType","id":"article","version":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"master"}}},"name":"Draft","displayField":null,"fields":[]}`
+	first := testJSON(map[string]any{
+		"sys": map[string]any{
+			"type":        "ContentType",
+			"id":          "article",
+			"version":     1,
+			"space":       map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+			"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "master"}},
+		},
+		"name":         "Draft",
+		"displayField": nil,
+		"fields":       []any{},
+	})
 
 	for _, test := range []struct {
 		name, body, want string
 		status           int
 	}{
-		{"permission", `{"sys":{"type":"Error","id":"AccessDenied"},"message":"denied"}`, "AccessDenied", 403},
-		{"missing", `{"sys":{"type":"Error","id":"NotFound"}}`, "NotFound", 404},
+		{"permission", testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "AccessDenied"}, "message": "denied"}), "AccessDenied", 403},
+		{"missing", testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "NotFound"}}), "NotFound", 404},
 		{"decoder", `{"items":`, "decode", 200},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -266,13 +329,26 @@ func TestContentTypeDataSourceCancelledReadPublishesNothing(t *testing.T) {
 func TestContentTypesDataSourceScopeAndEmpty(t *testing.T) {
 	t.Parallel()
 
-	const item = `{"sys":{"type":"ContentType","id":"%s","version":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"%s"}}},"name":"Draft","displayField":null,"fields":[]}`
+	item := func(id, environment string) string {
+		return testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":        "ContentType",
+				"id":          id,
+				"version":     1,
+				"space":       map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+				"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": environment}},
+			},
+			"name":         "Draft",
+			"displayField": nil,
+			"fields":       []any{},
+		})
+	}
 
 	inputs := map[string]any{"space_id": "space", "environment_id": "master"}
-	valid := fmt.Sprintf(item, "alpha", "master")
-	wrongScope := fmt.Sprintf(item, "zeta", "concrete")
+	valid := item("alpha", "master")
+	wrongScope := item("zeta", "concrete")
 	response := discoveryReadTest(t.Context(), t, NewContentTypesDataSource, inputs, roundTripFunc(func(request *http.Request) (*http.Response, error) {
-		return discoveryHTTPResponse(request, 200, discoveryPage(0, 2, 2, valid+","+wrongScope)), nil
+		return discoveryHTTPResponse(request, 200, discoveryPage(0, 2, 2, valid, wrongScope)), nil
 	}))
 	require.True(t, response.Diagnostics.HasError())
 	assert.True(t, response.State.Raw.IsNull())
@@ -282,7 +358,7 @@ func TestContentTypesDataSourceScopeAndEmpty(t *testing.T) {
 	assert.Contains(t, fmt.Sprint(response.Diagnostics), "cannot establish alias routing")
 
 	empty := discoveryReadTest(t.Context(), t, NewContentTypesDataSource, inputs, roundTripFunc(func(request *http.Request) (*http.Response, error) {
-		return discoveryHTTPResponse(request, 200, discoveryPage(0, 0, 0, "")), nil
+		return discoveryHTTPResponse(request, 200, discoveryPage(0, 0, 0)), nil
 	}))
 	require.False(t, empty.Diagnostics.HasError(), empty.Diagnostics)
 
@@ -293,7 +369,7 @@ func TestContentTypesDataSourceScopeAndEmpty(t *testing.T) {
 
 	// A collection item ID is decoded output, not a lookup input validator.
 	computed := discoveryReadTest(t.Context(), t, NewContentTypesDataSource, inputs, roundTripFunc(func(request *http.Request) (*http.Response, error) {
-		return discoveryHTTPResponse(request, 200, discoveryPage(0, 1, 1, fmt.Sprintf(item, "a/b", "master"))), nil
+		return discoveryHTTPResponse(request, 200, discoveryPage(0, 1, 1, item("a/b", "master"))), nil
 	}))
 	require.False(t, computed.Diagnostics.HasError(), computed.Diagnostics)
 	require.False(t, computed.State.Get(t.Context(), &model).HasError())
@@ -304,7 +380,18 @@ func TestContentTypesDataSourceScopeAndEmpty(t *testing.T) {
 func TestContentTypesDataSourceCancellationAfterFirstPagePublishesNothing(t *testing.T) {
 	t.Parallel()
 
-	const first = `{"sys":{"type":"ContentType","id":"article","version":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"master"}}},"name":"Draft","displayField":null,"fields":[]}`
+	first := testJSON(map[string]any{
+		"sys": map[string]any{
+			"type":        "ContentType",
+			"id":          "article",
+			"version":     1,
+			"space":       map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+			"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "master"}},
+		},
+		"name":         "Draft",
+		"displayField": nil,
+		"fields":       []any{},
+	})
 
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
@@ -347,8 +434,18 @@ func TestContentTypeDataSourcesRejectUnresolvedInputsAndMissingEntities(t *testi
 		name, body, want string
 		status           int
 	}{
-		{"not found", `{"sys":{"type":"Error","id":"NotFound"}}`, "NotFound", 404},
-		{"omitted displayField", `{"sys":{"type":"ContentType","id":"article","version":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"master"}}},"name":"Draft","fields":[]}`, "displayField", 200},
+		{"not found", testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "NotFound"}}), "NotFound", 404},
+		{"omitted displayField", testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":        "ContentType",
+				"id":          "article",
+				"version":     1,
+				"space":       map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+				"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "master"}},
+			},
+			"name":   "Draft",
+			"fields": []any{},
+		}), "displayField", 200},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()

@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -54,7 +55,7 @@ resource "contentful_app_definition" "test" {
 func TestAccAppDefinitionResourceNestedLocations(t *testing.T) {
 	t.Parallel()
 
-	cases := []struct{ config, body string }{
+	cases := []struct{ config, body, response string }{
 		{`[
  { location = "entry-field", field_types = [
    { type = "Array", items = { type = "Symbol" } },
@@ -63,7 +64,29 @@ func TestAccAppDefinitionResourceNestedLocations(t *testing.T) {
  ] },
  { location = "page", navigation_item = { name = "Page", path = "/page" } },
  { location = "dialog" }
-]`, `[{"location":"entry-field","fieldTypes":[{"type":"Array","items":{"type":"Symbol"}},{"type":"Array","items":{"type":"Link","linkType":"Asset"}},{"type":"Link","linkType":"Entry"}]},{"location":"page","navigationItem":{"name":"Page","path":"/page"}},{"location":"dialog"}]`},
+]`, testJSON([]any{
+			map[string]any{
+				"location": "entry-field",
+				"fieldTypes": []any{
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}},
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Link", "linkType": "Asset"}},
+					map[string]any{"type": "Link", "linkType": "Entry"},
+				},
+			},
+			map[string]any{"location": "page", "navigationItem": map[string]any{"name": "Page", "path": "/page"}},
+			map[string]any{"location": "dialog"},
+		}), testJSON(map[string]any{"sys": map[string]any{"type": "AppDefinition", "id": "app", "organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}}}, "name": "App", "src": "https://example.invalid/app", "locations": []any{
+			map[string]any{
+				"location": "entry-field",
+				"fieldTypes": []any{
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}},
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Link", "linkType": "Asset"}},
+					map[string]any{"type": "Link", "linkType": "Entry"},
+				},
+			},
+			map[string]any{"location": "page", "navigationItem": map[string]any{"name": "Page", "path": "/page"}},
+			map[string]any{"location": "dialog"},
+		}})},
 		{`[
  { location = "entry-field", field_types = [
    { type = "Symbol" },
@@ -72,7 +95,29 @@ func TestAccAppDefinitionResourceNestedLocations(t *testing.T) {
  ] },
  { location = "page" },
  { location = "dialog" }
-]`, `[{"location":"entry-field","fieldTypes":[{"type":"Symbol"},{"type":"Array","items":{"type":"Link","linkType":"Asset"}},{"type":"Link","linkType":"Entry"}]},{"location":"page"},{"location":"dialog"}]`},
+]`, testJSON([]any{
+			map[string]any{
+				"location": "entry-field",
+				"fieldTypes": []any{
+					map[string]any{"type": "Symbol"},
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Link", "linkType": "Asset"}},
+					map[string]any{"type": "Link", "linkType": "Entry"},
+				},
+			},
+			map[string]any{"location": "page"},
+			map[string]any{"location": "dialog"},
+		}), testJSON(map[string]any{"sys": map[string]any{"type": "AppDefinition", "id": "app", "organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}}}, "name": "App", "src": "https://example.invalid/app", "locations": []any{
+			map[string]any{
+				"location": "entry-field",
+				"fieldTypes": []any{
+					map[string]any{"type": "Symbol"},
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Link", "linkType": "Asset"}},
+					map[string]any{"type": "Link", "linkType": "Entry"},
+				},
+			},
+			map[string]any{"location": "page"},
+			map[string]any{"location": "dialog"},
+		}})},
 		{`[
  { location = "dialog" },
  { location = "page" },
@@ -80,12 +125,26 @@ func TestAccAppDefinitionResourceNestedLocations(t *testing.T) {
    { type = "Link", link_type = "Entry" },
    { type = "Symbol" }
  ] }
-]`, `[{"location":"dialog"},{"location":"page"},{"location":"entry-field","fieldTypes":[{"type":"Link","linkType":"Entry"},{"type":"Symbol"}]}]`},
+]`, testJSON([]any{
+			map[string]any{"location": "dialog"},
+			map[string]any{"location": "page"},
+			map[string]any{
+				"location":   "entry-field",
+				"fieldTypes": []any{map[string]any{"type": "Link", "linkType": "Entry"}, map[string]any{"type": "Symbol"}},
+			},
+		}), testJSON(map[string]any{"sys": map[string]any{"type": "AppDefinition", "id": "app", "organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}}}, "name": "App", "src": "https://example.invalid/app", "locations": []any{
+			map[string]any{"location": "dialog"},
+			map[string]any{"location": "page"},
+			map[string]any{
+				"location":   "entry-field",
+				"fieldTypes": []any{map[string]any{"type": "Link", "linkType": "Entry"}, map[string]any{"type": "Symbol"}},
+			},
+		}})},
 	}
 
 	var (
-		expected, current    atomic.Pointer[string]
-		posts, puts, deletes atomic.Int64
+		expected, current, response atomic.Pointer[string]
+		posts, puts, deletes        atomic.Int64
 	)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +159,7 @@ func TestAccAppDefinitionResourceNestedLocations(t *testing.T) {
 			}
 
 			assert.JSONEq(t, *expected.Load(), string(request))
-			body := `{"sys":{"type":"AppDefinition","id":"app","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}}},` + (*expected.Load())[1:]
+			body := *response.Load()
 			current.Store(&body)
 
 			if r.Method == http.MethodPost {
@@ -139,8 +198,9 @@ output "locations" { value = jsonencode(contentful_app_definition.test.locations
 `, test.config)
 
 		steps = append(steps, resource.TestStep{PreConfig: func() {
-			body := `{"name":"App","src":"https://example.invalid/app","locations":` + test.body + `}`
+			body := testJSON(map[string]any{"name": "App", "src": "https://example.invalid/app", "locations": json.RawMessage(test.body)})
 			expected.Store(&body)
+			response.Store(&test.response)
 		}, Config: config})
 		if index == 0 {
 			steps = append(steps, resource.TestStep{ResourceName: "contentful_app_definition.test", ImportState: true, ImportStateVerify: true})

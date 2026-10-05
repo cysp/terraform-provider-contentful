@@ -73,7 +73,19 @@ func TestAccEntryResourceErrorDiagnosticsPreserveUpstreamMessages(t *testing.T) 
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
 		w.WriteHeader(http.StatusBadRequest)
-		_, err := w.Write([]byte(`{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Contentful rejected UPSTREAM_ENTRY_SENTINEL","details":{"errors":[{"name":"invalid","path":["fields","secret","en-US"],"details":"Check the configured field value"}]}}`))
+		_, err := w.Write([]byte(testJSON(map[string]any{
+			"sys":     map[string]any{"type": "Error", "id": "ValidationFailed"},
+			"message": "Contentful rejected UPSTREAM_ENTRY_SENTINEL",
+			"details": map[string]any{
+				"errors": []any{
+					map[string]any{
+						"name":    "invalid",
+						"path":    []any{"fields", "secret", "en-US"},
+						"details": "Check the configured field value",
+					},
+				},
+			},
+		})))
 		assert.NoError(t, err)
 	}))
 	t.Cleanup(testServer.Close)

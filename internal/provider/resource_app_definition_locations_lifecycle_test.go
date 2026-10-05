@@ -17,7 +17,7 @@ import (
 func TestAccAppDefinitionResourceImportedLocationLifecycle(t *testing.T) {
 	t.Parallel()
 
-	const (
+	var (
 		ignored = `resource "contentful_app_definition" "test" {
  organization_id = "org"
  name = "Before"
@@ -35,8 +35,26 @@ func TestAccAppDefinitionResourceImportedLocationLifecycle(t *testing.T) {
  name = "After"
  locations = [{ location = "app-config" }]
 }`
-		originalBody  = `{"sys":{"type":"AppDefinition","id":"app","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}}},"name":"Before","src":"https://example.invalid/app","locations":[{"location":"app-config"},{"location":"dialog","fieldTypes":[]}]}`
-		correctedBody = `{"sys":{"type":"AppDefinition","id":"app","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}}},"name":"After","src":"https://example.invalid/app","locations":[{"location":"app-config"}]}`
+		originalBody = testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":         "AppDefinition",
+				"id":           "app",
+				"organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}},
+			},
+			"name":      "Before",
+			"src":       "https://example.invalid/app",
+			"locations": []any{map[string]any{"location": "app-config"}, map[string]any{"location": "dialog", "fieldTypes": []any{}}},
+		})
+		correctedBody = testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":         "AppDefinition",
+				"id":           "app",
+				"organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}},
+			},
+			"name":      "After",
+			"src":       "https://example.invalid/app",
+			"locations": []any{map[string]any{"location": "app-config"}},
+		})
 	)
 
 	for _, operation := range []string{"destroy", "correct"} {
@@ -67,7 +85,11 @@ func TestAccAppDefinitionResourceImportedLocationLifecycle(t *testing.T) {
 						return
 					}
 
-					assert.JSONEq(t, `{"name":"After","src":"https://example.invalid/app","locations":[{"location":"app-config"}]}`, string(request))
+					assert.JSONEq(t, testJSON(map[string]any{
+						"name":      "After",
+						"src":       "https://example.invalid/app",
+						"locations": []any{map[string]any{"location": "app-config"}},
+					}), string(request))
 
 					body := correctedBody
 					current.Store(&body)
@@ -117,7 +139,16 @@ func TestAccAppDefinitionResourceUnknownLocationLifecycle(t *testing.T) {
 
 			var posts, deletes atomic.Int64
 
-			const body = `{"sys":{"type":"AppDefinition","id":"app","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}}},"name":"App","src":"https://example.invalid/app","locations":[{"location":"entry-field","fieldTypes":[{"type":"Symbol"}]}]}`
+			body := testJSON(map[string]any{
+				"sys": map[string]any{
+					"type":         "AppDefinition",
+					"id":           "app",
+					"organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}},
+				},
+				"name":      "App",
+				"src":       "https://example.invalid/app",
+				"locations": []any{map[string]any{"location": "entry-field", "fieldTypes": []any{map[string]any{"type": "Symbol"}}}},
+			})
 
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
@@ -133,7 +164,11 @@ func TestAccAppDefinitionResourceUnknownLocationLifecycle(t *testing.T) {
 						return
 					}
 
-					assert.JSONEq(t, `{"name":"App","src":"https://example.invalid/app","locations":[{"location":"entry-field","fieldTypes":[{"type":"Symbol"}]}]}`, string(request))
+					assert.JSONEq(t, testJSON(map[string]any{
+						"name":      "App",
+						"src":       "https://example.invalid/app",
+						"locations": []any{map[string]any{"location": "entry-field", "fieldTypes": []any{map[string]any{"type": "Symbol"}}}},
+					}), string(request))
 
 					w.WriteHeader(http.StatusCreated)
 					fmt.Fprint(w, body)
@@ -192,14 +227,32 @@ func TestAccAppDefinitionResourceReplacesImportedLocations(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			const (
+			var (
 				originalPath = "/organizations/org/app_definitions/app"
-				originalBody = `{"sys":{"type":"AppDefinition","id":"app","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}}},"name":"App","src":"https://example.invalid/app","locations":[{"location":"app-config"},{"location":"dialog","fieldTypes":[]}]}`
+				originalBody = testJSON(map[string]any{
+					"sys": map[string]any{
+						"type":         "AppDefinition",
+						"id":           "app",
+						"organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}},
+					},
+					"name":      "App",
+					"src":       "https://example.invalid/app",
+					"locations": []any{map[string]any{"location": "app-config"}, map[string]any{"location": "dialog", "fieldTypes": []any{}}},
+				})
 			)
 
 			collectionPath := "/organizations/" + test.organization + "/app_definitions"
 			replacementPath := collectionPath + "/replacement"
-			replacementBody := fmt.Sprintf(`{"sys":{"type":"AppDefinition","id":"replacement","organization":{"sys":{"type":"Link","linkType":"Organization","id":%q}}},"name":"App","src":"https://example.invalid/app","locations":[{"location":"app-config"}]}`, test.organization)
+			replacementBody := testJSON(map[string]any{
+				"sys": map[string]any{
+					"type":         "AppDefinition",
+					"id":           "replacement",
+					"organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": test.organization}},
+				},
+				"name":      "App",
+				"src":       "https://example.invalid/app",
+				"locations": []any{map[string]any{"location": "app-config"}},
+			})
 
 			var (
 				mutex     sync.Mutex
@@ -222,7 +275,7 @@ func TestAccAppDefinitionResourceReplacesImportedLocations(t *testing.T) {
 					body, exists := bodies[r.URL.Path]
 					if !exists {
 						w.WriteHeader(http.StatusNotFound)
-						fmt.Fprint(w, `{"sys":{"type":"Error","id":"NotFound"},"message":"Not found"}`)
+						fmt.Fprint(w, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "NotFound"}, "message": "Not found"}))
 
 						return
 					}
@@ -237,7 +290,11 @@ func TestAccAppDefinitionResourceReplacesImportedLocations(t *testing.T) {
 						return
 					}
 
-					assert.JSONEq(t, `{"name":"App","src":"https://example.invalid/app","locations":[{"location":"app-config"}]}`, string(request))
+					assert.JSONEq(t, testJSON(map[string]any{
+						"name":      "App",
+						"src":       "https://example.invalid/app",
+						"locations": []any{map[string]any{"location": "app-config"}},
+					}), string(request))
 
 					bodies[replacementPath] = replacementBody
 

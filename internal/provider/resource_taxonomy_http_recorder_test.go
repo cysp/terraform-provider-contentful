@@ -25,9 +25,9 @@ func TestTaxonomyRequestBodyRecorderExcludesRateLimitedAttempts(t *testing.T) {
 		version string
 		body    string
 	}{
-		{status: http.StatusTooManyRequests, version: "1", body: `[{"attempt":"rate-limited"}]`},
-		{status: http.StatusConflict, version: "2", body: `[{"attempt":"conflict"}]`},
-		{status: http.StatusNoContent, version: "3", body: `[{"attempt":"processed"}]`},
+		{status: http.StatusTooManyRequests, version: "1", body: testJSON([]any{map[string]any{"attempt": "rate-limited"}})},
+		{status: http.StatusConflict, version: "2", body: testJSON([]any{map[string]any{"attempt": "conflict"}})},
+		{status: http.StatusNoContent, version: "3", body: testJSON([]any{map[string]any{"attempt": "processed"}})},
 	}
 
 	for _, expected := range requests {
@@ -42,7 +42,7 @@ func TestTaxonomyRequestBodyRecorderExcludesRateLimitedAttempts(t *testing.T) {
 	processed := recorder.matchingRequests(http.MethodPatch, "/taxonomy/concepts/furniture")
 	require.Len(t, processed, 2)
 	assert.Equal(t, "2", processed[0].version)
-	assert.JSONEq(t, `[{"attempt":"conflict"}]`, string(processed[0].body))
+	assert.JSONEq(t, testJSON([]any{map[string]any{"attempt": "conflict"}}), string(processed[0].body))
 	assert.Equal(t, "3", processed[1].version)
-	assert.JSONEq(t, `[{"attempt":"processed"}]`, string(processed[1].body))
+	assert.JSONEq(t, testJSON([]any{map[string]any{"attempt": "processed"}}), string(processed[1].body))
 }

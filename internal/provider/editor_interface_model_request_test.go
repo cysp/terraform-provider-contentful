@@ -29,7 +29,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 				FieldId:         "field_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
 				WidgetId:        cm.NewOptString("widget_id"),
-				Settings:        []byte(`{"foo":"bar"}`),
+				Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 			},
 		}),
 		GroupControls: cm.NewOptNilEditorInterfaceGroupControlsItemArray([]cm.EditorInterfaceGroupControlsItem{
@@ -37,14 +37,14 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 				GroupId:         "group_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
 				WidgetId:        cm.NewOptString("widget_id"),
-				Settings:        []byte(`{"foo":"bar"}`),
+				Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 			},
 		}),
 		Sidebar: cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
-				Settings:        []byte(`{"foo":"bar"}`),
+				Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 			},
 		}),
 	}
@@ -77,7 +77,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 		FieldId:         "field_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
 		WidgetId:        cm.NewOptString("widget_id"),
-		Settings:        []byte(`{"foo":"bar"}`),
+		Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 	}, req.Controls.Value[0])
 
 	assert.True(t, req.GroupControls.Set)
@@ -86,7 +86,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 		GroupId:         "group_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
 		WidgetId:        cm.NewOptString("widget_id"),
-		Settings:        []byte(`{"foo":"bar"}`),
+		Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 	}, req.GroupControls.Value[0])
 
 	assert.True(t, req.Sidebar.Set)
@@ -94,7 +94,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 	assert.Equal(t, cm.EditorInterfaceDataSidebarItem{
 		WidgetNamespace: "widget_namespace",
 		WidgetId:        "widget_id",
-		Settings:        []byte(`{"foo":"bar"}`),
+		Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 	}, req.Sidebar.Value[0])
 }
 
@@ -335,7 +335,7 @@ func TestToEditorInterfaceData(t *testing.T) {
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(testJSON(map[string]any{"foo": "bar"}))),
 	}))
 
 	controls := NewTypedList([]TypedObject[EditorInterfaceControlValue]{
@@ -345,7 +345,7 @@ func TestToEditorInterfaceData(t *testing.T) {
 	sidebarValue1 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(testJSON(map[string]any{"foo": "bar"}))),
 		"disabled":         types.BoolNull(),
 	}))
 
@@ -374,14 +374,14 @@ func TestToEditorInterfaceData(t *testing.T) {
 				FieldId:         "field_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
 				WidgetId:        cm.NewOptString("widget_id"),
-				Settings:        []byte(`{"foo":"bar"}`),
+				Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 			},
 		}),
 		Sidebar: cm.NewOptNilEditorInterfaceDataSidebarItemArray([]cm.EditorInterfaceDataSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
-				Settings:        []byte(`{"foo":"bar"}`),
+				Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 			},
 		}),
 	}, req)
@@ -410,7 +410,7 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(testJSON(map[string]any{"foo": "bar"}))),
 	}))
 
 	controls := NewTypedList([]TypedObject[EditorInterfaceControlValue]{
@@ -436,7 +436,7 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 	sidebarValue3 := DiagsNoErrorsMust(NewTypedObjectFromAttributes[EditorInterfaceSidebarValue](ctx, map[string]attr.Value{
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(testJSON(map[string]any{"foo": "bar"}))),
 		"disabled":         types.BoolNull(),
 	}))
 
@@ -476,7 +476,7 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 				FieldId:         "field_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
 				WidgetId:        cm.NewOptString("widget_id"),
-				Settings:        []byte(`{"foo":"bar"}`),
+				Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 			},
 		}),
 		Sidebar: cm.NewOptNilEditorInterfaceDataSidebarItemArray([]cm.EditorInterfaceDataSidebarItem{
@@ -492,7 +492,7 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
-				Settings:        []byte(`{"foo":"bar"}`),
+				Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 			},
 		}),
 	}, req)
@@ -874,7 +874,7 @@ func validEditorInterfaceControlValue() EditorInterfaceControlValue {
 		FieldID:         types.StringValue("field"),
 		WidgetNamespace: types.StringValue("builtin"),
 		WidgetID:        types.StringValue("widget"),
-		Settings:        NewNormalizedJSONValue([]byte(`{"key":"value"}`)),
+		Settings:        NewNormalizedJSONValue([]byte(testJSON(map[string]any{"key": "value"}))),
 	}
 }
 
@@ -883,7 +883,7 @@ func validEditorInterfaceGroupControlValue() EditorInterfaceGroupControlValue {
 		GroupID:         types.StringValue("group"),
 		WidgetNamespace: types.StringValue("builtin"),
 		WidgetID:        types.StringValue("widget"),
-		Settings:        NewNormalizedJSONValue([]byte(`{"key":"value"}`)),
+		Settings:        NewNormalizedJSONValue([]byte(testJSON(map[string]any{"key": "value"}))),
 	}
 }
 
@@ -891,7 +891,7 @@ func validEditorInterfaceSidebarValue() EditorInterfaceSidebarValue {
 	return EditorInterfaceSidebarValue{
 		WidgetNamespace: types.StringValue("builtin"),
 		WidgetID:        types.StringValue("widget"),
-		Settings:        NewNormalizedJSONValue([]byte(`{"key":"value"}`)),
+		Settings:        NewNormalizedJSONValue([]byte(testJSON(map[string]any{"key": "value"}))),
 		Disabled:        types.BoolValue(false),
 	}
 }

@@ -174,8 +174,8 @@ lifecycle { ignore_changes = [value] }`),
 		return nil
 	}})
 	recorder.requireMutations(t, []string{"/spaces/space/webhook_settings/signing_secret", "/spaces/space/webhook_settings/signing_secret"}, []string{
-		`{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`,
-		`{"value":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbZy87-/=_+"}`,
+		testJSON(map[string]any{"value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}),
+		testJSON(map[string]any{"value": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbZy87-/=_+"}),
 	}, 1)
 }
 
@@ -226,7 +226,7 @@ func TestAccWebhookSigningSecretResourceImport(t *testing.T) {
 				var paths, bodies []string
 				if !ignore {
 					paths = []string{"/spaces/space/webhook_settings/signing_secret"}
-					bodies = []string{`{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`}
+					bodies = []string{testJSON(map[string]any{"value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"})}
 				}
 
 				recorder.requireMutations(t, paths, bodies, 1)
@@ -254,9 +254,9 @@ func TestAccWebhookSigningSecretResourceDisappearsAndReplacesScope(t *testing.T)
 		{Config: webhookSigningSecretConfig("other", testWebhookSigningSecretValue, ""), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(testWebhookSigningSecretAddress, plancheck.ResourceActionDestroyBeforeCreate)}}, ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(testWebhookSigningSecretAddress, tfjsonpath.New("id"), knownvalue.StringExact("other"))}},
 	}})
 	recorder.requireMutations(t, []string{"/spaces/space/webhook_settings/signing_secret", "/spaces/space/webhook_settings/signing_secret", "/spaces/other/webhook_settings/signing_secret"}, []string{
-		`{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`,
-		`{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`,
-		`{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`,
+		testJSON(map[string]any{"value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}),
+		testJSON(map[string]any{"value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}),
+		testJSON(map[string]any{"value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}),
 	}, 2)
 }
 
@@ -276,7 +276,7 @@ func TestAccWebhookSigningSecretResourceAmbiguousUpdate(t *testing.T) {
 			assert.Equal(t, http.StatusOK, committed.Code)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = io.WriteString(w, `{"sys":{"type":"Error","id":"ServerError"}}`)
+			_, _ = io.WriteString(w, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "ServerError"}}))
 
 			return
 		}
@@ -317,7 +317,7 @@ func TestAccWebhookSigningSecretResourceAmbiguousUpdate(t *testing.T) {
 		},
 	})
 	recorder.requireMutations(t, []string{"/spaces/space/webhook_settings/signing_secret", "/spaces/space/webhook_settings/signing_secret"}, []string{
-		`{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`,
-		`{"value":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbZy87-/=_+"}`,
+		testJSON(map[string]any{"value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}),
+		testJSON(map[string]any{"value": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbZy87-/=_+"}),
 	}, 1)
 }

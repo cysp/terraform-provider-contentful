@@ -34,8 +34,8 @@ func TestReadWebhookFilterValueFromResponsePreservesRepresentableAlternatives(t 
 		t.Parallel()
 
 		input := cm.WebhookDefinitionFilter{
-			Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)},
-			In:     cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.id"}`), []byte(`["entry"]`)},
+			Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Entry"))},
+			In:     cm.WebhookDefinitionFilterIn{[]byte(testJSON(map[string]any{"doc": "sys.id"})), []byte(testJSON([]any{"entry"}))},
 		}
 
 		actual, diags := ReadWebhookFilterValueFromResponse(t.Context(), filterPath, input)
@@ -53,8 +53,8 @@ func TestReadWebhookFilterValueFromResponsePreservesRepresentableAlternatives(t 
 
 		input := cm.WebhookDefinitionFilter{
 			Not: cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{
-				Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)},
-				In:     cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.id"}`), []byte(`["entry"]`)},
+				Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Entry"))},
+				In:     cm.WebhookDefinitionFilterIn{[]byte(testJSON(map[string]any{"doc": "sys.id"})), []byte(testJSON([]any{"entry"}))},
 			}),
 		}
 
@@ -78,13 +78,13 @@ func TestReadWebhookFilterValueFromResponsePreservesValidJSONShapeMismatch(t *te
 	}{
 		"malformed binary array": {
 			input: cm.WebhookDefinitionFilter{
-				Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`)},
+				Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"}))},
 			},
 			expectedPath: filterPath.AtName("equals"),
 		},
 		"incompatible term": {
 			input: cm.WebhookDefinitionFilter{
-				Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`123`)},
+				Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON(123))},
 			},
 			expectedPath: filterPath.AtName("equals").AtName("value"),
 		},
@@ -109,10 +109,10 @@ func TestReadWebhookFiltersListValueFromResponsePreservesSiblingsAndPositions(t 
 
 	input := cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
 		{
-			Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)},
+			Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Entry"))},
 		},
 		{
-			Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`)},
+			Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"}))},
 		},
 	})
 
@@ -130,62 +130,49 @@ func TestWebhookFilterResponseDecoderRetainsUnsupportedProperties(t *testing.T) 
 	t.Parallel()
 
 	var decoded cm.OptNilWebhookDefinitionFilterArray
-	require.NoError(t, decoded.UnmarshalJSON([]byte(`[
-  {
-    "equals": [{"doc": "sys.type"}, "Entry"],
-    "futureTop": {"mode": "preview"}
-  },
-  {
-    "not": {
-      "in": [{"doc": "sys.id"}, ["entry"]],
-      "futureNot": [1, 2]
-    }
-  }
-]`)))
+	require.NoError(t, decoded.UnmarshalJSON([]byte(testJSON([]any{
+		map[string]any{
+			"equals":    []any{map[string]any{"doc": "sys.type"}, "Entry"},
+			"futureTop": map[string]any{"mode": "preview"},
+		},
+		map[string]any{
+			"not": map[string]any{"in": []any{map[string]any{"doc": "sys.id"}, []any{"entry"}}, "futureNot": []any{1, 2}},
+		},
+	}))))
 
 	filters, ok := decoded.Get()
 	require.True(t, ok)
 	require.Len(t, filters, 2)
 	require.Len(t, filters[0].AdditionalProps, 1)
-	assert.JSONEq(t, `{"mode":"preview"}`, string(filters[0].AdditionalProps["futureTop"]))
+	assert.JSONEq(t, testJSON(map[string]any{"mode": "preview"}), string(filters[0].AdditionalProps["futureTop"]))
 
 	negated, ok := filters[1].Not.Get()
 	require.True(t, ok)
 	require.Len(t, negated.AdditionalProps, 1)
-	assert.JSONEq(t, `[1,2]`, string(negated.AdditionalProps["futureNot"]))
+	assert.JSONEq(t, testJSON([]any{1, 2}), string(negated.AdditionalProps["futureNot"]))
 }
 
 func TestWebhookFilterResponseProjectionReportsUnsupportedProperties(t *testing.T) {
 	t.Parallel()
 
 	var decoded cm.OptNilWebhookDefinitionFilterArray
-	require.NoError(t, decoded.UnmarshalJSON([]byte(`[
-  {
-    "equals": [{"doc": "sys.type", "zeta": false, "alpha": 1}, "Entry"],
-    "futureTop": [{"doc": "sys.id"}, "ignored"]
-  },
-  {
-    "not": {
-      "equals": [{"doc": "sys.id"}, "entry"],
-      "futureNot": [{"doc": "sys.type"}, "Asset"]
-    }
-  },
-  {
-    "futureOnly": [{"doc": "sys.type"}, "Asset"]
-  },
-  {
-    "in": [{"doc": "sys.id"}, ["first", "second"]]
-  },
-  {
-    "equals": [{"futureDoc": "sys.type"}, "Asset"]
-  },
-  {
-    "regexp": [{"doc": "sys.id"}, {"futurePattern": "entry.*"}]
-  },
-  {
-    "in": [{"zeta": false, "alpha": 1}, ["third"]]
-  }
-]`)))
+	require.NoError(t, decoded.UnmarshalJSON([]byte(testJSON([]any{
+		map[string]any{
+			"equals":    []any{map[string]any{"doc": "sys.type", "zeta": false, "alpha": 1}, "Entry"},
+			"futureTop": []any{map[string]any{"doc": "sys.id"}, "ignored"},
+		},
+		map[string]any{
+			"not": map[string]any{
+				"equals":    []any{map[string]any{"doc": "sys.id"}, "entry"},
+				"futureNot": []any{map[string]any{"doc": "sys.type"}, "Asset"},
+			},
+		},
+		map[string]any{"futureOnly": []any{map[string]any{"doc": "sys.type"}, "Asset"}},
+		map[string]any{"in": []any{map[string]any{"doc": "sys.id"}, []any{"first", "second"}}},
+		map[string]any{"equals": []any{map[string]any{"futureDoc": "sys.type"}, "Asset"}},
+		map[string]any{"regexp": []any{map[string]any{"doc": "sys.id"}, map[string]any{"futurePattern": "entry.*"}}},
+		map[string]any{"in": []any{map[string]any{"zeta": false, "alpha": 1}, []any{"third"}}},
+	}))))
 
 	model, diags := NewWebhookResourceModelFromResponse(t.Context(), cm.WebhookDefinition{
 		Sys:     cm.NewWebhookDefinitionSys("space", "webhook"),
@@ -334,7 +321,7 @@ func TestReadWebhookDefinitionFilterTermString(t *testing.T) {
 		expectError bool
 	}{
 		"valid": {
-			input:       []byte(`"abc"`),
+			input:       []byte(testJSON("abc")),
 			expectError: false,
 		},
 		"invalid json": {
@@ -342,7 +329,7 @@ func TestReadWebhookDefinitionFilterTermString(t *testing.T) {
 			expectError: true,
 		},
 		"wrong type": {
-			input:       []byte(`123`),
+			input:       []byte(testJSON(123)),
 			expectError: false,
 		},
 	}
@@ -376,7 +363,7 @@ func TestReadWebhookDefinitionFilterTermStringArray(t *testing.T) {
 		expectError bool
 	}{
 		"valid": {
-			input:       []byte(`["abc"]`),
+			input:       []byte(testJSON([]any{"abc"})),
 			expectError: false,
 		},
 		"invalid json": {
@@ -384,11 +371,11 @@ func TestReadWebhookDefinitionFilterTermStringArray(t *testing.T) {
 			expectError: true,
 		},
 		"wrong type": {
-			input:       []byte(`"abc"`),
+			input:       []byte(testJSON("abc")),
 			expectError: false,
 		},
 		"wrong element type": {
-			input:       []byte(`["abc",123]`),
+			input:       []byte(testJSON([]any{"abc", 123})),
 			expectError: false,
 		},
 	}
@@ -425,22 +412,22 @@ func TestReadWebhookDefinitionFilterTermStringObject(t *testing.T) {
 		expectError bool
 	}{
 		"valid": {
-			input:       []byte(`{"value":"abc"}`),
+			input:       []byte(testJSON(map[string]any{"value": "abc"})),
 			name:        "value",
 			expectValue: "abc",
 		},
 		"valid with excess": {
-			input:       []byte(`{"a":"b","value":"abc","c":"d"}`),
+			input:       []byte(testJSON(map[string]any{"a": "b", "value": "abc", "c": "d"})),
 			name:        "value",
 			expectValue: "abc",
 		},
 		"value absent": {
-			input:      []byte(`{"a":"b"}`),
+			input:      []byte(testJSON(map[string]any{"a": "b"})),
 			name:       "value",
 			expectNull: true,
 		},
 		"value wrong type": {
-			input:      []byte(`{"value":123}`),
+			input:      []byte(testJSON(map[string]any{"value": 123})),
 			name:       "value",
 			expectNull: true,
 		},
@@ -450,7 +437,7 @@ func TestReadWebhookDefinitionFilterTermStringObject(t *testing.T) {
 			expectError: true,
 		},
 		"wrong type": {
-			input:      []byte(`123`),
+			input:      []byte(testJSON(123)),
 			name:       "value",
 			expectNull: true,
 		},
@@ -489,29 +476,29 @@ func TestReadWebhookDefinitionFilterTermsWarnForRepresentableShapeMismatches(t *
 
 	valuePath := path.Root("filter")
 
-	stringValue, stringDiags := ReadWebhookDefinitionFilterTermString(t.Context(), valuePath, []byte(`123`))
+	stringValue, stringDiags := ReadWebhookDefinitionFilterTermString(t.Context(), valuePath, []byte(testJSON(123)))
 	assert.True(t, stringValue.IsNull())
 	assert.False(t, stringDiags.HasError())
 	assert.Equal(t, []string{valuePath.String()}, attributeWarningPaths(t, stringDiags))
-	nullStringValue, nullStringDiags := ReadWebhookDefinitionFilterTermString(t.Context(), valuePath, []byte(`null`))
+	nullStringValue, nullStringDiags := ReadWebhookDefinitionFilterTermString(t.Context(), valuePath, []byte(testJSON(nil)))
 	assert.True(t, nullStringValue.IsNull())
 	assert.False(t, nullStringDiags.HasError())
 	assert.Equal(t, []string{valuePath.String()}, attributeWarningPaths(t, nullStringDiags))
 
-	arrayValue, arrayDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(`["valid",123]`))
+	arrayValue, arrayDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(testJSON([]any{"valid", 123})))
 	assert.False(t, arrayDiags.HasError())
 	assert.Equal(t, []string{valuePath.AtListIndex(1).String()}, attributeWarningPaths(t, arrayDiags))
 	assert.Equal(t, []types.String{types.StringValue("valid"), types.StringNull()}, arrayValue.Elements())
-	nullArrayValue, nullArrayDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(`["valid",null]`))
+	nullArrayValue, nullArrayDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(testJSON([]any{"valid", nil})))
 	assert.False(t, nullArrayDiags.HasError())
 	assert.Equal(t, []string{valuePath.AtListIndex(1).String()}, attributeWarningPaths(t, nullArrayDiags))
 	assert.Equal(t, []types.String{types.StringValue("valid"), types.StringNull()}, nullArrayValue.Elements())
 
-	objectValue, objectDiags := ReadWebhookDefinitionFilterTermStringObject(t.Context(), valuePath, "doc", []byte(`{"doc":123}`))
+	objectValue, objectDiags := ReadWebhookDefinitionFilterTermStringObject(t.Context(), valuePath, "doc", []byte(testJSON(map[string]any{"doc": 123})))
 	assert.True(t, objectValue.IsNull())
 	assert.False(t, objectDiags.HasError())
 	assert.Equal(t, []string{valuePath.String()}, attributeWarningPaths(t, objectDiags))
-	nullObjectValue, nullObjectDiags := ReadWebhookDefinitionFilterTermStringObject(t.Context(), valuePath, "doc", []byte(`{"doc":null}`))
+	nullObjectValue, nullObjectDiags := ReadWebhookDefinitionFilterTermStringObject(t.Context(), valuePath, "doc", []byte(testJSON(map[string]any{"doc": nil})))
 	assert.True(t, nullObjectValue.IsNull())
 	assert.False(t, nullObjectDiags.HasError())
 	assert.Equal(t, []string{valuePath.String()}, attributeWarningPaths(t, nullObjectDiags))
@@ -522,12 +509,12 @@ func TestReadWebhookDefinitionFilterTermStringArrayDistinguishesNullFromEmpty(t 
 
 	valuePath := path.Root("filter")
 
-	nullValue, nullDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(`null`))
+	nullValue, nullDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(testJSON(nil)))
 	assert.True(t, nullValue.IsNull())
 	assert.False(t, nullDiags.HasError())
 	assert.Equal(t, []string{valuePath.String()}, attributeWarningPaths(t, nullDiags))
 
-	emptyValue, emptyDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(`[]`))
+	emptyValue, emptyDiags := ReadWebhookDefinitionFilterTermStringArray(t.Context(), valuePath, []byte(testJSON([]any{})))
 	assert.False(t, emptyValue.IsNull())
 	assert.Empty(t, emptyValue.Elements())
 	assert.Empty(t, emptyDiags)
@@ -549,7 +536,7 @@ func TestWebhookMutationStateDoesNotManufactureEqualityFromLossyFallback(t *test
 	response := cm.WebhookDefinition{
 		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
 		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
-			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`123`)}},
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON(123))}},
 		}),
 	}
 
@@ -579,7 +566,7 @@ func TestWebhookMutationStateRejectsRepresentableFilterContradiction(t *testing.
 		Sys:  cm.NewWebhookDefinitionSys("space", "webhook"),
 		Name: "Response webhook",
 		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
-			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Asset"`)}},
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Asset"))}},
 		}),
 	}
 
@@ -623,10 +610,10 @@ func TestWebhookMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *test
 		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
 		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
 			{Not: cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{
-				In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.environment.sys.id"}`), []byte(`["preview","master"]`)},
+				In: cm.WebhookDefinitionFilterIn{[]byte(testJSON(map[string]any{"doc": "sys.environment.sys.id"})), []byte(testJSON([]any{"preview", "master"}))},
 			})},
-			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)}},
-			{In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.id"}`), []byte(`["a","a","b"]`)}},
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Entry"))}},
+			{In: cm.WebhookDefinitionFilterIn{[]byte(testJSON(map[string]any{"doc": "sys.id"})), []byte(testJSON([]any{"a", "a", "b"}))}},
 		}),
 	}
 	plan := WebhookModel{
@@ -655,8 +642,8 @@ func TestWebhookMutationStatePreservesFilterDuplicateMultiplicity(t *testing.T) 
 	response := cm.WebhookDefinition{
 		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
 		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
-			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)}},
-			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Asset"`)}},
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Entry"))}},
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Asset"))}},
 		}),
 	}
 	plan := WebhookModel{
@@ -680,7 +667,7 @@ func TestWebhookMutationStateUsesResponseForUnknownFilters(t *testing.T) {
 	response := cm.WebhookDefinition{
 		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
 		Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
-			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"Entry"`)}},
+			{Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("Entry"))}},
 		}),
 	}
 	plan := WebhookModel{

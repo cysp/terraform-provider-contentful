@@ -38,7 +38,7 @@ func TestTaxonomyPatch(t *testing.T) {
 	require.Len(t, patch, 1)
 	assert.Equal(t, cm.TaxonomyPatchItemOpAdd, patch[0].Op)
 	assert.Equal(t, "/prefLabel", patch[0].Path)
-	assert.JSONEq(t, `{"en-US":"Product catalog"}`, string(patch[0].Value))
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": "Product catalog"}), string(patch[0].Value))
 }
 
 func TestTaxonomyPatchComparesJSONMembersStructurally(t *testing.T) {
@@ -60,12 +60,12 @@ func TestTaxonomyPatchAddsAbsentDesiredMember(t *testing.T) {
 	t.Parallel()
 
 	patch, err := taxonomyPatch(map[string]json.RawMessage{}, map[string]json.RawMessage{
-		"altLabels": json.RawMessage(`{"en-US":[]}`),
+		"altLabels": json.RawMessage(testJSON(map[string]any{"en-US": []any{}})),
 	})
 	require.NoError(t, err)
 	require.Len(t, patch, 1)
 	assert.Equal(t, "/altLabels", patch[0].Path)
-	assert.JSONEq(t, `{"en-US":[]}`, string(patch[0].Value))
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": []any{}}), string(patch[0].Value))
 }
 
 func TestTaxonomyPatchDoesNotChangeUnchangedMultiLocaleRequest(t *testing.T) {
@@ -128,25 +128,25 @@ func TestTaxonomyPatchValueShapes(t *testing.T) {
 	}{
 		"nullable value to null": {
 			mutate: func(desired *cm.TaxonomyConceptRequest) { desired.Definition = nullLocalizedString() },
-			path:   "/definition", value: `null`,
+			path:   "/definition", value: testJSON(nil),
 		},
 		"primitive list to empty": {
 			mutate: func(desired *cm.TaxonomyConceptRequest) { desired.Notations = []string{} },
-			path:   "/notations", value: `[]`,
+			path:   "/notations", value: testJSON([]any{}),
 		},
 		"localized list map to empty": {
 			mutate: func(desired *cm.TaxonomyConceptRequest) {
 				desired.AltLabels = cm.NewOptLocalizedStringList(cm.LocalizedStringList{})
 			},
-			path: "/altLabels", value: `{}`,
+			path: "/altLabels", value: testJSON(map[string]any{}),
 		},
 		"relationship replacement": {
 			mutate: func(desired *cm.TaxonomyConceptRequest) {
 				desired.Broader = []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("replacement")}
 			},
-			path: "/broader", value: `[{
-				"sys":{"type":"Link","linkType":"TaxonomyConcept","id":"replacement"}
-			}]`,
+			path: "/broader", value: testJSON([]any{
+				map[string]any{"sys": map[string]any{"type": "Link", "linkType": "TaxonomyConcept", "id": "replacement"}},
+			}),
 		},
 	}
 
@@ -1375,13 +1375,13 @@ func TestTaxonomyURIRequestValues(t *testing.T) {
 			name:         "known empty sends empty string",
 			value:        types.StringValue(""),
 			expected:     cm.NewOptNilString(""),
-			expectedJSON: `""`,
+			expectedJSON: testJSON(""),
 		},
 		{
 			name:         "known sends string",
 			value:        types.StringValue("https://example.com/taxonomy"),
 			expected:     cm.NewOptNilString("https://example.com/taxonomy"),
-			expectedJSON: `"https://example.com/taxonomy"`,
+			expectedJSON: testJSON("https://example.com/taxonomy"),
 		},
 		{
 			name:          "unknown fails closed",

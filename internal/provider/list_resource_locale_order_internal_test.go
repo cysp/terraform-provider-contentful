@@ -36,17 +36,61 @@ func TestLocaleListResourceStreamsAPIOrder(t *testing.T) {
 
 			switch request.URL.Query().Get("skip") {
 			case "0":
-				body = `{"sys":{"type":"Array"},"total":3,"skip":0,"limit":1,"items":[{"sys":{"id":"z","type":"Locale","space":{"sys":{"id":"space","type":"Link","linkType":"Space"}},"environment":{"sys":{"id":"environment","type":"Link","linkType":"Environment"}}},"name":"First by name","code":"z-code","fallbackCode":null,"default":false,"optional":false,"contentDeliveryApi":true,"contentManagementApi":true}]}`
+				body = testJSON(map[string]any{
+					"sys":   map[string]any{"type": "Array"},
+					"total": 3,
+					"skip":  0,
+					"limit": 1,
+					"items": []any{
+						map[string]any{
+							"sys": map[string]any{
+								"id":          "z",
+								"type":        "Locale",
+								"space":       map[string]any{"sys": map[string]any{"id": "space", "type": "Link", "linkType": "Space"}},
+								"environment": map[string]any{"sys": map[string]any{"id": "environment", "type": "Link", "linkType": "Environment"}},
+							},
+							"name":                 "First by name",
+							"code":                 "z-code",
+							"fallbackCode":         nil,
+							"default":              false,
+							"optional":             false,
+							"contentDeliveryApi":   true,
+							"contentManagementApi": true,
+						},
+					},
+				})
 			case "1":
 				assert.Equal(t, 1, emitted, "the first page must be emitted before requesting the second")
 
-				body = `{"sys":{"type":"Array"},"total":3,"skip":1,"limit":1,"items":[{"sys":{"id":"a","type":"Locale","space":{"sys":{"id":"space","type":"Link","linkType":"Space"}},"environment":{"sys":{"id":"environment","type":"Link","linkType":"Environment"}}},"name":"Second by name","code":"a-code","fallbackCode":null,"default":false,"optional":false,"contentDeliveryApi":true,"contentManagementApi":true}]}`
+				body = testJSON(map[string]any{
+					"sys":   map[string]any{"type": "Array"},
+					"total": 3,
+					"skip":  1,
+					"limit": 1,
+					"items": []any{
+						map[string]any{
+							"sys": map[string]any{
+								"id":          "a",
+								"type":        "Locale",
+								"space":       map[string]any{"sys": map[string]any{"id": "space", "type": "Link", "linkType": "Space"}},
+								"environment": map[string]any{"sys": map[string]any{"id": "environment", "type": "Link", "linkType": "Environment"}},
+							},
+							"name":                 "Second by name",
+							"code":                 "a-code",
+							"fallbackCode":         nil,
+							"default":              false,
+							"optional":             false,
+							"contentDeliveryApi":   true,
+							"contentManagementApi": true,
+						},
+					},
+				})
 
 			default:
 				t.Errorf("unexpected page request: %s", request.URL)
 
 				status = http.StatusBadRequest
-				body = `{"sys":{"type":"Error","id":"BadRequest"},"message":"unexpected page"}`
+				body = testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "BadRequest"}, "message": "unexpected page"})
 			}
 
 			return &http.Response{StatusCode: status, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(body)), Request: request}, nil

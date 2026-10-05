@@ -294,7 +294,7 @@ func TestAppDefinitionParameterOptionsFailClosedWithExactPath(t *testing.T) {
 		Name:    "Parameter",
 		Default: jsontypes.NewNormalizedNull(),
 		Options: NewTypedList([]jsontypes.Normalized{
-			jsontypes.NewNormalizedValue(`"known"`),
+			jsontypes.NewNormalizedValue(testJSON("known")),
 			jsontypes.NewNormalizedNull(),
 		}),
 	}

@@ -44,7 +44,7 @@ resource "contentful_entry" "test" {
 			Config: config("one"),
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.JSONEq(t, `{"en-US":"one"}`, string(update.fields["managed"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "one"}), string(update.fields["managed"]))
 				require.NotContains(t, update.fields, "external")
 
 				return nil
@@ -55,8 +55,8 @@ resource "contentful_entry" "test" {
 				entry := getTestEntry(t, server)
 				response, putErr := server.Handler().PutEntry(t.Context(), &cm.EntryRequest{
 					Fields: cm.NewOptEntryFields(cm.EntryFields{
-						"managed":  jx.Raw(`{"en-US":"one"}`),
-						"external": jx.Raw(`{"en-US":"remote"}`),
+						"managed":  jx.Raw(testJSON(map[string]any{"en-US": "one"})),
+						"external": jx.Raw(testJSON(map[string]any{"en-US": "remote"})),
 					}),
 					Metadata: entry.Metadata,
 				}, cm.PutEntryParams{
@@ -84,8 +84,8 @@ resource "contentful_entry" "test" {
 			Config:    config("two"),
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.JSONEq(t, `{"en-US":"two"}`, string(update.fields["managed"]))
-				require.JSONEq(t, `{"en-US":"remote"}`, string(update.fields["external"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "two"}), string(update.fields["managed"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "remote"}), string(update.fields["external"]))
 
 				return nil
 			},
@@ -95,7 +95,7 @@ resource "contentful_entry" "test" {
 				entry := getTestEntry(t, server)
 				response, putErr := server.Handler().PutEntry(t.Context(), &cm.EntryRequest{
 					Fields: cm.NewOptEntryFields(cm.EntryFields{
-						"managed": jx.Raw(`{"en-US":"two"}`),
+						"managed": jx.Raw(testJSON(map[string]any{"en-US": "two"})),
 					}),
 					Metadata: entry.Metadata,
 				}, cm.PutEntryParams{
@@ -108,7 +108,7 @@ resource "contentful_entry" "test" {
 			Config: config("three"),
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.JSONEq(t, `{"en-US":"three"}`, string(update.fields["managed"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "three"}), string(update.fields["managed"]))
 				require.NotContains(t, update.fields, "external")
 
 				return nil
@@ -160,11 +160,11 @@ resource "contentful_entry" "test" {
 			Config: configIgnoringDefault("one"),
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.JSONEq(t, `{"en-US":"one"}`, string(update.fields["managed"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "one"}), string(update.fields["managed"]))
 				require.NotContains(t, update.fields, "defaulted", "the HTTP adapter must apply the default after recording Terraform's request")
 
 				entry := getTestEntry(t, server)
-				require.JSONEq(t, `{"en-US":"content-type default"}`, string(entry.Fields.Value["defaulted"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "content-type default"}), string(entry.Fields.Value["defaulted"]))
 				require.True(t, entry.Sys.PublishedVersion.IsSet())
 				require.Less(t, entry.Sys.PublishedVersion.Or(0), entry.Sys.Version)
 
@@ -176,8 +176,8 @@ resource "contentful_entry" "test" {
 			Config:    configIgnoringDefault("two"),
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.JSONEq(t, `{"en-US":"two"}`, string(update.fields["managed"]))
-				require.JSONEq(t, `{"en-US":"content-type default"}`, string(update.fields["defaulted"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "two"}), string(update.fields["managed"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "content-type default"}), string(update.fields["defaulted"]))
 
 				return nil
 			},
@@ -187,7 +187,7 @@ resource "contentful_entry" "test" {
 			Config:    configOmittingDefault("two"),
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.JSONEq(t, `{"en-US":"two"}`, string(update.fields["managed"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "two"}), string(update.fields["managed"]))
 				require.NotContains(t, update.fields, "defaulted")
 
 				entry := getTestEntry(t, server)
@@ -251,9 +251,9 @@ resource "contentful_entry" "test" {
 			Config: config(managed, true, false),
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.JSONEq(t, `{"en-US":"one"}`, string(update.fields["managed"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "one"}), string(update.fields["managed"]))
 				require.NotContains(t, update.fields, "terraform_null")
-				require.JSONEq(t, `null`, string(update.fields["raw_null"]))
+				require.JSONEq(t, testJSON(nil), string(update.fields["raw_null"]))
 				require.NotContains(t, update.fields, "additional_raw_null")
 
 				return nil
@@ -289,9 +289,9 @@ resource "contentful_entry" "test" {
 			Config:    config(managed, false, true),
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.JSONEq(t, `{"en-US":"one"}`, string(update.fields["managed"]))
-				require.JSONEq(t, `null`, string(update.fields["raw_null"]))
-				require.JSONEq(t, `null`, string(update.fields["additional_raw_null"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "one"}), string(update.fields["managed"]))
+				require.JSONEq(t, testJSON(nil), string(update.fields["raw_null"]))
+				require.JSONEq(t, testJSON(nil), string(update.fields["additional_raw_null"]))
 
 				return nil
 			},
@@ -302,8 +302,8 @@ resource "contentful_entry" "test" {
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
 				require.NotContains(t, update.fields, "managed")
-				require.JSONEq(t, `null`, string(update.fields["raw_null"]))
-				require.JSONEq(t, `null`, string(update.fields["additional_raw_null"]))
+				require.JSONEq(t, testJSON(nil), string(update.fields["raw_null"]))
+				require.JSONEq(t, testJSON(nil), string(update.fields["additional_raw_null"]))
 
 				entry := getTestEntry(t, server)
 				require.NotContains(t, entry.Fields.Value, "managed")
@@ -355,7 +355,7 @@ func TestAccEntryResourceUpdateRejectsResponseOnlyField(t *testing.T) {
 				require.Len(t, requests, 1, "the contradictory update response must prevent publication")
 				requireEntryUpdate(t, requests[0])
 				require.Equal(t, "2", requests[0].version)
-				require.JSONEq(t, `{"en-US":"two"}`, string(requests[0].fields["managed"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "two"}), string(requests[0].fields["managed"]))
 				require.NotContains(t, requests[0].fields, "response-only")
 				recorder.reset()
 			},

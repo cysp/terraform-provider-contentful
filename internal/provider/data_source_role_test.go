@@ -24,6 +24,12 @@ func TestAccRoleDataSourcesComposition(t *testing.T) {
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
+	// Preserve noncanonical key order so both data sources must normalize the response.
+	constraint := testJSON(struct {
+		Z int   `json:"z"`
+		A []int `json:"a"`
+	}{Z: 1, A: []int{1, 2}})
+
 	server.SetRole("space", "item-b", cm.RoleData{
 		Name: "Second",
 		Permissions: cm.RoleDataPermissions{
@@ -31,7 +37,7 @@ func TestAccRoleDataSourcesComposition(t *testing.T) {
 			"ContentModel":    cm.NewStringArrayRoleDataPermissionsItem([]string{"read", "read"}),
 		},
 		Policies: []cm.RoleDataPoliciesItem{
-			{Effect: cm.RoleDataPoliciesItemEffectAllow, Actions: cm.NewStringRoleDataPoliciesItemActions("all"), Constraint: []byte(`{"z":1,"a":[1,2]}`)},
+			{Effect: cm.RoleDataPoliciesItemEffectAllow, Actions: cm.NewStringRoleDataPoliciesItemActions("all"), Constraint: []byte(constraint)},
 			{Effect: cm.RoleDataPoliciesItemEffectDeny, Actions: cm.NewStringArrayRoleDataPoliciesItemActions([]string{"read", "read"})},
 		},
 	})
@@ -67,7 +73,7 @@ func TestAccRoleDataSourcesComposition(t *testing.T) {
 					"ContentModel":    knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("read"), knownvalue.StringExact("read")}),
 				})),
 				statecheck.ExpectKnownValue("data.contentful_role.selected", tfjsonpath.New("policies"), knownvalue.ListExact([]knownvalue.Check{
-					knownvalue.ObjectExact(map[string]knownvalue.Check{"effect": knownvalue.StringExact("allow"), "actions": knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("all")}), "constraint": knownvalue.StringExact(`{"a":[1,2],"z":1}`)}),
+					knownvalue.ObjectExact(map[string]knownvalue.Check{"effect": knownvalue.StringExact("allow"), "actions": knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("all")}), "constraint": knownvalue.StringExact(testJSON(map[string]any{"a": []any{1, 2}, "z": 1}))}),
 					knownvalue.ObjectExact(map[string]knownvalue.Check{"effect": knownvalue.StringExact("deny"), "actions": knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("read"), knownvalue.StringExact("read")}), "constraint": knownvalue.Null()}),
 				})),
 				statecheck.ExpectKnownValue("data.contentful_roles.all", tfjsonpath.New("id"), knownvalue.StringExact("space")),
@@ -77,7 +83,7 @@ func TestAccRoleDataSourcesComposition(t *testing.T) {
 						"ContentDelivery": knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("all")}),
 						"ContentModel":    knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("read"), knownvalue.StringExact("read")}),
 					}), "policies": knownvalue.ListExact([]knownvalue.Check{
-						knownvalue.ObjectExact(map[string]knownvalue.Check{"effect": knownvalue.StringExact("allow"), "actions": knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("all")}), "constraint": knownvalue.StringExact(`{"a":[1,2],"z":1}`)}),
+						knownvalue.ObjectExact(map[string]knownvalue.Check{"effect": knownvalue.StringExact("allow"), "actions": knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("all")}), "constraint": knownvalue.StringExact(testJSON(map[string]any{"a": []any{1, 2}, "z": 1}))}),
 						knownvalue.ObjectExact(map[string]knownvalue.Check{"effect": knownvalue.StringExact("deny"), "actions": knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("read"), knownvalue.StringExact("read")}), "constraint": knownvalue.Null()}),
 					})}),
 				})),

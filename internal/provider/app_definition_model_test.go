@@ -70,7 +70,7 @@ func FuzzAppDefinitionResourceModelRoundTrip(f *testing.F) {
 				Instance: []cm.AppDefinitionParameter{
 					{
 						ID:      "parameter-b",
-						Options: []jx.Raw{[]byte(`"option-a"`)},
+						Options: []jx.Raw{[]byte(testJSON("option-a"))},
 					},
 				},
 			}),

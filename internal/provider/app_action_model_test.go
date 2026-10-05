@@ -15,12 +15,12 @@ import (
 func appActionTestModel() AppActionModel {
 	return AppActionModel{AppActionBaseModel: AppActionBaseModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID("org", "app", "action"), OrganizationID: types.StringValue("org"), AppDefinitionID: types.StringValue("app"),
-		AppActionFields: AppActionFields{AppActionID: types.StringValue("action"), Name: types.StringValue("Action"), Category: types.StringValue("Custom"), Type: types.StringValue("endpoint"), URL: types.StringValue("https://example.invalid/action"), Parameters: jsontypes.NewNormalizedValue(`[]`)},
+		AppActionFields: AppActionFields{AppActionID: types.StringValue("action"), Name: types.StringValue("Action"), Category: types.StringValue("Custom"), Type: types.StringValue("endpoint"), URL: types.StringValue("https://example.invalid/action"), Parameters: jsontypes.NewNormalizedValue(testJSON([]any{}))},
 	}, Timeouts: TimeoutsNull()}
 }
 
 func appActionTestResponse() cm.AppAction {
-	return cm.AppAction{Sys: cm.AppActionSys{ID: "action", Type: cm.AppActionSysTypeAppAction, Organization: cm.NewOrganizationLink("org"), AppDefinition: cm.NewAppDefinitionLink("app")}, Name: "Action", Category: "Custom", Type: "endpoint", URL: cm.NewOptString("https://example.invalid/action"), Parameters: jx.Raw(`[]`)}
+	return cm.AppAction{Sys: cm.AppActionSys{ID: "action", Type: cm.AppActionSysTypeAppAction, Organization: cm.NewOrganizationLink("org"), AppDefinition: cm.NewAppDefinitionLink("app")}, Name: "Action", Category: "Custom", Type: "endpoint", URL: cm.NewOptString("https://example.invalid/action"), Parameters: jx.Raw(testJSON([]any{}))}
 }
 
 func TestAppActionRequest(t *testing.T) {
@@ -32,14 +32,16 @@ func TestAppActionRequest(t *testing.T) {
 		want      string
 		wantError bool
 	}{
-		{name: "legacy empty", want: "[]"},
+		{name: "legacy empty", want: testJSON([]any{})},
 		{name: "schema input", alter: func(plan *AppActionModel) {
 			plan.Parameters = jsontypes.NewNormalizedNull()
-			plan.ParametersSchema = jsontypes.NewNormalizedValue(`{}`)
+			plan.ParametersSchema = jsontypes.NewNormalizedValue(testJSON(map[string]any{}))
 		}},
 		{name: "unknown parameters", alter: func(plan *AppActionModel) { plan.Parameters = jsontypes.NewNormalizedUnknown() }, wantError: true},
 		{name: "missing custom input", alter: func(plan *AppActionModel) { plan.Parameters = jsontypes.NewNormalizedNull() }, wantError: true},
-		{name: "both custom inputs", alter: func(plan *AppActionModel) { plan.ParametersSchema = jsontypes.NewNormalizedValue(`{}`) }, wantError: true},
+		{name: "both custom inputs", alter: func(plan *AppActionModel) {
+			plan.ParametersSchema = jsontypes.NewNormalizedValue(testJSON(map[string]any{}))
+		}, wantError: true},
 		{name: "builtin input omitted", alter: func(plan *AppActionModel) {
 			plan.Category = types.StringValue("Entries.v1.0")
 			plan.Parameters = jsontypes.NewNormalizedNull()
@@ -54,8 +56,8 @@ func TestAppActionRequest(t *testing.T) {
 		{name: "unknown description", alter: func(plan *AppActionModel) { plan.Description = types.StringUnknown() }, wantError: true},
 		{name: "both executors", alter: func(plan *AppActionModel) { plan.FunctionID = types.StringValue("fn") }, wantError: true},
 		{name: "HTTP endpoint", alter: func(plan *AppActionModel) { plan.URL = types.StringValue("http://example.invalid") }, wantError: true},
-		{name: "service validates legacy members", alter: func(plan *AppActionModel) { plan.Parameters = jsontypes.NewNormalizedValue(`[null]`) }, want: `[null]`},
-		{name: "JSON null schema", alter: func(plan *AppActionModel) { plan.ResultSchema = jsontypes.NewNormalizedValue(`null`) }, wantError: true},
+		{name: "service validates legacy members", alter: func(plan *AppActionModel) { plan.Parameters = jsontypes.NewNormalizedValue(testJSON([]any{nil})) }, want: testJSON([]any{nil})},
+		{name: "JSON null schema", alter: func(plan *AppActionModel) { plan.ResultSchema = jsontypes.NewNormalizedValue(testJSON(nil)) }, wantError: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
@@ -84,6 +86,7 @@ func TestAppActionResponseReconciliation(t *testing.T) {
 	response := appActionTestResponse()
 	response.Parameters = nil
 	response.ParametersSchema = jx.Raw(`{"properties":{},"type":"object"}`)
+	require.NotEqual(t, plan.ParametersSchema.ValueString(), string(response.ParametersSchema))
 	data, consistency := reconcileAppActionResponse(t.Context(), response, plan, plan.AppActionBaseModel)
 	require.False(t, consistency.HasError(), "%v", consistency)
 	assert.Equal(t, plan.ParametersSchema, data.ParametersSchema)
@@ -107,25 +110,25 @@ func TestAppActionBuiltinResponseProjection(t *testing.T) {
 	plan := appActionTestModel()
 	plan.Category = types.StringValue("Entries.v1.0")
 	plan.Parameters = jsontypes.NewNormalizedNull()
-	plan.ParametersSchema = jsontypes.NewNormalizedValue(`{}`)
+	plan.ParametersSchema = jsontypes.NewNormalizedValue(testJSON(map[string]any{}))
 	response := appActionTestResponse()
 	response.Category = "Entries.v1.0"
-	response.ParametersSchema = jx.Raw(`{}`)
-	response.Parameters = jx.Raw(`[{"id":"entryIds"}]`)
+	response.ParametersSchema = jx.Raw(testJSON(map[string]any{}))
+	response.Parameters = jx.Raw(testJSON([]any{map[string]any{"id": "entryIds"}}))
 	data, consistency := reconcileAppActionResponse(t.Context(), response, plan, plan.AppActionBaseModel)
 	require.False(t, consistency.HasError(), "%v", consistency)
 	assert.True(t, data.Parameters.IsNull())
-	assert.Equal(t, `{}`, data.ParametersSchema.ValueString())
+	assert.Equal(t, testJSON(map[string]any{}), data.ParametersSchema.ValueString())
 
 	discovered, diags := appActionResponse(response, plan.AppActionBaseModel)
 	require.False(t, diags.HasError())
-	assert.JSONEq(t, `[{"id":"entryIds"}]`, discovered.Parameters.ValueString())
+	assert.JSONEq(t, testJSON([]any{map[string]any{"id": "entryIds"}}), discovered.Parameters.ValueString())
 
 	response.Category = "Custom"
 	data, consistency = reconcileAppActionResponse(t.Context(), response, plan, plan.AppActionBaseModel)
 	require.True(t, consistency.HasError())
 	assert.Equal(t, "Custom", data.Category.ValueString())
-	assert.JSONEq(t, `[{"id":"entryIds"}]`, data.Parameters.ValueString())
+	assert.JSONEq(t, testJSON([]any{map[string]any{"id": "entryIds"}}), data.Parameters.ValueString())
 }
 
 func TestAppActionResponsePreservesIrregularValues(t *testing.T) {
@@ -135,7 +138,7 @@ func TestAppActionResponsePreservesIrregularValues(t *testing.T) {
 	response.Type = "future"
 	response.Category = "Future.v1.0"
 	response.Function = cm.NewOptFunctionLink(cm.NewFunctionLink("fn"))
-	response.ParametersSchema = jx.Raw(`null`)
+	response.ParametersSchema = jx.Raw(testJSON(nil))
 	data, identityDiags := appActionResponse(response, appActionTestModel().AppActionBaseModel)
 	require.False(t, identityDiags.HasError())
 	assert.Equal(t, "future", data.Type.ValueString())

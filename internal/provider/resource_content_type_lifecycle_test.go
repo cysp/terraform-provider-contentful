@@ -108,7 +108,9 @@ func TestContentTypeDraftMutationRequired(t *testing.T) {
 			},
 			mutateState: func(model *ContentTypeModel) {
 				model.Fields = contentTypeLifecycleJSONFields(
-					jsontypes.NewNormalizedValue("{\n  \"a\": 1, \"b\": 2\n}"),
+					jsontypes.NewNormalizedValue(`{
+  "a": 1, "b": 2
+}`),
 					jsontypes.NewNormalizedValue(`{"size":{"min":1,"max":20}}`),
 				)
 			},
@@ -117,13 +119,13 @@ func TestContentTypeDraftMutationRequired(t *testing.T) {
 		"known metadata differs": {
 			mutatePlan: func(model *ContentTypeModel) {
 				model.Metadata = NewTypedObject(ContentTypeMetadataValue{
-					Annotations: jsontypes.NewNormalizedValue(`{"ContentType":[]}`),
+					Annotations: jsontypes.NewNormalizedValue(testJSON(map[string]any{"ContentType": []any{}})),
 					Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 				})
 			},
 			mutateConfig: func(metadata *TypedObject[ContentTypeMetadataValue]) {
 				*metadata = NewTypedObject(ContentTypeMetadataValue{
-					Annotations: jsontypes.NewNormalizedValue(`{"ContentType":[]}`),
+					Annotations: jsontypes.NewNormalizedValue(testJSON(map[string]any{"ContentType": []any{}})),
 					Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 				})
 			},
@@ -132,19 +134,19 @@ func TestContentTypeDraftMutationRequired(t *testing.T) {
 		"known metadata equal": {
 			mutatePlan: func(model *ContentTypeModel) {
 				model.Metadata = NewTypedObject(ContentTypeMetadataValue{
-					Annotations: jsontypes.NewNormalizedValue(`{"ContentType":[]}`),
+					Annotations: jsontypes.NewNormalizedValue(testJSON(map[string]any{"ContentType": []any{}})),
 					Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 				})
 			},
 			mutateState: func(model *ContentTypeModel) {
 				model.Metadata = NewTypedObject(ContentTypeMetadataValue{
-					Annotations: jsontypes.NewNormalizedValue(`{"ContentType":[]}`),
+					Annotations: jsontypes.NewNormalizedValue(testJSON(map[string]any{"ContentType": []any{}})),
 					Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 				})
 			},
 			mutateConfig: func(metadata *TypedObject[ContentTypeMetadataValue]) {
 				*metadata = NewTypedObject(ContentTypeMetadataValue{
-					Annotations: jsontypes.NewNormalizedValue(`{"ContentType":[]}`),
+					Annotations: jsontypes.NewNormalizedValue(testJSON(map[string]any{"ContentType": []any{}})),
 					Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 				})
 			},
@@ -159,8 +161,10 @@ func TestContentTypeDraftMutationRequired(t *testing.T) {
 			},
 			mutateState: func(model *ContentTypeModel) {
 				model.Metadata = NewTypedObject(ContentTypeMetadataValue{
-					Annotations: jsontypes.NewNormalizedValue("{\n  \"a\": 1, \"b\": 2\n}"),
-					Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
+					Annotations: jsontypes.NewNormalizedValue(`{
+  "a": 1, "b": 2
+}`),
+					Taxonomy: NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 				})
 			},
 			mutateConfig: func(metadata *TypedObject[ContentTypeMetadataValue]) {

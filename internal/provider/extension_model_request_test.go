@@ -233,7 +233,7 @@ func TestExtensionRequestRejectsConflictingSources(t *testing.T) {
 	model := validExtensionRequestModel()
 	model.Extension.Src = types.StringValue("https://example.com")
 	model.Extension.SrcDoc = types.StringValue("<html></html>")
-	model.Parameters = jsontypes.NewNormalizedValue(`{"known":true}`)
+	model.Parameters = jsontypes.NewNormalizedValue(testJSON(map[string]any{"known": true}))
 
 	actual, diags := model.ToExtensionData(ExtensionModel{
 		Extension: &ExtensionConfiguration{

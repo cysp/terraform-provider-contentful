@@ -47,7 +47,7 @@ func TestRequestConvertersRejectUnknownPlannedConfigurationOwnedValues(t *testin
 
 		model := validExtensionRequestModel()
 		actual, diags := model.ToExtensionData(ExtensionModel{
-			Parameters: NewNormalizedJSONValue([]byte(`{}`)),
+			Parameters: NewNormalizedJSONValue([]byte(testJSON(map[string]any{}))),
 		}, path.Empty())
 
 		require.True(t, diags.HasError())
@@ -130,12 +130,12 @@ func TestConfigurationAwareConvertersPreserveKnownEmptyPlanValues(t *testing.T) 
 		t.Parallel()
 
 		model := validExtensionRequestModel()
-		model.Parameters = NewNormalizedJSONValue([]byte(`{}`))
+		model.Parameters = NewNormalizedJSONValue([]byte(testJSON(map[string]any{})))
 
 		actual, diags := model.ToExtensionData(ExtensionModel{Parameters: jsontypes.NewNormalizedNull()}, path.Empty())
 
 		require.False(t, diags.HasError(), diags.Errors())
-		assert.JSONEq(t, `{}`, string(actual.Parameters))
+		assert.JSONEq(t, testJSON(map[string]any{}), string(actual.Parameters))
 	})
 
 	t.Run("empty list", func(t *testing.T) {

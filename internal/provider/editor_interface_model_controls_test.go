@@ -21,7 +21,7 @@ func TestEditorInterfaceControlValueToEditorInterfaceDataControlsItem(t *testing
 		"field_id":         types.StringValue("field_id"),
 		"widget_namespace": types.StringValue("widget_namespace"),
 		"widget_id":        types.StringValue("widget_id"),
-		"settings":         NewNormalizedJSONValue([]byte(`{"foo":"bar"}`)),
+		"settings":         NewNormalizedJSONValue([]byte(testJSON(map[string]any{"foo": "bar"}))),
 	}))
 
 	item, diags := model.Value().ToEditorInterfaceDataControlsItem(path)
@@ -62,7 +62,7 @@ func TestNewEditorInterfaceControlValueFromResponse(t *testing.T) {
 		FieldId:         "field_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
 		WidgetId:        cm.NewOptString("widget_id"),
-		Settings:        []byte(`{"foo":"bar"}`),
+		Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 	}
 
 	value, diags := NewEditorInterfaceControlValueFromResponse(path, item)
@@ -70,7 +70,7 @@ func TestNewEditorInterfaceControlValueFromResponse(t *testing.T) {
 	assert.Equal(t, "field_id", value.Value().FieldID.ValueString())
 	assert.Equal(t, "widget_namespace", value.Value().WidgetNamespace.ValueString())
 	assert.Equal(t, "widget_id", value.Value().WidgetID.ValueString())
-	assert.JSONEq(t, `{"foo":"bar"}`, value.Value().Settings.ValueString())
+	assert.JSONEq(t, testJSON(map[string]any{"foo": "bar"}), value.Value().Settings.ValueString())
 
 	assert.Empty(t, diags)
 }

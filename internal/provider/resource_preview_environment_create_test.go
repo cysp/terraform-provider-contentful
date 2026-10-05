@@ -112,16 +112,18 @@ func TestPreviewEnvironmentCreateEndpointFollowsConfiguredIDOwnership(t *testing
 			require.Len(t, requests, 1)
 			assert.Equal(t, test.expectedMethod, requests[0].method)
 			assert.Equal(t, test.expectedPath, requests[0].path)
-			require.JSONEq(t, `{
-				"name": "Preview",
+			require.JSONEq(t, testJSON(map[string]any{
+				"name":        "Preview",
 				"description": "",
-				"configurations": [{
-					"url": "https://preview.invalid/page",
-					"entityType": "ContentType",
-					"entityId": "page",
-					"enabled": true
-				}]
-			}`, string(requests[0].body))
+				"configurations": []any{
+					map[string]any{
+						"url":        "https://preview.invalid/page",
+						"entityType": "ContentType",
+						"entityId":   "page",
+						"enabled":    true,
+					},
+				},
+			}), string(requests[0].body))
 		})
 	}
 }

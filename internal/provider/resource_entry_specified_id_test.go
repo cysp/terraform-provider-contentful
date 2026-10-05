@@ -64,7 +64,10 @@ func TestAccEntryResourceSpecifiedIDCreateUsesCreateOnlyRequest(t *testing.T) {
 					require.Equal(t, entryTestUpdatePath, draft.path)
 					require.Empty(t, draft.versionValues)
 					require.Equal(t, []string{"article"}, draft.contentTypeValues)
-					require.JSONEq(t, `{"fields":{"managed":{"en-US":"created"}},"metadata":{"concepts":[],"tags":[]}}`, string(draft.body))
+					require.JSONEq(t, testJSON(map[string]any{
+						"fields":   map[string]any{"managed": map[string]any{"en-US": "created"}},
+						"metadata": map[string]any{"concepts": []any{}, "tags": []any{}},
+					}), string(draft.body))
 
 					requireEntryPublish(t, publish, entryTestPublishPath)
 					require.Equal(t, "1", publish.version, "Create must publish the version returned by the draft PUT")
@@ -72,7 +75,7 @@ func TestAccEntryResourceSpecifiedIDCreateUsesCreateOnlyRequest(t *testing.T) {
 					entry := getTestEntry(t, fixture.server)
 					require.Equal(t, 2, entry.Sys.Version)
 					require.Equal(t, 1, entry.Sys.PublishedVersion.Or(0))
-					require.JSONEq(t, `{"en-US":"created"}`, string(entry.Fields.Value["managed"]))
+					require.JSONEq(t, testJSON(map[string]any{"en-US": "created"}), string(entry.Fields.Value["managed"]))
 
 					return nil
 				},
@@ -100,7 +103,7 @@ func TestAccEntryResourceSpecifiedIDCollisionDoesNotMutateOrAdopt(t *testing.T) 
 	fixture := newEntryAcceptanceFixture(t)
 	fixture.server.SetEntry("space", "environment", "sentinel-type", "entry", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"sentinel": jx.Raw(`{"en-US":"must survive"}`),
+			"sentinel": jx.Raw(testJSON(map[string]any{"en-US": "must survive"})),
 		}),
 	})
 
@@ -121,7 +124,7 @@ func TestAccEntryResourceSpecifiedIDCollisionDoesNotMutateOrAdopt(t *testing.T) 
 					require.False(t, entry.Sys.PublishedVersion.IsSet(), "collision must not publish the sentinel")
 					require.Equal(t, "sentinel-type", entry.Sys.ContentType.Sys.ID)
 					require.Len(t, entry.Fields.Value, 1)
-					require.JSONEq(t, `{"en-US":"must survive"}`, string(entry.Fields.Value["sentinel"]))
+					require.JSONEq(t, testJSON(map[string]any{"en-US": "must survive"}), string(entry.Fields.Value["sentinel"]))
 					require.NotContains(t, entry.Fields.Value, "managed")
 
 					requests := fixture.recorder.snapshot()

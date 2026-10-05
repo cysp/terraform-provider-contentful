@@ -18,7 +18,7 @@ func TestEntryRequestDistinguishesTerraformNullFromJSONNull(t *testing.T) {
 		Fields: NewTypedMap(map[string]jsontypes.Normalized{
 			"terraform_null": jsontypes.NewNormalizedNull(),
 			"json_null":      NewNormalizedJSONValue([]byte("null")),
-			"value":          NewNormalizedJSONValue([]byte(`{"en-US":"value"}`)),
+			"value":          NewNormalizedJSONValue([]byte(testJSON(map[string]any{"en-US": "value"}))),
 		}),
 		Metadata: NewTypedObjectNull[EntryMetadataValue](),
 	}
@@ -30,7 +30,7 @@ func TestEntryRequestDistinguishesTerraformNullFromJSONNull(t *testing.T) {
 	require.True(t, ok)
 	assert.NotContains(t, fields, "terraform_null")
 	assert.JSONEq(t, "null", string(fields["json_null"]))
-	assert.JSONEq(t, `{"en-US":"value"}`, string(fields["value"]))
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": "value"}), string(fields["value"]))
 }
 
 func TestEntryRequestUnknownFieldFailsWithoutPartialOutput(t *testing.T) {
@@ -38,7 +38,7 @@ func TestEntryRequestUnknownFieldFailsWithoutPartialOutput(t *testing.T) {
 
 	model := EntryModel{
 		Fields: NewTypedMap(map[string]jsontypes.Normalized{
-			"known":   NewNormalizedJSONValue([]byte(`"value"`)),
+			"known":   NewNormalizedJSONValue([]byte(testJSON("value"))),
 			"unknown": jsontypes.NewNormalizedUnknown(),
 		}),
 		Metadata: knownEntryMetadata(),
@@ -158,7 +158,7 @@ func TestEntryRequestInvalidMetadataChildrenFailWithoutPartialOutput(t *testing.
 
 			model := EntryModel{
 				Fields: NewTypedMap(map[string]jsontypes.Normalized{
-					"known": NewNormalizedJSONValue([]byte(`"value"`)),
+					"known": NewNormalizedJSONValue([]byte(testJSON("value"))),
 				}),
 				Metadata: metadata,
 			}
@@ -182,7 +182,7 @@ func TestEntryRequestKnownMetadata(t *testing.T) {
 
 	model := EntryModel{
 		Fields: NewTypedMap(map[string]jsontypes.Normalized{
-			"known": NewNormalizedJSONValue([]byte(`"value"`)),
+			"known": NewNormalizedJSONValue([]byte(testJSON("value"))),
 		}),
 		Metadata: knownEntryMetadata(),
 	}

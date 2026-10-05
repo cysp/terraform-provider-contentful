@@ -1,7 +1,9 @@
 package provider_test
 
 import (
+	"encoding/json"
 	"fmt"
+	"maps"
 	"net/http"
 	"sync/atomic"
 	"testing"
@@ -20,8 +22,6 @@ func TestAccAppDefinitionDataSourcesRawTransitions(t *testing.T) {
 			t.Parallel()
 
 			var payload atomic.Pointer[string]
-
-			const prefix = `{"sys":{"type":"AppDefinition","id":"app","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}}},"name":"Raw fixture"`
 
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				expectedPath := "/organizations/org/app_definitions/app"
@@ -42,7 +42,7 @@ func TestAccAppDefinitionDataSourcesRawTransitions(t *testing.T) {
 
 				body := *payload.Load()
 				if marketplace {
-					body = `{"sys":{"type":"Array"},"total":1,"items":[` + body + `]}`
+					body = testJSON(map[string]any{"sys": map[string]any{"type": "Array"}, "total": 1, "items": []any{json.RawMessage(body)}})
 				}
 
 				w.Header().Set("Content-Type", "application/vnd.contentful.management.v1+json")
@@ -72,23 +72,53 @@ output "item_types" {
 `, kind, org, address, address)
 			fieldTypes := tfjsonpath.New("locations").AtSliceIndex(0).AtMapKey("field_types")
 			states := []struct {
-				suffix string
-				checks []statecheck.StateCheck
-				output string
+				attributes map[string]any
+				checks     []statecheck.StateCheck
+				output     string
 			}{
-				{`,"locations":[{"location":"entry-field","fieldTypes":[{"type":"Array","items":{"type":"Symbol"}}]}]}`, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("items"), knownvalue.ObjectExact(map[string]knownvalue.Check{"type": knownvalue.StringExact("Symbol"), "link_type": knownvalue.Null()}))}, `["Symbol"]`},
-				{`,"locations":[{"location":"entry-field","fieldTypes":[{"type":"Symbol"}]}]}`, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("items"), knownvalue.Null())}, `["absent"]`},
-				{`,"locations":[{"location":"entry-field","fieldTypes":[{"type":"Array"}]}]}`, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("items"), knownvalue.Null())}, `["absent"]`},
-				{`,"locations":[{"location":"entry-field","fieldTypes":[{"type":"FutureType","linkType":"Sibling","items":{"type":"","linkType":""}}]}]}`, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("type"), knownvalue.StringExact("FutureType")), statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("link_type"), knownvalue.StringExact("Sibling")), statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("items"), knownvalue.ObjectExact(map[string]knownvalue.Check{"type": knownvalue.StringExact(""), "link_type": knownvalue.StringExact("")}))}, `[""]`},
-				{`,"locations":[{"location":"entry-field","fieldTypes":[]}]}`, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes, knownvalue.ListExact([]knownvalue.Check{}))}, `[]`},
-				{`,"locations":[{"location":"entry-field"}]}`, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes, knownvalue.Null())}, `[]`},
-				{`,"locations":[]}`, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, tfjsonpath.New("locations"), knownvalue.ListExact([]knownvalue.Check{}))}, `[]`},
-				{`}`, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, tfjsonpath.New("locations"), knownvalue.Null())}, `[]`},
+				{map[string]any{
+					"locations": []any{
+						map[string]any{
+							"location":   "entry-field",
+							"fieldTypes": []any{map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}}},
+						},
+					},
+				}, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("items"), knownvalue.ObjectExact(map[string]knownvalue.Check{"type": knownvalue.StringExact("Symbol"), "link_type": knownvalue.Null()}))}, testJSON([]any{"Symbol"})},
+				{map[string]any{
+					"locations": []any{map[string]any{"location": "entry-field", "fieldTypes": []any{map[string]any{"type": "Symbol"}}}},
+				}, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("items"), knownvalue.Null())}, testJSON([]any{"absent"})},
+				{map[string]any{
+					"locations": []any{map[string]any{"location": "entry-field", "fieldTypes": []any{map[string]any{"type": "Array"}}}},
+				}, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("items"), knownvalue.Null())}, testJSON([]any{"absent"})},
+				{map[string]any{
+					"locations": []any{
+						map[string]any{
+							"location": "entry-field",
+							"fieldTypes": []any{
+								map[string]any{
+									"type":     "FutureType",
+									"linkType": "Sibling",
+									"items":    map[string]any{"type": "", "linkType": ""},
+								},
+							},
+						},
+					},
+				}, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("type"), knownvalue.StringExact("FutureType")), statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("link_type"), knownvalue.StringExact("Sibling")), statecheck.ExpectKnownValue(address, fieldTypes.AtSliceIndex(0).AtMapKey("items"), knownvalue.ObjectExact(map[string]knownvalue.Check{"type": knownvalue.StringExact(""), "link_type": knownvalue.StringExact("")}))}, testJSON([]any{""})},
+				{map[string]any{"locations": []any{map[string]any{"location": "entry-field", "fieldTypes": []any{}}}}, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes, knownvalue.ListExact([]knownvalue.Check{}))}, testJSON([]any{})},
+				{map[string]any{"locations": []any{map[string]any{"location": "entry-field"}}}, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, fieldTypes, knownvalue.Null())}, testJSON([]any{})},
+				{map[string]any{"locations": []any{}}, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, tfjsonpath.New("locations"), knownvalue.ListExact([]knownvalue.Check{}))}, testJSON([]any{})},
+				{map[string]any{}, []statecheck.StateCheck{statecheck.ExpectKnownValue(address, tfjsonpath.New("locations"), knownvalue.Null())}, testJSON([]any{})},
 			}
 
 			steps := make([]resource.TestStep, 0, len(states))
 			for _, state := range states {
-				steps = append(steps, resource.TestStep{PreConfig: func() { body := prefix + state.suffix; payload.Store(&body) }, Config: config, ConfigStateChecks: state.checks, Check: resource.TestCheckOutput("item_types", state.output)})
+				steps = append(steps, resource.TestStep{PreConfig: func() {
+					document := map[string]any{"sys": map[string]any{"type": "AppDefinition", "id": "app", "organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}}}, "name": "Raw fixture"}
+					maps.Copy(document, state.attributes)
+
+					body := testJSON(document)
+					payload.Store(&body)
+				}, Config: config, ConfigStateChecks: state.checks, Check: resource.TestCheckOutput("item_types", state.output)})
 			}
 
 			testAccMockedResource(t, handler, resource.TestCase{Steps: steps})

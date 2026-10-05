@@ -51,10 +51,27 @@ const actionBuiltinConfig = actionConfigPrefix + `category = "Entries.v1.0"
  url = "https://example.invalid/action"
 }`
 
-const (
-	actionLegacyBody  = `{"name":"Action","category":"Custom","type":"endpoint","url":"https://example.invalid/action","parameters":[]}`
-	actionSchemaBody  = `{"name":"Action","category":"Custom","type":"endpoint","url":"https://example.invalid/action","parametersSchema":{"type":"object","properties":{"message":{"type":"string"}}}}`
-	actionBuiltinBody = `{"name":"Action","category":"Entries.v1.0","type":"endpoint","url":"https://example.invalid/action"}`
+var (
+	actionLegacyBody = testJSON(map[string]any{
+		"name":       "Action",
+		"category":   "Custom",
+		"type":       "endpoint",
+		"url":        "https://example.invalid/action",
+		"parameters": []any{},
+	})
+	actionSchemaBody = testJSON(map[string]any{
+		"name":             "Action",
+		"category":         "Custom",
+		"type":             "endpoint",
+		"url":              "https://example.invalid/action",
+		"parametersSchema": map[string]any{"type": "object", "properties": map[string]any{"message": map[string]any{"type": "string"}}},
+	})
+	actionBuiltinBody = testJSON(map[string]any{
+		"name":     "Action",
+		"category": "Entries.v1.0",
+		"type":     "endpoint",
+		"url":      "https://example.invalid/action",
+	})
 )
 
 type actionMutationFixture struct{ config, request string }

@@ -19,7 +19,7 @@ func TestAccEntryResourceImportedPendingDraftIsNotPublished(t *testing.T) {
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "environment")
 	server.SetEntry("space", "environment", "article", "entry", cm.EntryRequest{
-		Fields: cm.NewOptEntryFields(cm.EntryFields{"managed": jx.Raw(`{"en-US":"one"}`)}),
+		Fields: cm.NewOptEntryFields(cm.EntryFields{"managed": jx.Raw(testJSON(map[string]any{"en-US": "one"}))}),
 		Metadata: cm.NewOptEntryMetadata(cm.EntryMetadata{
 			Concepts: []cm.TaxonomyConceptLink{},
 			Tags:     []cm.TagLink{},

@@ -21,7 +21,18 @@ func TestWebhookDefinitionBasicPasswordJSONPresence(t *testing.T) {
 		null     bool
 	}{
 		"absent": {response: rawWebhookWithoutBasicPassword, empty: true},
-		"null":   {response: `{"sys":{"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"type":"WebhookDefinition","id":"webhook","version":1},"name":"Webhook","url":"https://example.com/webhook","topics":[],"httpBasicPassword":null}`, null: true},
+		"null": {response: testJSON(map[string]any{
+			"sys": map[string]any{
+				"space":   map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+				"type":    "WebhookDefinition",
+				"id":      "webhook",
+				"version": 1,
+			},
+			"name":              "Webhook",
+			"url":               "https://example.com/webhook",
+			"topics":            []any{},
+			"httpBasicPassword": nil,
+		}), null: true},
 	}
 
 	for name, test := range tests {

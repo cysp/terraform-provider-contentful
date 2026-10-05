@@ -1,11 +1,11 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"sync/atomic"
 	"testing"
 
@@ -25,7 +25,13 @@ import (
 func appDefinitionLocationsTestPlan(t *testing.T, locations string) tfsdk.Plan {
 	t.Helper()
 	schema := AppDefinitionResourceSchema(t.Context())
-	raw, err := tftypes.ValueFromJSONWithOpts([]byte(`{"id":"org/app","organization_id":"org","app_definition_id":"app","name":"App","locations":`+locations+`}`), schema.Type().TerraformType(t.Context()), tftypes.ValueFromJSONOpts{})
+	raw, err := tftypes.ValueFromJSONWithOpts([]byte(testJSON(map[string]any{
+		"id":                "org/app",
+		"organization_id":   "org",
+		"app_definition_id": "app",
+		"name":              "App",
+		"locations":         json.RawMessage(locations),
+	})), schema.Type().TerraformType(t.Context()), tftypes.ValueFromJSONOpts{})
 	require.NoError(t, err)
 
 	return tfsdk.Plan{Schema: schema, Raw: raw}
@@ -44,21 +50,53 @@ func TestAppDefinitionLocationValidation(t *testing.T) {
 	t.Parallel()
 
 	for _, test := range []struct{ name, locations, path, detail string }{
-		{"dialog fields", `[{"location":"dialog","field_types":[]}]`, "locations[0].field_types", `field_types cannot be configured for location "dialog". Omit this attribute.`},
-		{"dialog navigation", `[{"location":"dialog","navigation_item":{"name":"Name","path":"/path"}}]`, "locations[0].navigation_item", `navigation_item cannot be configured for location "dialog". Omit this attribute.`},
-		{"entry fields absent", `[{"location":"entry-field"}]`, "locations[0].field_types", "An entry-field location requires at least one field_types definition."},
-		{"entry fields empty", `[{"location":"entry-field","field_types":[]}]`, "locations[0].field_types", "An entry-field location requires at least one field_types definition."},
-		{"navigation name", `[{"location":"page","navigation_item":{"name":"","path":"/path"}}]`, "locations[0].navigation_item.name", "Navigation item name must not be empty."},
-		{"navigation path", `[{"location":"page","navigation_item":{"name":"Name","path":""}}]`, "locations[0].navigation_item.path", "Navigation item path must not be empty."},
-		{"Array missing items", `[{"location":"entry-field","field_types":[{"type":"Array"}]}]`, "locations[0].field_types[0].items", "An Array field type requires an items definition."},
-		{"Array link target", `[{"location":"entry-field","field_types":[{"type":"Array","link_type":"Entry","items":{"type":"Symbol"}}]}]`, "locations[0].field_types[0].link_type", "An Array field type cannot have link_type. Configure link_type inside items for linked items."},
-		{"scalar items", `[{"location":"entry-field","field_types":[{"type":"Symbol","items":{"type":"Symbol"}}]}]`, "locations[0].field_types[0].items", `Field type "Symbol" cannot have items. Omit this attribute.`},
-		{"Link missing target", `[{"location":"entry-field","field_types":[{"type":"Link"}]}]`, "locations[0].field_types[0].link_type", `Field type "Link" requires link_type.`},
-		{"ResourceLink missing target", `[{"location":"entry-field","field_types":[{"type":"ResourceLink"}]}]`, "locations[0].field_types[0].link_type", `Field type "ResourceLink" requires link_type.`},
-		{"item Link missing target", `[{"location":"entry-field","field_types":[{"type":"Array","items":{"type":"Link"}}]}]`, "locations[0].field_types[0].items.link_type", `Field type "Link" requires link_type.`},
-		{"item ResourceLink missing target", `[{"location":"entry-field","field_types":[{"type":"Array","items":{"type":"ResourceLink"}}]}]`, "locations[0].field_types[0].items.link_type", `Field type "ResourceLink" requires link_type.`},
-		{"scalar link target", `[{"location":"entry-field","field_types":[{"type":"Symbol","link_type":"Entry"}]}]`, "locations[0].field_types[0].link_type", `Field type "Symbol" cannot have link_type. Omit this attribute.`},
-		{"scalar item link target", `[{"location":"entry-field","field_types":[{"type":"Array","items":{"type":"Symbol","link_type":"Entry"}}]}]`, "locations[0].field_types[0].items.link_type", `Field type "Symbol" cannot have link_type. Omit this attribute.`},
+		{"dialog fields", testJSON([]any{map[string]any{"location": "dialog", "field_types": []any{}}}), "locations[0].field_types", `field_types cannot be configured for location "dialog". Omit this attribute.`},
+		{"dialog navigation", testJSON([]any{
+			map[string]any{"location": "dialog", "navigation_item": map[string]any{"name": "Name", "path": "/path"}},
+		}), "locations[0].navigation_item", `navigation_item cannot be configured for location "dialog". Omit this attribute.`},
+		{"entry fields absent", testJSON([]any{map[string]any{"location": "entry-field"}}), "locations[0].field_types", "An entry-field location requires at least one field_types definition."},
+		{"entry fields empty", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{}}}), "locations[0].field_types", "An entry-field location requires at least one field_types definition."},
+		{"navigation name", testJSON([]any{map[string]any{"location": "page", "navigation_item": map[string]any{"name": "", "path": "/path"}}}), "locations[0].navigation_item.name", "Navigation item name must not be empty."},
+		{"navigation path", testJSON([]any{map[string]any{"location": "page", "navigation_item": map[string]any{"name": "Name", "path": ""}}}), "locations[0].navigation_item.path", "Navigation item path must not be empty."},
+		{"Array missing items", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Array"}}}}), "locations[0].field_types[0].items", "An Array field type requires an items definition."},
+		{"Array link target", testJSON([]any{
+			map[string]any{
+				"location":    "entry-field",
+				"field_types": []any{map[string]any{"type": "Array", "link_type": "Entry", "items": map[string]any{"type": "Symbol"}}},
+			},
+		}), "locations[0].field_types[0].link_type", "An Array field type cannot have link_type. Configure link_type inside items for linked items."},
+		{"scalar items", testJSON([]any{
+			map[string]any{
+				"location":    "entry-field",
+				"field_types": []any{map[string]any{"type": "Symbol", "items": map[string]any{"type": "Symbol"}}},
+			},
+		}), "locations[0].field_types[0].items", `Field type "Symbol" cannot have items. Omit this attribute.`},
+		{"Link missing target", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Link"}}}}), "locations[0].field_types[0].link_type", `Field type "Link" requires link_type.`},
+		{"ResourceLink missing target", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "ResourceLink"}}}}), "locations[0].field_types[0].link_type", `Field type "ResourceLink" requires link_type.`},
+		{"item Link missing target", testJSON([]any{
+			map[string]any{
+				"location":    "entry-field",
+				"field_types": []any{map[string]any{"type": "Array", "items": map[string]any{"type": "Link"}}},
+			},
+		}), "locations[0].field_types[0].items.link_type", `Field type "Link" requires link_type.`},
+		{"item ResourceLink missing target", testJSON([]any{
+			map[string]any{
+				"location":    "entry-field",
+				"field_types": []any{map[string]any{"type": "Array", "items": map[string]any{"type": "ResourceLink"}}},
+			},
+		}), "locations[0].field_types[0].items.link_type", `Field type "ResourceLink" requires link_type.`},
+		{"scalar link target", testJSON([]any{
+			map[string]any{
+				"location":    "entry-field",
+				"field_types": []any{map[string]any{"type": "Symbol", "link_type": "Entry"}},
+			},
+		}), "locations[0].field_types[0].link_type", `Field type "Symbol" cannot have link_type. Omit this attribute.`},
+		{"scalar item link target", testJSON([]any{
+			map[string]any{
+				"location":    "entry-field",
+				"field_types": []any{map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol", "link_type": "Entry"}}},
+			},
+		}), "locations[0].field_types[0].items.link_type", `Field type "Symbol" cannot have link_type. Omit this attribute.`},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
@@ -79,9 +117,29 @@ func TestAppDefinitionLocationsOpenVocabulary(t *testing.T) {
 	t.Parallel()
 
 	for _, locations := range []string{
-		`[]`, `[{"location":"page"}]`,
-		`[{"location":"FutureLocation","field_types":[],"navigation_item":{"name":"Name","path":"/path"}}]`,
-		`[{"location":"entry-field","field_types":[{"type":"Array","items":{"type":"Integer"}},{"type":"Link","link_type":"FutureTarget"},{"type":"ResourceLink","link_type":""},{"type":"FutureType","link_type":"FutureTarget","items":{"type":"FutureItem","link_type":"FutureTarget"}}]}]`,
+		testJSON([]any{}), testJSON([]any{map[string]any{"location": "page"}}),
+		testJSON([]any{
+			map[string]any{
+				"location":        "FutureLocation",
+				"field_types":     []any{},
+				"navigation_item": map[string]any{"name": "Name", "path": "/path"},
+			},
+		}),
+		testJSON([]any{
+			map[string]any{
+				"location": "entry-field",
+				"field_types": []any{
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Integer"}},
+					map[string]any{"type": "Link", "link_type": "FutureTarget"},
+					map[string]any{"type": "ResourceLink", "link_type": ""},
+					map[string]any{
+						"type":      "FutureType",
+						"link_type": "FutureTarget",
+						"items":     map[string]any{"type": "FutureItem", "link_type": "FutureTarget"},
+					},
+				},
+			},
+		}),
 	} {
 		t.Run(locations, func(t *testing.T) {
 			t.Parallel()
@@ -93,7 +151,13 @@ func TestAppDefinitionLocationsOpenVocabulary(t *testing.T) {
 
 func TestAppDefinitionLocationsUnknownValues(t *testing.T) {
 	t.Parallel()
-	baseline := appDefinitionLocationsTestPlan(t, `[{"location":"entry-field","field_types":[{"type":"Array","items":{"type":"Link","link_type":"Entry"}}]},{"location":"page","navigation_item":{"name":"Page","path":"/page"}}]`)
+	baseline := appDefinitionLocationsTestPlan(t, testJSON([]any{
+		map[string]any{
+			"location":    "entry-field",
+			"field_types": []any{map[string]any{"type": "Array", "items": map[string]any{"type": "Link", "link_type": "Entry"}}},
+		},
+		map[string]any{"location": "page", "navigation_item": map[string]any{"name": "Page", "path": "/page"}},
+	}))
 	root := path.Root("locations")
 
 	var (
@@ -149,7 +213,7 @@ func TestAppDefinitionLocationsUnknownValues(t *testing.T) {
 	assert.Equal(t, "Navigation item name must not be empty.", diags[0].Detail())
 }
 
-func appDefinitionLocationsTestResource(t *testing.T, method, expectedBody string) (*appDefinitionResource, *atomic.Int64) {
+func appDefinitionLocationsTestResource(t *testing.T, method, expectedBody, responseBody string) (*appDefinitionResource, *atomic.Int64) {
 	t.Helper()
 
 	var calls atomic.Int64
@@ -178,7 +242,7 @@ func appDefinitionLocationsTestResource(t *testing.T, method, expectedBody strin
 			w.WriteHeader(http.StatusCreated)
 		}
 
-		fmt.Fprint(w, `{"sys":{"type":"AppDefinition","id":"app","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}}},`+strings.TrimPrefix(expectedBody, "{"))
+		fmt.Fprint(w, responseBody)
 	}))
 	t.Cleanup(server.Close)
 	client, err := cm.NewClient(server.URL, cm.NewAccessTokenSecuritySource("test-token"))
@@ -192,22 +256,74 @@ func TestAppDefinitionLocationsMutationUsesPlan(t *testing.T) {
 
 	for _, method := range []string{http.MethodPost, http.MethodPut} {
 		for _, test := range []struct {
-			name, locations, body string
-			accepted, unknown     bool
+			name, locations, body, response string
+			accepted, unknown               bool
 		}{
-			{name: "misplaced fields", locations: `[{"location":"dialog","field_types":[]}]`},
-			{name: "missing items", locations: `[{"location":"entry-field","field_types":[{"type":"Array"}]}]`},
-			{name: "null root", locations: `null`},
-			{name: "null location", locations: `[null]`},
-			{name: "null field", locations: `[{"location":"entry-field","field_types":[null]}]`},
-			{name: "null field type", locations: `[{"location":"entry-field","field_types":[{}]}]`},
-			{name: "unknown root", locations: `[]`, unknown: true},
-			{name: "effective valid plan", locations: `[]`, body: `{"name":"App","locations":[]}`, accepted: true},
-			{name: "open vocabulary", locations: `[{"location":"FutureLocation","field_types":[{"type":"FutureType","link_type":"FutureTarget","items":{"type":"FutureItem","link_type":"FutureItemTarget"}},{"type":"ResourceLink","link_type":"Contentful:Entry"},{"type":"Array","items":{"type":"ResourceLink","link_type":"Example:Record"}}],"navigation_item":{"name":"Page","path":"/page"}}]`, body: `{"name":"App","locations":[{"location":"FutureLocation","fieldTypes":[{"type":"FutureType","linkType":"FutureTarget","items":{"type":"FutureItem","linkType":"FutureItemTarget"}},{"type":"ResourceLink","linkType":"Contentful:Entry"},{"type":"Array","items":{"type":"ResourceLink","linkType":"Example:Record"}}],"navigationItem":{"name":"Page","path":"/page"}}]}`, accepted: true},
+			{name: "misplaced fields", locations: testJSON([]any{map[string]any{"location": "dialog", "field_types": []any{}}})},
+			{name: "missing items", locations: testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Array"}}}})},
+			{name: "null root", locations: testJSON(nil)},
+			{name: "null location", locations: testJSON([]any{nil})},
+			{name: "null field", locations: testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{nil}}})},
+			{name: "null field type", locations: testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{}}}})},
+			{name: "unknown root", locations: testJSON([]any{}), unknown: true},
+			{name: "effective valid plan", locations: testJSON([]any{}), body: testJSON(map[string]any{"name": "App", "locations": []any{}}), response: testJSON(map[string]any{"sys": map[string]any{"type": "AppDefinition", "id": "app", "organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}}}, "name": "App", "locations": []any{}}), accepted: true},
+			{name: "open vocabulary", locations: testJSON([]any{
+				map[string]any{
+					"location": "FutureLocation",
+					"field_types": []any{
+						map[string]any{
+							"type":      "FutureType",
+							"link_type": "FutureTarget",
+							"items":     map[string]any{"type": "FutureItem", "link_type": "FutureItemTarget"},
+						},
+						map[string]any{"type": "ResourceLink", "link_type": "Contentful:Entry"},
+						map[string]any{
+							"type":  "Array",
+							"items": map[string]any{"type": "ResourceLink", "link_type": "Example:Record"},
+						},
+					},
+					"navigation_item": map[string]any{"name": "Page", "path": "/page"},
+				},
+			}), body: testJSON(map[string]any{
+				"name": "App",
+				"locations": []any{
+					map[string]any{
+						"location": "FutureLocation",
+						"fieldTypes": []any{
+							map[string]any{
+								"type":     "FutureType",
+								"linkType": "FutureTarget",
+								"items":    map[string]any{"type": "FutureItem", "linkType": "FutureItemTarget"},
+							},
+							map[string]any{"type": "ResourceLink", "linkType": "Contentful:Entry"},
+							map[string]any{"type": "Array", "items": map[string]any{"type": "ResourceLink", "linkType": "Example:Record"}},
+						},
+						"navigationItem": map[string]any{"name": "Page", "path": "/page"},
+					},
+				},
+			}), response: testJSON(map[string]any{
+				"sys":  map[string]any{"type": "AppDefinition", "id": "app", "organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}}},
+				"name": "App",
+				"locations": []any{
+					map[string]any{
+						"location": "FutureLocation",
+						"fieldTypes": []any{
+							map[string]any{
+								"type":     "FutureType",
+								"linkType": "FutureTarget",
+								"items":    map[string]any{"type": "FutureItem", "linkType": "FutureItemTarget"},
+							},
+							map[string]any{"type": "ResourceLink", "linkType": "Contentful:Entry"},
+							map[string]any{"type": "Array", "items": map[string]any{"type": "ResourceLink", "linkType": "Example:Record"}},
+						},
+						"navigationItem": map[string]any{"name": "Page", "path": "/page"},
+					},
+				},
+			}), accepted: true},
 		} {
 			t.Run(method+"/"+test.name, func(t *testing.T) {
 				t.Parallel()
-				implementation, calls := appDefinitionLocationsTestResource(t, method, test.body)
+				implementation, calls := appDefinitionLocationsTestResource(t, method, test.body, test.response)
 
 				plan := appDefinitionLocationsTestPlan(t, test.locations)
 				if test.unknown {
@@ -215,12 +331,12 @@ func TestAppDefinitionLocationsMutationUsesPlan(t *testing.T) {
 					require.False(t, plan.SetAttribute(t.Context(), path.Root("locations"), types.ListUnknown(locations.ElementType(t.Context()))).HasError())
 				}
 
-				config := tfsdk.Config(appDefinitionLocationsTestPlan(t, `[]`))
+				config := tfsdk.Config(appDefinitionLocationsTestPlan(t, testJSON([]any{})))
 				if test.accepted {
-					config = tfsdk.Config(appDefinitionLocationsTestPlan(t, `[{"location":"dialog","field_types":[]}]`))
+					config = tfsdk.Config(appDefinitionLocationsTestPlan(t, testJSON([]any{map[string]any{"location": "dialog", "field_types": []any{}}})))
 				}
 
-				state := tfsdk.State(appDefinitionLocationsTestPlan(t, `[]`))
+				state := tfsdk.State(appDefinitionLocationsTestPlan(t, testJSON([]any{})))
 				identitySchema := resourceIdentitySchema(appDefinitionIdentityAttributeNames())
 				identity := &tfsdk.ResourceIdentity{Schema: identitySchema, Raw: tftypes.NewValue(identitySchema.Type().TerraformType(t.Context()), nil)}
 
@@ -255,7 +371,22 @@ func TestAppDefinitionLocationsMutationUsesPlan(t *testing.T) {
 func TestAppDefinitionLocationsReadPreservesIrregularValues(t *testing.T) {
 	t.Parallel()
 
-	const responseBody = `{"sys":{"type":"AppDefinition","id":"app","organization":{"sys":{"type":"Link","linkType":"Organization","id":"org"}}},"name":"App","locations":[{"location":"dialog","fieldTypes":[{"type":"Array"}],"navigationItem":{"name":"","path":"/page"}},{"location":"entry-field","fieldTypes":[]}]}`
+	responseBody := testJSON(map[string]any{
+		"sys": map[string]any{
+			"type":         "AppDefinition",
+			"id":           "app",
+			"organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}},
+		},
+		"name": "App",
+		"locations": []any{
+			map[string]any{
+				"location":       "dialog",
+				"fieldTypes":     []any{map[string]any{"type": "Array"}},
+				"navigationItem": map[string]any{"name": "", "path": "/page"},
+			},
+			map[string]any{"location": "entry-field", "fieldTypes": []any{}},
+		},
+	})
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method)
@@ -270,13 +401,20 @@ func TestAppDefinitionLocationsReadPreservesIrregularValues(t *testing.T) {
 	implementation := appDefinitionResource{providerData: ContentfulProviderData{client: client}}
 	identitySchema := resourceIdentitySchema(appDefinitionIdentityAttributeNames())
 	identity := &tfsdk.ResourceIdentity{Schema: identitySchema, Raw: tftypes.NewValue(identitySchema.Type().TerraformType(t.Context()), nil)}
-	imported := resource.ImportStateResponse{State: tfsdk.State(appDefinitionLocationsTestPlan(t, `[]`)), Identity: identity}
+	imported := resource.ImportStateResponse{State: tfsdk.State(appDefinitionLocationsTestPlan(t, testJSON([]any{}))), Identity: identity}
 	implementation.ImportState(t.Context(), resource.ImportStateRequest{ID: "org/app"}, &imported)
 	require.Empty(t, imported.Diagnostics)
 	read := resource.ReadResponse{State: imported.State, Identity: identity}
 	implementation.Read(t.Context(), resource.ReadRequest{State: imported.State}, &read)
 	require.Empty(t, read.Diagnostics)
-	expected := appDefinitionLocationsTestValue(t, appDefinitionLocationsTestPlan(t, `[{"location":"dialog","field_types":[{"type":"Array"}],"navigation_item":{"name":"","path":"/page"}},{"location":"entry-field","field_types":[]}]`))
+	expected := appDefinitionLocationsTestValue(t, appDefinitionLocationsTestPlan(t, testJSON([]any{
+		map[string]any{
+			"location":        "dialog",
+			"field_types":     []any{map[string]any{"type": "Array"}},
+			"navigation_item": map[string]any{"name": "", "path": "/page"},
+		},
+		map[string]any{"location": "entry-field", "field_types": []any{}},
+	})))
 
 	var actual types.List
 	require.False(t, read.State.GetAttribute(t.Context(), path.Root("locations"), &actual).HasError())
@@ -291,9 +429,19 @@ func TestAppDefinitionLocationsPartialKnowledge(t *testing.T) {
 		name, locations, detail string
 		unknown                 path.Path
 	}{
-		{name: "unknown type with absent items", locations: `[{"location":"entry-field","field_types":[{"type":"Symbol"}]}]`, unknown: fieldPath.AtName("type")},
-		{name: "known object presence with unknown child", locations: `[{"location":"entry-field","field_types":[{"type":"Symbol","items":{"type":"Symbol"}}]}]`, unknown: fieldPath.AtName("items").AtName("type"), detail: `Field type "Symbol" cannot have items. Omit this attribute.`},
-		{name: "unfamiliar parents with known child", locations: `[{"location":"FutureLocation","field_types":[{"type":"FutureType","items":{"type":"Link"}}]}]`, detail: `Field type "Link" requires link_type.`},
+		{name: "unknown type with absent items", locations: testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Symbol"}}}}), unknown: fieldPath.AtName("type")},
+		{name: "known object presence with unknown child", locations: testJSON([]any{
+			map[string]any{
+				"location":    "entry-field",
+				"field_types": []any{map[string]any{"type": "Symbol", "items": map[string]any{"type": "Symbol"}}},
+			},
+		}), unknown: fieldPath.AtName("items").AtName("type"), detail: `Field type "Symbol" cannot have items. Omit this attribute.`},
+		{name: "unfamiliar parents with known child", locations: testJSON([]any{
+			map[string]any{
+				"location":    "FutureLocation",
+				"field_types": []any{map[string]any{"type": "FutureType", "items": map[string]any{"type": "Link"}}},
+			},
+		}), detail: `Field type "Link" requires link_type.`},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()

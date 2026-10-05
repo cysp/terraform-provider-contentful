@@ -618,9 +618,42 @@ func TestAccPreviewEnvironmentResourceVersionedConfigurationDelta(t *testing.T) 
 		"DELETE /spaces/0p38pssr0fi3/preview_environments/preview version=",
 	}, mutations)
 	require.Len(t, bodies, 5)
-	assert.JSONEq(t, `{"name":"Preview","description":"","configurations":[{"entityType":"ContentType","entityId":"page","url":"https://preview.example.invalid/page/{entry.sys.id}","enabled":true}]}`, bodies[0])
-	assert.JSONEq(t, `{"name":"Renamed","description":"","configurations":[]}`, bodies[1])
-	assert.JSONEq(t, `{"name":"Renamed","description":"","configurations":[{"entityType":"ContentType","entityId":"page","url":"https://preview.invalid/changed","enabled":true}]}`, bodies[2])
-	assert.JSONEq(t, `{"name":"Renamed","description":"","configurations":[{"entityType":"ContentType","entityId":"page","url":"https://preview.invalid/changed","enabled":false}]}`, bodies[3])
+	assert.JSONEq(t, testJSON(map[string]any{
+		"name":        "Preview",
+		"description": "",
+		"configurations": []any{
+			map[string]any{
+				"entityType": "ContentType",
+				"entityId":   "page",
+				"url":        "https://preview.example.invalid/page/{entry.sys.id}",
+				"enabled":    true,
+			},
+		},
+	}), bodies[0])
+	assert.JSONEq(t, testJSON(map[string]any{"name": "Renamed", "description": "", "configurations": []any{}}), bodies[1])
+	assert.JSONEq(t, testJSON(map[string]any{
+		"name":        "Renamed",
+		"description": "",
+		"configurations": []any{
+			map[string]any{
+				"entityType": "ContentType",
+				"entityId":   "page",
+				"url":        "https://preview.invalid/changed",
+				"enabled":    true,
+			},
+		},
+	}), bodies[2])
+	assert.JSONEq(t, testJSON(map[string]any{
+		"name":        "Renamed",
+		"description": "",
+		"configurations": []any{
+			map[string]any{
+				"entityType": "ContentType",
+				"entityId":   "page",
+				"url":        "https://preview.invalid/changed",
+				"enabled":    false,
+			},
+		},
+	}), bodies[3])
 	assert.Empty(t, bodies[4])
 }
