@@ -118,8 +118,21 @@ hide accidental drift. Check remote absence after destroy when deletion or
 retention is the behavior under test.
 
 HTTP request and version oracles remain separate evidence from Terraform
-state. Assert literal payloads, version headers, and lifecycle ordering. A
-mocked acceptance pass proves behavior against the local API model; only a
+state. Assert exact payload contents, version headers, and lifecycle ordering.
+Construct valid JSON fixtures and expected payloads as Go objects and encode them
+with the standard library. Author expected objects independently of production
+conversion code and response fixtures. Preserve omitted members, explicit null,
+empty collections, and zero values; mutate objects before encoding instead of
+editing JSON substrings. Small package-local test helpers can handle encoding
+and intentional response mutation without defining a fixture framework.
+
+Retain raw strings when malformed JSON, duplicate keys, escaping, whitespace,
+key order, or exact bytes are the behavior under test. In semantic-equality tests,
+keep the planned and returned representations distinct so canonical encoding
+does not erase the condition being tested. Keep HCL configuration expressions
+separate from JSON fixture encoding.
+
+A mocked acceptance pass proves behavior against the local API model; only a
 live test or primary API evidence establishes Contentful compatibility.
 
 See HashiCorp's [state checks](https://developer.hashicorp.com/terraform/plugin/testing/acceptance-tests/state-checks/resource),
