@@ -156,7 +156,7 @@ func TestDeactivateContentTypeRemovesEditorInterface(t *testing.T) {
 	response, err := handler.PutEditorInterface(t.Context(), &cm.EditorInterfaceData{
 		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{{
 			FieldId: "title", WidgetNamespace: cm.NewOptString("builtin"), WidgetId: cm.NewOptString("singleLine"),
-			Settings: []byte(`{"helpText":"custom help"}`),
+			Settings: []byte(testJSON(map[string]any{"helpText": "custom help"})),
 		}}),
 	}, cm.PutEditorInterfaceParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,

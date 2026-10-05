@@ -13,7 +13,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const livePreviewVariablesResponse = `{"sys":{"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"alias"}},"version":8},"variables":{"global":"value","localized":{"en-US":null},"empty":{},"null":null}}`
+var livePreviewVariablesResponse = testJSON(map[string]any{
+	"sys": map[string]any{
+		"space":       map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+		"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "alias"}},
+		"version":     8,
+	},
+	"variables": map[string]any{
+		"global":    "value",
+		"localized": map[string]any{"en-US": nil},
+		"empty":     map[string]any{},
+		"null":      nil,
+	},
+})
 
 func TestLivePreviewVariablesWireContract(t *testing.T) {
 	t.Parallel()
@@ -29,17 +41,33 @@ func TestLivePreviewVariablesWireContract(t *testing.T) {
 		serviceMessage string
 		decodeError    bool
 	}{
-		"get ordinary JSON":                   {method: http.MethodGet, status: http.StatusOK, contentType: "application/json; charset=utf-8", response: livePreviewVariablesResponse},
-		"create version zero":                 {method: http.MethodPut, version: 0, status: http.StatusOK, contentType: "application/json", response: livePreviewVariablesResponse},
-		"update exact version":                {method: http.MethodPut, version: 7, status: http.StatusOK, contentType: "application/json", response: livePreviewVariablesResponse},
-		"delete empty response":               {method: http.MethodDelete, status: http.StatusNoContent},
-		"CMA not found":                       {method: http.MethodGet, status: http.StatusNotFound, contentType: "application/vnd.contentful.management.v1+json", response: `{"sys":{"type":"Error","id":"NotFound"},"message":"The resource could not be found."}`, errorID: "NotFound"},
-		"version conflict":                    {method: http.MethodPut, version: 7, status: http.StatusConflict, contentType: "application/vnd.contentful.management.v1+json", response: `{"sys":{"type":"Error","id":"VersionMismatch"},"message":"The given version value is not the current one"}`, errorID: "VersionMismatch"},
-		"validation without optional fields":  {method: http.MethodPut, status: http.StatusUnprocessableEntity, contentType: "application/json", response: `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"name":"required","details":"Required property"}]}}`, errorID: "ValidationFailed"},
-		"enterprise feature unavailable":      {method: http.MethodGet, status: http.StatusForbidden, contentType: "application/vnd.contentful.management.v1+json", response: `{"statusCode":403,"error":"Forbidden","message":"previewLocalization is not enabled"}`, service: true, serviceMessage: "previewLocalization is not enabled"},
-		"service error preserves HTTP status": {method: http.MethodGet, status: http.StatusNotFound, contentType: "application/vnd.contentful.management.v1+json", response: `{"statusCode":500,"error":"Not Found","message":"Not Found"}`, service: true, serviceMessage: "Not Found"},
-		"missing variables":                   {method: http.MethodGet, status: http.StatusOK, contentType: "application/json", response: `{"sys":{"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"alias"}},"version":8}}`, decodeError: true},
-		"malformed response":                  {method: http.MethodGet, status: http.StatusOK, contentType: "application/json", response: `{`, decodeError: true},
+		"get ordinary JSON":     {method: http.MethodGet, status: http.StatusOK, contentType: "application/json; charset=utf-8", response: livePreviewVariablesResponse},
+		"create version zero":   {method: http.MethodPut, version: 0, status: http.StatusOK, contentType: "application/json", response: livePreviewVariablesResponse},
+		"update exact version":  {method: http.MethodPut, version: 7, status: http.StatusOK, contentType: "application/json", response: livePreviewVariablesResponse},
+		"delete empty response": {method: http.MethodDelete, status: http.StatusNoContent},
+		"CMA not found": {method: http.MethodGet, status: http.StatusNotFound, contentType: "application/vnd.contentful.management.v1+json", response: testJSON(map[string]any{
+			"sys":     map[string]any{"type": "Error", "id": "NotFound"},
+			"message": "The resource could not be found.",
+		}), errorID: "NotFound"},
+		"version conflict": {method: http.MethodPut, version: 7, status: http.StatusConflict, contentType: "application/vnd.contentful.management.v1+json", response: testJSON(map[string]any{
+			"sys":     map[string]any{"type": "Error", "id": "VersionMismatch"},
+			"message": "The given version value is not the current one",
+		}), errorID: "VersionMismatch"},
+		"validation without optional fields": {method: http.MethodPut, status: http.StatusUnprocessableEntity, contentType: "application/json", response: testJSON(map[string]any{
+			"sys":     map[string]any{"type": "Error", "id": "ValidationFailed"},
+			"message": "Validation error",
+			"details": map[string]any{"errors": []any{map[string]any{"name": "required", "details": "Required property"}}},
+		}), errorID: "ValidationFailed"},
+		"enterprise feature unavailable":      {method: http.MethodGet, status: http.StatusForbidden, contentType: "application/vnd.contentful.management.v1+json", response: testJSON(map[string]any{"statusCode": 403, "error": "Forbidden", "message": "previewLocalization is not enabled"}), service: true, serviceMessage: "previewLocalization is not enabled"},
+		"service error preserves HTTP status": {method: http.MethodGet, status: http.StatusNotFound, contentType: "application/vnd.contentful.management.v1+json", response: testJSON(map[string]any{"statusCode": 500, "error": "Not Found", "message": "Not Found"}), service: true, serviceMessage: "Not Found"},
+		"missing variables": {method: http.MethodGet, status: http.StatusOK, contentType: "application/json", response: testJSON(map[string]any{
+			"sys": map[string]any{
+				"space":       map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+				"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "alias"}},
+				"version":     8,
+			},
+		}), decodeError: true},
+		"malformed response": {method: http.MethodGet, status: http.StatusOK, contentType: "application/json", response: `{`, decodeError: true},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -65,7 +93,14 @@ func TestLivePreviewVariablesWireContract(t *testing.T) {
 						assert.Equal(t, "7", r.Header.Get("X-Contentful-Version"))
 					}
 
-					assert.JSONEq(t, `{"variables":{"global":"value","localized":{"en-US":null},"empty":{},"null":null}}`, string(body))
+					assert.JSONEq(t, testJSON(map[string]any{
+						"variables": map[string]any{
+							"global":    "value",
+							"localized": map[string]any{"en-US": nil},
+							"empty":     map[string]any{},
+							"null":      nil,
+						},
+					}), string(body))
 				} else {
 					assert.Empty(t, r.Header.Get("X-Contentful-Version"))
 					assert.Empty(t, body)
@@ -92,7 +127,12 @@ func TestLivePreviewVariablesWireContract(t *testing.T) {
 			case http.MethodGet:
 				response, err = client.GetLivePreviewVariables(t.Context(), cm.GetLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "alias"})
 			case http.MethodPut:
-				response, err = client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(`{"global":"value","localized":{"en-US":null},"empty":{},"null":null}`)}, cm.PutLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "alias", XContentfulVersion: test.version})
+				response, err = client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(testJSON(map[string]any{
+					"global":    "value",
+					"localized": map[string]any{"en-US": nil},
+					"empty":     map[string]any{},
+					"null":      nil,
+				}))}, cm.PutLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "alias", XContentfulVersion: test.version})
 			case http.MethodDelete:
 				response, err = client.DeleteLivePreviewVariables(t.Context(), cm.DeleteLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "alias"})
 			}
@@ -113,7 +153,12 @@ func TestLivePreviewVariablesWireContract(t *testing.T) {
 				require.True(t, ok)
 				require.Equal(t, 8, variables.Sys.Version)
 				require.Equal(t, "alias", variables.Sys.Environment.Sys.ID)
-				require.JSONEq(t, `{"global":"value","localized":{"en-US":null},"empty":{},"null":null}`, string(variables.Variables))
+				require.JSONEq(t, testJSON(map[string]any{
+					"global":    "value",
+					"localized": map[string]any{"en-US": nil},
+					"empty":     map[string]any{},
+					"null":      nil,
+				}), string(variables.Variables))
 			case http.StatusNoContent:
 				require.IsType(t, &cm.NoContent{}, response)
 			default:
@@ -151,14 +196,14 @@ func TestLivePreviewVariablesMockLifecycle(t *testing.T) {
 	require.NoError(t, err)
 	require.IsType(t, &cm.LivePreviewVariablesErrorStatusCode{}, response)
 
-	created, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(`{"remove":"value","localized":{"en-US":"value"}}`)}, putParams)
+	created, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(testJSON(map[string]any{"remove": "value", "localized": map[string]any{"en-US": "value"}}))}, putParams)
 	require.NoError(t, err)
 
 	createdDocument, ok := created.(*cm.LivePreviewVariables)
 	require.True(t, ok)
 	require.Equal(t, 1, createdDocument.Sys.Version)
 
-	conflict, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(`{}`)}, putParams)
+	conflict, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(testJSON(map[string]any{}))}, putParams)
 	require.NoError(t, err)
 
 	conflictDocument, ok := conflict.(*cm.LivePreviewVariablesErrorStatusCode)
@@ -166,7 +211,7 @@ func TestLivePreviewVariablesMockLifecycle(t *testing.T) {
 	require.Equal(t, http.StatusConflict, conflictDocument.StatusCode)
 
 	putParams.XContentfulVersion = 1
-	updated, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(`{"localized":{},"null":null,"empty":""}`)}, putParams)
+	updated, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(testJSON(map[string]any{"localized": map[string]any{}, "null": nil, "empty": ""}))}, putParams)
 	require.NoError(t, err)
 
 	updatedDocument, ok := updated.(*cm.LivePreviewVariables)
@@ -177,10 +222,10 @@ func TestLivePreviewVariablesMockLifecycle(t *testing.T) {
 
 	readDocument, ok := read.(*cm.LivePreviewVariables)
 	require.True(t, ok)
-	require.JSONEq(t, `{"localized":{},"null":null,"empty":""}`, string(readDocument.Variables))
+	require.JSONEq(t, testJSON(map[string]any{"localized": map[string]any{}, "null": nil, "empty": ""}), string(readDocument.Variables))
 
 	putParams.XContentfulVersion = 2
-	empty, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(`{}`)}, putParams)
+	empty, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(testJSON(map[string]any{}))}, putParams)
 	require.NoError(t, err)
 
 	emptyDocument, ok := empty.(*cm.LivePreviewVariables)
@@ -191,7 +236,7 @@ func TestLivePreviewVariablesMockLifecycle(t *testing.T) {
 
 	readDocument, ok = read.(*cm.LivePreviewVariables)
 	require.True(t, ok)
-	require.JSONEq(t, `{}`, string(readDocument.Variables))
+	require.JSONEq(t, testJSON(map[string]any{}), string(readDocument.Variables))
 
 	for range 2 {
 		deleted, deleteErr := client.DeleteLivePreviewVariables(t.Context(), deleteParams)
@@ -199,7 +244,7 @@ func TestLivePreviewVariablesMockLifecycle(t *testing.T) {
 		require.IsType(t, &cm.NoContent{}, deleted)
 	}
 	// An absent document accepts the old version and restarts at version 1.
-	recreated, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(`{}`)}, putParams)
+	recreated, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(testJSON(map[string]any{}))}, putParams)
 	require.NoError(t, err)
 
 	recreatedDocument, ok := recreated.(*cm.LivePreviewVariables)
@@ -208,13 +253,13 @@ func TestLivePreviewVariablesMockLifecycle(t *testing.T) {
 
 	// Version 1 from the previous lifetime also authorizes a write to the recreated document.
 	putParams.XContentfulVersion = 1
-	reused, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(`{"reused":"version"}`)}, putParams)
+	reused, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(testJSON(map[string]any{"reused": "version"}))}, putParams)
 	require.NoError(t, err)
 
 	reusedDocument, ok := reused.(*cm.LivePreviewVariables)
 	require.True(t, ok)
 	require.Equal(t, 2, reusedDocument.Sys.Version)
-	require.JSONEq(t, `{"reused":"version"}`, string(reusedDocument.Variables))
+	require.JSONEq(t, testJSON(map[string]any{"reused": "version"}), string(reusedDocument.Variables))
 
 	_, err = client.DeleteEnvironment(t.Context(), cm.DeleteEnvironmentParams{SpaceID: "space", EnvironmentID: "environment"})
 	require.NoError(t, err)

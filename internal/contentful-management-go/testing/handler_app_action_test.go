@@ -17,9 +17,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
+var (
 	appActionCollectionPath = "/organizations/org/app_definitions/app/actions"
-	appActionBody           = `{"name":"Action","category":"Custom","type":"endpoint","url":"https://example.invalid/action","parameters":[]}`
+	appActionBody           = testJSON(map[string]any{
+		"name":       "Action",
+		"category":   "Custom",
+		"type":       "endpoint",
+		"url":        "https://example.invalid/action",
+		"parameters": []any{},
+	})
 )
 
 func appActionHTTP(t *testing.T, server *cmt.Server, method, path, body string, status int) map[string]any {
@@ -79,16 +85,30 @@ func TestAppActionServerLifecycle(t *testing.T) {
 	assert.Equal(t, created, appActionHTTP(t, server, http.MethodGet, path, "", 200))
 
 	for _, invalid := range []string{
-		strings.Replace(appActionBody, `,"parameters":[]`, "", 1),
-		strings.Replace(appActionBody, `,"url":"https://example.invalid/action"`, "", 1),
-		`{"name":"Function","category":"Custom","type":"function-invocation","function":{"sys":{"type":"Link","linkType":"Function","id":""}},"parameters":[]}`,
+		mutateTestJSON(appActionBody, func(document map[string]any) { delete(document, "parameters") }),
+		mutateTestJSON(appActionBody, func(document map[string]any) { delete(document, "url") }),
+		testJSON(map[string]any{
+			"name":       "Function",
+			"category":   "Custom",
+			"type":       "function-invocation",
+			"function":   map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": ""}},
+			"parameters": []any{},
+		}),
 	} {
 		appActionHTTP(t, server, http.MethodPost, appActionCollectionPath, invalid, 422)
 		appActionHTTP(t, server, http.MethodPut, path, invalid, 422)
 		assert.Equal(t, created, appActionHTTP(t, server, http.MethodGet, path, "", 200))
 	}
 
-	function := `{"name":"Function","category":"Custom","type":"function-invocation","function":{"sys":{"type":"Link","linkType":"Function","id":"undeployed"}},"parametersSchema":{"type":"object"},"resultSchema":{"type":"object"},"description":""}`
+	function := testJSON(map[string]any{
+		"name":             "Function",
+		"category":         "Custom",
+		"type":             "function-invocation",
+		"function":         map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "undeployed"}},
+		"parametersSchema": map[string]any{"type": "object"},
+		"resultSchema":     map[string]any{"type": "object"},
+		"description":      "",
+	})
 	updated := appActionHTTP(t, server, http.MethodPut, path, function, 200)
 	assert.Equal(t, sys, updated["sys"])
 	assert.NotContains(t, updated, "url")
@@ -233,13 +253,37 @@ func TestAppActionServerBuiltinParameters(t *testing.T) {
 	t.Parallel()
 
 	for category, parameters := range map[string]string{
-		"Entries.v1.0":      `[{"id":"entryIds","name":"Entry Ids","description":"Ids of the entries you want to trigger the action for","type":"Symbol","required":true}]`,
-		"Notification.v1.0": `[{"id":"message","name":"Message","description":"The message being sent to external messaging service","type":"Symbol","required":true},{"id":"recipient","name":"Recipient","description":"","type":"Symbol","required":true}]`,
+		"Entries.v1.0": testJSON([]any{
+			map[string]any{
+				"id":          "entryIds",
+				"name":        "Entry Ids",
+				"description": "Ids of the entries you want to trigger the action for",
+				"type":        "Symbol",
+				"required":    true,
+			},
+		}),
+		"Notification.v1.0": testJSON([]any{
+			map[string]any{
+				"id":          "message",
+				"name":        "Message",
+				"description": "The message being sent to external messaging service",
+				"type":        "Symbol",
+				"required":    true,
+			},
+			map[string]any{"id": "recipient", "name": "Recipient", "description": "", "type": "Symbol", "required": true},
+		}),
 	} {
 		t.Run(category, func(t *testing.T) {
 			t.Parallel()
 			server := appActionServer(t)
-			body := fmt.Sprintf(`{"name":"Builtin","category":%q,"type":"endpoint","url":"https://example.invalid/action","parametersSchema":{"type":"object"},"resultSchema":{"type":"object"}}`, category)
+			body := testJSON(map[string]any{
+				"name":             "Builtin",
+				"category":         category,
+				"type":             "endpoint",
+				"url":              "https://example.invalid/action",
+				"parametersSchema": map[string]any{"type": "object"},
+				"resultSchema":     map[string]any{"type": "object"},
+			})
 			created := appActionHTTP(t, server, http.MethodPost, appActionCollectionPath, body, 201)
 			actual, err := json.Marshal(created["parameters"])
 			require.NoError(t, err)

@@ -15,13 +15,13 @@ func TestSetEntryStoresFieldValuesUnchanged(t *testing.T) {
 
 	request := cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"title": jx.Raw(`{"en-US":"Post 1"}`),
+			"title": jx.Raw(testJSON(map[string]any{"en-US": "Post 1"})),
 		}),
 	}
 
 	storedField := storeEntryAndGetField(t, request, "title")
 
-	assert.JSONEq(t, `{"en-US":"Post 1"}`, string(storedField))
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": "Post 1"}), string(storedField))
 }
 
 func TestEntryResponsesProjectOmittedFields(t *testing.T) {
@@ -32,12 +32,12 @@ func TestEntryResponsesProjectOmittedFields(t *testing.T) {
 
 	server.SetEntry("space", "environment", "content-type", "entry", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"empty":          jx.Raw(`{"en-US":[]}`),
-			"empty-locales":  jx.Raw(`{}`),
-			"nonempty-array": jx.Raw(`{"en-US":["value"]}`),
-			"raw-null":       jx.Raw(`null`),
-			"localized-null": jx.Raw(`{"en-US":null}`),
-			"title":          jx.Raw(`{"en-US":"Post 1"}`),
+			"empty":          jx.Raw(testJSON(map[string]any{"en-US": []any{}})),
+			"empty-locales":  jx.Raw(testJSON(map[string]any{})),
+			"nonempty-array": jx.Raw(testJSON(map[string]any{"en-US": []any{"value"}})),
+			"raw-null":       jx.Raw(testJSON(nil)),
+			"localized-null": jx.Raw(testJSON(map[string]any{"en-US": nil})),
+			"title":          jx.Raw(testJSON(map[string]any{"en-US": "Post 1"})),
 		}),
 	})
 
@@ -51,10 +51,10 @@ func TestEntryResponsesProjectOmittedFields(t *testing.T) {
 	require.True(t, entry.Fields.IsSet())
 	assert.NotContains(t, entry.Fields.Value, "empty")
 	assert.NotContains(t, entry.Fields.Value, "raw-null")
-	assert.JSONEq(t, `{}`, string(entry.Fields.Value["empty-locales"]))
-	assert.JSONEq(t, `{"en-US":["value"]}`, string(entry.Fields.Value["nonempty-array"]))
-	assert.JSONEq(t, `{"en-US":null}`, string(entry.Fields.Value["localized-null"]))
-	assert.JSONEq(t, `{"en-US":"Post 1"}`, string(entry.Fields.Value["title"]))
+	assert.JSONEq(t, testJSON(map[string]any{}), string(entry.Fields.Value["empty-locales"]))
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": []any{"value"}}), string(entry.Fields.Value["nonempty-array"]))
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": nil}), string(entry.Fields.Value["localized-null"]))
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": "Post 1"}), string(entry.Fields.Value["title"]))
 
 	listResponse, err := server.Handler().GetEntries(t.Context(), cm.GetEntriesParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentType: cm.NewOptString("content-type"),
@@ -66,13 +66,13 @@ func TestEntryResponsesProjectOmittedFields(t *testing.T) {
 	require.Len(t, entries.Items, 1)
 	assert.NotContains(t, entries.Items[0].Fields.Value, "empty")
 	assert.NotContains(t, entries.Items[0].Fields.Value, "raw-null")
-	assert.JSONEq(t, `{"en-US":null}`, string(entries.Items[0].Fields.Value["localized-null"]))
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": nil}), string(entries.Items[0].Fields.Value["localized-null"]))
 
 	putResponse, err := server.Handler().PutEntry(t.Context(), &cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"empty":          jx.Raw(`{"en-US":[]}`),
-			"raw-null":       jx.Raw(`null`),
-			"localized-null": jx.Raw(`{"en-US":null}`),
+			"empty":          jx.Raw(testJSON(map[string]any{"en-US": []any{}})),
+			"raw-null":       jx.Raw(testJSON(nil)),
+			"localized-null": jx.Raw(testJSON(map[string]any{"en-US": nil})),
 		}),
 	}, cm.PutEntryParams{
 		SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: cm.NewOptInt(entry.Sys.Version),
@@ -84,7 +84,7 @@ func TestEntryResponsesProjectOmittedFields(t *testing.T) {
 	require.True(t, updated.Response.Fields.IsSet())
 	assert.NotContains(t, updated.Response.Fields.Value, "empty")
 	assert.NotContains(t, updated.Response.Fields.Value, "raw-null")
-	assert.JSONEq(t, `{"en-US":null}`, string(updated.Response.Fields.Value["localized-null"]))
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": nil}), string(updated.Response.Fields.Value["localized-null"]))
 
 	publishResponse, err := server.Handler().PublishEntry(t.Context(), cm.PublishEntryParams{
 		SpaceID: "space", EnvironmentID: "environment", EntryID: "entry",
@@ -97,7 +97,7 @@ func TestEntryResponsesProjectOmittedFields(t *testing.T) {
 	require.True(t, published.Response.Fields.IsSet())
 	assert.NotContains(t, published.Response.Fields.Value, "empty")
 	assert.NotContains(t, published.Response.Fields.Value, "raw-null")
-	assert.JSONEq(t, `{"en-US":null}`, string(published.Response.Fields.Value["localized-null"]))
+	assert.JSONEq(t, testJSON(map[string]any{"en-US": nil}), string(published.Response.Fields.Value["localized-null"]))
 }
 
 func storeEntryAndGetField(t *testing.T, request cm.EntryRequest, fieldID string) jx.Raw {

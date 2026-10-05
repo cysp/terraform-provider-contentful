@@ -21,14 +21,16 @@ func TestPreviewEnvironmentDataSerialization(t *testing.T) {
 		}},
 	}).MarshalJSON()
 	require.NoError(t, err)
-	require.JSONEq(t, `{
-		"name": "Preview",
+	require.JSONEq(t, testJSON(map[string]any{
+		"name":        "Preview",
 		"description": "",
-		"configurations": [{
-			"url": "https://preview.invalid/{entry.sys.id}",
-			"entityType": "ContentType",
-			"entityId": "page",
-			"enabled": true
-		}]
-	}`, string(data))
+		"configurations": []any{
+			map[string]any{
+				"url":        "https://preview.invalid/{entry.sys.id}",
+				"entityType": "ContentType",
+				"entityId":   "page",
+				"enabled":    true,
+			},
+		},
+	}), string(data))
 }

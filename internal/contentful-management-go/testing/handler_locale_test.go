@@ -17,23 +17,24 @@ func TestLocaleMutationHTTPRejectsInvalidFallbacksAndCodes(t *testing.T) {
 	t.Parallel()
 
 	for name, test := range map[string]struct {
-		method, localeID, code, fallback string
-		disableDelivery                  bool
-		status                           int
-		errorID                          string
+		method, localeID, code string
+		fallback               any
+		disableDelivery        bool
+		status                 int
+		errorID                string
 	}{
-		"create duplicate code":   {http.MethodPost, "", "de-DE", "null", false, http.StatusUnprocessableEntity, "ValidationFailed"},
-		"create missing fallback": {http.MethodPost, "", "de-CH", `"missing"`, false, http.StatusUnprocessableEntity, "ValidationFailed"},
-		"create empty fallback":   {http.MethodPost, "", "de-CH", `""`, false, http.StatusUnprocessableEntity, "ValidationFailed"},
-		"create self fallback":    {http.MethodPost, "", "de-CH", `"de-CH"`, false, http.StatusUnprocessableEntity, "ValidationFailed"},
-		"update duplicate code":   {http.MethodPut, "locale-c", "fr-FR", "null", false, http.StatusInternalServerError, "ServerError"},
-		"update missing fallback": {http.MethodPut, "locale-c", "it-IT", `"missing"`, false, http.StatusUnprocessableEntity, "ValidationFailed"},
-		"update empty fallback":   {http.MethodPut, "locale-c", "it-IT", `""`, false, http.StatusUnprocessableEntity, "ValidationFailed"},
-		"update self fallback":    {http.MethodPut, "locale-c", "it-IT", `"it-IT"`, false, http.StatusUnprocessableEntity, "ValidationFailed"},
-		"update fallback cycle":   {http.MethodPut, "locale-a", "de-DE", `"it-IT"`, false, http.StatusUnprocessableEntity, "ValidationFailed"},
-		"default fallback":        {http.MethodPut, "locale-default", "en-US", `"de-DE"`, false, http.StatusUnprocessableEntity, "ValidationFailed"},
-		"rename fallback target":  {http.MethodPut, "locale-a", "de-AT", "null", false, http.StatusUnprocessableEntity, "ValidationFailed"},
-		"disable fallback target": {http.MethodPut, "locale-a", "de-DE", "null", true, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"create duplicate code":   {http.MethodPost, "", "de-DE", nil, false, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"create missing fallback": {http.MethodPost, "", "de-CH", "missing", false, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"create empty fallback":   {http.MethodPost, "", "de-CH", "", false, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"create self fallback":    {http.MethodPost, "", "de-CH", "de-CH", false, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"update duplicate code":   {http.MethodPut, "locale-c", "fr-FR", nil, false, http.StatusInternalServerError, "ServerError"},
+		"update missing fallback": {http.MethodPut, "locale-c", "it-IT", "missing", false, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"update empty fallback":   {http.MethodPut, "locale-c", "it-IT", "", false, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"update self fallback":    {http.MethodPut, "locale-c", "it-IT", "it-IT", false, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"update fallback cycle":   {http.MethodPut, "locale-a", "de-DE", "it-IT", false, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"default fallback":        {http.MethodPut, "locale-default", "en-US", "de-DE", false, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"rename fallback target":  {http.MethodPut, "locale-a", "de-AT", nil, false, http.StatusUnprocessableEntity, "ValidationFailed"},
+		"disable fallback target": {http.MethodPut, "locale-a", "de-DE", nil, true, http.StatusUnprocessableEntity, "ValidationFailed"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -41,10 +42,14 @@ func TestLocaleMutationHTTPRejectsInvalidFallbacksAndCodes(t *testing.T) {
 			server := newLocaleValidationServer(t)
 			before := localeCollectionJSON(t, server)
 
-			body := `{"name":"Changed","code":"` + test.code + `","fallbackCode":` + test.fallback + `,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`
-			if test.disableDelivery {
-				body = strings.Replace(body, `"contentDeliveryApi":true`, `"contentDeliveryApi":false`, 1)
-			}
+			body := testJSON(map[string]any{
+				"name":                 "Changed",
+				"code":                 test.code,
+				"fallbackCode":         test.fallback,
+				"contentDeliveryApi":   !test.disableDelivery,
+				"contentManagementApi": true,
+				"optional":             false,
+			})
 
 			response := localeHTTPMutation(t, server, test.method, test.localeID, "7", body)
 
@@ -104,7 +109,14 @@ func TestDeleteLocaleHTTPRejectsDefaultAndFallbackTargets(t *testing.T) {
 
 			server := newLocaleValidationServer(t)
 			if test.referenceDefault {
-				dependent := localeHTTPMutation(t, server, http.MethodPut, "locale-a", "7", `{"name":"German","code":"de-DE","fallbackCode":"en-US","contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`)
+				dependent := localeHTTPMutation(t, server, http.MethodPut, "locale-a", "7", testJSON(map[string]any{
+					"name":                 "German",
+					"code":                 "de-DE",
+					"fallbackCode":         "en-US",
+					"contentDeliveryApi":   true,
+					"contentManagementApi": true,
+					"optional":             false,
+				}))
 				require.Equal(t, http.StatusOK, dependent.Code, dependent.Body.String())
 			}
 
@@ -121,7 +133,14 @@ func TestLocaleHTTPAcceptsFallbackChainsAndRemoval(t *testing.T) {
 	t.Parallel()
 
 	server := newLocaleValidationServer(t)
-	created := localeHTTPMutation(t, server, http.MethodPost, "", "", `{"name":"Swiss German","code":"de-CH","fallbackCode":"it-IT","contentDeliveryApi":true,"contentManagementApi":true,"optional":true}`)
+	created := localeHTTPMutation(t, server, http.MethodPost, "", "", testJSON(map[string]any{
+		"name":                 "Swiss German",
+		"code":                 "de-CH",
+		"fallbackCode":         "it-IT",
+		"contentDeliveryApi":   true,
+		"contentManagementApi": true,
+		"optional":             true,
+	}))
 	require.Equal(t, http.StatusCreated, created.Code, created.Body.String())
 
 	var locale cm.Locale
@@ -134,13 +153,27 @@ func TestLocaleHTTPAcceptsFallbackChainsAndRemoval(t *testing.T) {
 	assert.False(t, locale.Default)
 
 	// Removing the intermediate fallback breaks the dependency on locale-b.
-	cleared := localeHTTPMutation(t, server, http.MethodPut, "locale-c", "7", `{"name":"Italian","code":"it-IT","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`)
+	cleared := localeHTTPMutation(t, server, http.MethodPut, "locale-c", "7", testJSON(map[string]any{
+		"name":                 "Italian",
+		"code":                 "it-IT",
+		"fallbackCode":         nil,
+		"contentDeliveryApi":   true,
+		"contentManagementApi": true,
+		"optional":             false,
+	}))
 	require.Equal(t, http.StatusOK, cleared.Code, cleared.Body.String())
 	require.NoError(t, json.Unmarshal(cleared.Body.Bytes(), &locale))
 	assert.Equal(t, cm.NewOptNilStringNull(), locale.FallbackCode)
 	assert.Equal(t, cm.NewOptInt(8), locale.Sys.Version)
 
-	renamed := localeHTTPMutation(t, server, http.MethodPut, "locale-b", "7", `{"name":"French (Canada)","code":"fr-CA","fallbackCode":"de-DE","contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`)
+	renamed := localeHTTPMutation(t, server, http.MethodPut, "locale-b", "7", testJSON(map[string]any{
+		"name":                 "French (Canada)",
+		"code":                 "fr-CA",
+		"fallbackCode":         "de-DE",
+		"contentDeliveryApi":   true,
+		"contentManagementApi": true,
+		"optional":             false,
+	}))
 	require.Equal(t, http.StatusOK, renamed.Code, renamed.Body.String())
 	require.NoError(t, json.Unmarshal(renamed.Body.Bytes(), &locale))
 	assert.Equal(t, "locale-b", locale.Sys.ID)
@@ -161,7 +194,14 @@ func TestLocaleHTTPDefaultFallbackLifecycle(t *testing.T) {
 	t.Parallel()
 
 	server := newLocaleValidationServer(t)
-	renamed := localeHTTPMutation(t, server, http.MethodPut, "locale-default", "7", `{"name":"Default","code":"default","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`)
+	renamed := localeHTTPMutation(t, server, http.MethodPut, "locale-default", "7", testJSON(map[string]any{
+		"name":                 "Default",
+		"code":                 "default",
+		"fallbackCode":         nil,
+		"contentDeliveryApi":   true,
+		"contentManagementApi": true,
+		"optional":             false,
+	}))
 	require.Equal(t, http.StatusOK, renamed.Code, renamed.Body.String())
 
 	var locale cm.Locale
@@ -171,9 +211,23 @@ func TestLocaleHTTPDefaultFallbackLifecycle(t *testing.T) {
 	assert.True(t, locale.Default)
 	assert.Equal(t, cm.NewOptInt(8), locale.Sys.Version)
 
-	dependent := localeHTTPMutation(t, server, http.MethodPut, "locale-a", "7", `{"name":"German","code":"de-DE","fallbackCode":"default","contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`)
+	dependent := localeHTTPMutation(t, server, http.MethodPut, "locale-a", "7", testJSON(map[string]any{
+		"name":                 "German",
+		"code":                 "de-DE",
+		"fallbackCode":         "default",
+		"contentDeliveryApi":   true,
+		"contentManagementApi": true,
+		"optional":             false,
+	}))
 	require.Equal(t, http.StatusOK, dependent.Code, dependent.Body.String())
-	response := localeHTTPMutation(t, server, http.MethodPut, "locale-default", "8", `{"name":"Default","code":"default","fallbackCode":null,"contentDeliveryApi":false,"contentManagementApi":true,"optional":false}`)
+	response := localeHTTPMutation(t, server, http.MethodPut, "locale-default", "8", testJSON(map[string]any{
+		"name":                 "Default",
+		"code":                 "default",
+		"fallbackCode":         nil,
+		"contentDeliveryApi":   false,
+		"contentManagementApi": true,
+		"optional":             false,
+	}))
 	require.Equal(t, http.StatusOK, response.Code, response.Body.String())
 	require.NoError(t, json.Unmarshal(response.Body.Bytes(), &locale))
 	assert.Equal(t, "locale-default", locale.Sys.ID)
@@ -181,12 +235,33 @@ func TestLocaleHTTPDefaultFallbackLifecycle(t *testing.T) {
 	assert.False(t, locale.ContentDeliveryApi)
 	assert.Equal(t, cm.NewOptInt(9), locale.Sys.Version)
 
-	created := localeHTTPMutation(t, server, http.MethodPost, "", "", `{"name":"Spanish","code":"es-ES","fallbackCode":"default","contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`)
+	created := localeHTTPMutation(t, server, http.MethodPost, "", "", testJSON(map[string]any{
+		"name":                 "Spanish",
+		"code":                 "es-ES",
+		"fallbackCode":         "default",
+		"contentDeliveryApi":   true,
+		"contentManagementApi": true,
+		"optional":             false,
+	}))
 	require.Equal(t, http.StatusCreated, created.Code, created.Body.String())
-	disabled := localeHTTPMutation(t, server, http.MethodPut, "locale-c", "7", `{"name":"Italian","code":"it-IT","fallbackCode":"fr-FR","contentDeliveryApi":false,"contentManagementApi":true,"optional":false}`)
+	disabled := localeHTTPMutation(t, server, http.MethodPut, "locale-c", "7", testJSON(map[string]any{
+		"name":                 "Italian",
+		"code":                 "it-IT",
+		"fallbackCode":         "fr-FR",
+		"contentDeliveryApi":   false,
+		"contentManagementApi": true,
+		"optional":             false,
+	}))
 	require.Equal(t, http.StatusOK, disabled.Code, disabled.Body.String())
 	before := localeCollectionJSON(t, server)
-	rejected := localeHTTPMutation(t, server, http.MethodPost, "", "", `{"name":"Portuguese","code":"pt-PT","fallbackCode":"it-IT","contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`)
+	rejected := localeHTTPMutation(t, server, http.MethodPost, "", "", testJSON(map[string]any{
+		"name":                 "Portuguese",
+		"code":                 "pt-PT",
+		"fallbackCode":         "it-IT",
+		"contentDeliveryApi":   true,
+		"contentManagementApi": true,
+		"optional":             false,
+	}))
 	assert.Equal(t, http.StatusUnprocessableEntity, rejected.Code, rejected.Body.String())
 	assert.JSONEq(t, before, localeCollectionJSON(t, server))
 }
@@ -274,7 +349,14 @@ func localeCollectionJSON(t *testing.T, server *cmt.Server) string {
 func TestLocaleHTTPNoOpAndVersionLocking(t *testing.T) {
 	t.Parallel()
 	server := newLocaleValidationServer(t)
-	body := `{"name":"Original it-IT","code":"it-IT","fallbackCode":"fr-FR","contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`
+	body := testJSON(map[string]any{
+		"name":                 "Original it-IT",
+		"code":                 "it-IT",
+		"fallbackCode":         "fr-FR",
+		"contentDeliveryApi":   true,
+		"contentManagementApi": true,
+		"optional":             false,
+	})
 
 	before := localeCollectionJSON(t, server)
 	for _, version := range []string{"6", "7", "107"} {
@@ -283,7 +365,7 @@ func TestLocaleHTTPNoOpAndVersionLocking(t *testing.T) {
 		assert.JSONEq(t, before, localeCollectionJSON(t, server))
 	}
 
-	changed := strings.Replace(body, "Original it-IT", "", 1)
+	changed := mutateTestJSON(body, func(document map[string]any) { document["name"] = "" })
 	stale := localeHTTPMutation(t, server, http.MethodPut, "locale-c", "6", changed)
 	require.Equal(t, http.StatusConflict, stale.Code)
 	assert.JSONEq(t, before, localeCollectionJSON(t, server))
@@ -307,7 +389,14 @@ func TestLocaleHTTPCodeSyntaxPrecedesVersionCheck(t *testing.T) {
 			t.Parallel()
 			server := newLocaleValidationServer(t)
 			before := localeCollectionJSON(t, server)
-			response := localeHTTPMutation(t, server, http.MethodPut, "locale-c", "6", `{"name":"Changed","code":"`+code+`","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`)
+			response := localeHTTPMutation(t, server, http.MethodPut, "locale-c", "6", testJSON(map[string]any{
+				"name":                 "Changed",
+				"code":                 code,
+				"fallbackCode":         nil,
+				"contentDeliveryApi":   true,
+				"contentManagementApi": true,
+				"optional":             false,
+			}))
 			assert.Equal(t, http.StatusUnprocessableEntity, response.Code, response.Body.String())
 			assert.JSONEq(t, before, localeCollectionJSON(t, server))
 		})
@@ -366,7 +455,14 @@ func TestLocaleHTTPCreateRejectsBlankNames(t *testing.T) {
 
 			server := newLocaleValidationServer(t)
 			before := localeCollectionJSON(t, server)
-			response := localeHTTPMutation(t, server, http.MethodPost, "", "", `{"name":"`+value+`","code":"es-ES","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`)
+			response := localeHTTPMutation(t, server, http.MethodPost, "", "", testJSON(map[string]any{
+				"name":                 value,
+				"code":                 "es-ES",
+				"fallbackCode":         nil,
+				"contentDeliveryApi":   true,
+				"contentManagementApi": true,
+				"optional":             false,
+			}))
 			require.Equal(t, http.StatusUnprocessableEntity, response.Code, response.Body.String())
 			assert.JSONEq(t, before, localeCollectionJSON(t, server))
 		})
