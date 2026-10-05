@@ -17,10 +17,12 @@
 
 - Support implementation claims with repository code or direct experiments; support external behavior and compatibility claims with primary sources or direct experiments. State what was and was not verified.
 - Choose tests for independent behavioral evidence, not assertion count. For request and lifecycle behavior, prefer exact request and version checks plus end-to-end coverage of the affected lifecycle transitions; do not derive expected results from the production logic under test.
+- When changing or reviewing tests, read [Testing](docs/testing.md).
 - Before choosing checks, read the [validation scope](DEVELOPMENT.md#validation-scope) and the command sections relevant to the change: [generation](DEVELOPMENT.md#code-generation), [tests](DEVELOPMENT.md#tests), or [linting](DEVELOPMENT.md#linting). Once appropriate checks pass, broaden or repeat them only for new changes, failures, or unresolved concerns.
 
 ## Documentation and workflow
 
+- When writing or reviewing documentation, read the [documentation practices](docs/design/provider-documentation.md).
 - Keep durable documentation current: record user-visible contracts, invariants, evidence, and limitations; do not retain dated audit inventories, cleanup chronology, or completed plans.
 - Leave unrelated concerns out of each change, preserve unrelated worktree changes, and use a separate worktree and pull request when concurrently pursuing an independent concern; keep history reviewable.
 - After changing a schema or another input to generated code or documentation, run `go generate ./...` and inspect both tracked changes and untracked output.

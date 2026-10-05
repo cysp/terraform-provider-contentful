@@ -126,6 +126,16 @@ See HashiCorp's [state checks](https://developer.hashicorp.com/terraform/plugin/
 [plan checks](https://developer.hashicorp.com/terraform/plugin/testing/acceptance-tests/plan-checks),
 and [test step reference](https://pkg.go.dev/github.com/hashicorp/terraform-plugin-testing/helper/resource#TestStep).
 
+## Reviewing test consolidation
+
+When removing or combining tests, account for each affected behavior and lifecycle
+transition in the pull request or review. Identify the replacement evidence at
+the phase where the behavior occurs: importing a value does not prove Create
+writes it, and checking state after refresh does not prove import produced it.
+Use a targeted negative control when replacement coverage is uncertain, and
+record the observed failure. Keep this evidence with the change rather than
+maintaining a separate coverage inventory.
+
 ## Terraform fixtures
 
 Use `config.TestNameDirectory()` for a fixture owned by one test and
