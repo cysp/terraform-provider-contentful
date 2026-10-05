@@ -340,8 +340,8 @@ func completeWebhookMutationResponse() cm.WebhookDefinition {
 func cmWebhookEqualsFilter(value string) cm.WebhookDefinitionFilter {
 	return cm.WebhookDefinitionFilter{
 		Equals: cm.WebhookDefinitionFilterEquals{
-			[]byte(`{"doc":"sys.type"}`),
-			[]byte(`"` + value + `"`),
+			[]byte(testJSON(map[string]any{"doc": "sys.type"})),
+			[]byte(testJSON(value)),
 		},
 	}
 }
@@ -585,14 +585,14 @@ func TestCompleteEditorInterfacePlanRejectsIndependentAttributeContradictions(t 
 				groupControls, ok := response.GroupControls.Get()
 				require.True(t, ok)
 
-				groupControls[0].Settings = []byte(`{"different":true}`)
+				groupControls[0].Settings = []byte(testJSON(map[string]any{"different": true}))
 				response.GroupControls.SetTo(groupControls)
 			},
 			expectedPath: "group_controls",
 			stateValue: func(state EditorInterfaceModel) string {
 				return state.GroupControls.Elements()[0].Value().Settings.ValueString()
 			},
-			expectedStateValue: `{"different":true}`,
+			expectedStateValue: testJSON(map[string]any{"different": true}),
 		},
 		"sidebar settings": {
 			mutate: func(t *testing.T, _ *EditorInterfaceModel, response *cm.EditorInterface) {
@@ -601,14 +601,14 @@ func TestCompleteEditorInterfacePlanRejectsIndependentAttributeContradictions(t 
 				sidebar, ok := response.Sidebar.Get()
 				require.True(t, ok)
 
-				sidebar[0].Settings = []byte(`{"different":true}`)
+				sidebar[0].Settings = []byte(testJSON(map[string]any{"different": true}))
 				response.Sidebar.SetTo(sidebar)
 			},
 			expectedPath: "sidebar",
 			stateValue: func(state EditorInterfaceModel) string {
 				return state.Sidebar.Elements()[0].Value().Settings.ValueString()
 			},
-			expectedStateValue: `{"different":true}`,
+			expectedStateValue: testJSON(map[string]any{"different": true}),
 		},
 	}
 

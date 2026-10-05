@@ -56,7 +56,7 @@ func contentfulRetryTestResponse(request *http.Request, status int) *http.Respon
 	return &http.Response{
 		StatusCode: status,
 		Header:     make(http.Header),
-		Body:       io.NopCloser(strings.NewReader(`{}`)),
+		Body:       io.NopCloser(strings.NewReader(testJSON(map[string]any{}))),
 		Request:    request,
 	}
 }
@@ -146,7 +146,7 @@ func TestGeneratedLifecycleMutationRequestsPreserveNoRetrySignal(t *testing.T) {
 
 				response := contentfulRetryTestResponse(request, http.StatusTooManyRequests)
 				response.Header.Set("Content-Type", "application/json")
-				response.Body = io.NopCloser(strings.NewReader(`{"sys":{"type":"Error","id":"RateLimitExceeded"},"message":"rate limit"}`))
+				response.Body = io.NopCloser(strings.NewReader(testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "RateLimitExceeded"}, "message": "rate limit"})))
 
 				return response, nil
 			})}
@@ -280,7 +280,7 @@ func TestContentfulHTTPClientWiresMutationNoRetryPolicy(t *testing.T) {
 				client, retryClient := contentfulRetryTestClient(t, baseClient)
 				removeContentfulRetryTestDelay(retryClient)
 
-				request, err := http.NewRequestWithContext(t.Context(), method, "https://api.test.contentful.com/resource", strings.NewReader(`{"fields":{}}`))
+				request, err := http.NewRequestWithContext(t.Context(), method, "https://api.test.contentful.com/resource", strings.NewReader(testJSON(map[string]any{"fields": map[string]any{}})))
 				require.NoError(t, err)
 
 				response, err := client.Do(request)
@@ -298,7 +298,7 @@ func TestContentfulHTTPClientWiresMutationNoRetryPolicy(t *testing.T) {
 
 					body, readErr := io.ReadAll(response.Body)
 					require.NoError(t, readErr)
-					assert.Equal(t, []byte(`{}`), body)
+					assert.Equal(t, []byte(testJSON(map[string]any{})), body)
 				}
 
 				assert.EqualValues(t, 1, requestCount.Load())
@@ -345,7 +345,10 @@ func TestContentfulHTTPClientRetriesVersionedPutAfterExplicitRateLimit(t *testin
 	client, retryClient := contentfulRetryTestClient(t, baseClient)
 	removeContentfulRetryTestDelay(retryClient)
 
-	payload := []byte(`{"fields":{"title":{"en-AU":"unchanged"}},"metadata":{"tags":[]}}`)
+	payload := []byte(testJSON(map[string]any{
+		"fields":   map[string]any{"title": map[string]any{"en-AU": "unchanged"}},
+		"metadata": map[string]any{"tags": []any{}},
+	}))
 	request, err := http.NewRequestWithContext(
 		t.Context(),
 		http.MethodPut,
@@ -396,7 +399,7 @@ func TestContentfulHTTPClientRetriesMoreThanFourConsecutiveRateLimits(t *testing
 	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
 	t.Cleanup(cancel)
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(`{}`))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(testJSON(map[string]any{})))
 	require.NoError(t, err)
 
 	response, err := contentfulRetryTestDoWithin(t, client, request)
@@ -445,7 +448,7 @@ func TestContentfulHTTPClientDeclinesRateLimitRetryBeyondDeadline(t *testing.T) 
 
 		response := contentfulRetryTestResponse(request, http.StatusTooManyRequests)
 		response.Header.Set("X-Contentful-Ratelimit-Reset", "900")
-		response.Body = io.NopCloser(strings.NewReader(`{"message":"rate limited"}`))
+		response.Body = io.NopCloser(strings.NewReader(testJSON(map[string]any{"message": "rate limited"})))
 
 		return response, nil
 	})}
@@ -467,7 +470,7 @@ func TestContentfulHTTPClientDeclinesRateLimitRetryBeyondDeadline(t *testing.T) 
 
 	assert.Equal(t, http.StatusTooManyRequests, response.StatusCode)
 	assert.Equal(t, "900", response.Header.Get("X-Contentful-Ratelimit-Reset"))
-	assert.Equal(t, []byte(`{"message":"rate limited"}`), body) //nolint:testifylint // byte preservation, not JSON equivalence, is the contract.
+	assert.Equal(t, []byte(testJSON(map[string]any{"message": "rate limited"})), body)
 	assert.EqualValues(t, 1, requestCount.Load())
 	assert.NoError(t, ctx.Err())
 }
@@ -492,7 +495,7 @@ func TestContentfulHTTPClientRetriesWhenRateLimitBackoffFitsDeadline(t *testing.
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
 	t.Cleanup(cancel)
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(`{}`))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(testJSON(map[string]any{})))
 	require.NoError(t, err)
 
 	response, err := client.Do(request)
@@ -517,7 +520,7 @@ func TestContentfulRetryCoordinatorReusesDeadlineCheckedBackoff(t *testing.T) {
 	ctx = context.WithValue(ctx, contentfulRequestMethodContextKey{}, http.MethodPost)
 	ctx = context.WithValue(ctx, contentfulRequestRetryStateContextKey{}, retryState)
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(`{}`))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(testJSON(map[string]any{})))
 	require.NoError(t, err)
 
 	response := contentfulRetryTestResponse(request, http.StatusTooManyRequests)
@@ -790,7 +793,7 @@ func TestContentfulHTTPClientStopsWhenContextIsCancelled(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	t.Cleanup(cancel)
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPut, "https://api.test.contentful.com/resource", strings.NewReader(`{}`))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPut, "https://api.test.contentful.com/resource", strings.NewReader(testJSON(map[string]any{})))
 	require.NoError(t, err)
 
 	result := make(chan error, 1)
@@ -916,7 +919,7 @@ func TestContentfulHTTPClientAppliesDefaultDeadlineOnlyWhenMissing(t *testing.T)
 			response := contentfulRetryTestResponse(request, http.StatusOK)
 			response.Body = contentfulRetryTestContextBody{
 				contextErr: request.Context().Err,
-				reader:     strings.NewReader(`{"ok":true}`),
+				reader:     strings.NewReader(testJSON(map[string]any{"ok": true})),
 			}
 
 			return response, nil
@@ -935,7 +938,7 @@ func TestContentfulHTTPClientAppliesDefaultDeadlineOnlyWhenMissing(t *testing.T)
 		require.NoError(t, err)
 
 		assert.WithinDuration(t, started.Add(defaultResourceOperationTimeout), observedDeadline, time.Second)
-		assert.Equal(t, `{"ok":true}`, string(body))
+		assert.Equal(t, testJSON(map[string]any{"ok": true}), string(body))
 	})
 
 	t.Run("existing deadline", func(t *testing.T) {

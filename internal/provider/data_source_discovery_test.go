@@ -60,7 +60,7 @@ func TestAccDiscoveryDataSourcesComposition(t *testing.T) {
 			statecheck.ExpectKnownValue("data.contentful_locales.test", tfjsonpath.New("locales").AtSliceIndex(0).AtMapKey("locale_id"), knownvalue.StringExact("item-b")),
 			statecheck.ExpectKnownValue("data.contentful_locale.test", tfjsonpath.New("code"), knownvalue.StringExact("en-GB")),
 			statecheck.ExpectKnownValue("data.contentful_locale.test", tfjsonpath.New("fallback_code"), knownvalue.Null()),
-			statecheck.ExpectKnownValue("contentful_entry.localized", tfjsonpath.New("fields").AtMapKey("title"), knownvalue.StringExact(`{"en-GB":"Hello"}`)),
+			statecheck.ExpectKnownValue("contentful_entry.localized", tfjsonpath.New("fields").AtMapKey("title"), knownvalue.StringExact(testJSON(map[string]any{"en-GB": "Hello"}))),
 		}},
 		{ConfigDirectory: config.TestNameDirectory(), PlanOnly: true},
 	}})

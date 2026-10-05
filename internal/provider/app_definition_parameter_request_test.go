@@ -38,7 +38,7 @@ func TestAppDefinitionParameterToRequestRejectsUnresolvedJSON(t *testing.T) {
 			model: AppDefinitionParameter{
 				Default: jsontypes.NewNormalizedNull(),
 				Options: NewTypedList([]jsontypes.Normalized{
-					jsontypes.NewNormalizedValue(`"known"`),
+					jsontypes.NewNormalizedValue(testJSON("known")),
 					jsontypes.NewNormalizedUnknown(),
 				}),
 			},
@@ -48,7 +48,7 @@ func TestAppDefinitionParameterToRequestRejectsUnresolvedJSON(t *testing.T) {
 			model: AppDefinitionParameter{
 				Default: jsontypes.NewNormalizedNull(),
 				Options: NewTypedList([]jsontypes.Normalized{
-					jsontypes.NewNormalizedValue(`"known"`),
+					jsontypes.NewNormalizedValue(testJSON("known")),
 					jsontypes.NewNormalizedNull(),
 				}),
 			},

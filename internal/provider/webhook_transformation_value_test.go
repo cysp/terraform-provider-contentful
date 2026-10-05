@@ -108,7 +108,7 @@ func TestWebhookTransformationValueConversion(t *testing.T) {
 			"method":                 types.StringValue("method"),
 			"content_type":           types.StringValue("content_type"),
 			"include_content_length": types.BoolValue(true),
-			"body":                   NewNormalizedJSONValue([]byte("{}")),
+			"body":                   NewNormalizedJSONValue([]byte(testJSON(map[string]any{}))),
 		})),
 	}
 
@@ -171,7 +171,7 @@ func TestWebhookTransformationTypeValueFromObject(t *testing.T) {
 			"method":                 types.StringValue("method"),
 			"content_type":           types.StringValue("content_type"),
 			"include_content_length": types.BoolValue(true),
-			"body":                   NewNormalizedJSONValue([]byte("{}")),
+			"body":                   NewNormalizedJSONValue([]byte(testJSON(map[string]any{}))),
 		})
 		require.Empty(t, diags)
 		require.False(t, diags.HasError())

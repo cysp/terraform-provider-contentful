@@ -53,7 +53,10 @@ func TestAccEntryResourceFailedPublishRecoversExactDraftWithoutRefresh(t *testin
 					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
 					require.Equal(t, []string{strconv.Itoa(preUpdateVersion)}, update.versionValues)
 					require.Empty(t, update.contentTypeValues)
-					require.JSONEq(t, `{"fields":{"managed":{"en-US":"two"}},"metadata":{"concepts":[],"tags":[]}}`, string(update.body))
+					require.JSONEq(t, testJSON(map[string]any{
+						"fields":   map[string]any{"managed": map[string]any{"en-US": "two"}},
+						"metadata": map[string]any{"concepts": []any{}, "tags": []any{}},
+					}), string(update.body))
 
 					entry := getTestEntry(t, server)
 					draftVersion = entry.Sys.Version
@@ -140,7 +143,10 @@ func TestAccEntryResourceUpdateDoesNotRecreateExternallyDeletedEntryWithoutRefre
 					requireEntryUpdate(t, update)
 					require.Equal(t, []string{strconv.Itoa(priorVersion)}, update.versionValues)
 					require.Empty(t, update.contentTypeValues)
-					require.JSONEq(t, `{"fields":{"managed":{"en-US":"two"}},"metadata":{"concepts":[],"tags":[]}}`, string(update.body))
+					require.JSONEq(t, testJSON(map[string]any{
+						"fields":   map[string]any{"managed": map[string]any{"en-US": "two"}},
+						"metadata": map[string]any{"concepts": []any{}, "tags": []any{}},
+					}), string(update.body))
 
 					getResponse, err := fixture.server.Handler().GetEntry(t.Context(), cm.GetEntryParams{
 						SpaceID: "space", EnvironmentID: "environment", EntryID: "entry",
@@ -319,12 +325,12 @@ func TestAccEntryResourceChangedConfigAuthorsAndPublishesNewDraftWithoutRefresh(
 				Check: func(state *terraform.State) error {
 					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
 					require.Equal(t, "3", update.version, "the new draft must be fenced by the exact current draft version")
-					require.JSONEq(t, `{"en-US":"three"}`, string(update.fields["managed"]))
+					require.JSONEq(t, testJSON(map[string]any{"en-US": "three"}), string(update.fields["managed"]))
 					require.Equal(t, "4", publish.version, "only the replacement draft may be published")
 
 					entry := getTestEntry(t, server)
 					require.Equal(t, 4, entry.Sys.PublishedVersion.Or(0))
-					require.JSONEq(t, `{"en-US":"three"}`, string(entry.Fields.Value["managed"]))
+					require.JSONEq(t, testJSON(map[string]any{"en-US": "three"}), string(entry.Fields.Value["managed"]))
 					require.NoError(t, resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "4")(state))
 
 					return nil
@@ -365,7 +371,7 @@ func TestAccEntryResourceAmbiguousDraftWriteIsNotClaimedAfterRefresh(t *testing.
 				entry := getTestEntry(t, server)
 				require.Equal(t, writtenFromVersion+1, entry.Sys.Version)
 				require.Less(t, entry.Sys.PublishedVersion.Or(0), entry.Sys.Version)
-				require.JSONEq(t, `{"en-US":"two"}`, string(entry.Fields.Value["managed"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "two"}), string(entry.Fields.Value["managed"]))
 
 				recorder.reset()
 			},
@@ -453,7 +459,10 @@ resource "contentful_entry" "test" {
 							require.Equal(t, test.draftPath, draft.path)
 							require.Empty(t, draft.versionValues)
 							require.Equal(t, []string{"article"}, draft.contentTypeValues)
-							require.JSONEq(t, `{"fields":{"managed":{"en-US":"one"}},"metadata":{"concepts":[],"tags":[]}}`, string(draft.body))
+							require.JSONEq(t, testJSON(map[string]any{
+								"fields":   map[string]any{"managed": map[string]any{"en-US": "one"}},
+								"metadata": map[string]any{"concepts": []any{}, "tags": []any{}},
+							}), string(draft.body))
 							require.Positive(t, draft.contentLength)
 							requireEntryPublish(t, publish, entryTestCollectionPath+"/"+entryID+"/published")
 
@@ -489,7 +498,7 @@ resource "contentful_entry" "test" {
 							entry := getTestEntryForIDs(t, fixture.server, "space", "environment", entryID)
 							require.Positive(t, entry.Sys.PublishedVersion.Or(0))
 							require.Equal(t, "article", entry.Sys.ContentType.Sys.ID)
-							require.JSONEq(t, `{"en-US":"one"}`, string(entry.Fields.Value["managed"]))
+							require.JSONEq(t, testJSON(map[string]any{"en-US": "one"}), string(entry.Fields.Value["managed"]))
 
 							recorder.reset()
 
@@ -540,7 +549,10 @@ func TestAccEntryResourceUpdateUsesExactArbitraryPositiveReturnedVersion(t *test
 				update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
 				require.Equal(t, []string{strconv.Itoa(preUpdateVersion)}, update.versionValues)
 				require.Empty(t, update.contentTypeValues)
-				require.JSONEq(t, `{"fields":{"managed":{"en-US":"two"}},"metadata":{"concepts":[],"tags":[]}}`, string(update.body))
+				require.JSONEq(t, testJSON(map[string]any{
+					"fields":   map[string]any{"managed": map[string]any{"en-US": "two"}},
+					"metadata": map[string]any{"concepts": []any{}, "tags": []any{}},
+				}), string(update.body))
 
 				observed := versionFault.snapshotObservation()
 				require.Greater(t, observed.draftVersion, preUpdateVersion)
@@ -628,7 +640,7 @@ func TestAccEntryResourceHigherPostPublishVersionIsAccepted(t *testing.T) {
 				Config: config("two"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("published_version"), knownvalue.Int64Exact(3)),
-					statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields").AtMapKey("managed"), knownvalue.StringExact(`{"en-US":"two"}`)),
+					statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields").AtMapKey("managed"), knownvalue.StringExact(testJSON(map[string]any{"en-US": "two"}))),
 				},
 			},
 			{
@@ -637,7 +649,7 @@ func TestAccEntryResourceHigherPostPublishVersionIsAccepted(t *testing.T) {
 				Check: func(*terraform.State) error {
 					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
 					require.Equal(t, "6", update.version)
-					require.JSONEq(t, `{"en-US":"three"}`, string(update.fields["managed"]))
+					require.JSONEq(t, testJSON(map[string]any{"en-US": "three"}), string(update.fields["managed"]))
 					require.Equal(t, "7", publish.version)
 
 					entry := getTestEntry(t, server)

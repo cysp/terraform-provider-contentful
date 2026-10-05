@@ -56,14 +56,14 @@ func TestWebhookTransformationRequestValues(t *testing.T) {
 				"method":                 types.StringValue("POST"),
 				"content_type":           types.StringValue("application/json"),
 				"include_content_length": types.BoolValue(true),
-				"body":                   NewNormalizedJSONValue([]byte(`{"key":"value"}`)),
+				"body":                   NewNormalizedJSONValue([]byte(testJSON(map[string]any{"key": "value"}))),
 			}),
 			expected: cm.NewOptNilWebhookDefinitionDataTransformation(
 				cm.WebhookDefinitionDataTransformation{
 					Method:               cm.NewOptString("POST"),
 					ContentType:          cm.NewOptString("application/json"),
 					IncludeContentLength: cm.NewOptBool(true),
-					Body:                 []byte(`{"key":"value"}`),
+					Body:                 []byte(testJSON(map[string]any{"key": "value"})),
 				},
 			),
 		},

@@ -71,14 +71,28 @@ func TestAccAppActionResourceSpecifiedID(t *testing.T) {
 	require.Len(t, requests, 5)
 	assert.Equal(t, http.MethodPost, requests[0].method)
 	assert.Equal(t, actionCollectionPath, requests[0].path)
-	assert.JSONEq(t, `{"id":"chosenAction","name":"Action","category":"Custom","type":"function-invocation","function":{"sys":{"type":"Link","linkType":"Function","id":"function"}},"parameters":[]}`, requests[0].body)
+	assert.JSONEq(t, testJSON(map[string]any{
+		"id":         "chosenAction",
+		"name":       "Action",
+		"category":   "Custom",
+		"type":       "function-invocation",
+		"function":   map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "function"}},
+		"parameters": []any{},
+	}), requests[0].body)
 	assert.Equal(t, http.MethodPut, requests[1].method)
 	assert.Equal(t, actionCollectionPath+"/chosenAction", requests[1].path)
 	assert.JSONEq(t, actionLegacyBody, requests[1].body)
 	assert.Equal(t, http.MethodDelete, requests[2].method)
 	assert.Equal(t, actionCollectionPath+"/chosenAction", requests[2].path)
 	assert.Equal(t, http.MethodPost, requests[3].method)
-	assert.JSONEq(t, `{"id":"secondAction","name":"Action","category":"Custom","type":"function-invocation","function":{"sys":{"type":"Link","linkType":"Function","id":"function"}},"parameters":[]}`, requests[3].body)
+	assert.JSONEq(t, testJSON(map[string]any{
+		"id":         "secondAction",
+		"name":       "Action",
+		"category":   "Custom",
+		"type":       "function-invocation",
+		"function":   map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "function"}},
+		"parameters": []any{},
+	}), requests[3].body)
 	assert.Equal(t, http.MethodDelete, requests[4].method)
 	assert.Equal(t, actionCollectionPath+"/secondAction", requests[4].path)
 }
@@ -120,7 +134,14 @@ func TestAccAppActionResourceEndpointSpecifiedIDPassThrough(t *testing.T) {
 	defer requestMutex.Unlock()
 
 	require.Len(t, postBodies, 1)
-	assert.JSONEq(t, `{"id":"chosenAction","name":"Action","category":"Custom","type":"endpoint","url":"https://example.invalid/action","parameters":[]}`, postBodies[0])
+	assert.JSONEq(t, testJSON(map[string]any{
+		"id":         "chosenAction",
+		"name":       "Action",
+		"category":   "Custom",
+		"type":       "endpoint",
+		"url":        "https://example.invalid/action",
+		"parameters": []any{},
+	}), postBodies[0])
 }
 
 func TestAccAppActionResourceSpecifiedIDCreateWithoutPreflight(t *testing.T) {
@@ -131,7 +152,7 @@ func TestAccAppActionResourceSpecifiedIDCreateWithoutPreflight(t *testing.T) {
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 	_, err = server.Handler().CreateAppAction(t.Context(), &cm.AppActionCreateData{
 		ID: cm.NewOptString("chosenAction"), Name: "Existing", Category: "Custom", Type: "function-invocation",
-		Function: cm.NewOptFunctionLink(cm.NewFunctionLink("existingFunction")), Parameters: []byte(`[]`),
+		Function: cm.NewOptFunctionLink(cm.NewFunctionLink("existingFunction")), Parameters: []byte(testJSON([]any{})),
 	}, cm.CreateAppActionParams{OrganizationID: "org", AppDefinitionID: "app"})
 	require.NoError(t, err)
 

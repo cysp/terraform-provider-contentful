@@ -96,15 +96,34 @@ func TestAccContentTypeResourceFailedCreateActivationRecoversExactDraft(t *testi
 							VersionPresent: true,
 						},
 					}, handler.eventHistory())
-					require.JSONEq(t, `{
-					"name":"Test",
-					"description":"Test content type (create-activation-failure)",
-					"displayField":"name",
-					"fields":[
-						{"id":"name","name":"Name","type":"Symbol","localized":false,"required":true,"disabled":false,"omitted":false,"validations":[]},
-						{"id":"flags","name":"Flags","type":"Array","localized":false,"required":false,"disabled":false,"omitted":false,"validations":[],"items":{"type":"Symbol","validations":[]}}
-					]
-				}`, string(handler.lastPutBody()))
+					require.JSONEq(t, testJSON(map[string]any{
+						"name":         "Test",
+						"description":  "Test content type (create-activation-failure)",
+						"displayField": "name",
+						"fields": []any{
+							map[string]any{
+								"id":          "name",
+								"name":        "Name",
+								"type":        "Symbol",
+								"localized":   false,
+								"required":    true,
+								"disabled":    false,
+								"omitted":     false,
+								"validations": []any{},
+							},
+							map[string]any{
+								"id":          "flags",
+								"name":        "Flags",
+								"type":        "Array",
+								"localized":   false,
+								"required":    false,
+								"disabled":    false,
+								"omitted":     false,
+								"validations": []any{},
+								"items":       map[string]any{"type": "Symbol", "validations": []any{}},
+							},
+						},
+					}), string(handler.lastPutBody()))
 					handler.failActivation.Store(false)
 					handler.resetRequestHistory()
 				},
@@ -160,15 +179,34 @@ func TestAccContentTypeResourceCreateUsesExactPositiveReturnedVersion(t *testing
 				}, handler.eventHistory())
 				raw := handler.rawRequestHistory()
 				require.Len(t, raw, 2)
-				require.JSONEq(t, `{
-					"name":"Test",
-					"description":"Test content type (create-positive-version)",
-					"displayField":"name",
-					"fields":[
-						{"id":"name","name":"Name","type":"Symbol","localized":false,"required":true,"disabled":false,"omitted":false,"validations":[]},
-						{"id":"flags","name":"Flags","type":"Array","localized":false,"required":false,"disabled":false,"omitted":false,"validations":[],"items":{"type":"Symbol","validations":[]}}
-					]
-				}`, string(raw[0].Body))
+				require.JSONEq(t, testJSON(map[string]any{
+					"name":         "Test",
+					"description":  "Test content type (create-positive-version)",
+					"displayField": "name",
+					"fields": []any{
+						map[string]any{
+							"id":          "name",
+							"name":        "Name",
+							"type":        "Symbol",
+							"localized":   false,
+							"required":    true,
+							"disabled":    false,
+							"omitted":     false,
+							"validations": []any{},
+						},
+						map[string]any{
+							"id":          "flags",
+							"name":        "Flags",
+							"type":        "Array",
+							"localized":   false,
+							"required":    false,
+							"disabled":    false,
+							"omitted":     false,
+							"validations": []any{},
+							"items":       map[string]any{"type": "Symbol", "validations": []any{}},
+						},
+					},
+				}), string(raw[0].Body))
 				require.Empty(t, raw[1].Body)
 				require.Zero(t, raw[1].ContentLength)
 				require.Equal(t, []string{"4"}, raw[1].VersionValues)
@@ -667,15 +705,33 @@ func TestAccContentTypeResourceFailedUpdateActivationRecoversExactDraftWithoutRe
 							VersionPresent: true,
 						},
 					}, handler.eventHistory())
-					require.JSONEq(t, `{
-						"name":"Test",
-						"description":"Test content type (update-activation-failure)",
-						"displayField":"name",
-						"fields":[
-							{"id":"name","name":"Name","type":"Symbol","localized":false,"required":true,"disabled":false,"omitted":false,"validations":[]},
-							{"id":"slug","name":"Slug","type":"Symbol","localized":false,"required":true,"disabled":false,"omitted":false,"validations":[]}
-						]
-					}`, string(handler.lastPutBody()))
+					require.JSONEq(t, testJSON(map[string]any{
+						"name":         "Test",
+						"description":  "Test content type (update-activation-failure)",
+						"displayField": "name",
+						"fields": []any{
+							map[string]any{
+								"id":          "name",
+								"name":        "Name",
+								"type":        "Symbol",
+								"localized":   false,
+								"required":    true,
+								"disabled":    false,
+								"omitted":     false,
+								"validations": []any{},
+							},
+							map[string]any{
+								"id":          "slug",
+								"name":        "Slug",
+								"type":        "Symbol",
+								"localized":   false,
+								"required":    true,
+								"disabled":    false,
+								"omitted":     false,
+								"validations": []any{},
+							},
+						},
+					}), string(handler.lastPutBody()))
 					handler.failActivation.Store(false)
 					handler.resetRequestHistory()
 				},

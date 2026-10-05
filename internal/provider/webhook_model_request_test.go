@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//nolint:dupl // Keep independently authored fixtures and expectations explicit.
 func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 	t.Parallel()
 
@@ -135,7 +136,7 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 					"method":                 types.StringValue("POST"),
 					"content_type":           types.StringValue("application/json"),
 					"include_content_length": types.BoolValue(true),
-					"body":                   NewNormalizedJSONValue([]byte("{\"key\":\"value\"}")),
+					"body":                   NewNormalizedJSONValue([]byte(testJSON(map[string]any{"key": "value"}))),
 				})),
 			},
 			expected: cm.WebhookDefinitionData{
@@ -149,7 +150,7 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 					Method:               cm.NewOptString("POST"),
 					ContentType:          cm.NewOptString("application/json"),
 					IncludeContentLength: cm.NewOptBool(true),
-					Body:                 []byte("{\"key\":\"value\"}"),
+					Body:                 []byte(testJSON(map[string]any{"key": "value"})),
 				}},
 			},
 		},
@@ -170,27 +171,27 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 				HttpBasicPassword: cm.NewOptNilStringNull(),
 				Filters: cm.NewOptNilWebhookDefinitionFilterArray([]cm.WebhookDefinitionFilter{
 					{
-						Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"abc"`)},
+						Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("abc"))},
 					},
 					{
-						In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.type"}`), []byte(`["abc","def"]`)},
+						In: cm.WebhookDefinitionFilterIn{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON([]any{"abc", "def"}))},
 					},
 					{
-						Regexp: cm.WebhookDefinitionFilterRegexp{[]byte(`{"doc":"sys.type"}`), []byte(`{"pattern":"abc.*"}`)},
+						Regexp: cm.WebhookDefinitionFilterRegexp{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON(map[string]any{"pattern": "abc.*"}))},
 					},
 					{
 						Not: cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{
-							Equals: cm.WebhookDefinitionFilterEquals{[]byte(`{"doc":"sys.type"}`), []byte(`"abc"`)},
+							Equals: cm.WebhookDefinitionFilterEquals{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON("abc"))},
 						}),
 					},
 					{
 						Not: cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{
-							In: cm.WebhookDefinitionFilterIn{[]byte(`{"doc":"sys.type"}`), []byte(`["abc","def"]`)},
+							In: cm.WebhookDefinitionFilterIn{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON([]any{"abc", "def"}))},
 						}),
 					},
 					{
 						Not: cm.NewOptWebhookDefinitionFilterNot(cm.WebhookDefinitionFilterNot{
-							Regexp: cm.WebhookDefinitionFilterRegexp{[]byte(`{"doc":"sys.type"}`), []byte(`{"pattern":"abc.*"}`)},
+							Regexp: cm.WebhookDefinitionFilterRegexp{[]byte(testJSON(map[string]any{"doc": "sys.type"})), []byte(testJSON(map[string]any{"pattern": "abc.*"}))},
 						}),
 					},
 				}),

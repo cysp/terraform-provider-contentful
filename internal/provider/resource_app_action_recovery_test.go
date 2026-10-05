@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestAccAppActionResourceRecoveryState(t *testing.T) {
 	t.Parallel()
 
@@ -76,17 +77,18 @@ func TestAccAppActionResourceRecoveryState(t *testing.T) {
 
 				if r.Method == mutation.method && contradict.Swap(false) {
 					// Only the response differs: refresh cannot supply the recovery checkpoint.
-					body = strings.Replace(body, `"name":"Planned"`, `"name":"Returned","resultSchema":{"type":"string"}`, 1)
-					body = strings.Replace(body, `"message":{"type":"string"}`, `"returned":{"type":"boolean"}`, 1)
-					body = strings.Replace(body, `"id":"org"`, `"id":"wrong-org"`, 1)
-					body = strings.Replace(body, `"id":"app"`, `"id":"wrong-app"`, 1)
-					assert.Contains(t, body, `"id":"wrong-org"`)
-					assert.Contains(t, body, `"id":"wrong-app"`)
-					// Create has no requested action ID to pin; retain its generated ID.
-					if mutation.method == http.MethodPut {
-						body = strings.Replace(body, `"id":"`+actionID+`"`, `"id":"wrong-action"`, 1)
-						assert.Contains(t, body, `"id":"wrong-action"`)
-					}
+					body = mutateTestJSON(body, func(document map[string]any) {
+						document["name"] = "Returned"
+						document["resultSchema"] = map[string]any{"type": "string"}
+						document["parametersSchema"] = map[string]any{"type": "object", "properties": map[string]any{"returned": map[string]any{"type": "boolean"}}}
+						sys := document["sys"].(map[string]any)
+						sys["organization"].(map[string]any)["sys"].(map[string]any)["id"] = "wrong-org"
+						sys["appDefinition"].(map[string]any)["sys"].(map[string]any)["id"] = "wrong-app"
+						// Create retains the generated action ID.
+						if mutation.method == http.MethodPut {
+							sys["id"] = "wrong-action"
+						}
+					})
 				}
 
 				w.WriteHeader(response.Code)
@@ -118,8 +120,8 @@ func TestAccAppActionResourceRecoveryState(t *testing.T) {
 				Config: planned,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("name"), knownvalue.StringExact("Returned"))},
-					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("parameters_schema"), knownvalue.StringExact(`{"properties":{"returned":{"type":"boolean"}},"type":"object"}`))},
-					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("result_schema"), knownvalue.StringExact(`{"type":"string"}`))},
+					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("parameters_schema"), knownvalue.StringExact(testJSON(map[string]any{"properties": map[string]any{"returned": map[string]any{"type": "boolean"}}, "type": "object"})))},
+					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("result_schema"), knownvalue.StringExact(testJSON(map[string]any{"type": "string"})))},
 					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("organization_id"), knownvalue.StringExact("org"))},
 					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("app_definition_id"), knownvalue.StringExact("app"))},
 					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("app_action_id"), recordID(&recoveryID))},

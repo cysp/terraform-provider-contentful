@@ -28,13 +28,13 @@ func TestAccEntryListResourceQuery(t *testing.T) {
 
 	server.SetEntry(spaceID, environmentID, "author", "4qDT3lHMSFBrdipOx69tGH", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"name": jx.Raw(`{"en-AU":"name"}`),
+			"name": jx.Raw(testJSON(map[string]any{"en-AU": "name"})),
 		}),
 	})
 
 	server.SetEntry(spaceID, environmentID, "author", "author2", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"first_name": jx.Raw(`{"en-US":"Author 2"}`),
+			"first_name": jx.Raw(testJSON(map[string]any{"en-US": "Author 2"})),
 		}),
 	})
 
@@ -42,7 +42,7 @@ func TestAccEntryListResourceQuery(t *testing.T) {
 
 	server.SetEntry(spaceID, environmentID, "post", "post1", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"title": jx.Raw(`{"en-US":"Post 1"}`),
+			"title": jx.Raw(testJSON(map[string]any{"en-US": "Post 1"})),
 		}),
 	})
 
@@ -116,7 +116,7 @@ func TestAccEntryListResourceQuery(t *testing.T) {
 						{
 							Path: tfjsonpath.New("fields"),
 							KnownValue: knownvalue.MapExact(map[string]knownvalue.Check{
-								"name": knownvalue.StringExact(`{"en-AU":"name"}`),
+								"name": knownvalue.StringExact(testJSON(map[string]any{"en-AU": "name"})),
 							}),
 						},
 						{

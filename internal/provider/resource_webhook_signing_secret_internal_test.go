@@ -29,8 +29,14 @@ import (
 
 // This fixture contains only opaque redaction metadata.
 //
-//nolint:gosec
-const webhookSigningSecretTestResponse = `{"sys":{"type":"WebhookSigningSecret","space":{"sys":{"type":"Link","linkType":"Space","id":"space"}}},"redactedValue":"opaque"}`
+
+var webhookSigningSecretTestResponse = testJSON(map[string]any{
+	"sys": map[string]any{
+		"type":  "WebhookSigningSecret",
+		"space": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+	},
+	"redactedValue": "opaque",
+})
 
 const (
 	webhookSigningSecretTestValue        = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"
@@ -121,32 +127,77 @@ func TestWebhookSigningSecretSuccessLogsRedactValues(t *testing.T) {
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestWebhookSigningSecretFailuresRetainStateAndRedactKnownValues(t *testing.T) {
 	t.Parallel()
 
-	const sentinel = "UPSTREAM_DETAIL"
-
 	errorsByName := map[string]struct {
 		status int
-		body   string
+		body   func(string) string
 	}{
-		"bad request":       {400, `{"sys":{"type":"Error","id":"BadRequest"},"message":"Invalid request payload JSON format"}`},
-		"validation echo":   {422, `{"sys":{"type":"Error","id":"ValidationFailed"},"message":"Validation error","details":{"errors":[{"details":"Expected string","path":["value"],"value":"` + sentinel + `"}]}}`},
-		"auth":              {401, `{"sys":{"type":"Error","id":"AccessDenied"},"message":"` + sentinel + `"}`},
-		"forbidden":         {403, `{"sys":{"type":"Error","id":"` + sentinel + `"}}`},
-		"other typed 404":   {404, `{"sys":{"type":"Error","id":"` + sentinel + `"}}`},
-		"plain 404":         {404, sentinel},
-		"rate limit":        {429, `{"sys":{"type":"Error","id":"RateLimitExceeded"},"message":"` + sentinel + `"}`},
-		"server failure":    {500, `{"sys":{"type":"Error","id":"ServerError"},"message":"` + sentinel + `"}`},
-		"malformed success": {200, sentinel},
-		"wrong space":       {200, strings.ReplaceAll(webhookSigningSecretTestResponse, `"id":"space"`, `"id":"`+sentinel+`"`)},
-		"empty space":       {200, strings.ReplaceAll(webhookSigningSecretTestResponse, `"id":"space"`, `"id":""`)},
-		"missing sys":       {200, `{"redactedValue":"` + sentinel + `"}`},
-		"wrong type":        {200, strings.ReplaceAll(webhookSigningSecretTestResponse, "WebhookSigningSecret", sentinel)},
-		"wrong link":        {200, strings.ReplaceAll(webhookSigningSecretTestResponse, `"Space"`, `"`+sentinel+`"`)},
-		"missing redaction": {200, `{"sys":{"type":"WebhookSigningSecret","space":{"sys":{"type":"Link","linkType":"Space","id":"space"}}}}`},
-		"null redaction":    {200, strings.ReplaceAll(webhookSigningSecretTestResponse, `"opaque"`, `null`)},
-		"unexpected status": {202, webhookSigningSecretTestResponse},
+		"bad request": {400, func(_ string) string {
+			return testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "BadRequest"},
+				"message": "Invalid request payload JSON format",
+			})
+		}},
+		"validation echo": {422, func(sentinel string) string {
+			return testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "ValidationFailed"},
+				"message": "Validation error",
+				"details": map[string]any{
+					"errors": []any{map[string]any{"details": "Expected string", "path": []any{"value"}, "value": sentinel}},
+				},
+			})
+		}},
+		"auth": {401, func(sentinel string) string {
+			return testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "AccessDenied"}, "message": sentinel})
+		}},
+		"forbidden": {403, func(sentinel string) string {
+			return testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": sentinel}})
+		}},
+		"other typed 404": {404, func(sentinel string) string {
+			return testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": sentinel}})
+		}},
+		"plain 404": {404, func(sentinel string) string { return sentinel }},
+		"rate limit": {429, func(sentinel string) string {
+			return testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "RateLimitExceeded"}, "message": sentinel})
+		}},
+		"server failure": {500, func(sentinel string) string {
+			return testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "ServerError"}, "message": sentinel})
+		}},
+		"malformed success": {200, func(sentinel string) string { return sentinel }},
+		"wrong space": {200, func(sentinel string) string {
+			return mutateTestJSON(webhookSigningSecretTestResponse, func(document map[string]any) {
+				document["sys"].(map[string]any)["space"].(map[string]any)["sys"].(map[string]any)["id"] = sentinel
+			})
+		}},
+		"empty space": {200, func(_ string) string {
+			return mutateTestJSON(webhookSigningSecretTestResponse, func(document map[string]any) {
+				document["sys"].(map[string]any)["space"].(map[string]any)["sys"].(map[string]any)["id"] = ""
+			})
+		}},
+		"missing sys": {200, func(sentinel string) string { return testJSON(map[string]any{"redactedValue": sentinel}) }},
+		"wrong type": {200, func(sentinel string) string {
+			return mutateTestJSON(webhookSigningSecretTestResponse, func(document map[string]any) { document["sys"].(map[string]any)["type"] = sentinel })
+		}},
+		"wrong link": {200, func(sentinel string) string {
+			return mutateTestJSON(webhookSigningSecretTestResponse, func(document map[string]any) {
+				document["sys"].(map[string]any)["space"].(map[string]any)["sys"].(map[string]any)["linkType"] = sentinel
+			})
+		}},
+		"missing redaction": {200, func(_ string) string {
+			return testJSON(map[string]any{
+				"sys": map[string]any{
+					"type":  "WebhookSigningSecret",
+					"space": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+				},
+			})
+		}},
+		"null redaction": {200, func(_ string) string {
+			return mutateTestJSON(webhookSigningSecretTestResponse, func(document map[string]any) { document["redactedValue"] = nil })
+		}},
+		"unexpected status": {202, func(_ string) string { return webhookSigningSecretTestResponse }},
 	}
 	for name, test := range errorsByName {
 		for _, operation := range []string{"create", "update", "delete", "read"} {
@@ -169,7 +220,7 @@ func TestWebhookSigningSecretFailuresRetainStateAndRedactKnownValues(t *testing.
 					redactedEcho += " / ***"
 				}
 
-				body := strings.ReplaceAll(test.body, sentinel, echo+"; upstream detail")
+				body := test.body(echo + "; upstream detail")
 
 				var count atomic.Int64
 
@@ -251,7 +302,7 @@ func TestWebhookSigningSecretNotFoundLifecycle(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusNotFound)
-				_, _ = io.WriteString(w, `{"sys":{"type":"Error","id":"NotFound"},"message":"`+parent+` not found"}`)
+				_, _ = io.WriteString(w, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "NotFound"}, "message": parent + " not found"}))
 			}))
 			t.Cleanup(server.Close)
 			implementation := webhookSigningSecretTestClient(t, server)

@@ -104,7 +104,7 @@ func TestContentTypeAllowedContentfulEntryPreservesKnownEmptyContentTypes(t *tes
 
 	encoded, err := actual.MarshalJSON()
 	require.NoError(t, err)
-	assert.JSONEq(t, `{"type":"Contentful:Entry","source":"source","contentTypes":[]}`, string(encoded))
+	assert.JSONEq(t, testJSON(map[string]any{"type": "Contentful:Entry", "source": "source", "contentTypes": []any{}}), string(encoded))
 }
 
 func TestContentTypeAllowedContentfulEntryRejectsUnresolvedValues(t *testing.T) {

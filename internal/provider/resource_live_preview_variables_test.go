@@ -53,9 +53,14 @@ func TestAccLivePreviewVariablesResource(t *testing.T) {
 	server.RegisterSpaceEnvironment("space", "environment")
 	client := livePreviewVariablesTestClient(t, server)
 
-	const (
-		initial = `{"empty":"","global":"https://preview.invalid/{entry.sys.id}","localized":{"en-US":""},"null":null}`
-		removed = `{"localized":{},"null":null}`
+	var (
+		initial = testJSON(map[string]any{
+			"empty":     "",
+			"global":    "https://preview.invalid/{entry.sys.id}",
+			"localized": map[string]any{"en-US": ""},
+			"null":      nil,
+		})
+		removed = testJSON(map[string]any{"localized": map[string]any{}, "null": nil})
 	)
 
 	drift := livePreviewVariablesStep(removed)
@@ -65,13 +70,13 @@ func TestAccLivePreviewVariablesResource(t *testing.T) {
 
 		document, ok := current.(*cm.LivePreviewVariables)
 		require.True(t, ok)
-		updated, putErr := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(`{"external":"change"}`)}, cm.PutLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "environment", XContentfulVersion: document.Sys.Version})
+		updated, putErr := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(testJSON(map[string]any{"external": "change"}))}, cm.PutLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "environment", XContentfulVersion: document.Sys.Version})
 		require.NoError(t, putErr)
 		require.IsType(t, &cm.LivePreviewVariables{}, updated)
 	}
 	drift.ConfigPlanChecks = resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 		plancheck.ExpectResourceAction(livePreviewVariablesAddress, plancheck.ResourceActionUpdate),
-		testAccPriorState{check: statecheck.ExpectKnownValue(livePreviewVariablesAddress, tfjsonpath.New("variables"), knownvalue.StringExact(`{"external":"change"}`))},
+		testAccPriorState{check: statecheck.ExpectKnownValue(livePreviewVariablesAddress, tfjsonpath.New("variables"), knownvalue.StringExact(testJSON(map[string]any{"external": "change"})))},
 	}}
 	disappeared := livePreviewVariablesStep(removed)
 	disappeared.PreConfig = func() {
@@ -80,7 +85,7 @@ func TestAccLivePreviewVariablesResource(t *testing.T) {
 		require.IsType(t, &cm.NoContent{}, deleted)
 	}
 	disappeared.ConfigPlanChecks = resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(livePreviewVariablesAddress, plancheck.ResourceActionCreate)}}
-	destroy := livePreviewVariablesStep(`{}`)
+	destroy := livePreviewVariablesStep(testJSON(map[string]any{}))
 	destroy.Destroy = true
 	destroy.ConfigStateChecks = nil
 
@@ -92,9 +97,9 @@ func TestAccLivePreviewVariablesResource(t *testing.T) {
 		livePreviewVariablesStep(removed),
 		drift,
 		disappeared,
-		livePreviewVariablesStep(`{}`),
+		livePreviewVariablesStep(testJSON(map[string]any{})),
 		destroy,
-		livePreviewVariablesStep(`{}`),
+		livePreviewVariablesStep(testJSON(map[string]any{})),
 	}})
 	read, err := client.GetLivePreviewVariables(t.Context(), cm.GetLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "environment"})
 	require.NoError(t, err)
@@ -130,12 +135,12 @@ func TestAccLivePreviewVariablesResourceIgnoreChanges(t *testing.T) {
 
 		server.ServeHTTP(w, r)
 	})
-	initial := livePreviewVariablesStep(`{"managed":"original"}`)
+	initial := livePreviewVariablesStep(testJSON(map[string]any{"managed": "original"}))
 	initial.ConfigDirectory = config.StaticDirectory("testdata/TestAccLivePreviewVariablesResourceIgnoreChanges")
 	ignored := initial
-	ignored.ConfigVariables = config.Variables{"variables": config.StringVariable(`{"managed":"ignored-config"}`), "read_timeout": config.StringVariable("4m")}
+	ignored.ConfigVariables = config.Variables{"variables": config.StringVariable(testJSON(map[string]any{"managed": "ignored-config"})), "read_timeout": config.StringVariable("4m")}
 	ignored.ConfigStateChecks = []statecheck.StateCheck{
-		statecheck.ExpectKnownValue(livePreviewVariablesAddress, tfjsonpath.New("variables"), knownvalue.StringExact(`{"managed":"original"}`)),
+		statecheck.ExpectKnownValue(livePreviewVariablesAddress, tfjsonpath.New("variables"), knownvalue.StringExact(testJSON(map[string]any{"managed": "original"}))),
 		statecheck.ExpectKnownValue(livePreviewVariablesAddress, tfjsonpath.New("timeouts").AtMapKey("read"), knownvalue.StringExact("4m")),
 	}
 	ignored.ConfigPlanChecks = resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(livePreviewVariablesAddress, plancheck.ResourceActionUpdate)}}
@@ -146,7 +151,7 @@ func TestAccLivePreviewVariablesResourceIgnoreChanges(t *testing.T) {
 	require.Len(t, writes, 2)
 
 	for _, body := range writes {
-		require.JSONEq(t, `{"variables":{"managed":"original"}}`, body)
+		require.JSONEq(t, testJSON(map[string]any{"variables": map[string]any{"managed": "original"}}), body)
 	}
 }
 
@@ -159,20 +164,20 @@ func TestAccLivePreviewVariablesResourceIdentityReplacement(t *testing.T) {
 	server.RegisterSpaceEnvironment("space", "other")
 	server.RegisterSpaceEnvironment("other-space", "other")
 
-	changedEnvironment := livePreviewVariablesStep(`{}`)
+	changedEnvironment := livePreviewVariablesStep(testJSON(map[string]any{}))
 	changedEnvironment.ConfigVariables["environment_id"] = config.StringVariable("other")
 	changedEnvironment.ConfigPlanChecks = resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(livePreviewVariablesAddress, plancheck.ResourceActionReplace)}}
-	changedSpace := livePreviewVariablesStep(`{}`)
+	changedSpace := livePreviewVariablesStep(testJSON(map[string]any{}))
 	changedSpace.ConfigVariables["environment_id"] = config.StringVariable("other")
 	changedSpace.ConfigVariables["space_id"] = config.StringVariable("other-space")
 	changedSpace.ConfigPlanChecks = changedEnvironment.ConfigPlanChecks
-	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{livePreviewVariablesStep(`{}`), changedEnvironment, changedSpace}})
+	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{livePreviewVariablesStep(testJSON(map[string]any{})), changedEnvironment, changedSpace}})
 }
 
 func TestAccLivePreviewVariablesResourceRefusesExistingDocument(t *testing.T) {
 	t.Parallel()
 
-	for name, variables := range map[string]string{"empty": `{}`, "nonempty": `{"external":"owned"}`} {
+	for name, variables := range map[string]string{"empty": testJSON(map[string]any{}), "nonempty": testJSON(map[string]any{"external": "owned"})} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -184,7 +189,7 @@ func TestAccLivePreviewVariablesResourceRefusesExistingDocument(t *testing.T) {
 			require.NoError(t, err)
 			require.IsType(t, &cm.LivePreviewVariables{}, seeded)
 
-			step := livePreviewVariablesStep(`{"replacement":"must-not-be-sent"}`)
+			step := livePreviewVariablesStep(testJSON(map[string]any{"replacement": "must-not-be-sent"}))
 			step.ConfigStateChecks = nil
 			step.ExpectError = regexp.MustCompile("existing live preview variables document cannot be overwritten")
 			testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{step}})
@@ -203,10 +208,10 @@ func TestAccLivePreviewVariablesResourceInvalidConfigurationAndImport(t *testing
 	t.Parallel()
 
 	for name, test := range map[string]struct{ variables, importID, message string }{
-		"array rejected":      {variables: `{"value":[]}`, message: "Invalid live preview variable"},
-		"missing import":      {variables: `{}`, importID: "space/environment", message: "Cannot import non-existent remote object"},
-		"malformed import":    {variables: `{}`, importID: "space", message: "Invalid import ID"},
-		"empty identity part": {variables: `{}`, importID: "space/", message: "Invalid import ID"},
+		"array rejected":      {variables: testJSON(map[string]any{"value": []any{}}), message: "Invalid live preview variable"},
+		"missing import":      {variables: testJSON(map[string]any{}), importID: "space/environment", message: "Cannot import non-existent remote object"},
+		"malformed import":    {variables: testJSON(map[string]any{}), importID: "space", message: "Invalid import ID"},
+		"empty identity part": {variables: testJSON(map[string]any{}), importID: "space/", message: "Invalid import ID"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -234,9 +239,9 @@ func TestAccLivePreviewVariablesResourceServiceValidation(t *testing.T) {
 	t.Parallel()
 
 	for name, test := range map[string]struct{ variables, diagnostic string }{
-		"unknown locale": {variables: `{"localized":{"zz-ZZ":"VALUE_DO_NOT_ECHO"}}`, diagnostic: `zz-ZZ`},
-		"reserved name":  {variables: `{"__proto__":"VALUE_DO_NOT_ECHO"}`, diagnostic: `Invalid request payload JSON format`},
-		"too long":       {variables: `{"global":"` + strings.Repeat("a", 50001) + `"}`, diagnostic: `Maximum Text length is 50000 characters`},
+		"unknown locale": {variables: testJSON(map[string]any{"localized": map[string]any{"zz-ZZ": "VALUE_DO_NOT_ECHO"}}), diagnostic: `zz-ZZ`},
+		"reserved name":  {variables: testJSON(map[string]any{"__proto__": "VALUE_DO_NOT_ECHO"}), diagnostic: `Invalid request payload JSON format`},
+		"too long":       {variables: testJSON(map[string]any{"global": strings.Repeat("a", 50001)}), diagnostic: `Maximum Text length is 50000 characters`},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -246,7 +251,7 @@ func TestAccLivePreviewVariablesResourceServiceValidation(t *testing.T) {
 			server.RegisterSpaceEnvironment("space", "environment")
 			client := livePreviewVariablesTestClient(t, server)
 
-			const initial = `{"valid":"original"}`
+			initial := testJSON(map[string]any{"valid": "original"})
 
 			rejected := livePreviewVariablesStep(test.variables)
 			rejected.ExpectError = regexp.MustCompile(test.diagnostic)

@@ -26,32 +26,50 @@ func TestContentTypeMetadataRequestSerialization(t *testing.T) {
 	}{
 		"absent metadata": {
 			metadata: NewTypedObjectNull[ContentTypeMetadataValue](),
-			expected: `{"name":"Test","description":null,"displayField":"title","fields":[]}`,
+			expected: testJSON(map[string]any{"name": "Test", "description": nil, "displayField": "title", "fields": []any{}}),
 		},
 		"unresolved computed metadata": {
 			metadata: NewTypedObjectUnknown[ContentTypeMetadataValue](),
-			expected: `{"name":"Test","description":null,"displayField":"title","fields":[]}`,
+			expected: testJSON(map[string]any{"name": "Test", "description": nil, "displayField": "title", "fields": []any{}}),
 		},
 		"annotations with taxonomy omitted": {
 			metadata: NewTypedObject(ContentTypeMetadataValue{
-				Annotations: NewNormalizedJSONValue([]byte(`{"ContentType":[]}`)),
+				Annotations: NewNormalizedJSONValue([]byte(testJSON(map[string]any{"ContentType": []any{}}))),
 				Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 			}),
-			expected: `{"name":"Test","description":null,"displayField":"title","fields":[],"metadata":{"annotations":{"ContentType":[]}}}`,
+			expected: testJSON(map[string]any{
+				"name":         "Test",
+				"description":  nil,
+				"displayField": "title",
+				"fields":       []any{},
+				"metadata":     map[string]any{"annotations": map[string]any{"ContentType": []any{}}},
+			}),
 		},
 		"annotations with unresolved computed taxonomy": {
 			metadata: NewTypedObject(ContentTypeMetadataValue{
-				Annotations: NewNormalizedJSONValue([]byte(`{"ContentType":[]}`)),
+				Annotations: NewNormalizedJSONValue([]byte(testJSON(map[string]any{"ContentType": []any{}}))),
 				Taxonomy:    NewTypedListUnknown[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 			}),
-			expected: `{"name":"Test","description":null,"displayField":"title","fields":[],"metadata":{"annotations":{"ContentType":[]}}}`,
+			expected: testJSON(map[string]any{
+				"name":         "Test",
+				"description":  nil,
+				"displayField": "title",
+				"fields":       []any{},
+				"metadata":     map[string]any{"annotations": map[string]any{"ContentType": []any{}}},
+			}),
 		},
 		"empty taxonomy": {
 			metadata: NewTypedObject(ContentTypeMetadataValue{
 				Annotations: jsontypes.NewNormalizedNull(),
 				Taxonomy:    NewTypedList([]TypedObject[ContentTypeMetadataTaxonomyItemValue]{}),
 			}),
-			expected: `{"name":"Test","description":null,"displayField":"title","fields":[],"metadata":{"taxonomy":[]}}`,
+			expected: testJSON(map[string]any{
+				"name":         "Test",
+				"description":  nil,
+				"displayField": "title",
+				"fields":       []any{},
+				"metadata":     map[string]any{"taxonomy": []any{}},
+			}),
 		},
 		"populated taxonomy": {
 			metadata: NewTypedObject(ContentTypeMetadataValue{
@@ -63,7 +81,20 @@ func TestContentTypeMetadataRequestSerialization(t *testing.T) {
 					}),
 				}),
 			}),
-			expected: `{"name":"Test","description":null,"displayField":"title","fields":[],"metadata":{"taxonomy":[{"sys":{"type":"Link","id":"furniture","linkType":"TaxonomyConceptScheme"},"required":true}]}}`,
+			expected: testJSON(map[string]any{
+				"name":         "Test",
+				"description":  nil,
+				"displayField": "title",
+				"fields":       []any{},
+				"metadata": map[string]any{
+					"taxonomy": []any{
+						map[string]any{
+							"sys":      map[string]any{"type": "Link", "id": "furniture", "linkType": "TaxonomyConceptScheme"},
+							"required": true,
+						},
+					},
+				},
+			}),
 		},
 	}
 

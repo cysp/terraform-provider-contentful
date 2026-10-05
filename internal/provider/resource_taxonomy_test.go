@@ -1388,11 +1388,11 @@ func TestAccTaxonomyCreateRequestPreservesCollectionOwnership(t *testing.T) {
 			config: taxonomyConceptAllCollectionsConfig("Furniture"),
 			path:   "/taxonomy/concepts/furniture",
 			expectedFields: map[string]string{
-				"altLabels":    `{"en-US":[]}`,
-				"hiddenLabels": `{"en-US":[]}`,
-				"notations":    `[]`,
-				"broader":      `[]`,
-				"related":      `[]`,
+				"altLabels":    testJSON(map[string]any{"en-US": []any{}}),
+				"hiddenLabels": testJSON(map[string]any{"en-US": []any{}}),
+				"notations":    testJSON([]any{}),
+				"broader":      testJSON([]any{}),
+				"related":      testJSON([]any{}),
 			},
 		},
 		{
@@ -1405,7 +1405,7 @@ func TestAccTaxonomyCreateRequestPreservesCollectionOwnership(t *testing.T) {
 			name:           "scheme explicit empty arrays remain empty",
 			config:         taxonomyConceptSchemeConfig("Products"),
 			path:           "/taxonomy/concept-schemes/products",
-			expectedFields: map[string]string{"topConcepts": `[]`, "concepts": `[]`},
+			expectedFields: map[string]string{"topConcepts": testJSON([]any{}), "concepts": testJSON([]any{})},
 		},
 	}
 
@@ -1592,7 +1592,7 @@ func attachRemoteConceptToConcept(server *cmt.Server) error {
 		return fmt.Errorf("%w: taxonomy concept: %T", errUnexpectedTaxonomyResponse, response)
 	}
 
-	patch := cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/broader", Value: jx.Raw(`[{"sys":{"id":"remote","linkType":"TaxonomyConcept","type":"Link"}}]`)}}
+	patch := cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/broader", Value: jx.Raw(testJSON([]any{map[string]any{"sys": map[string]any{"id": "remote", "linkType": "TaxonomyConcept", "type": "Link"}}}))}}
 
 	_, err = server.Handler().PatchTaxonomyConcept(context.Background(), patch, cm.PatchTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture", XContentfulVersion: concept.Sys.Version})
 	if err != nil {
@@ -1613,7 +1613,7 @@ func attachRemoteConceptToScheme(server *cmt.Server) error {
 		return fmt.Errorf("%w: taxonomy concept scheme: %T", errUnexpectedTaxonomyResponse, response)
 	}
 
-	patch := cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/concepts", Value: jx.Raw(`[{"sys":{"id":"remote","linkType":"TaxonomyConcept","type":"Link"}}]`)}, {Op: cm.TaxonomyPatchItemOpAdd, Path: "/topConcepts", Value: jx.Raw(`[{"sys":{"id":"remote","linkType":"TaxonomyConcept","type":"Link"}}]`)}}
+	patch := cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/concepts", Value: jx.Raw(testJSON([]any{map[string]any{"sys": map[string]any{"id": "remote", "linkType": "TaxonomyConcept", "type": "Link"}}}))}, {Op: cm.TaxonomyPatchItemOpAdd, Path: "/topConcepts", Value: jx.Raw(testJSON([]any{map[string]any{"sys": map[string]any{"id": "remote", "linkType": "TaxonomyConcept", "type": "Link"}}}))}}
 
 	_, err = server.Handler().PatchTaxonomyConceptScheme(context.Background(), patch, cm.PatchTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products", XContentfulVersion: scheme.Sys.Version})
 	if err != nil {
@@ -1806,7 +1806,7 @@ func TestAccTaxonomyExplicitEmptyLocalizedMapsRemainStable(t *testing.T) {
 		"concept": {
 			resourceName: "contentful_taxonomy_concept.test", path: "/taxonomy/concepts/furniture", config: taxonomyConceptEmptyLocalizedStringsConfig("Furniture"),
 			seedDrift: func(server *cmt.Server) error {
-				response, err := server.Handler().PatchTaxonomyConcept(t.Context(), cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/note", Value: jx.Raw(`{"en-US":"remote"}`)}}, cm.PatchTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture", XContentfulVersion: 1})
+				response, err := server.Handler().PatchTaxonomyConcept(t.Context(), cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/note", Value: jx.Raw(testJSON(map[string]any{"en-US": "remote"}))}}, cm.PatchTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture", XContentfulVersion: 1})
 				if err != nil {
 					return fmt.Errorf("patch taxonomy concept: %w", err)
 				}
@@ -1822,7 +1822,7 @@ func TestAccTaxonomyExplicitEmptyLocalizedMapsRemainStable(t *testing.T) {
 		"scheme": {
 			resourceName: "contentful_taxonomy_concept_scheme.test", path: "/taxonomy/concept-schemes/products", config: taxonomyConceptSchemeEmptyDefinitionConfig("Products"),
 			seedDrift: func(server *cmt.Server) error {
-				response, err := server.Handler().PatchTaxonomyConceptScheme(t.Context(), cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/definition", Value: jx.Raw(`{"en-US":"remote"}`)}}, cm.PatchTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products", XContentfulVersion: 1})
+				response, err := server.Handler().PatchTaxonomyConceptScheme(t.Context(), cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/definition", Value: jx.Raw(testJSON(map[string]any{"en-US": "remote"}))}}, cm.PatchTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products", XContentfulVersion: 1})
 				if err != nil {
 					return fmt.Errorf("patch taxonomy concept scheme: %w", err)
 				}
@@ -1857,7 +1857,7 @@ func TestAccTaxonomyExplicitEmptyLocalizedMapsRemainStable(t *testing.T) {
 
 			for _, field := range test.fields {
 				require.Contains(t, put, field)
-				assert.JSONEq(t, `{}`, string(put[field]))
+				assert.JSONEq(t, testJSON(map[string]any{}), string(put[field]))
 			}
 
 			patches := recorder.matchingRequests(http.MethodPatch, test.path)

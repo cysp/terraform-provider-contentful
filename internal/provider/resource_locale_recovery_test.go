@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
-	"strings"
 	"sync"
 	"testing"
 
@@ -24,6 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestAccLocaleResourceUpdateRecovery(t *testing.T) {
 	t.Parallel()
 
@@ -65,15 +65,15 @@ func TestAccLocaleResourceUpdateRecovery(t *testing.T) {
 				raw := response.Body.String()
 				if r.Method == http.MethodPut && len(versions) == 1 {
 					// The server commits Planned. Only the response contradicts it.
-					raw = strings.Replace(raw, `"name":"Planned"`, `"name":"Returned"`, 1)
+					raw = mutateTestJSON(raw, func(document map[string]any) { document["name"] = "Returned" })
 					if missingVersion {
-						raw = strings.Replace(raw, `,"version":2`, "", 1)
+						raw = mutateTestJSON(raw, func(document map[string]any) { delete(document["sys"].(map[string]any), "version") })
 					}
 				}
 
 				if r.Method == http.MethodGet && missingReadVersion {
-					raw = strings.Replace(raw, `"name":"Original"`, `"name":"Remote drift"`, 1)
-					raw = strings.Replace(raw, `,"version":1`, "", 1)
+					raw = mutateTestJSON(raw, func(document map[string]any) { document["name"] = "Remote drift" })
+					raw = mutateTestJSON(raw, func(document map[string]any) { delete(document["sys"].(map[string]any), "version") })
 				}
 
 				w.WriteHeader(response.Code)
@@ -174,8 +174,22 @@ func TestAccLocaleResourceUpdateRecovery(t *testing.T) {
 			mutex.Lock()
 			assert.Equal(t, []string{"1", "2"}, versions)
 			require.Len(t, requests, 2)
-			assert.JSONEq(t, `{"name":"Planned","code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`, requests[0])
-			assert.JSONEq(t, `{"name":"Final","code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":false}`, requests[1])
+			assert.JSONEq(t, testJSON(map[string]any{
+				"name":                 "Planned",
+				"code":                 "en-AU",
+				"fallbackCode":         nil,
+				"contentDeliveryApi":   true,
+				"contentManagementApi": true,
+				"optional":             false,
+			}), requests[0])
+			assert.JSONEq(t, testJSON(map[string]any{
+				"name":                 "Final",
+				"code":                 "en-AU",
+				"fallbackCode":         nil,
+				"contentDeliveryApi":   true,
+				"contentManagementApi": true,
+				"optional":             false,
+			}), requests[1])
 			mutex.Unlock()
 		})
 	}
@@ -260,5 +274,12 @@ func TestAccLocaleResourceUpdatePreservesIgnoredDrift(t *testing.T) {
 	defer mutex.Unlock()
 
 	require.Len(t, requests, 1)
-	assert.JSONEq(t, `{"name":"External","code":"en-AU","fallbackCode":null,"contentDeliveryApi":true,"contentManagementApi":true,"optional":true}`, requests[0])
+	assert.JSONEq(t, testJSON(map[string]any{
+		"name":                 "External",
+		"code":                 "en-AU",
+		"fallbackCode":         nil,
+		"contentDeliveryApi":   true,
+		"contentManagementApi": true,
+		"optional":             true,
+	}), requests[0])
 }

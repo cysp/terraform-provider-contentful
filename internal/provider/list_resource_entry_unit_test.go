@@ -53,7 +53,7 @@ func TestEntryListResourceListSendsFiltersAndOwnsPagination(t *testing.T) {
 
 		entry := cmt.NewEntryFromRequest("space", "environment", "author", "entry-1", &cm.EntryRequest{
 			Fields: cm.NewOptEntryFields(cm.EntryFields{
-				"name": jx.Raw(`{"en-US":"` + fieldValueSentinel + `"}`),
+				"name": jx.Raw(testJSON(map[string]any{"en-US": fieldValueSentinel})),
 			}),
 		})
 

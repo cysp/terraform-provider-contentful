@@ -111,7 +111,7 @@ func extensionStateV0Raw(t *testing.T, state map[string]any, valueType tftypes.T
 func extensionStateV0Fixture(src, srcdoc any) map[string]any {
 	return map[string]any{
 		"id": "space/environment/extension", "space_id": "space", "environment_id": "environment", "extension_id": "extension",
-		"parameters": `{"theme":"dark","enabled":false}`,
+		"parameters": testJSON(map[string]any{"theme": "dark", "enabled": false}),
 		"timeouts":   map[string]any{"create": "1m", "read": "2m", "update": "3m", "delete": "4m"},
 		"extension": map[string]any{
 			"name": "Historical Extension", "src": src, "srcdoc": srcdoc, "sidebar": false,
@@ -123,7 +123,7 @@ func extensionStateV0Fixture(src, srcdoc any) map[string]any {
 				"installation": []any{
 					map[string]any{
 						"id": "theme", "type": "Enum", "name": "Theme", "description": "", "required": false,
-						"default": `"light"`, "options": []string{`"light"`, `"dark"`}, "labels": nil,
+						"default": testJSON("light"), "options": []string{testJSON("light"), testJSON("dark")}, "labels": nil,
 					},
 					map[string]any{
 						"id": "flag", "type": "Boolean", "name": "Flag", "description": nil, "required": true,

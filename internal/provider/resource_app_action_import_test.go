@@ -26,7 +26,7 @@ func TestAccAppActionResourceIdentityImport(t *testing.T) {
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
-	result, err := server.Handler().CreateAppAction(t.Context(), &cm.AppActionCreateData{Name: "Action", Category: "Custom", Type: "endpoint", URL: cm.NewOptString("https://example.invalid/action"), Parameters: []byte(`[]`)}, cm.CreateAppActionParams{OrganizationID: "org", AppDefinitionID: "app"})
+	result, err := server.Handler().CreateAppAction(t.Context(), &cm.AppActionCreateData{Name: "Action", Category: "Custom", Type: "endpoint", URL: cm.NewOptString("https://example.invalid/action"), Parameters: []byte(testJSON([]any{}))}, cm.CreateAppActionParams{OrganizationID: "org", AppDefinitionID: "app"})
 	require.NoError(t, err)
 
 	action, ok := result.(*cm.AppAction)
@@ -61,7 +61,7 @@ func TestAccAppActionResourceIdentityImport(t *testing.T) {
 	checks := []statecheck.StateCheck{
 		statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("id"), knownvalue.StringExact("org/app/"+action.Sys.ID)),
 		statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("name"), knownvalue.StringExact("Action")),
-		statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("parameters"), knownvalue.StringExact("[]")),
+		statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("parameters"), knownvalue.StringExact(testJSON([]any{}))),
 		statecheck.ExpectIdentity(actionAddress, map[string]knownvalue.Check{"organization_id": knownvalue.StringExact("org"), "app_definition_id": knownvalue.StringExact("app"), "app_action_id": knownvalue.StringExact(action.Sys.ID)}),
 	}
 	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
@@ -80,31 +80,144 @@ func TestAccAppActionResourceIdentityImport(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, status.GetStatusCode())
 }
 
+//nolint:dupl,maintidx // Keep lifecycle cases and independent payload expectations together.
 func TestAccAppActionResourceExternalDefinitions(t *testing.T) {
 	t.Parallel()
 
-	const (
-		nested  = `{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","properties":{"enabled":{"type":"boolean","default":false},"count":{"type":"number","minimum":0}},"required":["count"],"additionalProperties":false}}},"required":["items"],"additionalProperties":false}`
-		result  = `{"type":"object","properties":{"count":{"type":"integer"},"warnings":{"type":"array","items":{"type":"string"}}},"required":["count"]}`
-		legacy  = `[{"id":"text","name":"Text","type":"Symbol","description":"","default":""},{"id":"number","name":"Number","type":"Number","required":false,"default":0},{"id":"flag","name":"Flag","type":"Boolean","default":false},{"id":"choice","name":"Choice","type":"Enum","options":["a","b"]}]`
-		builtin = `[{"id":"entryIds","name":"Entry Ids","description":"Ids of the entries you want to trigger the action for","type":"Symbol","required":true}]`
+	var (
+		nested = testJSON(map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"items": map[string]any{
+					"type": "array",
+					"items": map[string]any{
+						"type": "object",
+						"properties": map[string]any{
+							"enabled": map[string]any{"type": "boolean", "default": false},
+							"count":   map[string]any{"type": "number", "minimum": 0},
+						},
+						"required":             []any{"count"},
+						"additionalProperties": false,
+					},
+				},
+			},
+			"required":             []any{"items"},
+			"additionalProperties": false,
+		})
+		result = testJSON(map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"count":    map[string]any{"type": "integer"},
+				"warnings": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
+			},
+			"required": []any{"count"},
+		})
+		legacy = testJSON([]any{
+			map[string]any{"id": "text", "name": "Text", "type": "Symbol", "description": "", "default": ""},
+			map[string]any{"id": "number", "name": "Number", "type": "Number", "required": false, "default": 0},
+			map[string]any{"id": "flag", "name": "Flag", "type": "Boolean", "default": false},
+			map[string]any{"id": "choice", "name": "Choice", "type": "Enum", "options": []any{"a", "b"}},
+		})
+		builtin = testJSON([]any{
+			map[string]any{
+				"id":          "entryIds",
+				"name":        "Entry Ids",
+				"description": "Ids of the entries you want to trigger the action for",
+				"type":        "Symbol",
+				"required":    true,
+			},
+		})
 	)
 	for _, test := range []struct{ name, category, parameters, schema, request string }{
-		{"legacy", "Custom", legacy, "", `{
- "name":"Renamed","category":"Custom","type":"endpoint","url":"https://example.invalid/external","description":"",
- "parameters":[{"id":"text","name":"Text","type":"Symbol","description":"","default":""},{"id":"number","name":"Number","type":"Number","required":false,"default":0},{"id":"flag","name":"Flag","type":"Boolean","default":false},{"id":"choice","name":"Choice","type":"Enum","options":["a","b"]}],
- "resultSchema":{"type":"object","properties":{"count":{"type":"integer"},"warnings":{"type":"array","items":{"type":"string"}}},"required":["count"]}
-}`},
-		{"schema", "Custom", "", nested, `{
- "name":"Renamed","category":"Custom","type":"endpoint","url":"https://example.invalid/external","description":"",
- "parametersSchema":{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","properties":{"enabled":{"type":"boolean","default":false},"count":{"type":"number","minimum":0}},"required":["count"],"additionalProperties":false}}},"required":["items"],"additionalProperties":false},
- "resultSchema":{"type":"object","properties":{"count":{"type":"integer"},"warnings":{"type":"array","items":{"type":"string"}}},"required":["count"]}
-}`},
-		{"builtin", "Entries.v1.0", builtin, nested, `{
- "name":"Renamed","category":"Entries.v1.0","type":"endpoint","url":"https://example.invalid/external","description":"",
- "parametersSchema":{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","properties":{"enabled":{"type":"boolean","default":false},"count":{"type":"number","minimum":0}},"required":["count"],"additionalProperties":false}}},"required":["items"],"additionalProperties":false},
- "resultSchema":{"type":"object","properties":{"count":{"type":"integer"},"warnings":{"type":"array","items":{"type":"string"}}},"required":["count"]}
-}`},
+		{"legacy", "Custom", legacy, "", testJSON(map[string]any{
+			"name":        "Renamed",
+			"category":    "Custom",
+			"type":        "endpoint",
+			"url":         "https://example.invalid/external",
+			"description": "",
+			"parameters": []any{
+				map[string]any{"id": "text", "name": "Text", "type": "Symbol", "description": "", "default": ""},
+				map[string]any{"id": "number", "name": "Number", "type": "Number", "required": false, "default": 0},
+				map[string]any{"id": "flag", "name": "Flag", "type": "Boolean", "default": false},
+				map[string]any{"id": "choice", "name": "Choice", "type": "Enum", "options": []any{"a", "b"}},
+			},
+			"resultSchema": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"count":    map[string]any{"type": "integer"},
+					"warnings": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
+				},
+				"required": []any{"count"},
+			},
+		})},
+		{"schema", "Custom", "", nested, testJSON(map[string]any{
+			"name":        "Renamed",
+			"category":    "Custom",
+			"type":        "endpoint",
+			"url":         "https://example.invalid/external",
+			"description": "",
+			"parametersSchema": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"items": map[string]any{
+						"type": "array",
+						"items": map[string]any{
+							"type": "object",
+							"properties": map[string]any{
+								"enabled": map[string]any{"type": "boolean", "default": false},
+								"count":   map[string]any{"type": "number", "minimum": 0},
+							},
+							"required":             []any{"count"},
+							"additionalProperties": false,
+						},
+					},
+				},
+				"required":             []any{"items"},
+				"additionalProperties": false,
+			},
+			"resultSchema": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"count":    map[string]any{"type": "integer"},
+					"warnings": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
+				},
+				"required": []any{"count"},
+			},
+		})},
+		{"builtin", "Entries.v1.0", builtin, nested, testJSON(map[string]any{
+			"name":        "Renamed",
+			"category":    "Entries.v1.0",
+			"type":        "endpoint",
+			"url":         "https://example.invalid/external",
+			"description": "",
+			"parametersSchema": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"items": map[string]any{
+						"type": "array",
+						"items": map[string]any{
+							"type": "object",
+							"properties": map[string]any{
+								"enabled": map[string]any{"type": "boolean", "default": false},
+								"count":   map[string]any{"type": "number", "minimum": 0},
+							},
+							"required":             []any{"count"},
+							"additionalProperties": false,
+						},
+					},
+				},
+				"required":             []any{"items"},
+				"additionalProperties": false,
+			},
+			"resultSchema": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"count":    map[string]any{"type": "integer"},
+					"warnings": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
+				},
+				"required": []any{"count"},
+			},
+		})},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()

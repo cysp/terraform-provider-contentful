@@ -99,22 +99,32 @@ func TestDeliveryAPIKeyEnvironmentRequestEncoding(t *testing.T) {
 		"config null plan null is omitted": {
 			planned:      NewTypedListNull[types.String](),
 			configured:   NewTypedListNull[types.String](),
-			expectedJSON: `{"name":"key","description":null}`,
+			expectedJSON: testJSON(map[string]any{"name": "key", "description": nil}),
 		},
 		"config null plan unknown is response-owned and omitted": {
 			planned:      NewTypedListUnknown[types.String](),
 			configured:   NewTypedListNull[types.String](),
-			expectedJSON: `{"name":"key","description":null}`,
+			expectedJSON: testJSON(map[string]any{"name": "key", "description": nil}),
 		},
 		"config null plan known uses planned value": {
-			planned:      NewTypedListFromStringSlice([]string{"planned-default"}),
-			configured:   NewTypedListNull[types.String](),
-			expectedJSON: `{"name":"key","description":null,"environments":[{"sys":{"type":"Link","linkType":"Environment","id":"planned-default"}}]}`,
+			planned:    NewTypedListFromStringSlice([]string{"planned-default"}),
+			configured: NewTypedListNull[types.String](),
+			expectedJSON: testJSON(map[string]any{
+				"name":        "key",
+				"description": nil,
+				"environments": []any{
+					map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "planned-default"}},
+				},
+			}),
 		},
 		"config known plan known uses plan": {
-			planned:      NewTypedListFromStringSlice([]string{"resolved-plan"}),
-			configured:   NewTypedListFromStringSlice([]string{"configured-expression"}),
-			expectedJSON: `{"name":"key","description":null,"environments":[{"sys":{"type":"Link","linkType":"Environment","id":"resolved-plan"}}]}`,
+			planned:    NewTypedListFromStringSlice([]string{"resolved-plan"}),
+			configured: NewTypedListFromStringSlice([]string{"configured-expression"}),
+			expectedJSON: testJSON(map[string]any{
+				"name":         "key",
+				"description":  nil,
+				"environments": []any{map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "resolved-plan"}}},
+			}),
 		},
 		"config known plan unknown fails closed": {
 			planned:       NewTypedListUnknown[types.String](),
@@ -124,7 +134,7 @@ func TestDeliveryAPIKeyEnvironmentRequestEncoding(t *testing.T) {
 		"known empty is explicit": {
 			planned:      NewTypedList([]types.String{}),
 			configured:   NewTypedList([]types.String{}),
-			expectedJSON: `{"name":"key","description":null,"environments":[]}`,
+			expectedJSON: testJSON(map[string]any{"name": "key", "description": nil, "environments": []any{}}),
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -260,7 +270,7 @@ func TestEnvironmentLinksJSONRoundTrip(t *testing.T) {
 			require.NoError(t, err)
 
 			if test.environmentsField == "" {
-				assert.NotContains(t, string(encoded), `"environments"`)
+				assert.NotContains(t, string(encoded), testJSON("environments"))
 			} else {
 				assert.Contains(t, string(encoded), test.environmentsField)
 			}

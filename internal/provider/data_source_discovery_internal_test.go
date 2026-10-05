@@ -38,11 +38,34 @@ type discoveryTestFamily struct {
 
 func discoveryTestFamilies() []discoveryTestFamily {
 	return []discoveryTestFamily{
-		{"space", NewSpaceDataSource, NewSpacesDataSource, map[string]any{}, "space_id", "spaces", "/spaces", "org", `{"space_id":"item-b","name":"Second","organization_id":"org"}`},
-		{"environment", NewEnvironmentDataSource, NewEnvironmentsDataSource, map[string]any{"space_id": "space"}, "environment_id", "environments", "/spaces/space/environments", "", `{"environment_id":"item-b","name":"Second","status":"queued","aliased_environment_id":"target"}`},
-		{"environment_alias", NewEnvironmentAliasDataSource, NewEnvironmentAliasesDataSource, map[string]any{"space_id": "space"}, "environment_alias_id", "environment_aliases", "/spaces/space/environment_aliases", "", `{"environment_alias_id":"item-b","target_environment_id":"target"}`},
-		{"locale", NewLocaleDataSource, NewLocalesDataSource, map[string]any{"space_id": "space", "environment_id": "master"}, "locale_id", "locales", "/spaces/space/environments/master/locales", "", `{"locale_id":"item-b","name":"Second","code":"en-GB","default":true,"fallback_code":null,"optional":false,"content_management_api":true,"content_delivery_api":false}`},
-		{"role", NewRoleDataSource, NewRolesDataSource, map[string]any{"space_id": "space"}, "role_id", "roles", "/spaces/space/roles", "", `{"role_id":"item-b","name":"Second","description":null,"permissions":{"ContentDelivery":["all"],"ContentModel":["read","read"],"Tags":[]},"policies":[{"actions":["all"],"constraint":"{\"a\":[1,2],\"z\":1}","effect":"allow"},{"actions":["read","read"],"constraint":null,"effect":"deny"}]}`},
+		{"space", NewSpaceDataSource, NewSpacesDataSource, map[string]any{}, "space_id", "spaces", "/spaces", "org", testJSON(map[string]any{"space_id": "item-b", "name": "Second", "organization_id": "org"})},
+		{"environment", NewEnvironmentDataSource, NewEnvironmentsDataSource, map[string]any{"space_id": "space"}, "environment_id", "environments", "/spaces/space/environments", "", testJSON(map[string]any{
+			"environment_id":         "item-b",
+			"name":                   "Second",
+			"status":                 "queued",
+			"aliased_environment_id": "target",
+		})},
+		{"environment_alias", NewEnvironmentAliasDataSource, NewEnvironmentAliasesDataSource, map[string]any{"space_id": "space"}, "environment_alias_id", "environment_aliases", "/spaces/space/environment_aliases", "", testJSON(map[string]any{"environment_alias_id": "item-b", "target_environment_id": "target"})},
+		{"locale", NewLocaleDataSource, NewLocalesDataSource, map[string]any{"space_id": "space", "environment_id": "master"}, "locale_id", "locales", "/spaces/space/environments/master/locales", "", testJSON(map[string]any{
+			"locale_id":              "item-b",
+			"name":                   "Second",
+			"code":                   "en-GB",
+			"default":                true,
+			"fallback_code":          nil,
+			"optional":               false,
+			"content_management_api": true,
+			"content_delivery_api":   false,
+		})},
+		{"role", NewRoleDataSource, NewRolesDataSource, map[string]any{"space_id": "space"}, "role_id", "roles", "/spaces/space/roles", "", testJSON(map[string]any{
+			"role_id":     "item-b",
+			"name":        "Second",
+			"description": nil,
+			"permissions": map[string]any{"ContentDelivery": []any{"all"}, "ContentModel": []any{"read", "read"}, "Tags": []any{}},
+			"policies": []any{
+				map[string]any{"actions": []any{"all"}, "constraint": "{\"a\":[1,2],\"z\":1}", "effect": "allow"},
+				map[string]any{"actions": []any{"read", "read"}, "constraint": nil, "effect": "deny"},
+			},
+		})},
 	}
 }
 
@@ -90,8 +113,19 @@ func discoveryHTTPResponse(request *http.Request, status int, body string) *http
 	return &http.Response{StatusCode: status, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(body)), Request: request}
 }
 
-func discoveryPage(skip, limit, total int, items string) string {
-	return fmt.Sprintf(`{"sys":{"type":"Array"},"skip":%d,"limit":%d,"total":%d,"items":[%s]}`, skip, limit, total, items)
+func discoveryPage(skip, limit, total int, items ...string) string {
+	documents := make([]json.RawMessage, len(items))
+	for i, item := range items {
+		documents[i] = json.RawMessage(item)
+	}
+
+	return testJSON(map[string]any{
+		"sys":   map[string]any{"type": "Array"},
+		"skip":  skip,
+		"limit": limit,
+		"total": total,
+		"items": documents,
+	})
 }
 
 func discoveryStateAttribute(t *testing.T, response datasource.ReadResponse, name string, expected string) {
@@ -149,17 +183,18 @@ func TestDiscoveryDataSourcesRawRequestsAndProjection(t *testing.T) {
 
 			if family.name == "locale" {
 				discoveryStateAttribute(t, response, "fallback_code", "null")
-				discoveryStateAttribute(t, response, "code", `"en-GB"`)
+				discoveryStateAttribute(t, response, "code", testJSON("en-GB"))
 			}
 
 			if family.name == "environment" {
-				discoveryStateAttribute(t, response, "status", `"queued"`)
-				discoveryStateAttribute(t, response, "aliased_environment_id", `"target"`)
+				discoveryStateAttribute(t, response, "status", testJSON("queued"))
+				discoveryStateAttribute(t, response, "aliased_environment_id", testJSON("target"))
 			}
 		})
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestDiscoveryDataSourcesPagination(t *testing.T) {
 	t.Parallel()
 
@@ -190,18 +225,28 @@ func TestDiscoveryDataSourcesPagination(t *testing.T) {
 
 				assert.Equal(t, "1", skip)
 
-				second := strings.ReplaceAll(strings.ReplaceAll(body, "item-b", "item-a"), "Second", "First")
+				second := mutateTestJSON(body, func(document map[string]any) {
+					document["sys"].(map[string]any)["id"] = "item-a"
+					if _, exists := document["name"]; exists {
+						document["name"] = "First"
+					}
+				})
 
 				return discoveryHTTPResponse(request, 200, discoveryPage(1, 1, 2, second)), nil
 			}))
 			require.False(t, response.Diagnostics.HasError(), response.Diagnostics)
 			assert.Equal(t, []string{"0", "1"}, offsets)
 
-			first := strings.ReplaceAll(strings.ReplaceAll(family.expected, "item-b", "item-a"), "Second", "First")
+			first := mutateTestJSON(family.expected, func(document map[string]any) {
+				document[family.id] = "item-a"
+				if _, exists := document["name"]; exists {
+					document["name"] = "First"
+				}
+			})
 			if family.name == "role" {
-				discoveryStateAttribute(t, response, family.collection, "["+family.expected+","+first+"]")
+				discoveryStateAttribute(t, response, family.collection, testJSON([]any{json.RawMessage(family.expected), json.RawMessage(first)}))
 			} else {
-				discoveryStateAttribute(t, response, family.collection, "["+first+","+family.expected+"]")
+				discoveryStateAttribute(t, response, family.collection, testJSON([]any{json.RawMessage(first), json.RawMessage(family.expected)}))
 			}
 		})
 	}
@@ -220,8 +265,8 @@ func TestDiscoveryDataSourcesPaginationMatchesTeams(t *testing.T) {
 				pages     []string
 				wantCount int
 			}{
-				{"without metadata", []string{`{"sys":{"type":"Array"},"items":[` + body + `]}`, `{"sys":{"type":"Array"},"items":[]}`}, 1},
-				{"empty before total", []string{discoveryPage(0, 100, 10, body), discoveryPage(1, 100, 10, "")}, 1},
+				{"without metadata", []string{testJSON(map[string]any{"sys": map[string]any{"type": "Array"}, "items": []any{json.RawMessage(body)}}), testJSON(map[string]any{"sys": map[string]any{"type": "Array"}, "items": []any{}})}, 1},
+				{"empty before total", []string{discoveryPage(0, 100, 10, body), discoveryPage(1, 100, 10)}, 1},
 				{"increasing total", []string{discoveryPage(0, 100, 2, body), discoveryPage(1, 100, 3, body), discoveryPage(2, 100, 3, body)}, 3},
 				{"changing total and duplicates", []string{discoveryPage(0, 100, 3, body), discoveryPage(1, 100, 2, body)}, 2},
 				{"echoed metadata does not control progress", []string{discoveryPage(99, 0, 2, body), discoveryPage(99, 0, 1, body)}, 2},
@@ -244,12 +289,12 @@ func TestDiscoveryDataSourcesPaginationMatchesTeams(t *testing.T) {
 					require.False(t, response.Diagnostics.HasError(), response.Diagnostics)
 					assert.Equal(t, len(testcase.pages), count)
 
-					expected := make([]string, testcase.wantCount)
+					expected := make([]json.RawMessage, testcase.wantCount)
 					for i := range expected {
-						expected[i] = family.expected
+						expected[i] = json.RawMessage(family.expected)
 					}
 
-					discoveryStateAttribute(t, response, family.collection, "["+strings.Join(expected, ",")+"]")
+					discoveryStateAttribute(t, response, family.collection, testJSON(expected))
 				})
 			}
 		})
@@ -270,8 +315,8 @@ func TestDiscoveryDataSourcesPaginationFailuresPublishNothing(t *testing.T) {
 				body   string
 				want   string
 			}{
-				{"permission", 403, `{"sys":{"type":"Error","id":"AccessDenied"},"message":"denied"}`, "AccessDenied"},
-				{"missing parent", 404, `{"sys":{"type":"Error","id":"NotFound"}}`, "NotFound"},
+				{"permission", 403, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "AccessDenied"}, "message": "denied"}), "AccessDenied"},
+				{"missing parent", 404, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "NotFound"}}), "NotFound"},
 				{"malformed", 200, `{"items":`, "decode"},
 			}
 			for _, testcase := range cases {
@@ -306,13 +351,13 @@ func TestDiscoveryDataSourcesEmpty(t *testing.T) {
 			response := discoveryReadTest(t.Context(), t, family.plural, family.scopes, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 				assert.Empty(t, request.Header.Get("X-Contentful-Organization"))
 
-				return discoveryHTTPResponse(request, 200, discoveryPage(0, 100, 0, "")), nil
+				return discoveryHTTPResponse(request, 200, discoveryPage(0, 100, 0)), nil
 			}))
 			require.False(t, response.Diagnostics.HasError(), response.Diagnostics)
-			discoveryStateAttribute(t, response, family.collection, "[]")
+			discoveryStateAttribute(t, response, family.collection, testJSON([]any{}))
 
 			if family.name == "space" {
-				discoveryStateAttribute(t, response, "id", `"spaces"`)
+				discoveryStateAttribute(t, response, "id", testJSON("spaces"))
 			}
 		})
 	}
@@ -438,6 +483,7 @@ func TestDiscoveryDataSourcesCancellationAfterResponsePublishesNothing(t *testin
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestDiscoveryDataSourcesResponseIdentityAndShape(t *testing.T) {
 	t.Parallel()
 
@@ -451,13 +497,13 @@ func TestDiscoveryDataSourcesResponseIdentityAndShape(t *testing.T) {
 				status int
 				body   string
 			}{
-				{"different ID", 200, strings.ReplaceAll(body, "item-b", "different")},
-				{"empty ID", 200, strings.ReplaceAll(body, "item-b", "")},
-				{"not found", 404, `{"sys":{"type":"Error","id":"NotFound"}}`},
-				{"unauthorized", 401, `{"sys":{"type":"Error","id":"AccessTokenInvalid"}}`},
-				{"forbidden", 403, `{"sys":{"type":"Error","id":"AccessDenied"}}`},
-				{"wrong type", 200, `{"sys":{"type":"Array"},"items":[]}`},
-				{"null body", 200, `null`},
+				{"different ID", 200, mutateTestJSON(body, func(document map[string]any) { document["sys"].(map[string]any)["id"] = "different" })},
+				{"empty ID", 200, mutateTestJSON(body, func(document map[string]any) { document["sys"].(map[string]any)["id"] = "" })},
+				{"not found", 404, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "NotFound"}})},
+				{"unauthorized", 401, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "AccessTokenInvalid"}})},
+				{"forbidden", 403, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "AccessDenied"}})},
+				{"wrong type", 200, testJSON(map[string]any{"sys": map[string]any{"type": "Array"}, "items": []any{}})},
+				{"null body", 200, testJSON(nil)},
 				{"trailing body", 200, body + ` {}`},
 			}
 			if family.name != "space" {
@@ -465,7 +511,9 @@ func TestDiscoveryDataSourcesResponseIdentityAndShape(t *testing.T) {
 					name   string
 					status int
 					body   string
-				}{"different space", 200, strings.ReplaceAll(body, `"id":"space"`, `"id":"other-space"`)})
+				}{"different space", 200, mutateTestJSON(body, func(document map[string]any) {
+					document["sys"].(map[string]any)["space"].(map[string]any)["sys"].(map[string]any)["id"] = "other-space"
+				})})
 			}
 
 			if family.name == "locale" {
@@ -473,7 +521,9 @@ func TestDiscoveryDataSourcesResponseIdentityAndShape(t *testing.T) {
 					name   string
 					status int
 					body   string
-				}{"different environment", 200, strings.ReplaceAll(body, `"id":"master"`, `"id":"concrete"`)})
+				}{"different environment", 200, mutateTestJSON(body, func(document map[string]any) {
+					document["sys"].(map[string]any)["environment"].(map[string]any)["sys"].(map[string]any)["id"] = "concrete"
+				})})
 			}
 
 			for _, testcase := range cases {
@@ -500,16 +550,19 @@ func TestLocaleDataSourceFallbackValues(t *testing.T) {
 
 	body := discoveryFixture(t, "locale")
 	for _, testcase := range []struct {
-		name        string
-		replacement string
-		expected    string
+		name     string
+		change   func(map[string]any)
+		expected string
 	}{
-		{"absent", "", `null`}, {"null", `"fallbackCode":null,`, `null`}, {"empty", `"fallbackCode":"",`, `""`}, {"code", `"fallbackCode":"fr-FR",`, `"fr-FR"`},
+		{"absent", func(document map[string]any) { delete(document, "fallbackCode") }, testJSON(nil)},
+		{"null", func(document map[string]any) { document["fallbackCode"] = nil }, testJSON(nil)},
+		{"empty", func(document map[string]any) { document["fallbackCode"] = "" }, testJSON("")},
+		{"code", func(document map[string]any) { document["fallbackCode"] = "fr-FR" }, testJSON("fr-FR")},
 	} {
 		t.Run(testcase.name, func(t *testing.T) {
 			t.Parallel()
 			response := discoveryReadTest(t.Context(), t, NewLocaleDataSource, map[string]any{"space_id": "space", "environment_id": "master", "locale_id": "item-b"}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
-				return discoveryHTTPResponse(request, 200, strings.ReplaceAll(body, `"fallbackCode":null,`, testcase.replacement)), nil
+				return discoveryHTTPResponse(request, 200, mutateTestJSON(body, testcase.change)), nil
 			}))
 			require.False(t, response.Diagnostics.HasError(), response.Diagnostics)
 			discoveryStateAttribute(t, response, "fallback_code", testcase.expected)
@@ -517,6 +570,7 @@ func TestLocaleDataSourceFallbackValues(t *testing.T) {
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestEnvironmentDataSourceStatusesAndSharedProjection(t *testing.T) {
 	t.Parallel()
 
@@ -529,7 +583,9 @@ func TestEnvironmentDataSourceStatusesAndSharedProjection(t *testing.T) {
 			response := discoveryReadTest(t.Context(), t, NewEnvironmentDataSource, map[string]any{"space_id": "space", "environment_id": "item-b"}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 				count++
 
-				return discoveryHTTPResponse(request, 200, strings.ReplaceAll(body, "queued", status)), nil
+				return discoveryHTTPResponse(request, 200, mutateTestJSON(body, func(document map[string]any) {
+					document["sys"].(map[string]any)["status"].(map[string]any)["sys"].(map[string]any)["id"] = status
+				})), nil
 			}))
 			require.False(t, response.Diagnostics.HasError(), response.Diagnostics)
 			assert.Equal(t, 1, count)
@@ -543,7 +599,7 @@ func TestEnvironmentDataSourceStatusesAndSharedProjection(t *testing.T) {
 
 			responseBody := body
 			if !aliased {
-				responseBody = strings.ReplaceAll(body, `,"aliasedEnvironment":{"sys":{"id":"target","type":"Link","linkType":"Environment"}}`, "")
+				responseBody = mutateTestJSON(body, func(document map[string]any) { delete(document["sys"].(map[string]any), "aliasedEnvironment") })
 			}
 
 			client, err := cm.NewClient("https://example.invalid", cm.NewAccessTokenSecuritySource("synthetic"), cm.WithClient(&http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
@@ -573,8 +629,23 @@ func TestEnvironmentDataSourceReducedPublishedExampleFails(t *testing.T) {
 	t.Parallel()
 
 	for _, body := range []string{
-		`{"sys":{"id":"item-b","type":"Environment","version":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}}}}`,
-		`{"sys":{"id":"item-b","type":"Environment","version":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}},"status":{"sys":{"type":"Link","linkType":"Status","id":"ready"}}}}`,
+		testJSON(map[string]any{
+			"sys": map[string]any{
+				"id":      "item-b",
+				"type":    "Environment",
+				"version": 1,
+				"space":   map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+			},
+		}),
+		testJSON(map[string]any{
+			"sys": map[string]any{
+				"id":      "item-b",
+				"type":    "Environment",
+				"version": 1,
+				"space":   map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+				"status":  map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Status", "id": "ready"}},
+			},
+		}),
 	} {
 		response := discoveryReadTest(t.Context(), t, NewEnvironmentDataSource, map[string]any{"space_id": "space", "environment_id": "item-b"}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 			return discoveryHTTPResponse(request, 200, body), nil
@@ -584,6 +655,7 @@ func TestEnvironmentDataSourceReducedPublishedExampleFails(t *testing.T) {
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestEnvironmentAliasDataSourceBothTypeSpellings(t *testing.T) {
 	t.Parallel()
 
@@ -592,7 +664,7 @@ func TestEnvironmentAliasDataSourceBothTypeSpellings(t *testing.T) {
 		t.Run(spelling, func(t *testing.T) {
 			t.Parallel()
 
-			responseBody := strings.ReplaceAll(body, "Environment Alias", spelling)
+			responseBody := mutateTestJSON(body, func(document map[string]any) { document["sys"].(map[string]any)["type"] = spelling })
 			client, err := cm.NewClient("https://example.invalid", cm.NewAccessTokenSecuritySource("synthetic"), cm.WithClient(&http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
 				return discoveryHTTPResponse(request, 200, responseBody), nil
 			})}))
@@ -622,13 +694,14 @@ func TestSpacesDataSourceOrganizationScopeContradiction(t *testing.T) {
 	assert.True(t, response.State.Raw.IsNull())
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestDiscoveryDataSourcesEscapedIDs(t *testing.T) {
 	t.Parallel()
 
 	for _, family := range discoveryTestFamilies() {
 		t.Run(family.name, func(t *testing.T) {
 			t.Parallel()
-			body := strings.ReplaceAll(discoveryFixture(t, family.name), "item-b", "a%2Fb?c#d")
+			body := mutateTestJSON(discoveryFixture(t, family.name), func(document map[string]any) { document["sys"].(map[string]any)["id"] = "a%2Fb?c#d" })
 
 			inputs := map[string]any{}
 			maps.Copy(inputs, family.scopes)
@@ -646,6 +719,7 @@ func TestDiscoveryDataSourcesEscapedIDs(t *testing.T) {
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestLocalesDataSourceAliasRetargetingHasNoSnapshotGuarantee(t *testing.T) {
 	t.Parallel()
 	body := discoveryFixture(t, "locale")
@@ -661,7 +735,10 @@ func TestLocalesDataSourceAliasRetargetingHasNoSnapshotGuarantee(t *testing.T) {
 			return discoveryHTTPResponse(request, 200, discoveryPage(0, 1, 2, body)), nil
 		}
 
-		return discoveryHTTPResponse(request, 200, discoveryPage(1, 1, 2, strings.ReplaceAll(strings.ReplaceAll(body, "item-b", "other-target-locale"), "en-GB", "fr-FR"))), nil
+		return discoveryHTTPResponse(request, 200, discoveryPage(1, 1, 2, mutateTestJSON(body, func(document map[string]any) {
+			document["sys"].(map[string]any)["id"] = "other-target-locale"
+			document["code"] = "fr-FR"
+		}))), nil
 	}))
 	require.False(t, response.Diagnostics.HasError(), response.Diagnostics)
 	assert.Equal(t, 2, requests)
@@ -756,6 +833,7 @@ func TestDiscoveryDataSourcesUnknownParentScopesDoNotRead(t *testing.T) {
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestDiscoveryDataSourcesLaterScopeContradictionPublishesNothing(t *testing.T) {
 	t.Parallel()
 
@@ -769,8 +847,17 @@ func TestDiscoveryDataSourcesLaterScopeContradictionPublishesNothing(t *testing.
 				inputs["organization_id"] = "org"
 			}
 
-			second := strings.ReplaceAll(body, "item-b", "item-a")
-			second = strings.ReplaceAll(strings.ReplaceAll(second, `"id":"org"`, `"id":"other"`), `"id":"space"`, `"id":"other"`)
+			second := mutateTestJSON(body, func(document map[string]any) {
+				sys := document["sys"].(map[string]any)
+				sys["id"] = "item-a"
+
+				scope := "space"
+				if family.name == "space" {
+					scope = "organization"
+				}
+
+				sys[scope].(map[string]any)["sys"].(map[string]any)["id"] = "other"
+			})
 			count := 0
 			response := discoveryReadTest(t.Context(), t, family.plural, inputs, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 				count++
@@ -787,6 +874,7 @@ func TestDiscoveryDataSourcesLaterScopeContradictionPublishesNothing(t *testing.
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestDiscoveryCollectionsPreserveIrregularItemIDs(t *testing.T) {
 	t.Parallel()
 
@@ -798,7 +886,7 @@ func TestDiscoveryCollectionsPreserveIrregularItemIDs(t *testing.T) {
 				t.Run(returnedID, func(t *testing.T) {
 					t.Parallel()
 					body := discoveryFixture(t, family.name)
-					irregular := strings.ReplaceAll(body, "item-b", returnedID)
+					irregular := mutateTestJSON(body, func(document map[string]any) { document["sys"].(map[string]any)["id"] = returnedID })
 					count := 0
 					response := discoveryReadTest(t.Context(), t, family.plural, family.scopes, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 						count++
@@ -811,16 +899,16 @@ func TestDiscoveryCollectionsPreserveIrregularItemIDs(t *testing.T) {
 						require.Equal(t, 2, count)
 						assert.Equal(t, "1", request.URL.Query().Get("skip"))
 
-						return discoveryHTTPResponse(request, 200, discoveryPage(1, 100, 3, irregular+","+irregular)), nil
+						return discoveryHTTPResponse(request, 200, discoveryPage(1, 100, 3, irregular, irregular)), nil
 					}))
 					require.Empty(t, response.Diagnostics)
 					assert.Equal(t, 2, count)
 
-					expected := strings.ReplaceAll(family.expected, "item-b", returnedID)
+					expected := mutateTestJSON(family.expected, func(document map[string]any) { document[family.id] = returnedID })
 					if family.name == "role" {
-						discoveryStateAttribute(t, response, family.collection, "["+family.expected+","+expected+","+expected+"]")
+						discoveryStateAttribute(t, response, family.collection, testJSON([]any{json.RawMessage(family.expected), json.RawMessage(expected), json.RawMessage(expected)}))
 					} else {
-						discoveryStateAttribute(t, response, family.collection, "["+expected+","+expected+","+family.expected+"]")
+						discoveryStateAttribute(t, response, family.collection, testJSON([]any{json.RawMessage(expected), json.RawMessage(expected), json.RawMessage(family.expected)}))
 					}
 
 					var attributes map[string]tftypes.Value
@@ -857,6 +945,7 @@ func TestDiscoveryCollectionsPreserveIrregularItemIDs(t *testing.T) {
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestDiscoveryDataSourcesPreserveComputedReferences(t *testing.T) {
 	t.Parallel()
 
@@ -868,16 +957,29 @@ func TestDiscoveryDataSourcesPreserveComputedReferences(t *testing.T) {
 		t.Run(family.name, func(t *testing.T) {
 			t.Parallel()
 
-			reference := "target"
-			if family.name == "space" {
-				reference = "org"
-			}
-
 			for _, returnedID := range []string{"", ".", "..", "a/b"} {
 				t.Run(returnedID, func(t *testing.T) {
 					t.Parallel()
-					body := strings.ReplaceAll(discoveryFixture(t, family.name), `"id":"`+reference+`"`, `"id":"`+returnedID+`"`)
-					expected := strings.ReplaceAll(family.expected, `"`+reference+`"`, `"`+returnedID+`"`)
+					body := mutateTestJSON(discoveryFixture(t, family.name), func(document map[string]any) {
+						switch family.name {
+						case "space":
+							document["sys"].(map[string]any)["organization"].(map[string]any)["sys"].(map[string]any)["id"] = returnedID
+						case "environment":
+							document["sys"].(map[string]any)["aliasedEnvironment"].(map[string]any)["sys"].(map[string]any)["id"] = returnedID
+						case "environment_alias":
+							document["environment"].(map[string]any)["sys"].(map[string]any)["id"] = returnedID
+						}
+					})
+					expected := mutateTestJSON(family.expected, func(document map[string]any) {
+						switch family.name {
+						case "space":
+							document["organization_id"] = returnedID
+						case "environment":
+							document["aliased_environment_id"] = returnedID
+						case "environment_alias":
+							document["target_environment_id"] = returnedID
+						}
+					})
 					inputs := maps.Clone(family.scopes)
 					inputs[family.id] = "item-b"
 					singular := discoveryReadTest(t.Context(), t, family.singular, inputs, roundTripFunc(func(request *http.Request) (*http.Response, error) {
@@ -896,7 +998,7 @@ func TestDiscoveryDataSourcesPreserveComputedReferences(t *testing.T) {
 						return discoveryHTTPResponse(request, 200, discoveryPage(0, 100, 1, body)), nil
 					}))
 					require.Empty(t, plural.Diagnostics)
-					discoveryStateAttribute(t, plural, family.collection, "["+expected+"]")
+					discoveryStateAttribute(t, plural, family.collection, testJSON([]any{json.RawMessage(expected)}))
 				})
 			}
 		})

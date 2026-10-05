@@ -66,7 +66,7 @@ func TestExtensionSourceSchemaMatchesContentfulContract(t *testing.T) {
 					FieldTypes: []AppDefinitionLocationFieldTypesItem{},
 					Sidebar:    types.BoolValue(false),
 				},
-				Parameters: NewNormalizedJSONValue([]byte(`{}`)),
+				Parameters: NewNormalizedJSONValue([]byte(testJSON(map[string]any{}))),
 				Timeouts:   TimeoutsNull(),
 			}
 

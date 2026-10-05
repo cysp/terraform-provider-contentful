@@ -31,7 +31,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 		},
 		"empty": {
 			appInstallation: cm.AppInstallation{
-				Parameters: []byte("{}"),
+				Parameters: []byte(testJSON(map[string]any{})),
 			},
 			expectedModel: AppInstallationModel{
 				IDIdentityModel: NewIDIdentityModelFromMultipartID("", "", ""),
@@ -41,12 +41,12 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 					AppDefinitionID: types.StringValue(""),
 				},
 				Marketplace: types.SetNull(types.StringType),
-				Parameters:  NewNormalizedJSONValue([]byte("{}")),
+				Parameters:  NewNormalizedJSONValue([]byte(testJSON(map[string]any{}))),
 			},
 		},
 		"foo=bar": {
 			appInstallation: cm.AppInstallation{
-				Parameters: []byte("{\"foo\":\"bar\"}"),
+				Parameters: []byte(testJSON(map[string]any{"foo": "bar"})),
 			},
 			expectedModel: AppInstallationModel{
 				IDIdentityModel: NewIDIdentityModelFromMultipartID("", "", ""),
@@ -56,12 +56,12 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 					AppDefinitionID: types.StringValue(""),
 				},
 				Marketplace: types.SetNull(types.StringType),
-				Parameters:  NewNormalizedJSONValue([]byte("{\"foo\":\"bar\"}")),
+				Parameters:  NewNormalizedJSONValue([]byte(testJSON(map[string]any{"foo": "bar"}))),
 			},
 		},
 		"large integer": {
 			appInstallation: cm.AppInstallation{
-				Parameters: []byte(`{"externalId":9007199254740993}`),
+				Parameters: []byte(testJSON(map[string]any{"externalId": int64(9007199254740993)})),
 			},
 			expectedModel: AppInstallationModel{
 				IDIdentityModel: NewIDIdentityModelFromMultipartID("", "", ""),
@@ -71,7 +71,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 					AppDefinitionID: types.StringValue(""),
 				},
 				Marketplace: types.SetNull(types.StringType),
-				Parameters:  jsontypes.NewNormalizedValue(`{"externalId":9007199254740993}`),
+				Parameters:  jsontypes.NewNormalizedValue(testJSON(map[string]any{"externalId": int64(9007199254740993)})),
 			},
 		},
 	}

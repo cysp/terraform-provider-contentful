@@ -46,8 +46,8 @@ func TestListResourceFetchDiagnostics(t *testing.T) {
 				detail string
 			}{
 				{"transport", 0, "", "list transport unavailable"},
-				{"not found", 404, `{"sys":{"type":"Error","id":"NotFound"},"message":"Environment not found"}`, "Error: NotFound: Environment not found"},
-				{"forbidden", 403, `{"sys":{"type":"Error","id":"AccessDenied"},"message":"denied"}`, "Error: AccessDenied: denied"},
+				{"not found", 404, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "NotFound"}, "message": "Environment not found"}), "Error: NotFound: Environment not found"},
+				{"forbidden", 403, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "AccessDenied"}, "message": "denied"}), "Error: AccessDenied: denied"},
 				{"malformed", 200, `{"items":`, "decode"},
 			} {
 				t.Run(testcase.name, func(t *testing.T) {

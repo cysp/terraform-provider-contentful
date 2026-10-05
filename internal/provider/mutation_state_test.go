@@ -108,7 +108,7 @@ func TestContentTypeMutationStateRejectsContradictoryOwnedResponseValues(t *test
 		"extra field":    {func(v *cm.ContentType) { v.Fields = append(v.Fields, v.Fields[0]) }, path.Root("fields").AtListIndex(1)},
 		"metadata annotations": {func(v *cm.ContentType) {
 			metadata := v.Metadata.Or(cm.ContentTypeMetadata{})
-			metadata.Annotations = []byte(`{"different":true}`)
+			metadata.Annotations = []byte(testJSON(map[string]any{"different": true}))
 			v.Metadata = cm.NewOptContentTypeMetadata(metadata)
 		}, path.Root("metadata").AtName("annotations")},
 		"metadata taxonomy": {func(v *cm.ContentType) {
@@ -143,7 +143,7 @@ func TestContentTypeMutationStateRejectsContradictoryOwnedResponseValues(t *test
 			case "extra field":
 				assert.Len(t, state.Fields.Elements(), 2)
 			case "metadata annotations":
-				assert.JSONEq(t, `{"different":true}`, state.Metadata.Value().Annotations.ValueString())
+				assert.JSONEq(t, testJSON(map[string]any{"different": true}), state.Metadata.Value().Annotations.ValueString())
 			case "metadata taxonomy":
 				assert.True(t, state.Metadata.Value().Taxonomy.IsNull())
 			}
@@ -227,7 +227,7 @@ func TestContentTypeMutationStateMissingMetadataUsesNullChildSemantics(t *testin
 
 	configured := plan
 	configured.Metadata = NewTypedObject(ContentTypeMetadataValue{
-		Annotations: jsontypes.NewNormalizedValue(`{"configured":true}`),
+		Annotations: jsontypes.NewNormalizedValue(testJSON(map[string]any{"configured": true})),
 		Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 	})
 	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, configured, configured)
@@ -250,8 +250,8 @@ func contentTypeMutationStateTestResponse() cm.ContentType {
 			ID:           "response-field",
 			Name:         "Response field",
 			Type:         "Symbol",
-			DefaultValue: jx.Raw(`{"a":1,"z":2}`),
-			Validations:  []jx.Raw{jx.Raw(`{"size":{"min":1,"max":20}}`)},
+			DefaultValue: jx.Raw(testJSON(map[string]any{"a": 1, "z": 2})),
+			Validations:  []jx.Raw{jx.Raw(testJSON(map[string]any{"size": map[string]any{"min": 1, "max": 20}}))},
 		}},
 		Metadata: cm.NewOptContentTypeMetadata(cm.ContentTypeMetadata{
 			Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{{
@@ -323,10 +323,10 @@ func TestContentTypeMutationStateLeavesOmittedTaxonomyResponseOwned(t *testing.T
 				Disabled:         types.BoolNull(),
 				Omitted:          types.BoolNull(),
 				Required:         types.BoolNull(),
-				DefaultValue:     jsontypes.NewNormalizedValue(`{"a":1,"z":2}`),
+				DefaultValue:     jsontypes.NewNormalizedValue(testJSON(map[string]any{"a": 1, "z": 2})),
 				Items:            NewTypedObjectNull[ContentTypeFieldItemsValue](),
 				Localized:        types.BoolNull(),
-				Validations:      NewTypedList([]jsontypes.Normalized{jsontypes.NewNormalizedValue(`{"size":{"min":1,"max":20}}`)}),
+				Validations:      NewTypedList([]jsontypes.Normalized{jsontypes.NewNormalizedValue(testJSON(map[string]any{"size": map[string]any{"min": 1, "max": 20}}))}),
 				AllowedResources: NewTypedListNull[TypedObject[ContentTypeFieldAllowedResourceItemValue]](),
 			}),
 		}),
@@ -628,7 +628,7 @@ func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testin
 		"Entry": NewTypedList([]types.String{types.StringValue("read")}),
 	})
 	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{
-		rolePolicyValue("allow", []string{"read", "create"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
+		rolePolicyValue("allow", []string{"read", "create"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 	})
 	response := cm.Role{
 		Sys:  cm.NewRoleSys("space", "role"),
@@ -638,7 +638,7 @@ func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testin
 		},
 		Policies: []cm.RolePoliciesItem{{
 			Actions:    cm.NewStringArrayRolePoliciesItemActions([]string{"create", "read"}),
-			Constraint: []byte(`{"sys":{"type":"Entry"}}`),
+			Constraint: []byte(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}})),
 			Effect:     cm.RolePoliciesItemEffect("allow"),
 		}},
 	}
@@ -727,49 +727,49 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 	}{
 		"effect": {
 			planned: []TypedObject[RolePolicyValue]{
-				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
+				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 			},
 			response: []cm.RolePoliciesItem{
-				rolePolicyResponse("deny", []string{"read"}, `{"sys":{"type":"Entry"}}`),
+				rolePolicyResponse("deny", []string{"read"}, testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}})),
 			},
 			expectedEffects:     []string{"deny"},
 			expectedActions:     [][]types.String{{types.StringValue("read")}},
-			expectedConstraints: []string{`{"sys":{"type":"Entry"}}`},
+			expectedConstraints: []string{testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}})},
 		},
 		"actions": {
 			planned: []TypedObject[RolePolicyValue]{
-				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
+				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 			},
 			response: []cm.RolePoliciesItem{
-				rolePolicyResponse("allow", []string{"create"}, `{"sys":{"type":"Entry"}}`),
+				rolePolicyResponse("allow", []string{"create"}, testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}})),
 			},
 			expectedEffects:     []string{"allow"},
 			expectedActions:     [][]types.String{{types.StringValue("create")}},
-			expectedConstraints: []string{`{"sys":{"type":"Entry"}}`},
+			expectedConstraints: []string{testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}})},
 		},
 		"constraint": {
 			planned: []TypedObject[RolePolicyValue]{
-				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
+				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 			},
 			response: []cm.RolePoliciesItem{
-				rolePolicyResponse("allow", []string{"read"}, `{"sys":{"type":"Asset"}}`),
+				rolePolicyResponse("allow", []string{"read"}, testJSON(map[string]any{"sys": map[string]any{"type": "Asset"}})),
 			},
 			expectedEffects:     []string{"allow"},
 			expectedActions:     [][]types.String{{types.StringValue("read")}},
-			expectedConstraints: []string{`{"sys":{"type":"Asset"}}`},
+			expectedConstraints: []string{testJSON(map[string]any{"sys": map[string]any{"type": "Asset"}})},
 		},
 		"duplicate multiplicity": {
 			planned: []TypedObject[RolePolicyValue]{
-				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
-				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(`{"sys":{"type":"Entry"}}`)),
+				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
+				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 			},
 			response: []cm.RolePoliciesItem{
-				rolePolicyResponse("allow", []string{"read"}, `{"sys":{"type":"Entry"}}`),
-				rolePolicyResponse("allow", []string{"read"}, `{"sys":{"type":"Asset"}}`),
+				rolePolicyResponse("allow", []string{"read"}, testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}})),
+				rolePolicyResponse("allow", []string{"read"}, testJSON(map[string]any{"sys": map[string]any{"type": "Asset"}})),
 			},
 			expectedEffects:     []string{"allow", "allow"},
 			expectedActions:     [][]types.String{{types.StringValue("read")}, {types.StringValue("read")}},
-			expectedConstraints: []string{`{"sys":{"type":"Entry"}}`, `{"sys":{"type":"Asset"}}`},
+			expectedConstraints: []string{testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}), testJSON(map[string]any{"sys": map[string]any{"type": "Asset"}})},
 		},
 	} {
 		t.Run(name, func(t *testing.T) {

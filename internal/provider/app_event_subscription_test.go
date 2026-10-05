@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -28,11 +27,17 @@ import (
 
 var errAppEventTestTransport = errors.New("transport sentinel")
 
-const (
-	appEventTestPath     = "/organizations/organization/app_definitions/app/event_subscription"
-	appEventTestSys      = `"sys":{"type":"AppEventSubscription","organization":{"sys":{"type":"Link","linkType":"Organization","id":"organization"}},"appDefinition":{"sys":{"type":"Link","linkType":"AppDefinition","id":"app"}}}`
-	appEventHTTPResponse = `{` + appEventTestSys + `,"topics":["Entry.publish","Asset.publish"],"targetUrl":"https://example.invalid/events?secret=sentinel"}`
-)
+const appEventTestPath = "/organizations/organization/app_definitions/app/event_subscription"
+
+var appEventHTTPResponse = testJSON(map[string]any{
+	"sys": map[string]any{
+		"type":          "AppEventSubscription",
+		"organization":  map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "organization"}},
+		"appDefinition": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "AppDefinition", "id": "app"}},
+	},
+	"topics":    []any{"Entry.publish", "Asset.publish"},
+	"targetUrl": "https://example.invalid/events?secret=sentinel",
+})
 
 func appEventTestModel() AppEventSubscriptionModel {
 	return AppEventSubscriptionModel{IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()}, OrganizationID: types.StringValue("organization"), AppDefinitionID: types.StringValue("app"), Topics: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("Entry.publish"), types.StringValue("Asset.publish")}), TargetURL: types.StringValue("https://example.invalid/events?secret=sentinel"), FilterFunctionID: types.StringNull(), TransformationFunctionID: types.StringNull(), HandlerFunctionID: types.StringNull(), Timeouts: TimeoutsNull()}
@@ -63,6 +68,7 @@ func appEventTestIdentity() *tfsdk.ResourceIdentity {
 	return &tfsdk.ResourceIdentity{Schema: s, Raw: tftypes.NewValue(s.Type().TerraformType(context.Background()), nil)}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestAppEventSubscriptionMutationResponses(t *testing.T) {
 	t.Parallel()
 
@@ -73,20 +79,44 @@ func TestAppEventSubscriptionMutationResponses(t *testing.T) {
 		stored    bool
 	}{
 		"created": {201, appEventHTTPResponse, "", true}, "updated": {200, appEventHTTPResponse, "", true},
-		"duplicate topics equal set": {200, strings.Replace(appEventHTTPResponse, `"Entry.publish","Asset.publish"`, `"Entry.publish","Asset.publish","Entry.publish"`, 1), "cannot fully represent", true},
-		"different topics":           {200, strings.Replace(appEventHTTPResponse, "Asset.publish", "Entry.save", 1), "different app event topics", true},
-		"missing target":             {200, `{` + appEventTestSys + `,"topics":["Entry.publish","Asset.publish"]}`, "different target_url", true},
-		"different parent":           {200, strings.Replace(appEventHTTPResponse, `"id":"app"`, `"id":"other"`, 1), "different app event subscription identity", true},
-		"empty functions":            {200, strings.TrimSuffix(appEventHTTPResponse, "}") + `,"functions":{}}`, "", true},
-		"null functions":             {200, strings.TrimSuffix(appEventHTTPResponse, "}") + `,"functions":null}`, "Failed to upsert", false},
-		"null function role":         {200, strings.TrimSuffix(appEventHTTPResponse, "}") + `,"functions":{"filter":null}}`, "Failed to upsert", false},
-		"empty function link":        {200, strings.TrimSuffix(appEventHTTPResponse, "}") + `,"functions":{"filter":{}}}`, "Failed to upsert", false},
-		"missing topics":             {200, `{` + appEventTestSys + `}`, "Failed to upsert", false},
-		"missing parent":             {200, `{"sys":{"type":"AppEventSubscription"},"topics":["Entry.publish"]}`, "Failed to upsert", false},
-		"null topics":                {200, `{` + appEventTestSys + `,"topics":null}`, "Failed to upsert", false},
-		"malformed":                  {201, `{"sentinel":`, "Failed to upsert", false},
-		"unauthorized":               {401, `{"sys":{"type":"Error","id":"sentinel"},"message":"sentinel"}`, "Failed to upsert", false},
-		"server failure":             {500, `{"sys":{"type":"Error","id":"sentinel"},"message":"sentinel"}`, "Failed to upsert", false},
+		"duplicate topics equal set": {200, mutateTestJSON(appEventHTTPResponse, func(document map[string]any) {
+			document["topics"] = []string{"Entry.publish", "Asset.publish", "Entry.publish"}
+		}), "cannot fully represent", true},
+		"different topics": {200, mutateTestJSON(appEventHTTPResponse, func(document map[string]any) { document["topics"] = []string{"Entry.publish", "Entry.save"} }), "different app event topics", true},
+		"missing target": {200, testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":          "AppEventSubscription",
+				"organization":  map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "organization"}},
+				"appDefinition": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "AppDefinition", "id": "app"}},
+			},
+			"topics": []any{"Entry.publish", "Asset.publish"},
+		}), "different target_url", true},
+		"different parent": {200, mutateTestJSON(appEventHTTPResponse, func(document map[string]any) {
+			document["sys"].(map[string]any)["appDefinition"].(map[string]any)["sys"].(map[string]any)["id"] = "other"
+		}), "different app event subscription identity", true},
+		"empty functions":     {200, mutateTestJSON(appEventHTTPResponse, func(document map[string]any) { document["functions"] = map[string]any{} }), "", true},
+		"null functions":      {200, mutateTestJSON(appEventHTTPResponse, func(document map[string]any) { document["functions"] = nil }), "Failed to upsert", false},
+		"null function role":  {200, mutateTestJSON(appEventHTTPResponse, func(document map[string]any) { document["functions"] = map[string]any{"filter": nil} }), "Failed to upsert", false},
+		"empty function link": {200, mutateTestJSON(appEventHTTPResponse, func(document map[string]any) { document["functions"] = map[string]any{"filter": map[string]any{}} }), "Failed to upsert", false},
+		"missing topics": {200, testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":          "AppEventSubscription",
+				"organization":  map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "organization"}},
+				"appDefinition": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "AppDefinition", "id": "app"}},
+			},
+		}), "Failed to upsert", false},
+		"missing parent": {200, testJSON(map[string]any{"sys": map[string]any{"type": "AppEventSubscription"}, "topics": []any{"Entry.publish"}}), "Failed to upsert", false},
+		"null topics": {200, testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":          "AppEventSubscription",
+				"organization":  map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "organization"}},
+				"appDefinition": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "AppDefinition", "id": "app"}},
+			},
+			"topics": nil,
+		}), "Failed to upsert", false},
+		"malformed":      {201, `{"sentinel":`, "Failed to upsert", false},
+		"unauthorized":   {401, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "sentinel"}, "message": "sentinel"}), "Failed to upsert", false},
+		"server failure": {500, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "sentinel"}, "message": "sentinel"}), "Failed to upsert", false},
 	}
 	for name, test := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -103,7 +133,10 @@ func TestAppEventSubscriptionMutationResponses(t *testing.T) {
 				assert.Equal(t, "application/vnd.contentful.management.v1+json", r.Header.Get("Content-Type"))
 				raw, err := io.ReadAll(r.Body)
 				assert.NoError(t, err)
-				assert.JSONEq(t, `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/events?secret=sentinel"}`, string(raw))
+				assert.JSONEq(t, testJSON(map[string]any{
+					"topics":    []any{"Asset.publish", "Entry.publish"},
+					"targetUrl": "https://example.invalid/events?secret=sentinel",
+				}), string(raw))
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(test.status)
 				_, err = w.Write([]byte(test.body))
@@ -274,7 +307,7 @@ func TestAppEventSubscriptionErrorRedaction(t *testing.T) {
 	t.Parallel()
 
 	for _, id := range []string{"ValidationFailed", "sentinel"} {
-		response := &cm.ErrorStatusCode{StatusCode: 422, Response: cm.NewErrorApplicationJSONError(cm.Error{Sys: cm.ErrorSys{Type: cm.ErrorSysTypeError, ID: id}, Message: cm.NewOptString("sentinel"), Details: []byte(`{"value":"sentinel"}`)})}
+		response := &cm.ErrorStatusCode{StatusCode: 422, Response: cm.NewErrorApplicationJSONError(cm.Error{Sys: cm.ErrorSys{Type: cm.ErrorSysTypeError, ID: id}, Message: cm.NewOptString("sentinel"), Details: []byte(testJSON(map[string]any{"value": "sentinel"}))})}
 		detail := appEventSubscriptionErrorDetail(response, errAppEventTestTransport)
 		assert.NotContains(t, detail, "sentinel")
 		assert.Contains(t, detail, "422")
@@ -338,7 +371,9 @@ func TestAppEventSubscriptionFunctionContradictions(t *testing.T) {
 		t.Run(role, func(t *testing.T) {
 			t.Parallel()
 
-			responseBody := strings.TrimSuffix(appEventHTTPResponse, "}") + `,"functions":{"` + role + `":{"sys":{"type":"Link","linkType":"Function","id":"retained"}}}}`
+			responseBody := mutateTestJSON(appEventHTTPResponse, func(document map[string]any) {
+				document["functions"] = map[string]any{role: map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "retained"}}}
+			})
 			implementation := appEventTestResource(t, func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				_, _ = w.Write([]byte(responseBody))
@@ -360,11 +395,14 @@ func TestAppEventSubscriptionFunctionContradictions(t *testing.T) {
 	}
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestAppEventSubscriptionReadIdentityMismatch(t *testing.T) {
 	t.Parallel()
 	implementation := appEventTestResource(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(strings.Replace(appEventHTTPResponse, `"id":"organization"`, `"id":"other"`, 1)))
+		_, _ = w.Write([]byte(mutateTestJSON(appEventHTTPResponse, func(document map[string]any) {
+			document["sys"].(map[string]any)["organization"].(map[string]any)["sys"].(map[string]any)["id"] = "other"
+		})))
 	})
 	model := appEventTestModel()
 	model.ID = types.StringValue("organization/app")
@@ -412,7 +450,7 @@ func appEventRetryHandler(t *testing.T, method string, status int, count *atomic
 		w.WriteHeader(status)
 
 		if status != 204 {
-			_, _ = w.Write([]byte(`{"sys":{"type":"Error","id":"sentinel"},"message":"sentinel"}`))
+			_, _ = w.Write([]byte(testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "sentinel"}, "message": "sentinel"})))
 		}
 	}
 }
@@ -428,7 +466,7 @@ func TestAppEventSubscriptionUpsertRateLimitIsNotRetried(t *testing.T) {
 		if count.Add(1) == 1 {
 			w.Header().Set("X-Contentful-Ratelimit-Reset", "0")
 			w.WriteHeader(http.StatusTooManyRequests)
-			_, _ = w.Write([]byte(`{"sys":{"type":"Error","id":"RateLimitExceeded"},"message":"sentinel"}`))
+			_, _ = w.Write([]byte(testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "RateLimitExceeded"}, "message": "sentinel"})))
 
 			return
 		}
@@ -498,6 +536,7 @@ func TestAppEventSubscriptionCanceledUpdate(t *testing.T) {
 	assert.True(t, response.State.Raw.Equal(prior.Raw))
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestAppEventSubscriptionUpdateRecoveryState(t *testing.T) {
 	t.Parallel()
 
@@ -506,9 +545,11 @@ func TestAppEventSubscriptionUpdateRecoveryState(t *testing.T) {
 		body       string
 		checkpoint bool
 	}{
-		"contradictory response":   {200, strings.Replace(appEventHTTPResponse, `"id":"app"`, `"id":"other"`, 1), true},
+		"contradictory response": {200, mutateTestJSON(appEventHTTPResponse, func(document map[string]any) {
+			document["sys"].(map[string]any)["appDefinition"].(map[string]any)["sys"].(map[string]any)["id"] = "other"
+		}), true},
 		"malformed success":        {200, `{"sentinel":`, false},
-		"ambiguous server failure": {500, `{"sys":{"type":"Error","id":"sentinel"},"message":"sentinel"}`, false},
+		"ambiguous server failure": {500, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "sentinel"}, "message": "sentinel"}), false},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -522,7 +563,10 @@ func TestAppEventSubscriptionUpdateRecoveryState(t *testing.T) {
 				assert.Empty(t, r.Header.Get("X-Contentful-Version"))
 				raw, err := io.ReadAll(r.Body)
 				assert.NoError(t, err)
-				assert.JSONEq(t, `{"topics":["Asset.publish","Entry.publish"],"targetUrl":"https://example.invalid/planned"}`, string(raw))
+				assert.JSONEq(t, testJSON(map[string]any{
+					"topics":    []any{"Asset.publish", "Entry.publish"},
+					"targetUrl": "https://example.invalid/planned",
+				}), string(raw))
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(test.status)
 				_, _ = w.Write([]byte(test.body))

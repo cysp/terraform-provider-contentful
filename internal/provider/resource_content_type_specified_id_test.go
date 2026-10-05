@@ -166,16 +166,23 @@ func TestAccContentTypeResourceSpecifiedIDCreateUsesCreateOnlyRequest(t *testing
 				require.Equal(t, contentTypeTestPutPath, draft.path)
 				require.False(t, draft.versionPresent, "specified-ID Create must omit X-Contentful-Version")
 				require.Empty(t, draft.version)
-				require.JSONEq(t, `{
-				  "name":"Created",
-				  "description":"Managed Content Type",
-				  "displayField":"title",
-				  "fields":[{
-				    "id":"title","name":"Title","type":"Symbol",
-				    "localized":false,"disabled":false,"omitted":false,
-				    "required":true,"validations":[]
-				  }]
-				}`, string(draft.body))
+				require.JSONEq(t, testJSON(map[string]any{
+					"name":         "Created",
+					"description":  "Managed Content Type",
+					"displayField": "title",
+					"fields": []any{
+						map[string]any{
+							"id":          "title",
+							"name":        "Title",
+							"type":        "Symbol",
+							"localized":   false,
+							"disabled":    false,
+							"omitted":     false,
+							"required":    true,
+							"validations": []any{},
+						},
+					},
+				}), string(draft.body))
 
 				require.Equal(t, http.MethodPut, activation.method)
 				require.Equal(t, contentTypeTestActivatePath, activation.path)

@@ -30,12 +30,12 @@ func TestRoleModelRoundTripToRoleData(t *testing.T) {
 			{
 				Effect:     "allow",
 				Actions:    cm.NewStringRolePoliciesItemActions("all"),
-				Constraint: []byte("{\"sys.type\":\"Entry\"}"),
+				Constraint: []byte(testJSON(map[string]any{"sys.type": "Entry"})),
 			},
 			{
 				Effect:     "deny",
 				Actions:    cm.NewStringArrayRolePoliciesItemActions([]string{"delete"}),
-				Constraint: []byte("{\"sys.type\":\"Entry\"}"),
+				Constraint: []byte(testJSON(map[string]any{"sys.type": "Entry"})),
 			},
 		},
 	}))
@@ -58,12 +58,12 @@ func TestRoleModelRoundTripToRoleData(t *testing.T) {
 	assert.Equal(t, cm.RoleDataPoliciesItem{
 		Effect:     "allow",
 		Actions:    cm.NewStringRoleDataPoliciesItemActions("all"),
-		Constraint: []byte("{\"sys.type\":\"Entry\"}"),
+		Constraint: []byte(testJSON(map[string]any{"sys.type": "Entry"})),
 	}, req.Policies[0])
 	assert.Equal(t, cm.RoleDataPoliciesItem{
 		Effect:     "deny",
 		Actions:    cm.NewStringArrayRoleDataPoliciesItemActions([]string{"delete"}),
-		Constraint: []byte("{\"sys.type\":\"Entry\"}"),
+		Constraint: []byte(testJSON(map[string]any{"sys.type": "Entry"})),
 	}, req.Policies[1])
 	assert.Empty(t, diags)
 }
@@ -314,26 +314,26 @@ func TestRoleRequestEncodesPermissionValuesAndPolicyActions(t *testing.T) {
 		"empty lists": {
 			permissionValues: []string{},
 			policyActions:    []string{},
-			expectedValues:   `[]`,
-			expectedActions:  `[]`,
+			expectedValues:   testJSON([]any{}),
+			expectedActions:  testJSON([]any{}),
 		},
 		"documented values": {
 			permissionValues: []string{"read"},
 			policyActions:    []string{"read", "create"},
-			expectedValues:   `["read"]`,
-			expectedActions:  `["read","create"]`,
+			expectedValues:   testJSON([]any{"read"}),
+			expectedActions:  testJSON([]any{"read", "create"}),
 		},
 		"unrecognized and duplicate strings": {
 			permissionValues: []string{"future-permission-value", "read", "read"},
 			policyActions:    []string{"future-policy-action", "read", "read"},
-			expectedValues:   `["future-permission-value","read","read"]`,
-			expectedActions:  `["future-policy-action","read","read"]`,
+			expectedValues:   testJSON([]any{"future-permission-value", "read", "read"}),
+			expectedActions:  testJSON([]any{"future-policy-action", "read", "read"}),
 		},
 		"singleton all": {
 			permissionValues: []string{"all"},
 			policyActions:    []string{"all"},
-			expectedValues:   `"all"`,
-			expectedActions:  `"all"`,
+			expectedValues:   testJSON("all"),
+			expectedActions:  testJSON("all"),
 		},
 	}
 

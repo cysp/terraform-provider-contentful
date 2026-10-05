@@ -2,7 +2,6 @@ package provider
 
 import (
 	"net/http"
-	"strings"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -33,9 +32,10 @@ func TestRoleDataSourceResponseOrderWarningPaths(t *testing.T) {
 	assert.True(t, items[0].Policies.Elements()[0].Value().Effect.IsNull())
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestRoleDataSourceDecoderRejectsUnsupportedEffect(t *testing.T) {
 	t.Parallel()
-	body := strings.Replace(discoveryFixture(t, "role"), `"effect":"allow"`, `"effect":"future"`, 1)
+	body := mutateTestJSON(discoveryFixture(t, "role"), func(document map[string]any) { document["policies"].([]any)[0].(map[string]any)["effect"] = "future" })
 	response := discoveryReadTest(t.Context(), t, NewRolesDataSource, map[string]any{"space_id": "space"}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 		return discoveryHTTPResponse(request, 200, discoveryPage(0, 100, 1, body)), nil
 	}))
@@ -70,10 +70,13 @@ func TestRoleDataSourceProjectionWarningsFromTypedIrregularResponse(t *testing.T
 	assert.True(t, item.Policies.Elements()[0].Value().Constraint.IsNull())
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestRolesDataSourceRejectsMismatchedSpaceWithRoleID(t *testing.T) {
 	t.Parallel()
 
-	body := strings.Replace(discoveryFixture(t, "role"), `"id":"space"`, `"id":"other-space"`, 1)
+	body := mutateTestJSON(discoveryFixture(t, "role"), func(document map[string]any) {
+		document["sys"].(map[string]any)["space"].(map[string]any)["sys"].(map[string]any)["id"] = "other-space"
+	})
 	response := discoveryReadTest(t.Context(), t, NewRolesDataSource, map[string]any{"space_id": "space"}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 		return discoveryHTTPResponse(request, 200, discoveryPage(0, 100, 1, body)), nil
 	}))
@@ -86,8 +89,8 @@ func TestRolesDataSourceStableDuplicateIDs(t *testing.T) {
 	t.Parallel()
 
 	body := discoveryFixture(t, "role")
-	first := strings.Replace(body, "Second", "First arrival", 1)
-	second := strings.Replace(body, "Second", "Second arrival", 1)
+	first := mutateTestJSON(body, func(document map[string]any) { document["name"] = "First arrival" })
+	second := mutateTestJSON(body, func(document map[string]any) { document["name"] = "Second arrival" })
 
 	response := discoveryReadTest(t.Context(), t, NewRolesDataSource, map[string]any{"space_id": "space"}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 		if request.URL.Query().Get("skip") == "0" {

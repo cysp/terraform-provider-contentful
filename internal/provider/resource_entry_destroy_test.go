@@ -173,11 +173,11 @@ func requireEntryAbsent(t *testing.T, server *cmt.Server) {
 func TestEntryResourceDestroyDoesNotConsumePrivateVersion(t *testing.T) {
 	t.Parallel()
 
-	malformedPrivate, err := json.Marshal(map[string][]byte{"version": []byte(`"invalid"`)})
+	malformedPrivate, err := json.Marshal(map[string][]byte{"version": []byte(testJSON("invalid"))})
 	require.NoError(t, err)
 
 	privateStates := map[string][]byte{
-		"missing":   []byte(`{}`),
+		"missing":   []byte(testJSON(map[string]any{})),
 		"malformed": malformedPrivate,
 		"zero":      privateVersionBytes(t, 0),
 	}

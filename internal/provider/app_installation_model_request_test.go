@@ -111,26 +111,26 @@ func TestToAppInstallationData(t *testing.T) {
 			model: AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedNull(),
 			},
-			expectedRequestBody: "{}",
+			expectedRequestBody: testJSON(map[string]any{}),
 		},
 		"unknown": {
 			model: AppInstallationModel{
 				Parameters: jsontypes.NewNormalizedUnknown(),
 			},
 			expectErrors:        true,
-			expectedRequestBody: "{}",
+			expectedRequestBody: testJSON(map[string]any{}),
 		},
 		"empty": {
 			model: AppInstallationModel{
-				Parameters: NewNormalizedJSONValue([]byte("{}")),
+				Parameters: NewNormalizedJSONValue([]byte(testJSON(map[string]any{}))),
 			},
-			expectedRequestBody: "{\"parameters\":{}}",
+			expectedRequestBody: testJSON(map[string]any{"parameters": map[string]any{}}),
 		},
 		"foo=bar": {
 			model: AppInstallationModel{
-				Parameters: NewNormalizedJSONValue([]byte("{\"foo\":\"bar\"}")),
+				Parameters: NewNormalizedJSONValue([]byte(testJSON(map[string]any{"foo": "bar"}))),
 			},
-			expectedRequestBody: "{\"parameters\":{\"foo\":\"bar\"}}",
+			expectedRequestBody: testJSON(map[string]any{"parameters": map[string]any{"foo": "bar"}}),
 		},
 		"invalid": {
 			model: AppInstallationModel{

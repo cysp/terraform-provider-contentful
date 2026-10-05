@@ -48,7 +48,7 @@ func TestAccAppActionResourceLifecycle(t *testing.T) {
 
 	initial := config.Variables{"organization_id": config.StringVariable(organization)}
 	updated := maps.Clone(initial)
-	updated["custom_input"] = config.ObjectVariable(map[string]config.Variable{"parameters": config.StringVariable("[]")})
+	updated["custom_input"] = config.ObjectVariable(map[string]config.Variable{"parameters": config.StringVariable(testJSON([]any{}))})
 	updated["builtin_category"] = config.StringVariable("Notification.v1.0")
 	updated["function_target"] = config.ObjectVariable(map[string]config.Variable{
 		"type": config.StringVariable("endpoint"), "url": config.StringVariable("https://example.invalid/function-transition"),
@@ -65,13 +65,13 @@ func TestAccAppActionResourceLifecycle(t *testing.T) {
 		"description": knownvalue.StringExact("Temporary acceptance action"),
 		"parameters":  knownvalue.Null(),
 		"parameters_schema": knownvalue.StringFunc(func(actual string) error {
-			return checkJSONEqual(`{"type":"object","properties":{"message":{"type":"string"}}}`, actual)
+			return checkJSONEqual(testJSON(map[string]any{"type": "object", "properties": map[string]any{"message": map[string]any{"type": "string"}}}), actual)
 		}),
-		"result_schema": knownvalue.StringFunc(func(actual string) error { return checkJSONEqual(`{"type":"object"}`, actual) }),
+		"result_schema": knownvalue.StringFunc(func(actual string) error { return checkJSONEqual(testJSON(map[string]any{"type": "object"}), actual) }),
 	}
 	customUpdated := maps.Clone(custom)
 	customUpdated["description"] = knownvalue.Null()
-	customUpdated["parameters"] = knownvalue.StringExact("[]")
+	customUpdated["parameters"] = knownvalue.StringExact(testJSON([]any{}))
 	customUpdated["parameters_schema"] = knownvalue.Null()
 	customUpdated["result_schema"] = knownvalue.Null()
 
@@ -118,7 +118,12 @@ func TestAccAppActionResourceLifecycle(t *testing.T) {
 		"function_id":   knownvalue.StringExact("acceptancefunction"),
 		"description":   knownvalue.StringExact(""),
 		"parameters": knownvalue.StringFunc(func(actual string) error {
-			return checkJSONEqual(`[{"id":"text","name":"Text","type":"Symbol"},{"id":"number","name":"Number","type":"Number","required":false,"default":0},{"id":"flag","name":"Flag","type":"Boolean","default":false},{"id":"choice","name":"Choice","type":"Enum","options":["a","b"]}]`, actual)
+			return checkJSONEqual(testJSON([]any{
+				map[string]any{"id": "text", "name": "Text", "type": "Symbol"},
+				map[string]any{"id": "number", "name": "Number", "type": "Number", "required": false, "default": 0},
+				map[string]any{"id": "flag", "name": "Flag", "type": "Boolean", "default": false},
+				map[string]any{"id": "choice", "name": "Choice", "type": "Enum", "options": []any{"a", "b"}},
+			}), actual)
 		}),
 		"parameters_schema": knownvalue.Null(),
 		"result_schema":     knownvalue.Null(),

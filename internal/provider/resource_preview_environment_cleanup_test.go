@@ -24,12 +24,25 @@ func TestPreviewEnvironmentDeletionWaitsForNotFound(t *testing.T) {
 		assert.Equal(t, "/spaces/space/preview_environments/preview", r.URL.Path)
 		w.Header().Set("Content-Type", "application/json")
 
-		body := `{"sys":{"type":"PreviewEnvironment","id":"preview","version":0,"space":{"sys":{"type":"Link","linkType":"Space","id":"space"}}},"name":"Preview","description":"","configurations":[]}`
+		body := testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":    "PreviewEnvironment",
+				"id":      "preview",
+				"version": 0,
+				"space":   map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+			},
+			"name":           "Preview",
+			"description":    "",
+			"configurations": []any{},
+		})
 
 		if reads.Add(1) >= 3 {
 			w.WriteHeader(http.StatusNotFound)
 
-			body = `{"sys":{"type":"Error","id":"NotFound"},"message":"Preview environment not found"}`
+			body = testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "NotFound"},
+				"message": "Preview environment not found",
+			})
 		}
 
 		_, err := io.WriteString(w, body)

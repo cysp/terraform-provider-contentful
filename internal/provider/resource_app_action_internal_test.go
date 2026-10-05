@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-	"strings"
 	"sync/atomic"
 	"testing"
 
@@ -54,7 +53,7 @@ func TestAppActionMutationNoReplay(t *testing.T) {
 					w.Header().Set("Location", "/redirect")
 					w.Header().Set("X-Contentful-Ratelimit-Reset", "0")
 					w.WriteHeader(status)
-					_, _ = w.Write([]byte(`{"sys":{"type":"Error","id":"Failure"}}`))
+					_, _ = w.Write([]byte(testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "Failure"}})))
 				})
 				plan := appActionTestPlan(t, appActionTestModel())
 				config := tfsdk.Config(plan)
@@ -95,7 +94,7 @@ func TestAppActionDeleteNotFound(t *testing.T) {
 	implementation := appActionTestResource(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		_, _ = w.Write([]byte(`{"sys":{"type":"Error","id":"NotFound"}}`))
+		_, _ = w.Write([]byte(testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "NotFound"}})))
 	})
 	plan := appActionTestPlan(t, appActionTestModel())
 	state := tfsdk.State(plan)
@@ -104,6 +103,7 @@ func TestAppActionDeleteNotFound(t *testing.T) {
 	require.False(t, deleted.Diagnostics.HasError())
 }
 
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestAppActionCreateRejectsUnaddressableID(t *testing.T) {
 	t.Parallel()
 
@@ -118,7 +118,7 @@ func TestAppActionCreateRejectsUnaddressableID(t *testing.T) {
 				assert.Equal(t, http.MethodPost, r.Method)
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusCreated)
-				_, _ = w.Write([]byte(strings.Replace(actionDiscoveryFixture, `"id":"action"`, `"id":"`+actionID+`"`, 1)))
+				_, _ = w.Write([]byte(mutateTestJSON(actionDiscoveryFixture, func(document map[string]any) { document["sys"].(map[string]any)["id"] = actionID })))
 			})
 			model := appActionTestModel()
 			model.ID = types.StringUnknown()
@@ -185,7 +185,7 @@ func TestAppActionUpdateRejectsBuiltinParameterChange(t *testing.T) {
 	previous.Category = types.StringValue("Entries.v1.0")
 	previous.Parameters = jsontypes.NewNormalizedNull()
 	model := previous
-	model.Parameters = jsontypes.NewNormalizedValue(`[]`)
+	model.Parameters = jsontypes.NewNormalizedValue(testJSON([]any{}))
 	config := model
 	config.Category = types.StringValue("Custom")
 	state := tfsdk.State(appActionTestPlan(t, previous))

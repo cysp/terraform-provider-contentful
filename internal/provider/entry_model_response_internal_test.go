@@ -27,22 +27,22 @@ func TestNewEntryFieldsFromResponsePreservesKnownJSONNull(t *testing.T) {
 	t.Parallel()
 
 	fields, diags := NewEntryFieldsFromResponse(t.Context(), path.Root("fields"), cm.NewOptEntryFields(cm.EntryFields{
-		"optional": jx.Raw(`null`),
+		"optional": jx.Raw(testJSON(nil)),
 	}))
 
 	require.False(t, diags.HasError(), diags.Errors())
 	require.False(t, fields.IsNull())
 	require.Contains(t, fields.Elements(), "optional")
 	assert.False(t, fields.Elements()["optional"].IsNull())
-	assert.Equal(t, `null`, fields.Elements()["optional"].ValueString())
+	assert.Equal(t, testJSON(nil), fields.Elements()["optional"].ValueString())
 }
 
 func TestMergeEntryFieldsWithFallback(t *testing.T) {
 	t.Parallel()
 
-	returnedValue := jsontypes.NewNormalizedValue(`{"en-US":"returned"}`)
-	configuredValue := jsontypes.NewNormalizedValue(`{"en-US":"configured"}`)
-	missingValue := jsontypes.NewNormalizedValue(`{"en-US":"missing"}`)
+	returnedValue := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "returned"}))
+	configuredValue := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "configured"}))
+	missingValue := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "missing"}))
 	returned := NewTypedMap(map[string]jsontypes.Normalized{"returned": returnedValue})
 	configured := NewTypedMap(map[string]jsontypes.Normalized{
 		"returned": configuredValue,
@@ -65,7 +65,7 @@ func TestMergeEntryFieldsWithFallback(t *testing.T) {
 func TestMergeEntryFieldsWithFallbackInitializesNullResponse(t *testing.T) {
 	t.Parallel()
 
-	value := jsontypes.NewNormalizedValue(`{"en-US":"configured"}`)
+	value := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "configured"}))
 	actual := mergeEntryFieldsWithFallback(
 		NewTypedMapNull[jsontypes.Normalized](),
 		NewTypedMap(map[string]jsontypes.Normalized{"field": value}),
@@ -79,15 +79,17 @@ func TestMergeEntryFieldsWithFallbackInitializesNullResponse(t *testing.T) {
 func TestProjectEntryMutationResponse(t *testing.T) {
 	t.Parallel()
 
-	managed := jsontypes.NewNormalizedValue(`{"en-US":"managed"}`)
-	external := jsontypes.NewNormalizedValue(`{"en-US":"external"}`)
-	changed := jsontypes.NewNormalizedValue(`{"en-US":"changed"}`)
-	defaulted := jsontypes.NewNormalizedValue(`{"en-US":"default"}`)
+	managed := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "managed"}))
+	external := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "external"}))
+	changed := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "changed"}))
+	defaulted := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "default"}))
 	terraformNull := jsontypes.NewNormalizedNull()
-	jsonNull := jsontypes.NewNormalizedValue(`null`)
-	emptyArray := jsontypes.NewNormalizedValue(`{"en-US":[]}`)
+	jsonNull := jsontypes.NewNormalizedValue(testJSON(nil))
+	emptyArray := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": []any{}}))
 	semanticPlanValue := jsontypes.NewNormalizedValue(`{"en-US":{"first":"one","second":"two"}}`)
 	semanticResponseValue := jsontypes.NewNormalizedValue(`{ "en-US": { "second": "two", "first": "one" } }`)
+	require.NotEqual(t, semanticPlanValue.ValueString(), semanticResponseValue.ValueString())
+
 	remoteMetadata := NewTypedObject[EntryMetadataValue](EntryMetadataValue{
 		Concepts: NewTypedListFromStringSlice([]string{"remote"}),
 		Tags:     NewTypedListFromStringSlice([]string{}),
@@ -381,14 +383,14 @@ func TestEntryMetadataEquivalent(t *testing.T) {
 func TestMergeEntryResponseFieldsWithOmissionFallback(t *testing.T) {
 	t.Parallel()
 
-	emptyArray := jsontypes.NewNormalizedValue(`{"en-US":[]}`)
-	emptyLocales := jsontypes.NewNormalizedValue(`{}`)
-	nonemptyArray := jsontypes.NewNormalizedValue(`{"en-US":["value"]}`)
-	nullValue := jsontypes.NewNormalizedValue(`{"en-US":null}`)
-	jsonNull := jsontypes.NewNormalizedValue(`null`)
+	emptyArray := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": []any{}}))
+	emptyLocales := jsontypes.NewNormalizedValue(testJSON(map[string]any{}))
+	nonemptyArray := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": []any{"value"}}))
+	nullValue := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": nil}))
+	jsonNull := jsontypes.NewNormalizedValue(testJSON(nil))
 	terraformNull := jsontypes.NewNormalizedNull()
-	mixedNull := jsontypes.NewNormalizedValue(`{"en-US":[],"de-DE":null}`)
-	scalar := jsontypes.NewNormalizedValue(`{"en-US":"value"}`)
+	mixedNull := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": []any{}, "de-DE": nil}))
+	scalar := jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "value"}))
 
 	tests := map[string]struct {
 		response TypedMap[jsontypes.Normalized]

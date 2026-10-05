@@ -75,7 +75,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
-					Details: []byte(`"Detailed reason for error"`),
+					Details: []byte(testJSON("Detailed reason for error")),
 				}),
 			},
 			expected: "Error: UnknownError: Error message",
@@ -85,7 +85,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
-					Details: []byte(`{"reasons":"Detailed reason for error"}`),
+					Details: []byte(testJSON(map[string]any{"reasons": "Detailed reason for error"})),
 				}),
 			},
 			expected: "Error: UnknownError: Error message: Detailed reason for error",
@@ -95,7 +95,7 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("UnknownError"),
 					Message: cm.NewOptString("Error message"),
-					Details: []byte(`{"reasons":["Reason 1", "Reason 2"]}`),
+					Details: []byte(testJSON(map[string]any{"reasons": []any{"Reason 1", "Reason 2"}})),
 				}),
 			},
 			expected: "Error: UnknownError: Error message",
@@ -114,7 +114,9 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("ValidationFailed"),
 					Message: cm.NewOptString("Validation error"),
-					Details: []byte(`{"errors":"AppAction cannot have both parametersSchema and parameters. Please provide just a parametersSchema."}`),
+					Details: []byte(testJSON(map[string]any{
+						"errors": "AppAction cannot have both parametersSchema and parameters. Please provide just a parametersSchema.",
+					})),
 				}),
 			},
 			expected: "Error: ValidationFailed: Validation error\n  AppAction cannot have both parametersSchema and parameters. Please provide just a parametersSchema.",
@@ -125,7 +127,27 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("ValidationFailed"),
 					Message: cm.NewOptString("Validation error"),
-					Details: []byte("{\"errors\":[{\"name\":\"required\",\"details\":\"The property \\\"annotations\\\" is required here\",\"path\":[\"metadata\",\"annotations\"]},{\"name\":\"required\",\"details\":\"The property \\\"taxonomy\\\" is required here\",\"path\":[\"metadata\",\"taxonomy\"]},{\"name\":\"in\",\"details\":\"Value must be one of expected values\",\"path\":[\"metadata\"],\"value\": {},\"expected\":[{\"required\":[\"annotations\"]},{\"required\":[\"taxonomy\"]}]}]}"),
+					Details: []byte(testJSON(map[string]any{
+						"errors": []any{
+							map[string]any{
+								"name":    "required",
+								"details": "The property \"annotations\" is required here",
+								"path":    []any{"metadata", "annotations"},
+							},
+							map[string]any{
+								"name":    "required",
+								"details": "The property \"taxonomy\" is required here",
+								"path":    []any{"metadata", "taxonomy"},
+							},
+							map[string]any{
+								"name":     "in",
+								"details":  "Value must be one of expected values",
+								"path":     []any{"metadata"},
+								"value":    map[string]any{},
+								"expected": []any{map[string]any{"required": []any{"annotations"}}, map[string]any{"required": []any{"taxonomy"}}},
+							},
+						},
+					})),
 				}),
 			},
 			expected: "Error: ValidationFailed: Validation error\n  metadata.annotations: The property \"annotations\" is required here\n  metadata.taxonomy: The property \"taxonomy\" is required here\n  metadata: Value must be one of expected values",
@@ -136,7 +158,17 @@ func TestErrorDetailFromContentfulManagementResponse(t *testing.T) {
 				Response: cm.NewErrorApplicationJSONError(cm.Error{
 					Sys:     cm.NewErrorSys("ValidationFailed"),
 					Message: cm.NewOptString("Validation error"),
-					Details: []byte("{\"errors\":[{\"name\":\"type\",\"details\":\"The type of \\\"required\\\" is incorrect, expected type: Boolean\",\"path\":[\"fields\",0,\"required\"],\"type\":\"Boolean\",\"value\":\"true\"}]}"),
+					Details: []byte(testJSON(map[string]any{
+						"errors": []any{
+							map[string]any{
+								"name":    "type",
+								"details": "The type of \"required\" is incorrect, expected type: Boolean",
+								"path":    []any{"fields", 0, "required"},
+								"type":    "Boolean",
+								"value":   "true",
+							},
+						},
+					})),
 				}),
 			},
 			expected: "Error: ValidationFailed: Validation error\n  fields[0].required: The type of \"required\" is incorrect, expected type: Boolean",
@@ -158,9 +190,9 @@ func TestContentfulManagementValidationFailedErrorDetails(t *testing.T) {
 	t.Parallel()
 
 	for name, details := range map[string]string{
-		"missing errors":    `{}`,
-		"null errors":       `{"errors":null}`,
-		"unsupported error": `{"errors":42}`,
+		"missing errors":    testJSON(map[string]any{}),
+		"null errors":       testJSON(map[string]any{"errors": nil}),
+		"unsupported error": testJSON(map[string]any{"errors": 42}),
 		"invalid JSON":      `{`,
 	} {
 		t.Run(name, func(t *testing.T) {

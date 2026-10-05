@@ -301,7 +301,7 @@ func TestContentTypeValidationsFailClosedWithExactPaths(t *testing.T) {
 	actual, diags := ValidationsListToContentTypeRequestDataFieldValidations(
 		path.Root("fields").AtListIndex(0).AtName("validations"),
 		NewTypedList([]jsontypes.Normalized{
-			jsontypes.NewNormalizedValue(`{"size":{"min":1}}`),
+			jsontypes.NewNormalizedValue(testJSON(map[string]any{"size": map[string]any{"min": 1}})),
 			jsontypes.NewNormalizedNull(),
 			jsontypes.NewNormalizedUnknown(),
 		}),

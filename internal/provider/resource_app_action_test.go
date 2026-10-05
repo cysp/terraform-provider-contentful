@@ -27,13 +27,29 @@ func TestAccAppActionResourceTransitions(t *testing.T) {
 	t.Parallel()
 
 	fullConfig := strings.Replace(actionSchemaConfig, "\n}", "\n description = \"Description\"\n result_schema = jsonencode({type=\"object\"})\n}", 1)
-	fullBody := `{"name":"Action","category":"Custom","type":"endpoint","url":"https://example.invalid/action","parametersSchema":{"type":"object","properties":{"message":{"type":"string"}}},"description":"Description","resultSchema":{"type":"object"}}`
+	fullBody := testJSON(map[string]any{
+		"name":             "Action",
+		"category":         "Custom",
+		"type":             "endpoint",
+		"url":              "https://example.invalid/action",
+		"parametersSchema": map[string]any{"type": "object", "properties": map[string]any{"message": map[string]any{"type": "string"}}},
+		"description":      "Description",
+		"resultSchema":     map[string]any{"type": "object"},
+	})
 	functionConfig := actionConfigPrefix + `category="Custom"
  type="function-invocation"
  function_id="function"
  parameters=jsonencode([{id="enabled",name="Enabled",type="Boolean",required=false,default=false}])
 }`
-	functionBody := `{"name":"Action","category":"Custom","type":"function-invocation","function":{"sys":{"type":"Link","linkType":"Function","id":"function"}},"parameters":[{"id":"enabled","name":"Enabled","type":"Boolean","required":false,"default":false}]}`
+	functionBody := testJSON(map[string]any{
+		"name":     "Action",
+		"category": "Custom",
+		"type":     "function-invocation",
+		"function": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "function"}},
+		"parameters": []any{
+			map[string]any{"id": "enabled", "name": "Enabled", "type": "Boolean", "required": false, "default": false},
+		},
+	})
 	testActionLifecycle(t, []actionMutationFixture{
 		{actionLegacyConfig, actionLegacyBody},
 		{fullConfig, fullBody},
@@ -49,8 +65,22 @@ func TestAccAppActionResourceBuiltinSchema(t *testing.T) {
 	t.Parallel()
 
 	config := strings.Replace(actionBuiltinConfig, "\n}", "\n parameters_schema=jsonencode({type=\"object\"})\n result_schema=jsonencode({type=\"object\"})\n}", 1)
-	body := `{"name":"Action","category":"Entries.v1.0","type":"endpoint","url":"https://example.invalid/action","parametersSchema":{"type":"object"},"resultSchema":{"type":"object"}}`
-	updatedBody := `{"name":"Action","category":"Notification.v1.0","type":"endpoint","url":"https://example.invalid/action","parametersSchema":{"type":"object"},"resultSchema":{"type":"object"}}`
+	body := testJSON(map[string]any{
+		"name":             "Action",
+		"category":         "Entries.v1.0",
+		"type":             "endpoint",
+		"url":              "https://example.invalid/action",
+		"parametersSchema": map[string]any{"type": "object"},
+		"resultSchema":     map[string]any{"type": "object"},
+	})
+	updatedBody := testJSON(map[string]any{
+		"name":             "Action",
+		"category":         "Notification.v1.0",
+		"type":             "endpoint",
+		"url":              "https://example.invalid/action",
+		"parametersSchema": map[string]any{"type": "object"},
+		"resultSchema":     map[string]any{"type": "object"},
+	})
 	updatedConfig := strings.Replace(config, "Entries.v1.0", "Notification.v1.0", 1)
 	testActionLifecycle(t, []actionMutationFixture{{config, body}, {updatedConfig, updatedBody}})
 }
@@ -60,7 +90,13 @@ func TestAccAppActionResourceIgnoreChanges(t *testing.T) {
 
 	config := strings.Replace(actionLegacyConfig, "\n}", "\n lifecycle { ignore_changes = [parameters] }\n}", 1)
 	update := strings.Replace(strings.Replace(config, `name = "Action"`, `name = "Updated"`, 1), `jsonencode([])`, `jsonencode([{id="x", name="X", type="Symbol"}])`, 1)
-	body := `{"name":"Updated","category":"Custom","type":"endpoint","url":"https://example.invalid/action","parameters":[]}`
+	body := testJSON(map[string]any{
+		"name":       "Updated",
+		"category":   "Custom",
+		"type":       "endpoint",
+		"url":        "https://example.invalid/action",
+		"parameters": []any{},
+	})
 	testActionLifecycle(t, []actionMutationFixture{{config, actionLegacyBody}, {update, body}})
 }
 
@@ -98,7 +134,7 @@ func TestAccAppActionDataSources(t *testing.T) {
 		},
 		Name: "Function Action", Category: "Future.v2.0", Type: "function-invocation", Description: cm.NewOptString("A full definition"),
 		Function:   cm.NewOptFunctionLink(cm.NewFunctionLink("function")),
-		Parameters: []byte(`[]`), ParametersSchema: []byte(`{"type":"object"}`), ResultSchema: []byte(`{"type":"string"}`),
+		Parameters: []byte(testJSON([]any{})), ParametersSchema: []byte(testJSON(map[string]any{"type": "object"})), ResultSchema: []byte(testJSON(map[string]any{"type": "string"})),
 	}
 	endpointResponse := cm.AppAction{
 		Sys: cm.AppActionSys{
@@ -106,7 +142,15 @@ func TestAccAppActionDataSources(t *testing.T) {
 			Organization: cm.NewOrganizationLink("org"), AppDefinition: cm.NewAppDefinitionLink("app"),
 		},
 		Name: "Action", Category: "Entries.v1.0", Type: "endpoint", URL: cm.NewOptString("https://example.invalid/action"),
-		Parameters: []byte(`[{"id":"entryIds","name":"Entry Ids","description":"Ids of the entries you want to trigger the action for","type":"Symbol","required":true}]`),
+		Parameters: []byte(testJSON([]any{
+			map[string]any{
+				"id":          "entryIds",
+				"name":        "Entry Ids",
+				"description": "Ids of the entries you want to trigger the action for",
+				"type":        "Symbol",
+				"required":    true,
+			},
+		})),
 	}
 
 	var requestMutex sync.Mutex
@@ -152,9 +196,9 @@ func TestAccAppActionDataSources(t *testing.T) {
 		"description":       knownvalue.StringExact("A full definition"),
 		"url":               knownvalue.Null(),
 		"function_id":       knownvalue.StringExact("function"),
-		"parameters":        knownvalue.StringExact("[]"),
-		"parameters_schema": knownvalue.StringExact(`{"type":"object"}`),
-		"result_schema":     knownvalue.StringExact(`{"type":"string"}`),
+		"parameters":        knownvalue.StringExact(testJSON([]any{})),
+		"parameters_schema": knownvalue.StringExact(testJSON(map[string]any{"type": "object"})),
+		"result_schema":     knownvalue.StringExact(testJSON(map[string]any{"type": "string"})),
 	}
 
 	checks := make([]statecheck.StateCheck, 0, 3+len(functionFields))
@@ -167,7 +211,15 @@ func TestAccAppActionDataSources(t *testing.T) {
 			knownvalue.ObjectExact(map[string]knownvalue.Check{
 				"app_action_id": knownvalue.StringExact("action"), "name": knownvalue.StringExact("Action"), "category": knownvalue.StringExact("Entries.v1.0"), "type": knownvalue.StringExact("endpoint"),
 				"description": knownvalue.Null(), "url": knownvalue.StringExact("https://example.invalid/action"), "function_id": knownvalue.Null(),
-				"parameters":        knownvalue.StringExact(`[{"description":"Ids of the entries you want to trigger the action for","id":"entryIds","name":"Entry Ids","required":true,"type":"Symbol"}]`),
+				"parameters": knownvalue.StringExact(testJSON([]any{
+					map[string]any{
+						"description": "Ids of the entries you want to trigger the action for",
+						"id":          "entryIds",
+						"name":        "Entry Ids",
+						"required":    true,
+						"type":        "Symbol",
+					},
+				})),
 				"parameters_schema": knownvalue.Null(), "result_schema": knownvalue.Null(),
 			}),
 		})),
@@ -198,7 +250,13 @@ func TestAccAppActionResourceIgnoreCategory(t *testing.T) {
 	config := strings.Replace(actionBuiltinConfig, "\n}", "\n lifecycle { ignore_changes = [category] }\n}", 1)
 	update := strings.Replace(strings.Replace(config, `"Entries.v1.0"`, `"Custom"`, 1), `name = "Action"`, `name = "Updated"`, 1)
 	update = strings.Replace(update, "\n}", "\n parameters_schema=jsonencode({type=\"object\"})\n}", 1)
-	body := `{"name":"Updated","category":"Entries.v1.0","type":"endpoint","url":"https://example.invalid/action","parametersSchema":{"type":"object"}}`
+	body := testJSON(map[string]any{
+		"name":             "Updated",
+		"category":         "Entries.v1.0",
+		"type":             "endpoint",
+		"url":              "https://example.invalid/action",
+		"parametersSchema": map[string]any{"type": "object"},
+	})
 	testActionLifecycle(t, []actionMutationFixture{{config, actionBuiltinBody}, {update, body}})
 }
 
@@ -230,7 +288,12 @@ func TestAccAppActionResourceIgnoreBuiltinParameters(t *testing.T) {
 	config := strings.Replace(actionBuiltinConfig, "\n}", "\n lifecycle { ignore_changes = [category, parameters] }\n}", 1)
 	update := strings.Replace(strings.Replace(config, `"Entries.v1.0"`, `"Custom"`, 1), `name = "Action"`, `name = "Updated"`, 1)
 	update = strings.Replace(update, "\n}", "\n parameters=jsonencode([])\n}", 1)
-	body := `{"name":"Updated","category":"Entries.v1.0","type":"endpoint","url":"https://example.invalid/action"}`
+	body := testJSON(map[string]any{
+		"name":     "Updated",
+		"category": "Entries.v1.0",
+		"type":     "endpoint",
+		"url":      "https://example.invalid/action",
+	})
 	testActionLifecycle(t, []actionMutationFixture{{config, actionBuiltinBody}, {update, body}})
 }
 
@@ -260,7 +323,7 @@ func TestAccAppActionResourceTimeoutOnly(t *testing.T) {
 					server.ServeHTTP(response, r)
 					maps.Copy(w.Header(), response.Header())
 					w.WriteHeader(response.Code)
-					_, _ = w.Write([]byte(strings.ReplaceAll(response.Body.String(), "https://", "http://")))
+					_, _ = w.Write([]byte(mutateTestJSON(response.Body.String(), func(document map[string]any) { document["url"] = "http://example.invalid/action" })))
 
 					return
 				}
@@ -467,8 +530,25 @@ data "contentful_app_action" "builtin" {
 	steps := make([]resource.TestStep, 0, 3)
 
 	for _, test := range []struct{ config, definitions string }{
-		{actionBuiltinConfig, `[{"description":"Ids of the entries you want to trigger the action for","id":"entryIds","name":"Entry Ids","required":true,"type":"Symbol"}]`},
-		{strings.Replace(actionBuiltinConfig, "Entries.v1.0", "Notification.v1.0", 1), `[{"description":"The message being sent to external messaging service","id":"message","name":"Message","required":true,"type":"Symbol"},{"description":"","id":"recipient","name":"Recipient","required":true,"type":"Symbol"}]`},
+		{actionBuiltinConfig, testJSON([]any{
+			map[string]any{
+				"description": "Ids of the entries you want to trigger the action for",
+				"id":          "entryIds",
+				"name":        "Entry Ids",
+				"required":    true,
+				"type":        "Symbol",
+			},
+		})},
+		{strings.Replace(actionBuiltinConfig, "Entries.v1.0", "Notification.v1.0", 1), testJSON([]any{
+			map[string]any{
+				"description": "The message being sent to external messaging service",
+				"id":          "message",
+				"name":        "Message",
+				"required":    true,
+				"type":        "Symbol",
+			},
+			map[string]any{"description": "", "id": "recipient", "name": "Recipient", "required": true, "type": "Symbol"},
+		})},
 		{actionSchemaConfig, ""},
 	} {
 		config := strings.Replace(test.config, "\n}", "\n lifecycle { ignore_changes = [parameters] }\n}", 1) + discovery
@@ -495,8 +575,8 @@ func TestAccAppActionResourceCategoryDrift(t *testing.T) {
 		parameters             []byte
 		refreshed, restored    knownvalue.Check
 	}{
-		{"custom to builtin", actionLegacyConfig, "Entries.v1.0", nil, knownvalue.Null(), knownvalue.StringExact("[]")},
-		{"builtin to custom", actionBuiltinConfig, "Custom", []byte("[]"), knownvalue.StringExact("[]"), knownvalue.Null()},
+		{"custom to builtin", actionLegacyConfig, "Entries.v1.0", nil, knownvalue.Null(), knownvalue.StringExact(testJSON([]any{}))},
+		{"builtin to custom", actionBuiltinConfig, "Custom", []byte(testJSON([]any{})), knownvalue.StringExact(testJSON([]any{})), knownvalue.Null()},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
@@ -555,7 +635,13 @@ resource "terraform_data" "definition" {
 		{prefix + `{ category="Entries.v1.0", type="endpoint", url="https://example.invalid/action", function_id=null, parameters=null, parameters_schema=null }
 }`, actionBuiltinBody},
 		{prefix + `{ category="Custom", type="function-invocation", url=null, function_id="function", parameters=jsonencode([]), parameters_schema=null }
-}`, `{"name":"Action","category":"Custom","type":"function-invocation","function":{"sys":{"type":"Link","linkType":"Function","id":"function"}},"parameters":[]}`},
+}`, testJSON(map[string]any{
+			"name":       "Action",
+			"category":   "Custom",
+			"type":       "function-invocation",
+			"function":   map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "function"}},
+			"parameters": []any{},
+		})},
 	}
 	testActionLifecycle(t, cases,
 		plancheck.ExpectUnknownValue(actionAddress, tfjsonpath.New("category")),

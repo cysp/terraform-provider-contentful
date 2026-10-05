@@ -93,12 +93,12 @@ func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 			plannedID                         string
 			paths                             []string
 		}{
-			"equivalent":                       {variables: `{"a":"VALUE_DO_NOT_ECHO","b":null}`, spaceID: "space", environmentID: "environment"},
-			"different variables":              {variables: `{"remote":"VALUE_DO_NOT_ECHO"}`, spaceID: "space", environmentID: "environment", paths: []string{"variables"}},
-			"different space":                  {variables: `{"a":"VALUE_DO_NOT_ECHO","b":null}`, spaceID: "other", environmentID: "environment", paths: []string{"space_id"}},
-			"different environment":            {variables: `{"a":"VALUE_DO_NOT_ECHO","b":null}`, spaceID: "space", environmentID: "other", paths: []string{"environment_id"}},
-			"different legacy ID":              {variables: `{"a":"VALUE_DO_NOT_ECHO","b":null}`, spaceID: "space", environmentID: "environment", plannedID: "other/identity", paths: []string{"id"}},
-			"different identity and variables": {variables: `{"remote":"VALUE_DO_NOT_ECHO"}`, spaceID: "other", environmentID: "other", paths: []string{"space_id", "environment_id", "variables"}},
+			"equivalent":                       {variables: testJSON(map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}), spaceID: "space", environmentID: "environment"},
+			"different variables":              {variables: testJSON(map[string]any{"remote": "VALUE_DO_NOT_ECHO"}), spaceID: "space", environmentID: "environment", paths: []string{"variables"}},
+			"different space":                  {variables: testJSON(map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}), spaceID: "other", environmentID: "environment", paths: []string{"space_id"}},
+			"different environment":            {variables: testJSON(map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}), spaceID: "space", environmentID: "other", paths: []string{"environment_id"}},
+			"different legacy ID":              {variables: testJSON(map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}), spaceID: "space", environmentID: "environment", plannedID: "other/identity", paths: []string{"id"}},
+			"different identity and variables": {variables: testJSON(map[string]any{"remote": "VALUE_DO_NOT_ECHO"}), spaceID: "other", environmentID: "other", paths: []string{"space_id", "environment_id", "variables"}},
 		} {
 			t.Run(operation+"/"+name, func(t *testing.T) {
 				t.Parallel()
@@ -120,13 +120,15 @@ func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 					assert.Equal(t, version, r.Header.Get("X-Contentful-Version"))
 					requestBody, err := io.ReadAll(r.Body)
 					assert.NoError(t, err)
-					assert.JSONEq(t, `{"variables":{"a":"VALUE_DO_NOT_ECHO","b":null}}`, string(requestBody))
+					assert.JSONEq(t, testJSON(map[string]any{"variables": map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}}), string(requestBody))
 					w.Header().Set("Content-Type", "application/json")
 					_, _ = io.WriteString(w, body)
 				}))
+				// Deliberately retain a different planned representation for semantic reconciliation.
 				model := livePreviewVariablesModel(` { "a": "VALUE_DO_NOT_ECHO", "b": null } `)
+				require.NotEqual(t, model.Variables.ValueString(), test.variables)
 
-				prior := resourceModelDynamicValue(t, LivePreviewVariablesResourceSchema(t.Context()), livePreviewVariablesModel(`{"before":"old"}`))
+				prior := resourceModelDynamicValue(t, LivePreviewVariablesResourceSchema(t.Context()), livePreviewVariablesModel(testJSON(map[string]any{"before": "old"})))
 				if operation == "create" {
 					prior = nullResourceDynamicValue(t, LivePreviewVariablesResourceSchema(t.Context()))
 					model.ID = types.StringUnknown()
@@ -137,7 +139,7 @@ func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 				}
 
 				planned := resourceModelDynamicValue(t, LivePreviewVariablesResourceSchema(t.Context()), model)
-				configured := livePreviewVariablesModel(`{"config":"must-not-be-sent"}`)
+				configured := livePreviewVariablesModel(testJSON(map[string]any{"config": "must-not-be-sent"}))
 				config := resourceModelDynamicValue(t, LivePreviewVariablesResourceSchema(t.Context()), configured)
 
 				var logs bytes.Buffer
@@ -190,15 +192,24 @@ func TestLivePreviewVariablesErrorsAndAbsence(t *testing.T) {
 	for _, operation := range []string{"create", "update", "read", "delete"} {
 		for name, test := range map[string]livePreviewVariablesErrorTest{
 			"missing document":               {status: 404, body: livePreviewVariablesErrorJSON(t, cm.ErrorSysIDNotFound, "The resource could not be found.", nil), absent: true},
-			"missing parent":                 {status: 404, body: livePreviewVariablesErrorJSON(t, cm.ErrorSysIDNotFound, "Missing environment", []byte(`{"type":"Environment","id":"environment"}`)), absent: true},
+			"missing parent":                 {status: 404, body: livePreviewVariablesErrorJSON(t, cm.ErrorSysIDNotFound, "Missing environment", []byte(testJSON(map[string]any{"type": "Environment", "id": "environment"}))), absent: true},
 			"enterprise feature unavailable": {status: 403, body: livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusForbidden, Error: "Forbidden", Message: "previewLocalization is not enabled"})},
 			"service not found":              {status: 404, body: livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusNotFound, Error: "Not Found", Message: "Not Found"})},
-			"wrong CMA ID":                   {status: 404, body: `{"sys":{"type":"Error","id":"AccessDenied"},"message":"Denied"}`},
+			"wrong CMA ID":                   {status: 404, body: testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "AccessDenied"}, "message": "Denied"})},
 			"denied":                         {status: 403, body: livePreviewVariablesErrorJSON(t, "AccessDenied", "Denied", nil)},
-			"wrong status for NotFound":      {status: 400, body: `{"sys":{"type":"Error","id":"NotFound"},"message":"Bad response"}`},
+			"wrong status for NotFound":      {status: 400, body: testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "NotFound"}, "message": "Bad response"})},
 			"conflict":                       {status: 409, body: livePreviewVariablesErrorJSON(t, cm.ErrorSysIDVersionMismatch, "Version mismatch", nil), conflict: true},
 			"other conflict":                 {status: 409, body: livePreviewVariablesErrorJSON(t, cm.ErrorSysIDConflict, "Other conflict", nil)},
-			"validation value omitted from diagnostics": {status: 422, body: livePreviewVariablesErrorJSON(t, "ValidationFailed", "Validation error", []byte(`{"errors":[{"name":"type","value":"VALUE_DO_NOT_ECHO","details":"Expected Text","path":["variable","en-US"]}]}`))},
+			"validation value omitted from diagnostics": {status: 422, body: livePreviewVariablesErrorJSON(t, "ValidationFailed", "Validation error", []byte(testJSON(map[string]any{
+				"errors": []any{
+					map[string]any{
+						"name":    "type",
+						"value":   "VALUE_DO_NOT_ECHO",
+						"details": "Expected Text",
+						"path":    []any{"variable", "en-US"},
+					},
+				},
+			})))},
 			"server failure": {status: 500, body: livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusInternalServerError, Error: "Internal Server Error", Message: "Internal error"})},
 			"malformed":      {status: 200, body: `{`},
 		} {
@@ -234,7 +245,7 @@ func runLivePreviewVariablesErrorTest(t *testing.T, operation string, test liveP
 		_, _ = io.WriteString(w, test.body)
 	}))
 	resourceSchema := LivePreviewVariablesResourceSchema(t.Context())
-	state := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(`{"before":"old"}`))
+	state := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(testJSON(map[string]any{"before": "old"})))
 
 	var (
 		diagnostics []*tfprotov6.Diagnostic
@@ -242,7 +253,7 @@ func runLivePreviewVariablesErrorTest(t *testing.T, operation string, test liveP
 	)
 
 	if operation == "read" {
-		response, err := providerServer.ReadResource(t.Context(), &tfprotov6.ReadResourceRequest{TypeName: "contentful_live_preview_variables", CurrentState: &state, CurrentIdentity: &tfprotov6.ResourceIdentityData{IdentityData: &tfprotov6.DynamicValue{JSON: []byte(`{"space_id":"space","environment_id":"environment"}`)}}, Private: privateVersionBytes(t, 17)})
+		response, err := providerServer.ReadResource(t.Context(), &tfprotov6.ReadResourceRequest{TypeName: "contentful_live_preview_variables", CurrentState: &state, CurrentIdentity: &tfprotov6.ResourceIdentityData{IdentityData: &tfprotov6.DynamicValue{JSON: []byte(testJSON(map[string]any{"space_id": "space", "environment_id": "environment"}))}}, Private: privateVersionBytes(t, 17)})
 		require.NoError(t, err)
 
 		diagnostics, returned = response.Diagnostics, response.NewState
@@ -283,7 +294,7 @@ func runLivePreviewVariablesErrorTest(t *testing.T, operation string, test liveP
 	assert.Equal(t, operation == "create" && test.conflict, strings.Contains(diagnostics[0].Detail, "import it"))
 
 	if operation != "create" {
-		require.Equal(t, livePreviewVariablesModel(`{"before":"old"}`).Variables, livePreviewVariablesModelFromDynamicValue(t, returned).Variables)
+		require.Equal(t, livePreviewVariablesModel(testJSON(map[string]any{"before": "old"})).Variables, livePreviewVariablesModelFromDynamicValue(t, returned).Variables)
 	}
 }
 
@@ -301,7 +312,7 @@ func TestLivePreviewVariablesUnknownInputsDoNotMutate(t *testing.T) {
 					requests.Add(1)
 					w.WriteHeader(http.StatusInternalServerError)
 				}))
-				model := livePreviewVariablesModel(`{}`)
+				model := livePreviewVariablesModel(testJSON(map[string]any{}))
 
 				switch attribute {
 				case "space_id":
@@ -315,7 +326,7 @@ func TestLivePreviewVariablesUnknownInputsDoNotMutate(t *testing.T) {
 				resourceSchema := LivePreviewVariablesResourceSchema(t.Context())
 				planned := resourceModelDynamicValue(t, resourceSchema, model)
 
-				prior := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(`{}`))
+				prior := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(testJSON(map[string]any{})))
 				if operation == "create" {
 					prior = nullResourceDynamicValue(t, resourceSchema)
 				}
@@ -355,7 +366,7 @@ func TestLivePreviewVariablesUsesDefaultMutationRetryPolicy(t *testing.T) {
 	}))
 	resourceSchema := LivePreviewVariablesResourceSchema(t.Context())
 	prior := nullResourceDynamicValue(t, resourceSchema)
-	planned := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(`{}`))
+	planned := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(testJSON(map[string]any{})))
 	response, err := providerServer.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: "contentful_live_preview_variables", PriorState: &prior, PlannedState: &planned, Config: &planned})
 	require.NoError(t, err)
 	require.NotEmpty(t, response.Diagnostics)
@@ -371,7 +382,7 @@ func TestLivePreviewVariablesReadProjectsResponse(t *testing.T) {
 
 			var requests atomic.Int64
 
-			body := livePreviewVariablesJSON(t, "returned-space", "returned-environment", 29, `{"remote":"new"}`)
+			body := livePreviewVariablesJSON(t, "returned-space", "returned-environment", 29, testJSON(map[string]any{"remote": "new"}))
 
 			providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				requests.Add(1)
@@ -380,11 +391,11 @@ func TestLivePreviewVariablesReadProjectsResponse(t *testing.T) {
 				w.Header().Set("Content-Type", "application/json")
 				_, _ = io.WriteString(w, body)
 			}))
-			state := resourceModelDynamicValue(t, LivePreviewVariablesResourceSchema(t.Context()), livePreviewVariablesModel(`{"before":"old"}`))
+			state := resourceModelDynamicValue(t, LivePreviewVariablesResourceSchema(t.Context()), livePreviewVariablesModel(testJSON(map[string]any{"before": "old"})))
 
 			request := &tfprotov6.ReadResourceRequest{TypeName: "contentful_live_preview_variables", CurrentState: &state, Private: privateVersionBytes(t, 17)}
 			if knownIdentity {
-				request.CurrentIdentity = &tfprotov6.ResourceIdentityData{IdentityData: &tfprotov6.DynamicValue{JSON: []byte(`{"space_id":"space","environment_id":"environment"}`)}}
+				request.CurrentIdentity = &tfprotov6.ResourceIdentityData{IdentityData: &tfprotov6.DynamicValue{JSON: []byte(testJSON(map[string]any{"space_id": "space", "environment_id": "environment"}))}}
 			}
 
 			response, err := providerServer.ReadResource(t.Context(), request)
@@ -405,7 +416,7 @@ func TestLivePreviewVariablesReadProjectsResponse(t *testing.T) {
 			require.Equal(t, "returned-space", refreshed.SpaceID.ValueString())
 			require.Equal(t, "returned-environment", refreshed.EnvironmentID.ValueString())
 			require.Equal(t, "returned-space/returned-environment", refreshed.ID.ValueString())
-			require.Equal(t, jsontypes.NewNormalizedValue(`{"remote":"new"}`), refreshed.Variables)
+			require.Equal(t, jsontypes.NewNormalizedValue(testJSON(map[string]any{"remote": "new"})), refreshed.Variables)
 			require.NotNil(t, response.NewIdentity)
 
 			var private map[string][]byte
@@ -420,11 +431,30 @@ func TestLivePreviewVariablesMultipleValidationErrorDiagnostics(t *testing.T) {
 
 	var requests atomic.Int64
 
-	body := livePreviewVariablesErrorJSON(t, "ValidationFailed", "Validation error", []byte(`{"errors":[
-			{"name":"type","type":"Text","value":981723,"details":"The type of \"value\" is incorrect, expected type: Text","path":["global"]},
-			{"name":"type","type":"Text","value":["REJECTED_ARRAY_VALUE"],"details":"The type of \"value\" is incorrect, expected type: Text","path":["localized","en-US"]},
-			{"name":"unknown","value":"REJECTED_LOCALE_VALUE","details":"The property \"zz-ZZ\" is not allowed here.","path":["localized","zz-ZZ"]}
-		]}`))
+	body := livePreviewVariablesErrorJSON(t, "ValidationFailed", "Validation error", []byte(testJSON(map[string]any{
+		"errors": []any{
+			map[string]any{
+				"name":    "type",
+				"type":    "Text",
+				"value":   981723,
+				"details": "The type of \"value\" is incorrect, expected type: Text",
+				"path":    []any{"global"},
+			},
+			map[string]any{
+				"name":    "type",
+				"type":    "Text",
+				"value":   []any{"REJECTED_ARRAY_VALUE"},
+				"details": "The type of \"value\" is incorrect, expected type: Text",
+				"path":    []any{"localized", "en-US"},
+			},
+			map[string]any{
+				"name":    "unknown",
+				"value":   "REJECTED_LOCALE_VALUE",
+				"details": "The property \"zz-ZZ\" is not allowed here.",
+				"path":    []any{"localized", "zz-ZZ"},
+			},
+		},
+	})))
 
 	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
@@ -436,15 +466,15 @@ func TestLivePreviewVariablesMultipleValidationErrorDiagnostics(t *testing.T) {
 		_, _ = io.WriteString(w, body)
 	}))
 	resourceSchema := LivePreviewVariablesResourceSchema(t.Context())
-	prior := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(`{"before":"old"}`))
-	planned := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(`{"after":"new"}`))
+	prior := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(testJSON(map[string]any{"before": "old"})))
+	planned := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(testJSON(map[string]any{"after": "new"})))
 	response, err := providerServer.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: "contentful_live_preview_variables", PriorState: &prior, PlannedState: &planned, Config: &planned, PlannedPrivate: privateVersionBytes(t, 17)})
 	require.NoError(t, err)
 	require.EqualValues(t, 1, requests.Load())
 	require.Len(t, response.Diagnostics, 1)
 	require.Equal(t, tfprotov6.DiagnosticSeverityError, response.Diagnostics[0].Severity)
 	require.Equal(t, "HTTP 422: Error: ValidationFailed: Validation error\n  global: The type of \"value\" is incorrect, expected type: Text\n  localized.en-US: The type of \"value\" is incorrect, expected type: Text\n  localized.zz-ZZ: The property \"zz-ZZ\" is not allowed here.", response.Diagnostics[0].Detail)
-	require.Equal(t, livePreviewVariablesModel(`{"before":"old"}`).Variables, livePreviewVariablesModelFromDynamicValue(t, response.NewState).Variables)
+	require.Equal(t, livePreviewVariablesModel(testJSON(map[string]any{"before": "old"})).Variables, livePreviewVariablesModelFromDynamicValue(t, response.NewState).Variables)
 
 	var private map[string][]byte
 	require.NoError(t, json.Unmarshal(response.Private, &private))
@@ -456,8 +486,8 @@ func TestLivePreviewVariablesReadFeedsTheNextUpdateVersion(t *testing.T) {
 
 	var requests atomic.Int64
 
-	readBody := livePreviewVariablesJSON(t, "space", "routing-id", 29, `{"remote":{"future":[true,9007199254740993]}}`)
-	updateBody := livePreviewVariablesJSON(t, "space", "routing-id", 30, `{}`)
+	readBody := livePreviewVariablesJSON(t, "space", "routing-id", 29, testJSON(map[string]any{"remote": map[string]any{"future": []any{true, int64(9007199254740993)}}}))
+	updateBody := livePreviewVariablesJSON(t, "space", "routing-id", 30, testJSON(map[string]any{}))
 
 	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestNumber := requests.Add(1)
@@ -479,7 +509,7 @@ func TestLivePreviewVariablesReadFeedsTheNextUpdateVersion(t *testing.T) {
 		_, _ = io.WriteString(w, updateBody)
 	}))
 	resourceSchema := LivePreviewVariablesResourceSchema(t.Context())
-	model := livePreviewVariablesModel(`{"old":"value"}`)
+	model := livePreviewVariablesModel(testJSON(map[string]any{"old": "value"}))
 	model.EnvironmentID = types.StringValue("routing-id")
 	model.ID = types.StringValue("space/routing-id")
 	state := resourceModelDynamicValue(t, resourceSchema, model)
@@ -487,11 +517,11 @@ func TestLivePreviewVariablesReadFeedsTheNextUpdateVersion(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, read.Diagnostics)
 	refreshed := livePreviewVariablesModelFromDynamicValue(t, read.NewState)
-	//nolint:testifylint // JSONEq rounds numbers through float64 and cannot prove preservation here.
-	require.Equal(t, `{"remote":{"future":[true,9007199254740993]}}`, refreshed.Variables.ValueString())
+
+	require.Equal(t, testJSON(map[string]any{"remote": map[string]any{"future": []any{true, int64(9007199254740993)}}}), refreshed.Variables.ValueString())
 	require.Equal(t, model.EnvironmentID, refreshed.EnvironmentID)
 	require.Equal(t, model.ID, refreshed.ID)
-	refreshed.Variables = jsontypes.NewNormalizedValue(`{}`)
+	refreshed.Variables = jsontypes.NewNormalizedValue(testJSON(map[string]any{}))
 	planned := resourceModelDynamicValue(t, resourceSchema, refreshed)
 	updated, err := providerServer.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: "contentful_live_preview_variables", PriorState: read.NewState, PlannedState: &planned, Config: &planned, PlannedPrivate: read.Private, PlannedIdentity: read.NewIdentity})
 	require.NoError(t, err)
@@ -515,8 +545,8 @@ func TestLivePreviewVariablesUpdateCanRecreateAnAbsentDocument(t *testing.T) {
 		server.ServeHTTP(w, r)
 	}))
 	resourceSchema := LivePreviewVariablesResourceSchema(t.Context())
-	prior := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(`{"previous":"lifetime"}`))
-	planned := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(`{}`))
+	prior := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(testJSON(map[string]any{"previous": "lifetime"})))
+	planned := resourceModelDynamicValue(t, resourceSchema, livePreviewVariablesModel(testJSON(map[string]any{})))
 	response, err := providerServer.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: "contentful_live_preview_variables", PriorState: &prior, PlannedState: &planned, Config: &planned, PlannedPrivate: privateVersionBytes(t, 17)})
 	require.NoError(t, err)
 	require.Empty(t, response.Diagnostics)

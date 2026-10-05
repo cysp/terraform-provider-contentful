@@ -176,7 +176,7 @@ func TestRequiredPrivateVersionErrorsStopBeforeMutation(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, configureResponse.Diagnostics)
 
-	malformedPrivate, err := json.Marshal(map[string][]byte{"version": []byte(`"invalid"`)})
+	malformedPrivate, err := json.Marshal(map[string][]byte{"version": []byte(testJSON("invalid"))})
 	require.NoError(t, err)
 
 	// Subtests share one request journal so they deliberately remain serial.
@@ -195,7 +195,7 @@ func TestRequiredPrivateVersionErrorsStopBeforeMutation(t *testing.T) {
 			}
 
 			privateStates := []privateVersionState{
-				{name: "missing", value: []byte(`{}`), expectedSummary: "Private version is unavailable"},
+				{name: "missing", value: []byte(testJSON(map[string]any{})), expectedSummary: "Private version is unavailable"},
 				{name: "malformed", value: malformedPrivate, expectedSummary: "Failed to unmarshal value"},
 			}
 
@@ -317,7 +317,7 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 	}
 	plannedEntry := entry
 	plannedEntry.Fields = NewTypedMap(map[string]jsontypes.Normalized{
-		"managed": jsontypes.NewNormalizedValue(`{"en-US":"changed"}`),
+		"managed": jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "changed"})),
 	})
 	previewEnvironment := previewEnvironmentModel(map[string]string{
 		"page": "https://preview.invalid/page",
@@ -333,7 +333,7 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 		{
 			name: "live preview variables update", typeName: "contentful_live_preview_variables",
 			resourceSchema: LivePreviewVariablesResourceSchema(t.Context()),
-			model:          livePreviewVariablesModel(`{}`), plannedModel: livePreviewVariablesModel(`{"updated":"value"}`),
+			model:          livePreviewVariablesModel(testJSON(map[string]any{})), plannedModel: livePreviewVariablesModel(testJSON(map[string]any{"updated": "value"})),
 		},
 		{
 			name:           "content type update",

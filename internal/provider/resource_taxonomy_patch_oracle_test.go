@@ -22,6 +22,6 @@ func assertTaxonomyEmptyPatch(t *testing.T, body []byte, paths []string) {
 	for index, wantPath := range paths {
 		assert.Equal(t, "add", patch[index].Op)
 		assert.Equal(t, wantPath, patch[index].Path)
-		assert.JSONEq(t, `{}`, string(patch[index].Value))
+		assert.JSONEq(t, testJSON(map[string]any{}), string(patch[index].Value))
 	}
 }
