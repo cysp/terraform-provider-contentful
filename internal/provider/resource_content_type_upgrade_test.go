@@ -49,7 +49,7 @@ func TestAccContentTypeResourceRegistryV0062ImportRemainsObservational(t *testin
 	workingDirectoryParent := t.TempDir()
 	options := testProviderOptionsWithHTTPServer(testserver)
 
-	testingresource.Test(t, testingresource.TestCase{
+	testingresource.Test(t, validateAcceptanceTestCase(t, testingresource.TestCase{
 		WorkingDir:           workingDirectoryParent,
 		AdditionalCLIOptions: additionalCLIOptions,
 		Steps: []testingresource.TestStep{
@@ -133,7 +133,7 @@ func TestAccContentTypeResourceRegistryV0062ImportRemainsObservational(t *testin
 				Check: contentTypeActivationRequestCheck(handler, 0, 0),
 			},
 		},
-	})
+	}))
 }
 
 const registryV0062ImportContentTypeConfig = `

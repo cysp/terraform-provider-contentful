@@ -133,14 +133,25 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 				ImportState:        true,
 				ImportStateId:      "0p38pssr0fi3/test/author",
 				ImportStatePersist: true,
-				ConfigStateChecks: append(
-					contentTypeTaxonomyStateChecks("contentful_content_type.author"),
-					statecheck.ExpectKnownValue(
-						"contentful_content_type.author",
-						tfjsonpath.New("published_version"),
-						knownvalue.Null(),
-					),
-				),
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					check := testAccImportAttributes(map[string]string{
+						"id":                  "0p38pssr0fi3/test/author",
+						"metadata.taxonomy.#": "2",
+						"metadata.taxonomy.0.taxonomy_concept_scheme.id": "furniture",
+						"metadata.taxonomy.1.taxonomy_concept.id":        "livingRoomFurniture",
+					})
+
+					err := check(states)
+					if err != nil {
+						return err
+					}
+
+					if value, exists := states[0].Attributes["published_version"]; exists {
+						return fmt.Errorf("%w: imported published_version is %q, want null", errUnexpectedImportedState, value)
+					}
+
+					return nil
+				},
 			},
 			{
 				PreConfig: func() {
