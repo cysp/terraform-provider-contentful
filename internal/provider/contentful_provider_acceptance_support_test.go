@@ -1,6 +1,8 @@
 package provider_test
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -53,6 +55,8 @@ func testAccMockableResource(t *testing.T, server http.Handler, testcase resourc
 func testAccResource(t *testing.T, handler http.Handler, alwaysMock bool, testcase resource.TestCase) {
 	t.Helper()
 
+	testcase = validateAcceptanceTestCase(t, testcase)
+
 	if result, ok := handler.(resourceTestHandlerResult); ok {
 		t.Cleanup(func() {
 			require.NoError(t, result.handlerError())
@@ -100,4 +104,33 @@ func testProviderOptionsWithHTTPServer(testserver *httptest.Server) []Option {
 		WithHTTPClient(testserver.Client()),
 		WithAccessToken("CFPAT-12345"),
 	}
+}
+
+var errIgnoredAcceptanceCheck = errors.New("acceptance assertion does not execute")
+
+func validateAcceptanceTestCase(t *testing.T, testcase resource.TestCase) resource.TestCase {
+	t.Helper()
+
+	require.NoError(t, acceptanceTestCaseError(testcase))
+
+	return testcase
+}
+
+func acceptanceTestCaseError(testcase resource.TestCase) error {
+	for index, step := range testcase.Steps {
+		if !step.ImportState {
+			continue
+		}
+
+		switch {
+		case step.Check != nil:
+			return fmt.Errorf("%w: step %d: Check on an import step", errIgnoredAcceptanceCheck, index+1)
+		case len(step.ConfigStateChecks) > 0:
+			return fmt.Errorf("%w: step %d: ConfigStateChecks on an import step", errIgnoredAcceptanceCheck, index+1)
+		case step.ImportStateCheck != nil && (step.ImportStateKind == resource.ImportBlockWithID || step.ImportStateKind == resource.ImportBlockWithResourceIdentity):
+			return fmt.Errorf("%w: step %d: ImportStateCheck on an import-block planning step", errIgnoredAcceptanceCheck, index+1)
+		}
+	}
+
+	return nil
 }

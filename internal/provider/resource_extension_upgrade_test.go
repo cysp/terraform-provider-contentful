@@ -136,7 +136,7 @@ terraform {
 		return nil
 	}
 
-	testingresource.Test(t, testingresource.TestCase{
+	testingresource.Test(t, validateAcceptanceTestCase(t, testingresource.TestCase{
 		WorkingDir:           t.TempDir(),
 		AdditionalCLIOptions: additionalCLIOptions,
 		Steps: []testingresource.TestStep{
@@ -180,7 +180,7 @@ terraform {
 				Check:                    checkNoPuts,
 			},
 		},
-	})
+	}))
 }
 
 type extensionUpgradeMutationRecorder struct {

@@ -67,7 +67,7 @@ resource "contentful_entry" "test" {
 }
 `
 
-	testingresource.Test(t, testingresource.TestCase{
+	testingresource.Test(t, validateAcceptanceTestCase(t, testingresource.TestCase{
 		AdditionalCLIOptions: additionalCLIOptions,
 		Steps: []testingresource.TestStep{
 			{
@@ -113,7 +113,7 @@ resource "contentful_entry" "test" {
 				},
 			},
 		},
-	})
+	}))
 }
 
 type legacyEntryProvider struct {
