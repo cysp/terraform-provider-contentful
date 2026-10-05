@@ -47,25 +47,25 @@ func TestEntrySpecifiedIDPutHeaderMatrix(t *testing.T) {
 
 			result := putRawEntry(
 				t, testServer, test.entryID, test.contentType, test.version,
-				`{"fields":{"marker":{"en-US":"absent target"}}}`,
+				testJSON(map[string]any{"fields": map[string]any{"marker": map[string]any{"en-US": "absent target"}}}),
 			)
 			require.Equal(t, test.wantStatus, result.status)
 
 			stored := getRawEntry(t, testServer, test.entryID)
 			if test.wantStatus == http.StatusCreated {
 				require.Equal(t, 1, result.entry.Sys.Version)
-				require.JSONEq(t, `{"en-US":"absent target"}`, string(result.entry.Fields["marker"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "absent target"}), string(result.entry.Fields["marker"]))
 				require.Equal(t, http.StatusOK, stored.status)
 				require.Equal(t, 1, stored.entry.Sys.Version)
-				require.JSONEq(t, `{"en-US":"absent target"}`, string(stored.entry.Fields["marker"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "absent target"}), string(stored.entry.Fields["marker"]))
 
 				return
 			}
 
-			require.JSONEq(t, `{
-				"sys":{"type":"Error","id":"BadRequest"},
-				"message":"You should provide a content type in X-Contentful-Content-Type request header."
-			}`, string(result.body))
+			require.JSONEq(t, testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "BadRequest"},
+				"message": "You should provide a content type in X-Contentful-Content-Type request header.",
+			}), string(result.body))
 			require.Equal(t, http.StatusNotFound, stored.status, "a rejected absent-target PUT must not store an Entry")
 		})
 	}
@@ -82,53 +82,47 @@ func TestEntrySpecifiedIDPutHeaderMatrix(t *testing.T) {
 
 			created := putRawEntry(
 				t, testServer, test.entryID, "article", "",
-				`{"fields":{"marker":{"en-US":"created"}}}`,
+				testJSON(map[string]any{"fields": map[string]any{"marker": map[string]any{"en-US": "created"}}}),
 			)
 			require.Equal(t, http.StatusCreated, created.status)
 			require.Equal(t, 1, created.entry.Sys.Version)
 
 			missingVersion := putRawEntry(
 				t, testServer, test.entryID, test.contentType, "",
-				`{"fields":{"marker":{"en-US":"must not replace"}}}`,
+				testJSON(map[string]any{"fields": map[string]any{"marker": map[string]any{"en-US": "must not replace"}}}),
 			)
 			require.Equal(t, http.StatusConflict, missingVersion.status)
-			require.JSONEq(t, `{
-				"sys":{"type":"Error","id":"VersionMismatch"},
-				"message":"Version mismatch"
-			}`, string(missingVersion.body))
+			require.JSONEq(t, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "VersionMismatch"}, "message": "Version mismatch"}), string(missingVersion.body))
 
 			storedAfterMissingVersion := getRawEntry(t, testServer, test.entryID)
 			require.Equal(t, http.StatusOK, storedAfterMissingVersion.status)
 			require.Equal(t, 1, storedAfterMissingVersion.entry.Sys.Version, "an absent version must not mutate an existing Entry")
-			require.JSONEq(t, `{"en-US":"created"}`, string(storedAfterMissingVersion.entry.Fields["marker"]))
+			require.JSONEq(t, testJSON(map[string]any{"en-US": "created"}), string(storedAfterMissingVersion.entry.Fields["marker"]))
 
 			result := putRawEntry(
 				t, testServer, test.entryID, test.contentType, "1",
-				`{"fields":{"marker":{"en-US":"updated exactly"}}}`,
+				testJSON(map[string]any{"fields": map[string]any{"marker": map[string]any{"en-US": "updated exactly"}}}),
 			)
 			require.Equal(t, http.StatusOK, result.status)
 			require.Equal(t, 2, result.entry.Sys.Version)
-			require.JSONEq(t, `{"en-US":"updated exactly"}`, string(result.entry.Fields["marker"]))
+			require.JSONEq(t, testJSON(map[string]any{"en-US": "updated exactly"}), string(result.entry.Fields["marker"]))
 
 			stored := getRawEntry(t, testServer, test.entryID)
 			require.Equal(t, http.StatusOK, stored.status)
 			require.Equal(t, 2, stored.entry.Sys.Version)
-			require.JSONEq(t, `{"en-US":"updated exactly"}`, string(stored.entry.Fields["marker"]))
+			require.JSONEq(t, testJSON(map[string]any{"en-US": "updated exactly"}), string(stored.entry.Fields["marker"]))
 
 			stale := putRawEntry(
 				t, testServer, test.entryID, test.contentType, "1",
-				`{"fields":{"marker":{"en-US":"must not replace"}}}`,
+				testJSON(map[string]any{"fields": map[string]any{"marker": map[string]any{"en-US": "must not replace"}}}),
 			)
 			require.Equal(t, http.StatusConflict, stale.status)
-			require.JSONEq(t, `{
-				"sys":{"type":"Error","id":"VersionMismatch"},
-				"message":"Version mismatch"
-			}`, string(stale.body))
+			require.JSONEq(t, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "VersionMismatch"}, "message": "Version mismatch"}), string(stale.body))
 
 			storedAfterStale := getRawEntry(t, testServer, test.entryID)
 			require.Equal(t, http.StatusOK, storedAfterStale.status)
 			require.Equal(t, 2, storedAfterStale.entry.Sys.Version, "a stale version must not mutate an Entry")
-			require.JSONEq(t, `{"en-US":"updated exactly"}`, string(storedAfterStale.entry.Fields["marker"]))
+			require.JSONEq(t, testJSON(map[string]any{"en-US": "updated exactly"}), string(storedAfterStale.entry.Fields["marker"]))
 		})
 	}
 }

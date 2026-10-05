@@ -16,7 +16,7 @@ func TestPutContentTypeClearsAnnotationsAndPreservesTaxonomyWhenMetadataOmitted(
 	handler := newContentTypeTestHandler()
 	request := newContentTypeRequest()
 	request.Metadata.SetTo(cm.ContentTypeMetadata{
-		Annotations: jx.Raw(`{"ContentType":[]}`),
+		Annotations: jx.Raw(testJSON(map[string]any{"ContentType": []any{}})),
 		Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{{
 			Sys: cm.ContentTypeMetadataTaxonomyItemSys{
 				Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
@@ -52,11 +52,11 @@ func TestPutContentTypePreservesTaxonomyWhenMetadataOmitsTaxonomy(t *testing.T) 
 	})
 	created := createContentType(t, handler, &request)
 
-	request.Metadata.SetTo(cm.ContentTypeMetadata{Annotations: jx.Raw(`{"ContentType":[]}`)})
+	request.Metadata.SetTo(cm.ContentTypeMetadata{Annotations: jx.Raw(testJSON(map[string]any{"ContentType": []any{}}))})
 	updated := putContentType(t, handler, &request, created.Sys.Version)
 	metadata, metadataOK := updated.Metadata.Get()
 	require.True(t, metadataOK)
-	assert.JSONEq(t, `{"ContentType":[]}`, string(metadata.Annotations))
+	assert.JSONEq(t, testJSON(map[string]any{"ContentType": []any{}}), string(metadata.Annotations))
 	require.Len(t, metadata.Taxonomy, 1)
 	assert.Equal(t, "furniture", metadata.Taxonomy[0].Sys.ID)
 }
@@ -67,7 +67,7 @@ func TestPutContentTypeReplacesMetadataWhenPresent(t *testing.T) {
 	handler := newContentTypeTestHandler()
 	request := newContentTypeRequest()
 	request.Metadata.SetTo(cm.ContentTypeMetadata{
-		Annotations: jx.Raw(`{"ContentType":[]}`),
+		Annotations: jx.Raw(testJSON(map[string]any{"ContentType": []any{}})),
 		Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{{
 			Sys: cm.ContentTypeMetadataTaxonomyItemSys{
 				Type:     cm.ContentTypeMetadataTaxonomyItemSysTypeLink,
@@ -107,9 +107,9 @@ func TestPutContentTypeRejectsEmptyMetadataObject(t *testing.T) {
 
 	testCases := map[string]cm.ContentTypeMetadata{
 		"absent properties":                     {},
-		"empty annotations":                     {Annotations: jx.Raw(`{ }`)},
-		"empty annotations with empty taxonomy": {Annotations: jx.Raw(`{ }`), Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{}},
-		"null annotations":                      {Annotations: jx.Raw(`null`)},
+		"empty annotations":                     {Annotations: jx.Raw(testJSON(map[string]any{}))},
+		"empty annotations with empty taxonomy": {Annotations: jx.Raw(testJSON(map[string]any{})), Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{}},
+		"null annotations":                      {Annotations: jx.Raw(testJSON(nil))},
 	}
 
 	for name, metadata := range testCases {

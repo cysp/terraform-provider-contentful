@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-	"strings"
 	"testing"
 
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
@@ -34,7 +33,7 @@ func TestContentfulManagementServerMatchesObservedTaxonomyDeleteVersionBehavior(
 			t.Cleanup(testServer.Close)
 
 			correctPath := collectionPath + "/correct"
-			status, body := taxonomyHTTPRequestAt(t, testServer, correctPath, http.MethodPut, 0, `{"prefLabel":{"en-US":"Correct"}}`)
+			status, body := taxonomyHTTPRequestAt(t, testServer, correctPath, http.MethodPut, 0, testJSON(map[string]any{"prefLabel": map[string]any{"en-US": "Correct"}}))
 			require.Equal(t, http.StatusCreated, status)
 			assert.Equal(t, 1, decodeTaxonomyConceptResponse(t, body).Sys.Version)
 
@@ -46,45 +45,63 @@ func TestContentfulManagementServerMatchesObservedTaxonomyDeleteVersionBehavior(
 			assert.Equal(t, http.StatusNotFound, status)
 
 			validationPath := collectionPath + "/validation"
-			status, body = taxonomyHTTPRequestAt(t, testServer, validationPath, http.MethodPut, 0, `{"prefLabel":{"en-US":"Validation"}}`)
+			status, body = taxonomyHTTPRequestAt(t, testServer, validationPath, http.MethodPut, 0, testJSON(map[string]any{"prefLabel": map[string]any{"en-US": "Validation"}}))
 			require.Equal(t, http.StatusCreated, status)
 			assert.Equal(t, 1, decodeTaxonomyConceptResponse(t, body).Sys.Version)
 
 			status, body = taxonomyHTTPRequestAtWithVersionHeader(t, testServer, validationPath, http.MethodDelete, "", "")
 			assert.Equal(t, http.StatusUnprocessableEntity, status)
-			assert.JSONEq(t, `{
-				"sys":{"type":"Error","id":"ValidationFailed"},
-				"message":"Validation error",
-				"details":{
-					"flatten":{"formErrors":[],"fieldErrors":{"x-contentful-version":["Invalid input: expected number, received NaN"]}},
-					"errors":[{"name":"invalid_type","path":["x-contentful-version"],"details":"Invalid input: expected number, received NaN"}]
-				}
-			}`, string(body))
+			assert.JSONEq(t, testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "ValidationFailed"},
+				"message": "Validation error",
+				"details": map[string]any{
+					"flatten": map[string]any{
+						"formErrors":  []any{},
+						"fieldErrors": map[string]any{"x-contentful-version": []any{"Invalid input: expected number, received NaN"}},
+					},
+					"errors": []any{
+						map[string]any{
+							"name":    "invalid_type",
+							"path":    []any{"x-contentful-version"},
+							"details": "Invalid input: expected number, received NaN",
+						},
+					},
+				},
+			}), string(body))
 			assertTaxonomyResourceVersion(t, testServer, validationPath, 1)
 
 			status, body = taxonomyHTTPRequestAtWithVersionHeader(t, testServer, validationPath, http.MethodDelete, "0", "")
 			assert.Equal(t, http.StatusUnprocessableEntity, status)
-			assert.JSONEq(t, `{
-				"sys":{"type":"Error","id":"ValidationFailed"},
-				"message":"Validation error",
-				"details":{
-					"flatten":{"formErrors":[],"fieldErrors":{"x-contentful-version":["Too small: expected number to be >0"]}},
-					"errors":[{"name":"too_small","path":["x-contentful-version"],"details":"Too small: expected number to be >0"}]
-				}
-			}`, string(body))
+			assert.JSONEq(t, testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "ValidationFailed"},
+				"message": "Validation error",
+				"details": map[string]any{
+					"flatten": map[string]any{
+						"formErrors":  []any{},
+						"fieldErrors": map[string]any{"x-contentful-version": []any{"Too small: expected number to be >0"}},
+					},
+					"errors": []any{
+						map[string]any{
+							"name":    "too_small",
+							"path":    []any{"x-contentful-version"},
+							"details": "Too small: expected number to be >0",
+						},
+					},
+				},
+			}), string(body))
 			assertTaxonomyResourceVersion(t, testServer, validationPath, 1)
 
-			status, body = taxonomyHTTPRequestAtWithVersionHeader(t, testServer, validationPath, http.MethodPatch, "1", `[{"op":"replace","path":"/prefLabel","value":{"en-US":"Version 2"}}]`)
+			status, body = taxonomyHTTPRequestAtWithVersionHeader(t, testServer, validationPath, http.MethodPatch, "1", testJSON([]any{map[string]any{"op": "replace", "path": "/prefLabel", "value": map[string]any{"en-US": "Version 2"}}}))
 			require.Equal(t, http.StatusOK, status)
 			assert.Equal(t, 2, decodeTaxonomyConceptResponse(t, body).Sys.Version)
 
 			status, body = taxonomyHTTPRequestAtWithVersionHeader(t, testServer, validationPath, http.MethodDelete, "1", "")
 			assert.Equal(t, http.StatusConflict, status)
-			assert.JSONEq(t, `{
-				"sys":{"type":"Error","id":"VersionMismatch"},
-				"message":"Version mismatch",
-				"details":"Version mismatch, expected 2, got 1."
-			}`, string(body))
+			assert.JSONEq(t, testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "VersionMismatch"},
+				"message": "Version mismatch",
+				"details": "Version mismatch, expected 2, got 1.",
+			}), string(body))
 			assertTaxonomyResourceVersion(t, testServer, validationPath, 2)
 
 			status, body = taxonomyHTTPRequestAtWithVersionHeader(t, testServer, validationPath, http.MethodDelete, "2", "")
@@ -108,7 +125,7 @@ func assertTaxonomyResourceVersion(t *testing.T, server *httptest.Server, path s
 func TestContentfulManagementServerRejectsIncompleteConceptLabelMaps(t *testing.T) {
 	t.Parallel()
 
-	for shape, labelMap := range map[string]string{"empty": `{}`, "nonpreferred_only": `{"fr-FR":[]}`} {
+	for shape, labelMap := range map[string]string{"empty": testJSON(map[string]any{}), "nonpreferred_only": testJSON(map[string]any{"fr-FR": []any{}})} {
 		for _, field := range []string{"altLabels", "hiddenLabels"} {
 			t.Run(shape+"_"+field, func(t *testing.T) {
 				t.Parallel()
@@ -119,10 +136,7 @@ func TestContentfulManagementServerRejectsIncompleteConceptLabelMaps(t *testing.
 				testServer := httptest.NewServer(server)
 				t.Cleanup(testServer.Close)
 
-				status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, `{
-				"prefLabel": {"en-US": "Concept"},
-				"`+field+`": `+labelMap+`
-			}`)
+				status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, testJSON(map[string]any{"prefLabel": map[string]any{"en-US": "Concept"}, field: json.RawMessage(labelMap)}))
 
 				assert.Equal(t, http.StatusUnprocessableEntity, status)
 				assertTaxonomyLabelValidationError(t, responseBody, field, "en-US")
@@ -137,7 +151,7 @@ func TestContentfulManagementServerRejectsIncompleteConceptLabelMaps(t *testing.
 func TestContentfulManagementServerRejectsIncompletePatchedConceptLabelMaps(t *testing.T) {
 	t.Parallel()
 
-	for shape, labelMap := range map[string]string{"empty": `{}`, "nonpreferred_only": `{"fr-FR":[]}`} {
+	for shape, labelMap := range map[string]string{"empty": testJSON(map[string]any{}), "nonpreferred_only": testJSON(map[string]any{"fr-FR": []any{}})} {
 		for _, operation := range []string{"add", "replace"} {
 			for _, field := range []string{"altLabels", "hiddenLabels"} {
 				t.Run(shape+"_"+operation+"_"+field, func(t *testing.T) {
@@ -149,36 +163,32 @@ func TestContentfulManagementServerRejectsIncompletePatchedConceptLabelMaps(t *t
 					testServer := httptest.NewServer(server)
 					t.Cleanup(testServer.Close)
 
-					status, _ := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, `{
-					"prefLabel": {"en-US": "Concept"}
-				}`)
+					status, _ := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, testJSON(map[string]any{"prefLabel": map[string]any{"en-US": "Concept"}}))
 					require.Equal(t, http.StatusCreated, status)
 
-					status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, `[
-					{"op": "`+operation+`", "path": "/`+field+`", "value": `+labelMap+`}
-				]`)
+					status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, testJSON([]any{map[string]any{"op": operation, "path": "/" + field, "value": json.RawMessage(labelMap)}}))
 
 					assert.Equal(t, http.StatusUnprocessableEntity, status)
 					assertTaxonomyLabelValidationError(t, responseBody, field, "en-US")
 
 					if shape == "empty" && operation == "add" && field == "altLabels" {
-						assert.JSONEq(t, `{
-					"sys": {"type": "Error", "id": "ValidationFailed"},
-					"message": "Validation error",
-					"details": {
-						"flatten": {
-							"formErrors": [],
-							"fieldErrors": {
-								"`+field+`": ["Invalid input: expected array, received undefined"]
-							}
-						},
-						"errors": [{
-							"name": "invalid_type",
-							"path": ["`+field+`", "en-US"],
-							"details": "Invalid input: expected array, received undefined"
-						}]
-					}
-					}`, string(responseBody))
+						assert.JSONEq(t, testJSON(map[string]any{
+							"sys":     map[string]any{"type": "Error", "id": "ValidationFailed"},
+							"message": "Validation error",
+							"details": map[string]any{
+								"flatten": map[string]any{
+									"formErrors":  []any{},
+									"fieldErrors": map[string]any{field: []any{"Invalid input: expected array, received undefined"}},
+								},
+								"errors": []any{
+									map[string]any{
+										"name":    "invalid_type",
+										"path":    []any{field, "en-US"},
+										"details": "Invalid input: expected array, received undefined",
+									},
+								},
+							},
+						}), string(responseBody))
 					}
 
 					status, responseBody = taxonomyHTTPRequest(t, testServer, http.MethodGet, 0, "")
@@ -209,14 +219,10 @@ func TestContentfulManagementServerAcceptsCompletePatchedConceptLabelMaps(t *tes
 				testServer := httptest.NewServer(server)
 				t.Cleanup(testServer.Close)
 
-				status, _ := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, `{
-					"prefLabel": {"en-US": "Concept"}
-				}`)
+				status, _ := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, testJSON(map[string]any{"prefLabel": map[string]any{"en-US": "Concept"}}))
 				require.Equal(t, http.StatusCreated, status)
 
-				status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, `[
-					{"op": "`+operation+`", "path": "/`+field+`", "value": {"en-US": ["Term"]}}
-				]`)
+				status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, testJSON([]any{map[string]any{"op": operation, "path": "/" + field, "value": map[string]any{"en-US": []any{"Term"}}}}))
 				require.Equal(t, http.StatusOK, status)
 
 				current := decodeTaxonomyConceptResponse(t, responseBody)
@@ -243,12 +249,16 @@ func TestContentfulManagementServerCanonicalizesOmittedAndAcceptsCompleteConcept
 		wantHiddenLabels map[string][]string
 	}{
 		"omitted": {
-			request:          `{"prefLabel":{"en-US":"Concept"}}`,
+			request:          testJSON(map[string]any{"prefLabel": map[string]any{"en-US": "Concept"}}),
 			wantAltLabels:    map[string][]string{"en-US": {}},
 			wantHiddenLabels: map[string][]string{"en-US": {}},
 		},
 		"complete": {
-			request:          `{"prefLabel":{"en-US":"Concept"},"altLabels":{"en-US":["Term"]},"hiddenLabels":{"en-US":[]}}`,
+			request: testJSON(map[string]any{
+				"prefLabel":    map[string]any{"en-US": "Concept"},
+				"altLabels":    map[string]any{"en-US": []any{"Term"}},
+				"hiddenLabels": map[string]any{"en-US": []any{}},
+			}),
 			wantAltLabels:    map[string][]string{"en-US": {"Term"}},
 			wantHiddenLabels: map[string][]string{"en-US": {}},
 		},
@@ -285,14 +295,10 @@ func TestContentfulManagementServerRejectsPatchedConceptPreferredLabelWithoutEnU
 	testServer := httptest.NewServer(server)
 	t.Cleanup(testServer.Close)
 
-	status, _ := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, `{
-		"prefLabel": {"en-US": "Concept"}
-	}`)
+	status, _ := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, testJSON(map[string]any{"prefLabel": map[string]any{"en-US": "Concept"}}))
 	require.Equal(t, http.StatusCreated, status)
 
-	status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, `[
-		{"op": "replace", "path": "/prefLabel", "value": {"fr-FR": "Concept"}}
-	]`)
+	status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, testJSON([]any{map[string]any{"op": "replace", "path": "/prefLabel", "value": map[string]any{"fr-FR": "Concept"}}}))
 
 	assert.Equal(t, http.StatusUnprocessableEntity, status)
 	assertTaxonomyPrefLabelValidationError(t, responseBody)
@@ -320,16 +326,16 @@ func TestContentfulManagementServerRejectsTaxonomyPreferredLabelWithoutEnUS(t *t
 			testServer := httptest.NewServer(server)
 			t.Cleanup(testServer.Close)
 
-			status, responseBody := taxonomyHTTPRequestAt(t, testServer, requestPath, http.MethodPut, 0, `{"prefLabel":{"fr-FR":"Concept"}}`)
+			status, responseBody := taxonomyHTTPRequestAt(t, testServer, requestPath, http.MethodPut, 0, testJSON(map[string]any{"prefLabel": map[string]any{"fr-FR": "Concept"}}))
 			assert.Equal(t, http.StatusUnprocessableEntity, status)
 			assertTaxonomyPrefLabelValidationError(t, responseBody)
 
 			status, _ = taxonomyHTTPRequestAt(t, testServer, requestPath, http.MethodGet, 0, "")
 			assert.Equal(t, http.StatusNotFound, status)
 
-			status, _ = taxonomyHTTPRequestAt(t, testServer, requestPath, http.MethodPut, 0, `{"prefLabel":{"en-US":"Concept"}}`)
+			status, _ = taxonomyHTTPRequestAt(t, testServer, requestPath, http.MethodPut, 0, testJSON(map[string]any{"prefLabel": map[string]any{"en-US": "Concept"}}))
 			require.Equal(t, http.StatusCreated, status)
-			status, responseBody = taxonomyHTTPRequestAt(t, testServer, requestPath, http.MethodPatch, 1, `[{"op":"replace","path":"/prefLabel","value":{"fr-FR":"Concept"}}]`)
+			status, responseBody = taxonomyHTTPRequestAt(t, testServer, requestPath, http.MethodPatch, 1, testJSON([]any{map[string]any{"op": "replace", "path": "/prefLabel", "value": map[string]any{"fr-FR": "Concept"}}}))
 			assert.Equal(t, http.StatusUnprocessableEntity, status)
 			assertTaxonomyPrefLabelValidationError(t, responseBody)
 
@@ -353,13 +359,22 @@ func TestContentfulManagementServerFiltersConceptSchemePreferredLabelLocales(t *
 
 	path := "/organizations/organization/taxonomy/concept-schemes/scheme"
 
-	status, body := taxonomyHTTPRequestAt(t, testServer, path, http.MethodPut, 0, `{"prefLabel":{"en-US":"Scheme","fr-FR":"Schema"},"definition":{"fr-FR":"Definition"}}`)
+	status, body := taxonomyHTTPRequestAt(t, testServer, path, http.MethodPut, 0, testJSON(map[string]any{
+		"prefLabel":  map[string]any{"en-US": "Scheme", "fr-FR": "Schema"},
+		"definition": map[string]any{"fr-FR": "Definition"},
+	}))
 	require.Equal(t, http.StatusCreated, status)
 	current := decodeTaxonomyConceptResponse(t, body)
 	assert.Equal(t, 1, current.Sys.Version)
 	assert.Equal(t, map[string]string{"en-US": "Scheme"}, current.PrefLabel)
 
-	status, body = taxonomyHTTPRequestAt(t, testServer, path, http.MethodPatch, 1, `[{"op":"replace","path":"/prefLabel","value":{"en-US":"Updated","fr-FR":"Mis a jour"}}]`)
+	status, body = taxonomyHTTPRequestAt(t, testServer, path, http.MethodPatch, 1, testJSON([]any{
+		map[string]any{
+			"op":    "replace",
+			"path":  "/prefLabel",
+			"value": map[string]any{"en-US": "Updated", "fr-FR": "Mis a jour"},
+		},
+	}))
 	require.Equal(t, http.StatusOK, status)
 	current = decodeTaxonomyConceptResponse(t, body)
 	assert.Equal(t, 2, current.Sys.Version)
@@ -393,20 +408,19 @@ func TestContentfulManagementServerFiltersAllObservedTaxonomyLocalizedFields(t *
 			testServer := httptest.NewServer(server)
 			t.Cleanup(testServer.Close)
 
-			var builder strings.Builder
-			builder.WriteString(`{"prefLabel":{"en-US":"US","fr-FR":"FR"}`)
-
+			document := map[string]any{"prefLabel": map[string]any{"en-US": "US", "fr-FR": "FR"}}
 			for _, field := range test.fields {
-				builder.WriteString(`,"` + field + `":{"en-US":"US","fr-FR":"FR"}`)
+				document[field] = map[string]any{"en-US": "US", "fr-FR": "FR"}
 			}
 
-			builder.WriteString(`}`)
-			body := builder.String()
+			body := testJSON(document)
 			status, response := taxonomyHTTPRequestAt(t, testServer, test.requestPath, http.MethodPut, 0, body)
 			require.Equal(t, http.StatusCreated, status)
 			assertTaxonomyResponseOnlyEnUS(t, response, append([]string{"prefLabel"}, test.fields...), "US")
 
-			patch := `[{"op":"replace","path":"/prefLabel","value":{"en-US":"US2","fr-FR":"FR2"}}]`
+			patch := testJSON([]any{
+				map[string]any{"op": "replace", "path": "/prefLabel", "value": map[string]any{"en-US": "US2", "fr-FR": "FR2"}},
+			})
 			status, response = taxonomyHTTPRequestAt(t, testServer, test.requestPath, http.MethodPatch, 1, patch)
 			require.Equal(t, http.StatusOK, status)
 			assertTaxonomyResponseOnlyEnUS(t, response, []string{"prefLabel"}, "US2")
@@ -453,23 +467,20 @@ func TestContentfulManagementServerCanonicalizesEmptyLocalizedFieldsToNull(t *te
 			testServer := httptest.NewServer(server)
 			t.Cleanup(testServer.Close)
 
-			var request strings.Builder
-			request.WriteString(`{"prefLabel":{"en-US":"US"}`)
-
+			document := map[string]any{"prefLabel": map[string]any{"en-US": "US"}}
 			for _, field := range test.fields {
-				request.WriteString(`,"` + field + `":{"en-US":"value"}`)
+				document[field] = map[string]any{"en-US": "value"}
 			}
 
-			request.WriteString(`}`)
-			status, _ := taxonomyHTTPRequestAt(t, testServer, test.requestPath, http.MethodPut, 0, request.String())
+			status, _ := taxonomyHTTPRequestAt(t, testServer, test.requestPath, http.MethodPut, 0, testJSON(document))
 			require.Equal(t, http.StatusCreated, status)
 
-			operations := make([]string, 0, len(test.fields))
+			operations := make([]map[string]any, 0, len(test.fields))
 			for _, field := range test.fields {
-				operations = append(operations, `{"op":"replace","path":"/`+field+`","value":{}}`)
+				operations = append(operations, map[string]any{"op": "replace", "path": "/" + field, "value": map[string]any{}})
 			}
 
-			status, body := taxonomyHTTPRequestAt(t, testServer, test.requestPath, http.MethodPatch, 1, `[`+strings.Join(operations, ",")+`]`)
+			status, body := taxonomyHTTPRequestAt(t, testServer, test.requestPath, http.MethodPatch, 1, testJSON(operations))
 			require.Equal(t, http.StatusOK, status)
 
 			for _, field := range test.fields {
@@ -503,14 +514,17 @@ func TestContentfulManagementServerFiltersTaxonomyLocalesAndRejectsLabelRemoval(
 	testServer := httptest.NewServer(server)
 	t.Cleanup(testServer.Close)
 
-	status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, `{"prefLabel":{"en-US":"Concept","fr-FR":"Concept"},"altLabels":{"en-US":["Term"],"fr-FR":["Terme"]}}`)
+	status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, testJSON(map[string]any{
+		"prefLabel": map[string]any{"en-US": "Concept", "fr-FR": "Concept"},
+		"altLabels": map[string]any{"en-US": []any{"Term"}, "fr-FR": []any{"Terme"}},
+	}))
 	require.Equal(t, http.StatusCreated, status)
 	current := decodeTaxonomyConceptResponse(t, responseBody)
 	assert.Equal(t, map[string]string{"en-US": "Concept"}, current.PrefLabel)
 	assert.Equal(t, map[string][]string{"en-US": {"Term"}}, current.AltLabels)
 
 	for _, field := range []string{"altLabels", "hiddenLabels"} {
-		status, responseBody = taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, `[{"op":"remove","path":"/`+field+`"}]`)
+		status, responseBody = taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, testJSON([]any{map[string]any{"op": "remove", "path": "/" + field}}))
 		assert.Equal(t, http.StatusUnprocessableEntity, status, field)
 		assertTaxonomyLabelRemovalValidationError(t, responseBody, field)
 		status, responseBody = taxonomyHTTPRequest(t, testServer, http.MethodGet, 0, "")
@@ -531,18 +545,28 @@ func TestContentfulManagementServerAllowsTaxonomyLabelRemoveThenAdd(t *testing.T
 	testServer := httptest.NewServer(server)
 	t.Cleanup(testServer.Close)
 
-	status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, `{"prefLabel":{"en-US":"Concept"},"altLabels":{"en-US":["Old alt"]},"hiddenLabels":{"en-US":["Old hidden"]}}`)
+	status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, testJSON(map[string]any{
+		"prefLabel":    map[string]any{"en-US": "Concept"},
+		"altLabels":    map[string]any{"en-US": []any{"Old alt"}},
+		"hiddenLabels": map[string]any{"en-US": []any{"Old hidden"}},
+	}))
 	require.Equal(t, http.StatusCreated, status)
 	assert.Equal(t, 1, decodeTaxonomyConceptResponse(t, responseBody).Sys.Version)
 
-	status, responseBody = taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, `[{"op":"remove","path":"/altLabels"},{"op":"add","path":"/altLabels","value":{"en-US":["New alt"]}}]`)
+	status, responseBody = taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, testJSON([]any{
+		map[string]any{"op": "remove", "path": "/altLabels"},
+		map[string]any{"op": "add", "path": "/altLabels", "value": map[string]any{"en-US": []any{"New alt"}}},
+	}))
 	require.Equal(t, http.StatusOK, status)
 	current := decodeTaxonomyConceptResponse(t, responseBody)
 	assert.Equal(t, 2, current.Sys.Version)
 	assert.Equal(t, map[string][]string{"en-US": {"New alt"}}, current.AltLabels)
 	assert.Equal(t, map[string][]string{"en-US": {"Old hidden"}}, current.HiddenLabels)
 
-	status, responseBody = taxonomyHTTPRequest(t, testServer, http.MethodPatch, 2, `[{"op":"remove","path":"/hiddenLabels"},{"op":"add","path":"/hiddenLabels","value":{"en-US":["New hidden"]}}]`)
+	status, responseBody = taxonomyHTTPRequest(t, testServer, http.MethodPatch, 2, testJSON([]any{
+		map[string]any{"op": "remove", "path": "/hiddenLabels"},
+		map[string]any{"op": "add", "path": "/hiddenLabels", "value": map[string]any{"en-US": []any{"New hidden"}}},
+	}))
 	require.Equal(t, http.StatusOK, status)
 	current = decodeTaxonomyConceptResponse(t, responseBody)
 	assert.Equal(t, 3, current.Sys.Version)

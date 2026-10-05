@@ -39,24 +39,44 @@ func TestContentTypeSpecifiedIDPutVersionHeaderMatrix(t *testing.T) {
 	testServer := httptest.NewServer(server)
 	t.Cleanup(testServer.Close)
 
-	createdWithoutVersion := putRawContentType(t, testServer, "create-no-version", "", `{"name":"Created without version","description":"canonical create","displayField":"title","fields":[{"id":"title","name":"Title","type":"Symbol"}]}`)
+	createdWithoutVersion := putRawContentType(t, testServer, "create-no-version", "", testJSON(map[string]any{
+		"name":         "Created without version",
+		"description":  "canonical create",
+		"displayField": "title",
+		"fields":       []any{map[string]any{"id": "title", "name": "Title", "type": "Symbol"}},
+	}))
 	require.Equal(t, http.StatusCreated, createdWithoutVersion.status)
 	require.Equal(t, 1, createdWithoutVersion.contentType.Sys.Version)
 	require.Nil(t, createdWithoutVersion.contentType.Sys.PublishedVersion)
 	require.Equal(t, "Created without version", createdWithoutVersion.contentType.Name)
 
-	createdWithVersion := putRawContentType(t, testServer, "create-with-version", "1", `{"name":"Created with version","description":"compatibility create","displayField":"title","fields":[{"id":"title","name":"Title","type":"Symbol"}]}`)
+	createdWithVersion := putRawContentType(t, testServer, "create-with-version", "1", testJSON(map[string]any{
+		"name":         "Created with version",
+		"description":  "compatibility create",
+		"displayField": "title",
+		"fields":       []any{map[string]any{"id": "title", "name": "Title", "type": "Symbol"}},
+	}))
 	require.Equal(t, http.StatusCreated, createdWithVersion.status)
 	require.Equal(t, 1, createdWithVersion.contentType.Sys.Version)
 	require.Nil(t, createdWithVersion.contentType.Sys.PublishedVersion)
 	require.Equal(t, "Created with version", createdWithVersion.contentType.Name)
 
 	beforeCollision := getRawContentType(t, testServer)
-	collision := putRawContentType(t, testServer, "create-no-version", "", `{"name":"Must not replace","description":"collision","displayField":"replacement","fields":[]}`)
+	collision := putRawContentType(t, testServer, "create-no-version", "", testJSON(map[string]any{
+		"name":         "Must not replace",
+		"description":  "collision",
+		"displayField": "replacement",
+		"fields":       []any{},
+	}))
 	require.Equal(t, http.StatusConflict, collision.status)
 	require.JSONEq(t, string(beforeCollision.body), string(getRawContentType(t, testServer).body), "an absent version must reject an existing Content Type without mutation")
 
-	exactUpdate := putRawContentType(t, testServer, "create-no-version", "1", `{"name":"Updated exactly","description":"exact update","displayField":"slug","fields":[{"id":"slug","name":"Slug","type":"Symbol"}]}`)
+	exactUpdate := putRawContentType(t, testServer, "create-no-version", "1", testJSON(map[string]any{
+		"name":         "Updated exactly",
+		"description":  "exact update",
+		"displayField": "slug",
+		"fields":       []any{map[string]any{"id": "slug", "name": "Slug", "type": "Symbol"}},
+	}))
 	require.Equal(t, http.StatusOK, exactUpdate.status)
 	require.Equal(t, 2, exactUpdate.contentType.Sys.Version)
 	require.Nil(t, exactUpdate.contentType.Sys.PublishedVersion)

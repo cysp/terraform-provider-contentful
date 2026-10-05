@@ -27,61 +27,65 @@ func TestContentfulManagementServerRejectsMissingOrEmptyWebhookTopics(t *testing
 			name:   "create missing",
 			method: http.MethodPost,
 			path:   "/spaces/space/webhook_definitions",
-			body:   `{"name":"Webhook","url":"https://example.com/webhook"}`,
-			want: `{
-				"sys":{"type":"Error","id":"ValidationFailed"},
-				"message":"Validation error",
-				"details":{"errors":[{
-					"name":"invalid_type",
-					"path":["topics"],
-					"details":"Invalid input: expected array, received undefined at \"topics\""
-				}]}
-			}`,
+			body:   testJSON(map[string]any{"name": "Webhook", "url": "https://example.com/webhook"}),
+			want: testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "ValidationFailed"},
+				"message": "Validation error",
+				"details": map[string]any{
+					"errors": []any{
+						map[string]any{
+							"name":    "invalid_type",
+							"path":    []any{"topics"},
+							"details": "Invalid input: expected array, received undefined at \"topics\"",
+						},
+					},
+				},
+			}),
 		},
 		{
 			name:   "create empty",
 			method: http.MethodPost,
 			path:   "/spaces/space/webhook_definitions",
-			body:   `{"name":"Webhook","url":"https://example.com/webhook","topics":[]}`,
-			want: `{
-				"sys":{"type":"Error","id":"ValidationFailed"},
-				"message":"Validation error",
-				"details":{"errors":[{
-					"name":"topics",
-					"path":[],
-					"details":"Topics cannot be empty"
-				}]}
-			}`,
+			body:   testJSON(map[string]any{"name": "Webhook", "url": "https://example.com/webhook", "topics": []any{}}),
+			want: testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "ValidationFailed"},
+				"message": "Validation error",
+				"details": map[string]any{
+					"errors": []any{map[string]any{"name": "topics", "path": []any{}, "details": "Topics cannot be empty"}},
+				},
+			}),
 		},
 		{
 			name:   "update missing",
 			method: http.MethodPut,
 			path:   "/spaces/space/webhook_definitions/webhook",
-			body:   `{"name":"Webhook","url":"https://example.com/webhook"}`,
-			want: `{
-				"sys":{"type":"Error","id":"ValidationFailed"},
-				"message":"Validation error",
-				"details":{"errors":[{
-					"name":"invalid_type",
-					"path":["topics"],
-					"details":"Invalid input: expected array, received undefined at \"topics\""
-				}]}
-			}`,
+			body:   testJSON(map[string]any{"name": "Webhook", "url": "https://example.com/webhook"}),
+			want: testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "ValidationFailed"},
+				"message": "Validation error",
+				"details": map[string]any{
+					"errors": []any{
+						map[string]any{
+							"name":    "invalid_type",
+							"path":    []any{"topics"},
+							"details": "Invalid input: expected array, received undefined at \"topics\"",
+						},
+					},
+				},
+			}),
 		},
 		{
 			name:   "update empty",
 			method: http.MethodPut,
 			path:   "/spaces/space/webhook_definitions/webhook",
-			body:   `{"name":"Webhook","url":"https://example.com/webhook","topics":[]}`,
-			want: `{
-				"sys":{"type":"Error","id":"ValidationFailed"},
-				"message":"Validation error",
-				"details":{"errors":[{
-					"name":"topics",
-					"path":[],
-					"details":"Topics cannot be empty"
-				}]}
-			}`,
+			body:   testJSON(map[string]any{"name": "Webhook", "url": "https://example.com/webhook", "topics": []any{}}),
+			want: testJSON(map[string]any{
+				"sys":     map[string]any{"type": "Error", "id": "ValidationFailed"},
+				"message": "Validation error",
+				"details": map[string]any{
+					"errors": []any{map[string]any{"name": "topics", "path": []any{}, "details": "Topics cannot be empty"}},
+				},
+			}),
 		},
 	}
 

@@ -318,10 +318,10 @@ func TestTaxonomyPatchRejectsInvalidDocumentsAtomically(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]cm.TaxonomyPatch{
-		"unknown path":      {{Op: cm.TaxonomyPatchItemOpAdd, Path: "/unknown", Value: jx.Raw(`null`)}},
-		"nested path":       {{Op: cm.TaxonomyPatchItemOpAdd, Path: "/prefLabel/en-US", Value: jx.Raw(`"Changed"`)}},
-		"missing slash":     {{Op: cm.TaxonomyPatchItemOpAdd, Path: "prefLabel", Value: jx.Raw(`{}`)}},
-		"unknown operation": {{Op: cm.TaxonomyPatchItemOp("copy"), Path: "/prefLabel", Value: jx.Raw(`{}`)}},
+		"unknown path":      {{Op: cm.TaxonomyPatchItemOpAdd, Path: "/unknown", Value: jx.Raw(testJSON(nil))}},
+		"nested path":       {{Op: cm.TaxonomyPatchItemOpAdd, Path: "/prefLabel/en-US", Value: jx.Raw(testJSON("Changed"))}},
+		"missing slash":     {{Op: cm.TaxonomyPatchItemOpAdd, Path: "prefLabel", Value: jx.Raw(testJSON(map[string]any{}))}},
+		"unknown operation": {{Op: cm.TaxonomyPatchItemOp("copy"), Path: "/prefLabel", Value: jx.Raw(testJSON(map[string]any{}))}},
 	}
 
 	for name, patch := range tests {
@@ -350,11 +350,11 @@ func TestTaxonomyConceptSchemePatchValidationIsAtomic(t *testing.T) {
 	tests := map[string]cm.TaxonomyPatch{
 		"missing member": {{
 			Op: cm.TaxonomyPatchItemOpAdd, Path: "/concepts",
-			Value: jx.Raw(`[{"sys":{"type":"Link","linkType":"TaxonomyConcept","id":"missing"}}]`),
+			Value: jx.Raw(testJSON([]any{map[string]any{"sys": map[string]any{"type": "Link", "linkType": "TaxonomyConcept", "id": "missing"}}})),
 		}},
 		"top concept outside members": {{
 			Op: cm.TaxonomyPatchItemOpAdd, Path: "/topConcepts",
-			Value: jx.Raw(`[{"sys":{"type":"Link","linkType":"TaxonomyConcept","id":"other"}}]`),
+			Value: jx.Raw(testJSON([]any{map[string]any{"sys": map[string]any{"type": "Link", "linkType": "TaxonomyConcept", "id": "other"}}})),
 		}},
 	}
 

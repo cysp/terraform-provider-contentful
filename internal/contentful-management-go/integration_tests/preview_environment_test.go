@@ -158,18 +158,20 @@ func TestPreviewEnvironmentConfigurationSemantics(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, http.StatusBadRequest, duplicateError.StatusCode)
 
-	requestBody := `{
-		"name":"unsafe update response round-trip",
-		"description":"description",
-		"configurations":[{
-			"url":"https://unsafe.invalid",
-			"entityType":"ContentType",
-			"entityId":"page",
-			"enabled":true,
-			"example":false,
-			"contentType":"page"
-		}]
-	}`
+	requestBody := testJSON(map[string]any{
+		"name":        "unsafe update response round-trip",
+		"description": "description",
+		"configurations": []any{
+			map[string]any{
+				"url":         "https://unsafe.invalid",
+				"entityType":  "ContentType",
+				"entityId":    "page",
+				"enabled":     true,
+				"example":     false,
+				"contentType": "page",
+			},
+		},
+	})
 	request, err := http.NewRequestWithContext(
 		t.Context(),
 		http.MethodPut,

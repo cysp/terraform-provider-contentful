@@ -29,16 +29,34 @@ func TestWebhookSigningSecretMockWireContract(t *testing.T) {
 		expected            string
 	}{
 		{"GET", "space", "", 404, `"id":"NotFound"`},
-		{"PUT", "missing", `{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`, 404, `"id":"NotFound"`},
-		{"PUT", "space", `{"value":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}`, 201, `{"sys":{"type":"WebhookSigningSecret","space":{"sys":{"type":"Link","linkType":"Space","id":"space"}}},"redactedValue":"/=_-"}`},
-		{"PUT", "space", `{"value":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbZy87-/=_+"}`, 200, `{"sys":{"type":"WebhookSigningSecret","space":{"sys":{"type":"Link","linkType":"Space","id":"space"}}},"redactedValue":"/=_+"}`},
-		{"GET", "space", "", 200, `{"sys":{"type":"WebhookSigningSecret","space":{"sys":{"type":"Link","linkType":"Space","id":"space"}}},"redactedValue":"/=_+"}`},
+		{"PUT", "missing", testJSON(map[string]any{"value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}), 404, `"id":"NotFound"`},
+		{"PUT", "space", testJSON(map[string]any{"value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAb09+/=_-"}), 201, testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":  "WebhookSigningSecret",
+				"space": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+			},
+			"redactedValue": "/=_-",
+		})},
+		{"PUT", "space", testJSON(map[string]any{"value": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbZy87-/=_+"}), 200, testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":  "WebhookSigningSecret",
+				"space": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+			},
+			"redactedValue": "/=_+",
+		})},
+		{"GET", "space", "", 200, testJSON(map[string]any{
+			"sys": map[string]any{
+				"type":  "WebhookSigningSecret",
+				"space": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}},
+			},
+			"redactedValue": "/=_+",
+		})},
 		{"GET", "missing", "", 404, `"id":"NotFound"`},
 		{"DELETE", "missing", "", 404, `"id":"NotFound"`},
 		{"DELETE", "space", "", 204, ""},
 		{"GET", "space", "", 404, `"id":"NotFound"`},
 		{"DELETE", "space", "", 404, `"id":"NotFound"`},
-		{"PUT", "space", `{"value":"DO_NOT_ECHO_INVALID_SECRET!"}`, 422, `"id":"ValidationFailed"`},
+		{"PUT", "space", testJSON(map[string]any{"value": "DO_NOT_ECHO_INVALID_SECRET!"}), 422, `"id":"ValidationFailed"`},
 	} {
 		req, requestErr := http.NewRequestWithContext(t.Context(), step.method, server.URL+"/spaces/"+step.space+"/webhook_settings/signing_secret", strings.NewReader(step.body))
 		require.NoError(t, requestErr)
@@ -81,16 +99,16 @@ func TestWebhookSigningSecretMockRequestErrors(t *testing.T) {
 	}{
 		{"empty body", "", "ValidationFailed", "Validation error", 422},
 		{"malformed JSON", "{", "BadRequest", "Invalid request payload JSON format", 400},
-		{"missing value", `{}`, "ValidationFailed", "Validation error", 422},
-		{"null value", `{"value":null}`, "ValidationFailed", "Validation error", 422},
-		{"empty value", `{"value":""}`, "ValidationFailed", "Validation error", 422},
-		{"short value", `{"value":"` + strings.Repeat("a", 63) + `"}`, "ValidationFailed", "Validation error", 422},
-		{"long value", `{"value":"` + strings.Repeat("a", 65) + `"}`, "ValidationFailed", "Validation error", 422},
-		{"invalid ASCII", `{"value":"` + strings.Repeat("a", 63) + `!"}`, "ValidationFailed", "Validation error", 422},
-		{"non-ASCII", `{"value":"` + strings.Repeat("é", 64) + `"}`, "ValidationFailed", "Validation error", 422},
-		{"number", `{"value":42}`, "ValidationFailed", "Validation error", 422},
-		{"array", `{"value":[]}`, "ValidationFailed", "Validation error", 422},
-		{"object", `{"value":{}}`, "ValidationFailed", "Validation error", 422},
+		{"missing value", testJSON(map[string]any{}), "ValidationFailed", "Validation error", 422},
+		{"null value", testJSON(map[string]any{"value": nil}), "ValidationFailed", "Validation error", 422},
+		{"empty value", testJSON(map[string]any{"value": ""}), "ValidationFailed", "Validation error", 422},
+		{"short value", testJSON(map[string]any{"value": strings.Repeat("a", 63)}), "ValidationFailed", "Validation error", 422},
+		{"long value", testJSON(map[string]any{"value": strings.Repeat("a", 65)}), "ValidationFailed", "Validation error", 422},
+		{"invalid ASCII", testJSON(map[string]any{"value": strings.Repeat("a", 63) + "!"}), "ValidationFailed", "Validation error", 422},
+		{"non-ASCII", testJSON(map[string]any{"value": strings.Repeat("é", 64)}), "ValidationFailed", "Validation error", 422},
+		{"number", testJSON(map[string]any{"value": 42}), "ValidationFailed", "Validation error", 422},
+		{"array", testJSON(map[string]any{"value": []any{}}), "ValidationFailed", "Validation error", 422},
+		{"object", testJSON(map[string]any{"value": map[string]any{}}), "ValidationFailed", "Validation error", 422},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
