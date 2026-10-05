@@ -17,6 +17,12 @@ verification commands live in
 | Build, test, or release the provider | Development, testing, and release documentation |
 | Change lifecycle behavior or evaluate external evidence | Design and research documentation |
 
+For practitioner documentation, retain a note when it changes how the reader
+configures the provider, what they expect it to do, or how they recover. Explain
+omission, destructive changes, import, and recovery consequences even when
+validation rejects related invalid configurations. Remove implementation
+narration and prerequisites already evident from the example or schema.
+
 Lead with what the reader can do. Use plain language in setup instructions,
 examples, and recovery steps. Keep precise Contentful and Terraform terms where
 they distinguish behavior: an environment is different from an environment
@@ -71,9 +77,9 @@ without the surrounding generated page.
 
 ## Make examples usable
 
-Name prerequisites such as an existing space, enabled locales, or an activated
-Content Type. Keep addresses, variables, and IDs consistent across configuration,
-identity import, string-ID import, and CLI import examples within each resource
+Explain prerequisites that affect successful use, such as required locale
+settings or Content Type activation. Keep addresses, variables, and IDs consistent
+across configuration, identity import, string-ID import, and CLI import examples within each resource
 directory; explain any intentional difference and required context. Label
 alternative import forms so readers do not combine them into one configuration.
 Prefer `jsonencode` for structured JSON strings when that matches the schema.
