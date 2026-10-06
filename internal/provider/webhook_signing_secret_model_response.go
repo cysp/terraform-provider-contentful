@@ -2,6 +2,7 @@ package provider
 
 import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -28,5 +29,7 @@ func NewWebhookSigningSecretResourceModelFromResponse(response cm.WebhookSigning
 		IDIdentityModel:                   NewIDIdentityModelFromMultipartID(response.Sys.Space.Sys.ID),
 		WebhookSigningSecretIdentityModel: WebhookSigningSecretIdentityModel{SpaceID: types.StringValue(response.Sys.Space.Sys.ID)},
 		Value:                             value,
+		CreatedAt:                         timetypes.NewRFC3339TimePointerValue(response.Sys.CreatedAt.ValueTimePointer()),
+		UpdatedAt:                         timetypes.NewRFC3339TimePointerValue(response.Sys.UpdatedAt.ValueTimePointer()),
 	}, diags
 }

@@ -14,6 +14,7 @@ import (
 
 var (
 	_ resource.Resource                = (*webhookSigningSecretResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*webhookSigningSecretResource)(nil)
 	_ resource.ResourceWithConfigure   = (*webhookSigningSecretResource)(nil)
 	_ resource.ResourceWithIdentity    = (*webhookSigningSecretResource)(nil)
 	_ resource.ResourceWithImportState = (*webhookSigningSecretResource)(nil)
@@ -52,16 +53,27 @@ func (r *webhookSigningSecretResource) ImportState(ctx context.Context, req reso
 	ImportStatePassthroughMultipartID(ctx, webhookSigningSecretIdentityAttributeNames(), req, resp)
 }
 
+//nolint:dupl // Keep resource lifecycle and HTTP policies explicit.
 func (r *webhookSigningSecretResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan WebhookSigningSecretModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("value_wo"), &plan.ValueWO)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel, diags := resourceCreateContext(ctx, plan.Timeouts)
-	resp.Diagnostics.Append(diags...)
+	request, requestDiags := plan.ToWebhookSigningSecretRequest(ctx, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx = maskSigningSecretValues(ctx, plan.Value, plan.ValueWO)
+
+	ctx, cancel, timeoutDiags := resourceCreateContext(ctx, plan.Timeouts)
+	resp.Diagnostics.Append(timeoutDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -69,15 +81,26 @@ func (r *webhookSigningSecretResource) Create(ctx context.Context, req resource.
 
 	defer cancel()
 
-	tflog.Info(ctx, "webhook_signing_secret.create")
-	data, diags := r.put(ctx, plan, types.StringNull())
-	resp.Diagnostics.Append(diags...)
+	hashes := writeOnlySecretHashes{}
+
+	_, valuePath, _ := resolveSigningSecretValue(plan.Value, plan.ValueWO, path.Empty())
+	_, prepareDiags := prepareSigningSecretValue(ctx, &hashes, types.StringNull(), types.StringValue(request.Value), valuePath)
+	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &data)...)
+	tflog.Info(ctx, "webhook_signing_secret.create")
+	// Create always writes, including replacement and recreation after absence.
+	data, putDiags := r.put(ctx, plan, request, types.StringNull())
+	resp.Diagnostics.Append(putDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &hashes, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &data)...)
 }
 
 func (r *webhookSigningSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -108,6 +131,13 @@ func (r *webhookSigningSecretResource) Read(ctx context.Context, req resource.Re
 
 	response, err := r.providerData.client.GetWebhookSigningSecret(ctx, cm.GetWebhookSigningSecretParams{SpaceID: spaceID})
 	if err == nil && webhookSigningSecretNotFound(response) {
+		// Read must return identity even when Terraform did not send a prior identity.
+		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &state)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		resp.State.RemoveResource(ctx)
 
 		return
@@ -132,26 +162,51 @@ func (r *webhookSigningSecretResource) Read(ctx context.Context, req resource.Re
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &data)...)
 }
 
+//nolint:dupl // Keep resource lifecycle and HTTP policies explicit.
 func (r *webhookSigningSecretResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var state, plan WebhookSigningSecretModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("value_wo"), &plan.ValueWO)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Imported null and previously applied values both survive timeout-only
-	// changes. Config is not an authority to override the effective Plan.
-	if plan.Value.Equal(state.Value) {
+	hashes, hashDiags := readSigningSecretHashes(ctx, req.Private)
+	resp.Diagnostics.Append(hashDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Ordinary fields retain their effective values in Plan, including ignores.
+	if plan.ValueWO.IsNull() && !plan.Value.IsUnknown() && plan.Value.Equal(state.Value) {
+		if !plan.Value.IsNull() {
+			resp.Diagnostics.Append(hashes.remove(path.Root("value_wo"))...)
+		}
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		state.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &state)...)
+		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &hashes, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &state)...)
 
 		return
 	}
 
-	ctx, cancel, diags := resourceUpdateContext(ctx, plan.Timeouts)
-	resp.Diagnostics.Append(diags...)
+	request, requestDiags := plan.ToWebhookSigningSecretRequest(ctx, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx = maskSigningSecretValues(ctx, state.Value, plan.Value, plan.ValueWO)
+
+	ctx, cancel, timeoutDiags := resourceUpdateContext(ctx, plan.Timeouts)
+	resp.Diagnostics.Append(timeoutDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -159,15 +214,33 @@ func (r *webhookSigningSecretResource) Update(ctx context.Context, req resource.
 
 	defer cancel()
 
-	tflog.Info(ctx, "webhook_signing_secret.update")
-	data, diags := r.put(ctx, plan, state.Value)
-	resp.Diagnostics.Append(diags...)
+	_, valuePath, _ := resolveSigningSecretValue(plan.Value, plan.ValueWO, path.Empty())
+	matches, prepareDiags := prepareSigningSecretValue(ctx, &hashes, state.Value, types.StringValue(request.Value), valuePath)
+	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &data)...)
+	if matches {
+		// Same bytes can still change their public/private representation.
+		state.Value = plan.Value
+		state.ValueWO = types.StringNull()
+		state.Timeouts = plan.Timeouts
+		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &hashes, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &state)...)
+
+		return
+	}
+
+	tflog.Info(ctx, "webhook_signing_secret.update")
+	data, putDiags := r.put(ctx, plan, request, state.Value)
+	resp.Diagnostics.Append(putDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &hashes, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &data)...)
 }
 
 const webhookSigningSecretMutationRecovery = " The operation may have reached Contentful. Reads cannot verify the complete secret. Coordinate with all webhook receivers before retrying; a later apply can overwrite or delete intervening changes."
@@ -208,16 +281,24 @@ func (r *webhookSigningSecretResource) Delete(ctx context.Context, req resource.
 	resp.Diagnostics.AddError("Failed to delete webhook signing secret", signingSecretErrorDetail(response, err, state.Value)+webhookSigningSecretMutationRecovery)
 }
 
-func (r *webhookSigningSecretResource) put(ctx context.Context, plan WebhookSigningSecretModel, priorValue types.String) (WebhookSigningSecretModel, diag.Diagnostics) {
+func (r *webhookSigningSecretResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	modifySigningSecretPlan(ctx, req, resp)
+}
+
+func (r *webhookSigningSecretResource) put(ctx context.Context, plan WebhookSigningSecretModel, request cm.WebhookSigningSecretRequestData, priorValue types.String) (WebhookSigningSecretModel, diag.Diagnostics) {
+	ctx = maskSigningSecretValues(ctx, priorValue, plan.Value, plan.ValueWO)
 	spaceID, diags := webhookSigningSecretSpaceID(plan.SpaceID)
-	request, requestDiags := plan.ToWebhookSigningSecretRequest(ctx, path.Empty())
-	diags.Append(requestDiags...)
 
 	if diags.HasError() {
 		return WebhookSigningSecretModel{}, diags
 	}
 
 	response, err := r.providerData.client.PutWebhookSigningSecret(withContentfulRequestNoRedirect(ctx), &request, cm.PutWebhookSigningSecretParams{SpaceID: spaceID})
+	if err != nil {
+		diags.AddError("Failed to write webhook signing secret", signingSecretErrorDetail(response, err, priorValue, plan.Value, plan.ValueWO)+webhookSigningSecretMutationRecovery)
+
+		return WebhookSigningSecretModel{}, diags
+	}
 
 	var secret cm.WebhookSigningSecret
 
@@ -227,7 +308,7 @@ func (r *webhookSigningSecretResource) put(ctx context.Context, plan WebhookSign
 	case *cm.PutWebhookSigningSecretCreated:
 		secret = cm.WebhookSigningSecret(*response)
 	default:
-		diags.AddError("Failed to write webhook signing secret", signingSecretErrorDetail(response, err, priorValue, plan.Value)+webhookSigningSecretMutationRecovery)
+		diags.AddError("Failed to write webhook signing secret", signingSecretErrorDetail(response, err, priorValue, plan.Value, plan.ValueWO)+webhookSigningSecretMutationRecovery)
 
 		return WebhookSigningSecretModel{}, diags
 	}

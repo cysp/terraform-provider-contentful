@@ -19,6 +19,7 @@ For decisions about how the provider uses these APIs, see [provider design](../d
 | App Actions | [Definitions, invocation, and outcomes](app-framework/actions.md): parameter schemas, calls, status, and raw responses |
 | App Identity | [Keys and access tokens](app-framework/identity.md): AppKey, AppAccessToken, credential exchange, and installation scope |
 | App request signing | [Secrets, signed requests, and verification](app-framework/request-signing.md): AppSigningSecret, AppSignedRequest, rotation, and reconstruction limits |
+| Signing secret metadata | [Versions and timestamps](signing-secret-versions.md): AppSigningSecret and WebhookSigningSecret metadata, conflicting examples, and conditional requests |
 | Native external references | [Providers, types, and resources](app-framework/native-external-references.md): ResourceProvider, ResourceType, Resource, and Function resolution |
 | Functions and availability | [Runtime, logs, usage, and availability](app-framework/functions.md): execution limits, plan distinctions, log shapes, and usage queries |
 | Webhooks | [Configuration, delivery, and observability](webhooks.md): topics, headers, Basic authentication, signing settings, retries, and activity logs |

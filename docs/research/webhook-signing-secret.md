@@ -36,8 +36,8 @@ The inspected SDK revision is
   `redactedValue: string` and a Space link. The declared signing-secret sys type
   excludes `version`, despite the reference example including it.
 
-SDK type declarations describe client expectations; they do not establish
-required server metadata or support for conditional mutations.
+For the distinction between SDK expectations and server metadata or
+conditional-write support, see the [shared signing-secret metadata evidence](signing-secret-versions.md#public-reference-and-first-party-sdk).
 
 ## Direct observations
 
@@ -102,11 +102,63 @@ null, numbers, arrays, and objects. These responses must be treated as potential
 secret-bearing. The example above uses structural descriptions rather than
 retaining submitted values. Final GET confirmed that the secret remained absent.
 
+## Signing after rotation
+
+A successful replacement response and a matching GET did not imply immediate use
+of the new key by webhook signers in the following experiment.
+
+On **2026-10-02**, three independent samples exercised signing-secret creation and
+replacement. Each sample began with the signing secret absent. A disposable
+webhook selected only a disposable Asset's create/save events in one environment.
+Its transformed body contained a synthetic marker and the Asset's `sys.version`.
+
+The target was a nonexistent route on `api.contentful.com`, with no authentication
+header. Contentful returned 401. The [webhook call details][call-details] exposed
+the outgoing request's raw body, URL, method, and signing headers. This allowed
+verification of Contentful's signatures without sending the requests to a third
+party; it does not establish successful processing by an application receiver.
+
+The verifier used the [documented signing procedure][verification-procedure]:
+HMAC-SHA256 over the method, path, signed headers, and exact recorded body,
+separated by newlines. Each captured request was checked against both complete
+64-character keys. All initial-create requests verified with the initial key and
+rejected the other key.
+
+A local forwarding proxy recorded each PUT's start and response receipt.
+Each rotation received HTTP 200 with the new key's redacted suffix. Only after
+that acknowledgement did the probe save the Asset again. Every event below had
+a distinct version and idempotency key and request attempt `1`; the raw body
+version was checked before verifying its signature. No additional secret PUT
+occurred between a sample's rotation and its subsequent events. Each subsequent
+CMA GET continued to return the new key's redacted suffix.
+
+| Sample | Asset version | Signing timestamp after PUT acknowledgement | Old key verifies | New key verifies |
+| --- | --- | --- | --- | --- |
+| 1 | 2 | 2.111 s | No | Yes |
+| 2 | 2 | 2.187 s | Yes | No |
+| 2 | 3 | 9.269 s | Yes | No |
+| 2 | 4 | 17.879 s | Yes | No |
+| 2 | 5 | 25.264 s | No | Yes |
+| 3 | 2 | 2.502 s | Yes | No |
+| 3 | 3 | 9.389 s | No | Yes |
+
+The elapsed values subtract the locally recorded response-receipt UTC timestamp
+from `x-contentful-timestamp`; they are approximate cross-system measurements.
+The sequential operations independently establish that each event was initiated
+after the successful PUT response.
+
+The samples do not identify the service mechanism, establish a maximum
+propagation time, or prove that every later request uses the new key. Receivers
+should follow the documented dual-key rotation workflow and verify new-key
+requests before retiring the old key; a fixed delay is not established by this
+experiment.
+
 ## Unverified behavior
 
-Rotation propagation, webhook delivery, permission-denied responses, and error
-precedence when multiple request conditions fail remain unverified. Invalid
-replacement nonmutation has not been live-probed with an existing secret.
+Successful application-receiver processing, a bound on rotation propagation,
+permission-denied responses, and error precedence when multiple request conditions
+fail remain unverified. Invalid replacement nonmutation has not been live-probed
+with an existing secret.
 The observations do not establish conditional-write support through any untested
 header or protocol.
 
@@ -116,5 +168,7 @@ header or protocol.
 [delete]: https://www.contentful.com/developers/docs/references/content-management-api/webhook-security/delete-a-webhook-signing-secret/
 [guide]: https://www.contentful.com/developers/docs/extensibility/webhooks/secrets/
 [verification]: https://www.contentful.com/developers/docs/extensibility/webhooks/request-verification/#key-rotation
+[verification-procedure]: https://www.contentful.com/developers/docs/extensibility/webhooks/request-verification/#verifying-a-signature
+[call-details]: https://www.contentful.com/developers/docs/references/content-management-api/webhook-calls/get-the-webhook-call-details/
 [adapter]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/webhook.ts
 [entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/webhook.ts

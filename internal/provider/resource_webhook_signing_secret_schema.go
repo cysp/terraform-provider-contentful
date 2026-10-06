@@ -5,6 +5,8 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -13,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-const webhookSigningValueDescription = "Symmetric key shared between Contentful and webhook receivers in the space. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Refresh cannot detect external rotation. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value."
+const webhookSigningValueDescription = "Symmetric key shared between Contentful and webhook receivers in the space. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Exactly one of `value` and `value_wo` is required. Stored in Terraform state. Refresh cannot detect external rotation. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value."
 
 const webhookSigningSecretValueConstraint = "The webhook signing secret must be exactly 64 characters matching ^[0-9a-zA-Z+/=_-]+$."
 
@@ -64,9 +66,27 @@ func WebhookSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 			"value": schema.StringAttribute{
 				Description:         webhookSigningValueDescription,
 				MarkdownDescription: webhookSigningValueDescription + " See [importing signing secrets](../guides/secrets-and-state#importing-signing-secrets).",
-				Required:            true,
+				Optional:            true,
 				Sensitive:           true,
+				Validators:          []validator.String{webhookSigningSecretValueValidator{}, stringvalidator.ExactlyOneOf(path.MatchRoot("value_wo"))},
+			},
+			"value_wo": schema.StringAttribute{
+				Description:         signingSecretWriteOnlyDescription,
+				MarkdownDescription: signingSecretWriteOnlyDescription + " See [write-only signing secrets](../guides/secrets-and-state#write-only-signing-secrets) for rotation and saved-plan behavior.",
+				Optional:            true,
+				Sensitive:           true,
+				WriteOnly:           true,
 				Validators:          []validator.String{webhookSigningSecretValueValidator{}},
+			},
+			"created_at": schema.StringAttribute{
+				Description: "Contentful creation timestamp in RFC 3339 format, or null when omitted. It can change when the signing secret is replaced. Write-only updates can make this unknown during planning and trigger downstream replacement even without a secret write.",
+				CustomType:  timetypes.RFC3339Type{},
+				Computed:    true,
+			},
+			"updated_at": schema.StringAttribute{
+				Description: "Contentful update timestamp in RFC 3339 format, or null when omitted. Write-only updates can make this unknown during planning and trigger downstream replacement even without a secret write.",
+				CustomType:  timetypes.RFC3339Type{},
+				Computed:    true,
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
 		},

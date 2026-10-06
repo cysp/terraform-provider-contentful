@@ -70,8 +70,9 @@ commitment guarantee. Transport errors and ordinary 5xx responses remain
 ambiguous and do not authorize automatic mutation replay.
 
 Entry Create, specified-ID Create, Update, and Publish, Content Type Create,
-Update, and Activate, WebhookSigningSecret and AppEventSubscription PUT/DELETE,
-and AppAction POST/PUT/DELETE use a private request-context signal to prevent
+Update, and Activate, AppSigningSecret, WebhookSigningSecret, and
+AppEventSubscription PUT/DELETE, and AppAction POST/PUT/DELETE use a private
+request-context signal to prevent
 redirects in both nested provider HTTP clients. This covers method-preserving
 307/308 and method-rewriting 301/302/303 responses. The signal survives generated
 request construction and does not alter retry classification.
@@ -82,10 +83,11 @@ The outer client has a separate default redirect policy and can follow a redirec
 returned by an inner policy using `http.ErrUseLastResponse`. GET and other CMA
 operations use the retry classification described above.
 
-WebhookSigningSecret mutations are unversioned space-wide overwrites/deletions.
-A read cannot establish complete-secret equality, so this resource cannot recover
-an ambiguous PUT by observing presence or safely replay a mutation across another
-actor's changes. See its [lifecycle contract](webhook-signing-secret.md).
+AppSigningSecret and WebhookSigningSecret mutations are unversioned singleton
+overwrites/deletions. A read cannot establish complete-secret equality, so neither
+resource can recover an ambiguous PUT by observing presence. See the
+[signing-secret acknowledgement boundary](signing-secret-write-only.md#mutation-boundary)
+and [webhook ownership contract](webhook-signing-secret.md).
 
 AppEventSubscription PUT/DELETE similarly overwrite or delete an unversioned
 singleton. Its configuration is readable, but reads cannot authorize a replay
