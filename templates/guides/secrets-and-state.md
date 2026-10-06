@@ -138,7 +138,9 @@ This setting suppresses configuration-driven rotation; it does not recover or ve
 
 An **Invalid write-only secret private state** diagnostic means Terraform's stored comparison data cannot be used. In-place updates fail before writing the secret. Planning can warn about this problem and still succeed; other resources may change during apply before the signing-secret update fails.
 
-Restore valid Terraform state before updating the resource. Explicit replacement and destruction remain available without repairing the comparison data. Replacement installs the configured secret, so coordinate it with consumers as a rotation. Destruction deletes the current remote secret.
+Restore valid Terraform state before updating the resource. Explicit replacement and destruction remain available without repairing the comparison data. Destruction deletes the current remote secret.
+
+For replacement recovery, review the plan and require destruction of the old instance before creation of its replacement (`-/+`). Both resources manage a singleton: one secret per App Definition or space. With `create_before_destroy`, deleting the old instance deletes the newly written secret, even when Terraform reports a successful apply. This lifecycle setting can propagate from dependent resources even when it is absent from the signing-secret configuration. Adjust the relevant lifecycle settings and create a fresh plan; do not apply the recovery replacement until its plan shows destroy before create. Coordinate with consumers for the interval without a secret and the subsequent installation of the configured key.
 
 ## Webhook credentials and secret headers
 

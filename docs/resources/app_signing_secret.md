@@ -28,6 +28,8 @@ resource "random_password" "contentful_app_signing_secret" {
 }
 ```
 
+A replacement for the same App Definition with `create_before_destroy` can delete the newly written secret. Review the replacement order, including lifecycle settings propagated from dependent resources. See [replacement recovery](../guides/secrets-and-state#recovering-invalid-signing-secret-state).
+
 ## Write-only signing secret
 
 With Terraform 1.11.1 or later, use `value_wo` and an ephemeral variable to keep the
