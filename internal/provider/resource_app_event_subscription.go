@@ -193,7 +193,7 @@ func (r *appEventSubscriptionResource) Delete(ctx context.Context, req resource.
 
 	defer cancel()
 
-	response, err := r.providerData.client.DeleteAppEventSubscription(withContentfulRequestNoRetry(ctx), cm.DeleteAppEventSubscriptionParams{OrganizationID: organization, AppDefinitionID: appDefinition})
+	response, err := r.providerData.client.DeleteAppEventSubscription(withContentfulRequestNoRedirect(ctx), cm.DeleteAppEventSubscriptionParams{OrganizationID: organization, AppDefinitionID: appDefinition})
 	if err == nil {
 		if _, ok := response.(*cm.NoContent); ok {
 			return
@@ -216,7 +216,7 @@ func (r *appEventSubscriptionResource) put(ctx context.Context, plan AppEventSub
 		return AppEventSubscriptionModel{}, diags, nil
 	}
 
-	response, err := r.providerData.client.PutAppEventSubscription(withContentfulRequestNoRetry(ctx), &request, cm.PutAppEventSubscriptionParams{OrganizationID: organization, AppDefinitionID: appDefinition})
+	response, err := r.providerData.client.PutAppEventSubscription(withContentfulRequestNoRedirect(ctx), &request, cm.PutAppEventSubscriptionParams{OrganizationID: organization, AppDefinitionID: appDefinition})
 	if err == nil {
 		switch result := response.(type) {
 		case *cm.PutAppEventSubscriptionOK:

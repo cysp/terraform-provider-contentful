@@ -198,7 +198,7 @@ func (r *webhookSigningSecretResource) Delete(ctx context.Context, req resource.
 
 	tflog.Info(ctx, "webhook_signing_secret.delete")
 
-	response, err := r.providerData.client.DeleteWebhookSigningSecret(withContentfulRequestNoRetry(ctx), cm.DeleteWebhookSigningSecretParams{SpaceID: spaceID})
+	response, err := r.providerData.client.DeleteWebhookSigningSecret(withContentfulRequestNoRedirect(ctx), cm.DeleteWebhookSigningSecretParams{SpaceID: spaceID})
 	if err == nil {
 		if _, ok := response.(*cm.NoContent); ok || webhookSigningSecretNotFound(response) {
 			return
@@ -217,7 +217,7 @@ func (r *webhookSigningSecretResource) put(ctx context.Context, plan WebhookSign
 		return WebhookSigningSecretModel{}, diags
 	}
 
-	response, err := r.providerData.client.PutWebhookSigningSecret(withContentfulRequestNoRetry(ctx), &request, cm.PutWebhookSigningSecretParams{SpaceID: spaceID})
+	response, err := r.providerData.client.PutWebhookSigningSecret(withContentfulRequestNoRedirect(ctx), &request, cm.PutWebhookSigningSecretParams{SpaceID: spaceID})
 
 	var secret cm.WebhookSigningSecret
 

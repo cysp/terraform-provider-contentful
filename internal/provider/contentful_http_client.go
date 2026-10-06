@@ -15,7 +15,7 @@ import (
 
 type contentfulRequestMethodContextKey struct{}
 
-type contentfulRequestNoRetryContextKey struct{}
+type contentfulRequestNoRedirectContextKey struct{}
 
 type contentfulRequestRetryStateContextKey struct{}
 
@@ -207,17 +207,8 @@ func contentfulRetryPolicy(ctx context.Context, response *http.Response, err err
 		return false, ctx.Err() //nolint:wrapcheck // retryablehttp recognizes context cancellation by identity.
 	}
 
-	if noRetry, _ := ctx.Value(contentfulRequestNoRetryContextKey{}).(bool); noRetry {
-		// Selected mutation lifecycles use the request context to prohibit every
-		// transparent replay, including explicit 429 responses. The signal is
-		// intentionally narrower than the HTTP method because unrelated CMA
-		// mutations retain the provider's default retry policy.
-		return false, nil
-	}
-
 	if err == nil && response != nil && response.StatusCode == http.StatusTooManyRequests {
-		// Follow Contentful's documented and first-party 429 retry practice for
-		// every method; this does not prove that a mutation was uncommitted.
+		// Follow Contentful's documented and first-party 429 retry practice for every method.
 		return true, nil
 	}
 
@@ -234,8 +225,8 @@ func contentfulRetryPolicy(ctx context.Context, response *http.Response, err err
 	}
 }
 
-func withContentfulRequestNoRetry(ctx context.Context) context.Context {
-	return context.WithValue(ctx, contentfulRequestNoRetryContextKey{}, true)
+func withContentfulRequestNoRedirect(ctx context.Context) context.Context {
+	return context.WithValue(ctx, contentfulRequestNoRedirectContextKey{}, true)
 }
 
 const contentfulDefaultRedirectLimit = 10
@@ -246,7 +237,7 @@ var errContentfulRedirectLimit = errors.New("stopped after 10 redirects")
 // the outer client can follow a redirect that the inner client declined.
 func contentfulCheckRedirect(policy func(*http.Request, []*http.Request) error) func(*http.Request, []*http.Request) error {
 	return func(request *http.Request, via []*http.Request) error {
-		if noRetry, _ := request.Context().Value(contentfulRequestNoRetryContextKey{}).(bool); noRetry {
+		if noRedirect, _ := request.Context().Value(contentfulRequestNoRedirectContextKey{}).(bool); noRedirect {
 			return http.ErrUseLastResponse
 		}
 

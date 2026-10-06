@@ -57,7 +57,7 @@ Recovery is limited to that draft:
 
 ## Retry and create ambiguity
 
-The provider does not automatically retry Entry creation, updates, or publication after rate limiting (HTTP 429), connection errors, or server errors (HTTP 5xx). A failed response can leave the result uncertain; inspect Contentful before retrying.
+The provider retries Entry creation, updates, or publication after explicit rate limiting (HTTP 429), using the same request and version preconditions within the operation timeout. Connection errors and server errors (HTTP 5xx) are not automatically retried. A failed response can leave the result uncertain; inspect Contentful before retrying.
 
 When `entry_id` is omitted, Contentful generates the Entry ID. If the Create response is ambiguous, Terraform may not know whether Contentful committed the Create or what ID it assigned. A later apply may therefore create another Entry.
 

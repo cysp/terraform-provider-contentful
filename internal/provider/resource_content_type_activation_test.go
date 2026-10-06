@@ -263,7 +263,7 @@ func TestAccContentTypeResourceUpdateUsesExactArbitraryPositiveReturnedVersion(t
 	}})
 }
 
-func TestAccContentTypeResourceDraftRateLimitDoesNotCreateActivationAuthority(t *testing.T) {
+func TestAccContentTypeResourceDraftRateLimitRetriesSameRequestBeforeActivation(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -271,33 +271,53 @@ func TestAccContentTypeResourceDraftRateLimitDoesNotCreateActivationAuthority(t 
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("draft-rate-limit")
-
 	testAccMockedResource(t, handler, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
+			Plan: resource.PlanOptions{
+				NoRefresh: true,
+			},
+		},
 		Steps: []resource.TestStep{
-			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"),
+				ConfigVariables: variables,
+			},
 			{
 				PreConfig: func() {
 					handler.resetRequestHistory()
 					handler.rateLimitPut.Store(true)
 				},
-				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
-				ExpectError: regexp.MustCompile(`Failed to update content type`),
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"),
+				ConfigVariables: variables,
+				Check: func(state *terraform.State) error {
+					raw := handler.rawRequestHistory()
+					require.Len(t, raw, 3)
+					require.Equal(t, contentTypeOperationPut, raw[0].Operation)
+					require.JSONEq(t, `{"name":"Test","description":"Test content type (draft-rate-limit)","displayField":"name","fields":[{"id":"name","name":"Name","type":"Symbol","required":true,"localized":false,"disabled":false,"omitted":false,"validations":[]},{"id":"slug","name":"Slug","type":"Symbol","required":true,"localized":false,"disabled":false,"omitted":false,"validations":[]}]}`, string(raw[0].Body))
+					require.Equal(t, []string{"2"}, raw[0].VersionValues)
+					require.Equal(t, raw[0], raw[1], "429 retries the exact draft body and version")
+					require.Equal(t, contentTypeOperationActivate, raw[2].Operation)
+					require.Equal(t, []string{"3"}, raw[2].VersionValues)
+
+					return resource.TestCheckResourceAttr("contentful_content_type.test", "published_version", "3")(state)
+				},
 			},
 			{
-				PreConfig: func() {
-					require.Equal(t, 1, handler.eventCount(contentTypeOperationPut), "the draft 429 must not be retried")
-					require.Zero(t, handler.eventCount(contentTypeOperationActivate), "a rejected draft must not authorize activation")
-					handler.resetRequestHistory()
+				PreConfig:       handler.resetRequestHistory,
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"),
+				ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+					},
 				},
-				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
-				Check: contentTypeActivationRequestAndVersionsCheck(handler, 1, 1, []int64{3}),
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
 			},
 		},
 	})
 }
 
-func TestAccContentTypeResourceActivationRateLimitRetainsExactAuthority(t *testing.T) {
+func TestAccContentTypeResourceActivationRateLimitRetriesSameVersion(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -305,30 +325,47 @@ func TestAccContentTypeResourceActivationRateLimitRetainsExactAuthority(t *testi
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("activation-rate-limit")
-
 	testAccMockedResource(t, handler, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
+			Plan: resource.PlanOptions{
+				NoRefresh: true,
+			},
+		},
 		Steps: []resource.TestStep{
-			{ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"), ConfigVariables: variables},
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"),
+				ConfigVariables: variables,
+			},
 			{
 				PreConfig: func() {
 					handler.resetRequestHistory()
 					handler.rateLimitActivation.Store(true)
 				},
-				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
-				ExpectError: regexp.MustCompile(`Failed to activate content type`),
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"),
+				ConfigVariables: variables,
+				Check: func(state *terraform.State) error {
+					raw := handler.rawRequestHistory()
+					require.Len(t, raw, 3)
+					require.Equal(t, contentTypeOperationPut, raw[0].Operation)
+					require.Equal(t, []string{"2"}, raw[0].VersionValues)
+					require.Equal(t, contentTypeOperationActivate, raw[1].Operation)
+					require.Equal(t, []string{"3"}, raw[1].VersionValues)
+					require.Empty(t, raw[1].Body)
+					require.Equal(t, raw[1], raw[2], "activation retries only the acknowledged draft version")
+
+					return resource.TestCheckResourceAttr("contentful_content_type.test", "published_version", "3")(state)
+				},
 			},
 			{
-				PreConfig: func() {
-					require.Equal(t, 1, handler.eventCount(contentTypeOperationPut))
-					require.Equal(t, []int64{3}, handler.activationVersionHistory(), "the activation 429 must not be retried")
-					handler.resetRequestHistory()
+				PreConfig:       handler.resetRequestHistory,
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"),
+				ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+					},
 				},
-				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"), ConfigVariables: variables,
-				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionUpdate),
-				}},
-				Check: contentTypeActivationRequestAndVersionsCheck(handler, 0, 1, []int64{3}),
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
 			},
 		},
 	})
@@ -2124,6 +2161,8 @@ func (h *contentTypeActivationTestHandler) ServeHTTP(responseWriter http.Respons
 		h.recordEvent(contentTypeOperationPut, request)
 
 		if h.rateLimitPut.Swap(false) {
+			responseWriter.Header().Set("Retry-After", "0")
+
 			message := "Injected content type draft rate limit"
 			_ = cmt.WriteContentfulManagementErrorResponse(responseWriter, http.StatusTooManyRequests, "RateLimitExceeded", &message, nil)
 
@@ -2156,7 +2195,7 @@ func (h *contentTypeActivationTestHandler) serveActivation(responseWriter http.R
 	h.recordEvent(contentTypeOperationActivate, request)
 
 	if h.rateLimitActivation.Swap(false) {
-		h.activationFailureReturned.Store(true)
+		responseWriter.Header().Set("Retry-After", "0")
 
 		message := "Injected content type activation rate limit"
 		_ = cmt.WriteContentfulManagementErrorResponse(responseWriter, http.StatusTooManyRequests, "RateLimitExceeded", &message, nil)
@@ -2501,4 +2540,92 @@ func contentTypeActivationRequestAndVersionsCheck(
 			return nil
 		},
 	)
+}
+
+func TestAccContentTypeResourceCreateRetriesRateLimit(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	handler.rateLimitPut.Store(true)
+	testAccMockedResource(t, handler, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"),
+				ConfigVariables: contentTypeActivationConfigVariables("create-rate-limit"),
+				Check: func(state *terraform.State) error {
+					raw := handler.rawRequestHistory()
+					require.Len(t, raw, 3)
+					require.Equal(t, contentTypeOperationPut, raw[0].Operation)
+					require.JSONEq(t, `{"name":"Test","description":"Test content type (create-rate-limit)","displayField":"name","fields":[{"id":"name","name":"Name","type":"Symbol","required":true,"localized":false,"disabled":false,"omitted":false,"validations":[]}]}`, string(raw[0].Body))
+					require.Empty(t, raw[0].VersionValues)
+					require.Equal(t, raw[0], raw[1])
+					require.Equal(t, contentTypeOperationActivate, raw[2].Operation)
+					require.Equal(t, []string{"1"}, raw[2].VersionValues)
+
+					return resource.TestCheckResourceAttr("contentful_content_type.test", "published_version", "1")(state)
+				},
+			},
+		},
+	})
+}
+
+func TestAccContentTypeResourceActivationRateLimitThenVersionMismatchRevokesAuthority(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	variables := contentTypeActivationConfigVariables("rate-limit-then-conflict")
+	testAccMockedResource(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
+			Plan: resource.PlanOptions{
+				NoRefresh: true,
+			},
+		},
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/1"),
+				ConfigVariables: variables,
+			},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.rateLimitActivation.Store(true)
+					handler.activationVersionMismatch.Store(true)
+					handler.activationFailureReturned.Store(true)
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"),
+				ConfigVariables: variables,
+				ExpectError:     regexp.MustCompile(`(?s)VersionMismatch.*revoked activation authority`),
+			},
+			{
+				PreConfig: func() {
+					raw := handler.rawRequestHistory()
+					require.Len(t, raw, 3, "429 and 409 must not cause a recovery GET")
+					require.Equal(t, contentTypeOperationPut, raw[0].Operation)
+					require.Equal(t, []string{"2"}, raw[0].VersionValues)
+					require.Equal(t, contentTypeOperationActivate, raw[1].Operation)
+					require.Equal(t, []string{"3"}, raw[1].VersionValues)
+					require.Equal(t, raw[1], raw[2])
+					handler.resetRequestHistory()
+				},
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceUpdate/2"),
+				ConfigVariables: variables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+					},
+				},
+				Check: func(state *terraform.State) error {
+					require.Empty(t, handler.eventHistory(), "409 revokes activation authority")
+
+					return resource.TestCheckResourceAttr("contentful_content_type.test", "published_version", "1")(state)
+				},
+			},
+		},
+	})
 }

@@ -55,7 +55,7 @@ Recovery is limited to that draft:
 
 ## Retry boundaries
 
-The provider does not automatically retry Content Type creation, updates, or activation after rate limiting (HTTP 429), connection errors, or server errors (HTTP 5xx). A failed response can leave the result uncertain; inspect Contentful before retrying.
+The provider retries Content Type creation, updates, or activation after explicit rate limiting (HTTP 429), using the same request and version preconditions within the operation timeout. Connection errors and server errors (HTTP 5xx) are not automatically retried. A failed response can leave the result uncertain; inspect Contentful before retrying.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}

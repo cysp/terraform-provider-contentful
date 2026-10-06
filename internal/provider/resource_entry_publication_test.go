@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
+	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -210,39 +212,64 @@ func TestAccEntryResourceInitialPublishVersionMismatchRevokesAuthority(t *testin
 	})
 }
 
-func TestAccEntryResourceDraftRateLimitDoesNotCreatePublicationAuthority(t *testing.T) {
+func TestAccEntryResourceDraftRateLimitRetriesSameRequestBeforePublication(t *testing.T) {
 	t.Parallel()
-
 	fixture := newEntryAcceptanceFixture(t)
 	recorder := fixture.recorder
-	fault := &entryRateLimitAdapter{delegate: fixture.server, path: entryTestUpdatePath}
+	fault := &entryRateLimitAdapter{
+		delegate: fixture.server,
+		path:     entryTestUpdatePath,
+	}
 	recorder.delegate = fault
-	config := managedEntryConfig
-
 	testAccMockedResource(t, recorder, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
+			Plan: resource.PlanOptions{
+				NoRefresh: true,
+			},
+		},
 		Steps: []resource.TestStep{
-			{Config: config("one")},
+			{
+				Config: managedEntryConfig("one"),
+			},
 			{
 				PreConfig: func() {
 					recorder.reset()
 					fault.shot.arm()
 				},
-				Config:      config("two"),
-				ExpectError: regexp.MustCompile(`Failed to update entry`),
+				Config: managedEntryConfig("two"),
+				Check: func(state *terraform.State) error {
+					requests := recorder.snapshot()
+					require.Len(t, requests, 3)
+					requireEntryUpdate(t, requests[0])
+					require.Equal(t, "2", requests[0].version)
+					require.JSONEq(t, testJSON(map[string]any{
+						"fields": map[string]any{
+							"managed": map[string]any{
+								"en-US": "two",
+							},
+						},
+						"metadata": map[string]any{
+							"concepts": []any{},
+							"tags":     []any{},
+						},
+					}), string(requests[0].body))
+					require.Equal(t, requests[0], requests[1], "429 retries the exact draft request")
+					requireEntryPublish(t, requests[2], entryTestPublishPath)
+					require.Equal(t, "3", requests[2].version)
+
+					return resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "3")(state)
+				},
 			},
 			{
-				PreConfig: func() {
-					requests := recorder.snapshot()
-					require.Len(t, requests, 1, "the draft 429 must not be retried or followed by publication")
-					requireEntryUpdate(t, requests[0])
-					recorder.reset()
+				PreConfig: recorder.reset,
+				Config:    managedEntryConfig("two"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
+					},
 				},
-				Config: config("two"),
 				Check: func(*terraform.State) error {
-					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-					require.Equal(t, "2", update.version)
-					require.Equal(t, "3", publish.version)
+					requireNoEntryMutations(t, recorder, "successful retry leaves no recovery mutation")
 
 					return nil
 				},
@@ -251,43 +278,54 @@ func TestAccEntryResourceDraftRateLimitDoesNotCreatePublicationAuthority(t *test
 	})
 }
 
-func TestAccEntryResourcePublicationRateLimitRetainsExactAuthority(t *testing.T) {
+func TestAccEntryResourcePublicationRateLimitRetriesSameVersion(t *testing.T) {
 	t.Parallel()
-
 	fixture := newEntryAcceptanceFixture(t)
 	recorder := fixture.recorder
-	fault := &entryRateLimitAdapter{delegate: fixture.server, path: entryTestPublishPath}
+	fault := &entryRateLimitAdapter{
+		delegate: fixture.server,
+		path:     entryTestPublishPath,
+	}
 	recorder.delegate = fault
-	config := managedEntryConfig
-
 	testAccMockedResource(t, recorder, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
+			Plan: resource.PlanOptions{
+				NoRefresh: true,
+			},
+		},
 		Steps: []resource.TestStep{
-			{Config: config("one")},
+			{
+				Config: managedEntryConfig("one"),
+			},
 			{
 				PreConfig: func() {
 					recorder.reset()
 					fault.shot.arm()
 				},
-				Config:      config("two"),
-				ExpectError: regexp.MustCompile(`Failed to publish entry`),
+				Config: managedEntryConfig("two"),
+				Check: func(state *terraform.State) error {
+					requests := recorder.snapshot()
+					require.Len(t, requests, 3)
+					requireEntryUpdate(t, requests[0])
+					require.Equal(t, "2", requests[0].version)
+					requireEntryPublish(t, requests[1], entryTestPublishPath)
+					require.Equal(t, "3", requests[1].version)
+					require.Empty(t, requests[1].body)
+					require.Equal(t, requests[1], requests[2], "publication retries only the acknowledged draft version")
+
+					return resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "3")(state)
+				},
 			},
 			{
-				PreConfig: func() {
-					update, publish := requireEntryUpdateThenPublish(t, recorder.snapshot())
-					require.Equal(t, "2", update.version)
-					require.Equal(t, "3", publish.version)
-					recorder.reset()
+				PreConfig: recorder.reset,
+				Config:    managedEntryConfig("two"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
+					},
 				},
-				Config: config("two"),
-				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionUpdate),
-				}},
 				Check: func(*terraform.State) error {
-					requests := recorder.snapshot()
-					require.Len(t, requests, 1, "recovery must submit only the retained lifecycle mutation")
-					requireEntryPublish(t, requests[0], entryTestPublishPath)
-					require.Equal(t, "3", requests[0].version)
+					requireNoEntryMutations(t, recorder, "successful retry leaves no recovery mutation")
 
 					return nil
 				},
@@ -1293,6 +1331,136 @@ func TestAccEntryResourceExternalPublicationOfMarkedDraftClearsRecovery(t *testi
 					requireNoEntryMutations(t, recorder, "observing exact external publication must clear recovery authority")
 
 					return nil
+				},
+			},
+		},
+	})
+}
+
+func TestAccEntryResourceCreateRetriesRateLimit(t *testing.T) {
+	t.Parallel()
+
+	for _, generatedID := range []bool{
+		false,
+		true,
+	} {
+		t.Run(strconv.FormatBool(generatedID), func(t *testing.T) {
+			t.Parallel()
+			fixture := newEntryAcceptanceFixture(t)
+			configuration := managedEntryConfig("one")
+			method, path := http.MethodPut, entryTestUpdatePath
+
+			if generatedID {
+				configuration = strings.Replace(configuration, "  entry_id        = \"entry\"\n", "", 1)
+				method, path = http.MethodPost, entryTestCollectionPath
+			}
+
+			fault := &entryRateLimitAdapter{
+				delegate: fixture.server,
+				path:     path,
+			}
+			fixture.recorder.delegate = fault
+			fault.shot.arm()
+			testAccMockedResource(t, fixture.recorder, resource.TestCase{
+				Steps: []resource.TestStep{
+					{
+						Config: configuration,
+						Check: func(state *terraform.State) error {
+							requests := fixture.recorder.snapshot()
+							require.Len(t, requests, 3)
+							require.Equal(t, method, requests[0].method)
+							require.Equal(t, path, requests[0].path)
+							require.Empty(t, requests[0].versionValues)
+							require.Equal(t, []string{"article"}, requests[0].contentTypeValues)
+							require.JSONEq(t, testJSON(map[string]any{
+								"fields": map[string]any{
+									"managed": map[string]any{
+										"en-US": "one",
+									},
+								},
+								"metadata": map[string]any{
+									"concepts": []any{},
+									"tags":     []any{},
+								},
+							}), string(requests[0].body))
+							require.Equal(t, requests[0], requests[1])
+
+							id := state.RootModule().Resources["contentful_entry.test"].Primary.Attributes["entry_id"]
+							require.NotEmpty(t, id)
+							requireEntryPublish(t, requests[2], entryTestCollectionPath+"/"+id+"/published")
+							require.Equal(t, "1", requests[2].version)
+
+							return resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "1")(state)
+						},
+					},
+				},
+			})
+		})
+	}
+}
+
+func TestAccEntryResourcePublicationRateLimitThenVersionMismatchRevokesAuthority(t *testing.T) {
+	t.Parallel()
+	fixture := newEntryAcceptanceFixture(t)
+	mismatch := &entryVersionMismatchPublishAdapter{
+		delegate: fixture.server,
+	}
+	rateLimit := &entryRateLimitAdapter{
+		delegate: mismatch,
+		path:     entryTestPublishPath,
+	}
+
+	var gets atomic.Int64
+
+	fixture.recorder.delegate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			gets.Add(1)
+		}
+
+		rateLimit.ServeHTTP(w, r)
+	})
+	testAccMockedResource(t, fixture.recorder, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
+			Plan: resource.PlanOptions{
+				NoRefresh: true,
+			},
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: managedEntryConfig("one"),
+			},
+			{
+				PreConfig: func() {
+					fixture.recorder.reset()
+					gets.Store(0)
+					rateLimit.shot.arm()
+					mismatch.shot.arm()
+				},
+				Config:      managedEntryConfig("two"),
+				ExpectError: regexp.MustCompile(`(?s)VersionMismatch.*revoked publication authority`),
+			},
+			{
+				PreConfig: func() {
+					requests := fixture.recorder.snapshot()
+					require.Len(t, requests, 3)
+					requireEntryUpdate(t, requests[0])
+					require.Equal(t, "2", requests[0].version)
+					requireEntryPublish(t, requests[1], entryTestPublishPath)
+					require.Equal(t, "3", requests[1].version)
+					require.Equal(t, requests[1], requests[2])
+					require.Zero(t, gets.Load(), "409 must not fetch a newer version")
+					fixture.recorder.reset()
+				},
+				Config: managedEntryConfig("two"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("contentful_entry.test", plancheck.ResourceActionNoop),
+					},
+				},
+				Check: func(state *terraform.State) error {
+					requireNoEntryMutations(t, fixture.recorder, "409 revokes authority after the 429 retry")
+
+					return resource.TestCheckResourceAttr("contentful_entry.test", "published_version", "1")(state)
 				},
 			},
 		},

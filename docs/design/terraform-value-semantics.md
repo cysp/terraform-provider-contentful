@@ -522,10 +522,10 @@ failure or ordinary 5xx does not establish whether a mutation committed.
 Transparent replay could repeat a write or reuse a stale optimistic-lock version.
 
 Entry Create, specified-ID Create, Update, and Publish and Content Type Create,
-Update, and Activate also disable transparent 429 replay. Their exact returned
-draft version can grant mutation authority only after a single request and a
-validated response. This boundary concerns ambiguous outcomes; it does not
-assume that every CMA mutation is non-idempotent.
+Update, and Activate retry explicit 429 responses with the same body and version
+preconditions within the deadline. Only a validated draft response grants
+exact-version mutation authority; retries never fetch a newer version or grant
+authority from an error response.
 
 ### Entry specified-ID request selection
 
@@ -687,9 +687,10 @@ marker or becomes new mutation authority. A missing or wrong
 authority after the complete response is checkpointed.
 
 All Entry Create, specified-ID Create, Update, and Publish requests and Content
-Type Create, Update, and Activate requests disable transparent HTTP replay,
-including for 429, transport failures, and 5xx. Read and unrelated CMA calls
-retain their existing retry behavior.
+Type Create, Update, and Activate requests follow the shared explicit-429 retry
+policy while rejecting redirects. Transport failures and ordinary 5xx responses
+stop without replay. A terminal `VersionMismatch` revokes existing authority
+after a rate-limit retry just as it does on the first attempt.
 
 ### Entry destroy lifecycle
 

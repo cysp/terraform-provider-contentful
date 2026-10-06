@@ -8,8 +8,7 @@ for Contentful Management API (CMA) requests. The implementation is in
 | Request | Explicit 429 | Retryable transport failure or server response |
 | --- | --- | --- |
 | GET, HEAD, OPTIONS | Retry within the deadline | Retry within the deadline |
-| POST, PUT, PATCH, DELETE by default | Retry within the deadline | Return the result without replay |
-| Entry Create, specified-ID Create, Update, Publish; Content Type Create, Update, Activate; WebhookSigningSecret and AppEventSubscription PUT/DELETE; AppAction POST/PUT/DELETE | Return the first result without replay | Return the first result without replay |
+| POST, PUT, PATCH, DELETE | Retry within the deadline | Return the result without replay |
 
 The response deadline and evidence limits below are part of this policy.
 
@@ -37,7 +36,7 @@ remains authoritative.
 
 ## Retry classification
 
-By default, the provider retries:
+The provider retries:
 
 - explicit HTTP 429 responses for every method, following Contentful's
   documented rate-limit handling and first-party client practice; and
@@ -63,18 +62,21 @@ applied write.
 | Contentful's [CMA rate-limit documentation](https://www.contentful.com/developers/docs/references/content-management-api/overview/#api-rate-limits) | 429 represents rate limiting and the reset interval tells clients when to retry | Whether a mutation returning 429 committed |
 | Contentful's [first-party management SDK](https://github.com/contentful/contentful-management.js/blob/cc096a337f0e1db6114e8da645d69bb6eb90f11c/README.md#L387-L389) | The SDK retries 429 and 500 responses by default | A server commitment guarantee |
 
-The Entry Create, specified-ID Create, Update, and Publish calls, the Content
-Type Create, Update, and Activate calls, WebhookSigningSecret and
-AppEventSubscription PUT/DELETE, and AppAction POST/PUT/DELETE opt out of
-transparent retry for the complete request. For those exact lifecycle mutations,
-explicit 429 responses, transport failures, and 5xx responses are returned after
-one request. The private request-context signal is checked before
-the general all-method 429 branch and survives generated-client request
-construction. The same signal
-prevents redirects in both nested provider HTTP clients, including
-method-preserving 307/308 and method-rewriting 301/302/303 responses.
+An explicit 429 response with no accompanying transport error retries the same
+request body and version preconditions within the deadline. This includes
+server-assigned creation, publication, activation, and deletion. The evidence
+above supports this retry policy but does not establish an at-most-once server
+commitment guarantee. Transport errors and ordinary 5xx responses remain
+ambiguous and do not authorize automatic mutation replay.
 
-For requests without the opt-out, the inner client follows redirects up to the
+Entry Create, specified-ID Create, Update, and Publish, Content Type Create,
+Update, and Activate, WebhookSigningSecret and AppEventSubscription PUT/DELETE,
+and AppAction POST/PUT/DELETE use a private request-context signal to prevent
+redirects in both nested provider HTTP clients. This covers method-preserving
+307/308 and method-rewriting 301/302/303 responses. The signal survives generated
+request construction and does not alter retry classification.
+
+For requests without the redirect restriction, the inner client follows redirects up to the
 default ten-request limit. A supplied `CheckRedirect` policy replaces that default.
 The outer client has a separate default redirect policy and can follow a redirect
 returned by an inner policy using `http.ErrUseLastResponse`. GET and other CMA
@@ -87,14 +89,14 @@ actor's changes. See its [lifecycle contract](webhook-signing-secret.md).
 
 AppEventSubscription PUT/DELETE similarly overwrite or delete an unversioned
 singleton. Its configuration is readable, but reads cannot authorize a replay
-across another actor's changes without a version precondition. These mutations
-therefore use the same no-retry boundary. See
+across another actor's changes without a version precondition. Transport failures and ordinary 5xx responses
+therefore stop these mutations without replay. See
 [replacement and recovery](../resources/app_event_subscription.md#replacement-and-recovery).
 
 AppAction POST creates a server-assigned identity unless a Function action has a
 caller-supplied ID. Repeating a POST with the same supplied ID can overwrite the
-existing Function action. PUT/DELETE mutate an unversioned definition. These calls use
-the same no-retry boundary, including explicit 429 responses and redirects.
+existing Function action. PUT/DELETE mutate an unversioned definition. These calls retry explicit 429 responses within the deadline and reject redirects.
+Transport failures and ordinary 5xx responses stop without replay.
 
 ## Backoff and final errors
 
@@ -117,9 +119,10 @@ backoff wait instead returns the context error and no prior 429 response.
 
 For POST, PUT, PATCH, and DELETE generally, this policy prevents transparent
 replay after transport failures and ordinary 5xx responses while retaining the
-documented default 429 behavior. The narrower Entry-publication and Content
-Type-activation lifecycle boundary also disables 429 replay because an
-ambiguous mutation cannot safely create or replace exact-version authority.
+documented 429 behavior. Entry publication and Content Type activation use
+only the exact version from a validated draft response; retries do not fetch
+a newer version or create authority from an error response. A terminal
+`VersionMismatch` revokes existing authority.
 
 This does not provide at-most-once semantics across separate Terraform
 operations or applies. In particular, repeating a create whose first result was

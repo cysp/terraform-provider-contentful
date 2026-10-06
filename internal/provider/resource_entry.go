@@ -428,7 +428,7 @@ func (r *entryResource) createEntry(ctx context.Context, entry EntryModel, diags
 	}
 
 	createEntryResponse, err := r.providerData.client.CreateEntry(
-		withContentfulRequestNoRetry(ctx), &createEntryRequest, createEntryParams,
+		withContentfulRequestNoRedirect(ctx), &createEntryRequest, createEntryParams,
 	)
 
 	tflog.Info(ctx, "entry.create", entryOperationLogFields(createEntryParams, createEntryResponse, err))
@@ -466,7 +466,7 @@ func (r *entryResource) createEntryWithID(ctx context.Context, entry EntryModel,
 	}
 
 	putEntryResponse, err := r.providerData.client.PutEntry(
-		withContentfulRequestNoRetry(ctx), &putEntryRequest, putEntryParams,
+		withContentfulRequestNoRedirect(ctx), &putEntryRequest, putEntryParams,
 	)
 
 	tflog.Info(ctx, "entry.create", entryOperationLogFields(putEntryParams, putEntryResponse, err))
@@ -509,7 +509,7 @@ func (r *entryResource) updateEntry(
 	}
 
 	putEntryResponse, err := r.providerData.client.PutEntry(
-		withContentfulRequestNoRetry(ctx), &putEntryRequest, putEntryParams,
+		withContentfulRequestNoRedirect(ctx), &putEntryRequest, putEntryParams,
 	)
 
 	tflog.Info(ctx, "entry.update", entryOperationLogFields(putEntryParams, putEntryResponse, err))
@@ -545,7 +545,7 @@ func (r *entryResource) publishAndCheckpointEntry(
 		SpaceID: entry.SpaceID.ValueString(), EnvironmentID: entry.EnvironmentID.ValueString(), EntryID: entry.EntryID.ValueString(), XContentfulVersion: version,
 	}
 	publishEntryResponse, err := r.providerData.client.PublishEntry(
-		withContentfulRequestNoRetry(ctx), publishEntryParams,
+		withContentfulRequestNoRedirect(ctx), publishEntryParams,
 	)
 	tflog.Info(ctx, "entry.publish", entryOperationLogFields(publishEntryParams, publishEntryResponse, err))
 
