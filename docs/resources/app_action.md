@@ -4,14 +4,14 @@ page_title: "contentful_app_action Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
   Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately.
-  Create, Update, and Delete are not automatically retried, including after rate limiting. If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again. After a failed update or delete, refresh state and review the plan before retrying.
+  Create, Update, and Delete retry explicit rate limiting (HTTP 429) with the same request within the operation timeout. Connection errors and server errors (HTTP 5xx) are not automatically retried. If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again. After a failed update or delete, refresh state and review the plan before retrying.
 ---
 
 # contentful_app_action (Resource)
 
 Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately.
 
-Create, Update, and Delete are not automatically retried, including after rate limiting. If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again. After a failed update or delete, refresh state and review the plan before retrying.
+Create, Update, and Delete retry explicit rate limiting (HTTP 429) with the same request within the operation timeout. Connection errors and server errors (HTTP 5xx) are not automatically retried. If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again. After a failed update or delete, refresh state and review the plan before retrying.
 
 ## Example Usage
 

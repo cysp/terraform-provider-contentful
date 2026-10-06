@@ -647,7 +647,7 @@ func (r *contentTypeResource) createContentTypeWithID(
 	}
 
 	response, err := r.providerData.client.PutContentType(
-		withContentfulRequestNoRetry(ctx), &request, params,
+		withContentfulRequestNoRedirect(ctx), &request, params,
 	)
 
 	tflog.Info(ctx, "content_type.create_with_id", map[string]any{
@@ -682,7 +682,7 @@ func (r *contentTypeResource) updateContentType(
 	}
 
 	response, err := r.providerData.client.PutContentType(
-		withContentfulRequestNoRetry(ctx), &request, params,
+		withContentfulRequestNoRedirect(ctx), &request, params,
 	)
 
 	tflog.Info(ctx, "content_type.update", map[string]any{
@@ -752,7 +752,7 @@ func (r *contentTypeResource) activateContentType(
 	}
 
 	response, err := r.providerData.client.ActivateContentType(
-		withContentfulRequestNoRetry(ctx), params,
+		withContentfulRequestNoRedirect(ctx), params,
 	)
 
 	tflog.Info(ctx, "content_type.activate", map[string]any{

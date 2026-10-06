@@ -106,7 +106,7 @@ func (r *appActionResource) Create(ctx context.Context, req resource.CreateReque
 
 	defer cancel()
 
-	response, err := r.providerData.client.CreateAppAction(withContentfulRequestNoRetry(ctx), &createBody, cm.CreateAppActionParams{OrganizationID: plan.OrganizationID.ValueString(), AppDefinitionID: plan.AppDefinitionID.ValueString()})
+	response, err := r.providerData.client.CreateAppAction(withContentfulRequestNoRedirect(ctx), &createBody, cm.CreateAppActionParams{OrganizationID: plan.OrganizationID.ValueString(), AppDefinitionID: plan.AppDefinitionID.ValueString()})
 
 	result, ok := response.(*cm.AppAction)
 	if err != nil || !ok || result == nil {
@@ -204,7 +204,7 @@ func (r *appActionResource) Update(ctx context.Context, req resource.UpdateReque
 
 	defer cancel()
 
-	response, err := r.providerData.client.UpdateAppAction(withContentfulRequestNoRetry(ctx), &body, cm.UpdateAppActionParams{OrganizationID: plan.OrganizationID.ValueString(), AppDefinitionID: plan.AppDefinitionID.ValueString(), AppActionID: plan.AppActionID.ValueString()})
+	response, err := r.providerData.client.UpdateAppAction(withContentfulRequestNoRedirect(ctx), &body, cm.UpdateAppActionParams{OrganizationID: plan.OrganizationID.ValueString(), AppDefinitionID: plan.AppDefinitionID.ValueString(), AppActionID: plan.AppActionID.ValueString()})
 
 	result, ok := response.(*cm.AppAction)
 	if err != nil || !ok || result == nil {
@@ -242,7 +242,7 @@ func (r *appActionResource) Delete(ctx context.Context, req resource.DeleteReque
 
 	defer cancel()
 
-	response, err := r.providerData.client.DeleteAppAction(withContentfulRequestNoRetry(ctx), cm.DeleteAppActionParams{OrganizationID: state.OrganizationID.ValueString(), AppDefinitionID: state.AppDefinitionID.ValueString(), AppActionID: state.AppActionID.ValueString()})
+	response, err := r.providerData.client.DeleteAppAction(withContentfulRequestNoRedirect(ctx), cm.DeleteAppActionParams{OrganizationID: state.OrganizationID.ValueString(), AppDefinitionID: state.AppDefinitionID.ValueString(), AppActionID: state.AppActionID.ValueString()})
 	if err == nil {
 		if _, ok := response.(*cm.NoContent); ok {
 			return

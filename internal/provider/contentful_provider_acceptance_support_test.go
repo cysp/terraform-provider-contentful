@@ -80,9 +80,8 @@ func testAccResource(t *testing.T, handler http.Handler, alwaysMock bool, testca
 
 	default:
 		// Live acceptance tests share one Contentful account and Space quota.
-		// Serialize them because selected lifecycle mutations deliberately return
-		// the first 429 instead of transparently replaying it. Mocked tests remain
-		// parallel and independently exercise exact request counts.
+		// Serialize them to reduce contention. Mocked tests remain parallel and
+		// independently exercise exact request counts.
 		liveAcceptanceTestMutex.Lock()
 		defer liveAcceptanceTestMutex.Unlock()
 

@@ -15,7 +15,7 @@ import (
 func AppActionResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: "Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately.\n\n" +
-			"Create, Update, and Delete are not automatically retried, including after rate limiting. " +
+			"Create, Update, and Delete retry explicit rate limiting (HTTP 429) with the same request within the operation timeout. Connection errors and server errors (HTTP 5xx) are not automatically retried. " +
 			"If creation fails, check the App Definition for an action created without saved Terraform state and import it before applying again. " +
 			"After a failed update or delete, refresh state and review the plan before retrying.",
 		Attributes: map[string]schema.Attribute{

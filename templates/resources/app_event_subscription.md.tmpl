@@ -41,8 +41,10 @@ proposes creation. Check the replacement order in the plan, including
 [`create_before_destroy` inherited from dependent resources](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#create_before_destroy).
 Replacement with unchanged IDs must destroy the subscription before creating it again.
 
-Create, Update, and Delete are not automatically retried, including after rate
-limiting. A failed request can leave the subscription changed or deleted. If a
+Create, Update, and Delete retry explicit rate limiting (HTTP 429) with the same
+request within the operation timeout. Connection errors and server errors (HTTP
+5xx) are not automatically retried. A failed request can leave the subscription
+changed or deleted. If a
 request fails or returns different values, inspect the subscription, refresh,
 and review the next plan before retrying.
 

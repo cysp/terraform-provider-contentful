@@ -178,7 +178,7 @@ contradictory tuples without changing the normal fake. Provider activation autho
 private-state provenance, not fake state.
 
 **Coverage:** Lifecycle tests cover exact-version recovery, refresh/no-refresh,
-immediate stale-marker revocation, response loss, external transitions, 429 no-replay,
+immediate stale-marker revocation, response loss, external transitions, 429 retries of the same request,
 arbitrary positive draft versions, high coherent confirmation, raw requests,
 deactivation, and two-phase published-field deletion.
 
@@ -212,7 +212,7 @@ after validating the provider-authored draft response.
 
 **Coverage:** Tests cover the direct member-PUT header matrix and stale/no-refresh
 non-recreation, exact-version recovery, immediate stale-marker revocation, response
-loss, external transitions, 429 no-replay, arbitrary positive draft versions, high
+loss, external transitions, 429 retries of the same request, arbitrary positive draft versions, high
 coherent confirmation, raw requests, and unconditional whole-Entry destroy sequencing.
 
 ### Taxonomy locking
@@ -373,14 +373,15 @@ defines rate-limit headers and 429 behavior.
 version-locked resources return their endpoint-appropriate 409 classification; the
 limiter returns 429 `RateLimitExceeded` with second-limit, remaining, and reset headers.
 
-**Provider boundary:** The fake describes the response contract, not provider replay
-policy. Entry publication and Content Type activation lifecycle mutations deliberately
-return the first 429 without transparent replay; GET and unrelated operations retain
-default retry behavior.
+**Provider boundary:** Endpoint-scoped rate-limit faults reject the request before
+delegating to the fake. Provider tests verify retries of the same body and version
+within the deadline, followed by acknowledgement or a terminal failure. These
+fixtures do not establish live CMA commitment guarantees; the
+[HTTP retry policy](contentful-http-retry-policy.md) records the evidence limits.
 
 **Coverage:** Structural tests cover type, ID, nonempty message, status, and rate-limit
 headers. Generated-client and Terraform lifecycle tests independently cover
-endpoint-scoped 429 no-replay and marker outcomes.
+endpoint-scoped 429 retries of the same request and marker outcomes.
 
 ### Preview environment configuration
 

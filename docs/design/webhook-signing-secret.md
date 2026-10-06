@@ -63,10 +63,11 @@ and local value.
 
 ## Failures and confidentiality
 
-No version or conditional headers are sent. The request-context retry
-opt-out covers every PUT/DELETE attempt, including 429 and redirects in both
-provider-owned HTTP client layers. GET retains normal finite deadline/retry
-behavior. There is no read-after-write recovery: presence cannot prove that
+No version or conditional headers are sent. PUT/DELETE retry explicit 429
+responses with the same request body within the operation deadline. Transport
+failures and ordinary 5xx responses stop without replay. The request-context
+signal rejects redirects in both provider-owned HTTP client layers. GET retains
+normal finite deadline/retry behavior. There is no read-after-write recovery: presence cannot prove that
 requested secret bytes were stored. An ambiguous DELETE also returns an error;
 a subsequent refresh may observe absence.
 

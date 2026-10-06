@@ -160,7 +160,7 @@ func TestWebhookSigningSecretFailuresRetainStateAndRedactKnownValues(t *testing.
 			return testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": sentinel}})
 		}},
 		"plain 404": {404, func(sentinel string) string { return sentinel }},
-		"rate limit": {429, func(sentinel string) string {
+		"rate limit beyond deadline": {429, func(sentinel string) string {
 			return testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "RateLimitExceeded"}, "message": sentinel})
 		}},
 		"server failure": {500, func(sentinel string) string {
@@ -202,7 +202,7 @@ func TestWebhookSigningSecretFailuresRetainStateAndRedactKnownValues(t *testing.
 	for name, test := range errorsByName {
 		for _, operation := range []string{"create", "update", "delete", "read"} {
 			// Safe reads retry 429/5xx; this matrix exercises terminal read errors
-			// and single-attempt mutations without spending a retry deadline.
+			// and terminal mutations without spending a retry deadline.
 			if operation == "read" && (test.status == 429 || test.status == 500) {
 				continue
 			}
@@ -227,6 +227,8 @@ func TestWebhookSigningSecretFailuresRetainStateAndRedactKnownValues(t *testing.
 				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 					count.Add(1)
 					w.Header().Set("Content-Type", "application/json")
+					// Any 429 reset exceeds the resource deadline, preserving terminal-error coverage.
+					w.Header().Set("X-Contentful-Ratelimit-Reset", "300")
 					w.WriteHeader(test.status)
 					_, _ = io.WriteString(w, body)
 				}))
@@ -472,5 +474,110 @@ func TestWebhookSigningSecretRejectsUnresolvedScopeBeforeHTTP(t *testing.T) {
 		require.True(t, deleted.Diagnostics.HasError())
 		assert.True(t, state.Raw.Equal(deleted.State.Raw))
 		assert.Zero(t, count.Load())
+	}
+}
+
+func TestWebhookSigningSecretMutationsRetryRateLimit(t *testing.T) {
+	t.Parallel()
+
+	for _, method := range []string{
+		http.MethodPut,
+		http.MethodDelete,
+	} {
+		t.Run(method, func(t *testing.T) {
+			t.Parallel()
+
+			var bodies []string
+
+			httpClient, retryClient := contentfulRetryTestClient(t, &http.Client{
+				Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
+					assert.Equal(t, method, request.Method)
+					assert.Equal(t, "/spaces/space/webhook_settings/signing_secret", request.URL.Path)
+					assert.Empty(t, request.Header.Values("X-Contentful-Version"))
+
+					var body []byte
+
+					if request.Body != nil {
+						var err error
+
+						body, err = io.ReadAll(request.Body)
+						require.NoError(t, err)
+					}
+
+					bodies = append(bodies, string(body))
+
+					status := http.StatusOK
+					if method == http.MethodDelete {
+						status = http.StatusNoContent
+					}
+
+					if len(bodies) == 1 {
+						status = http.StatusTooManyRequests
+					}
+
+					response := contentfulRetryTestResponse(request, status)
+					response.Header.Set("Content-Type", "application/json")
+
+					responseBody := webhookSigningSecretTestResponse
+					if status == http.StatusTooManyRequests {
+						responseBody = testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "RateLimitExceeded"}, "message": "rate limited"})
+					}
+
+					response.Body = io.NopCloser(strings.NewReader(responseBody))
+
+					return response, nil
+				}),
+			})
+			removeContentfulRetryTestDelay(retryClient)
+
+			client, err := cm.NewClient("https://contentful.invalid", cm.NewAccessTokenSecuritySource("test"), cm.WithClient(httpClient))
+			require.NoError(t, err)
+
+			implementation := &webhookSigningSecretResource{
+				providerData: ContentfulProviderData{
+					client: client,
+				},
+			}
+
+			state, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
+			if method == http.MethodPut {
+				response := resource.CreateResponse{
+					State: tfsdk.State{
+						Schema: state.Schema,
+					},
+					Identity: identity,
+				}
+				implementation.Create(t.Context(), resource.CreateRequest{
+					Plan:   tfsdk.Plan(state),
+					Config: tfsdk.Config(state),
+				}, &response)
+				require.False(t, response.Diagnostics.HasError(), response.Diagnostics)
+
+				var created WebhookSigningSecretModel
+				require.Empty(t, response.State.Get(t.Context(), &created))
+				assert.Equal(t, webhookSigningSecretTestValue, created.Value.ValueString())
+			} else {
+				response := resource.DeleteResponse{
+					State:    state,
+					Identity: identity,
+				}
+				implementation.Delete(t.Context(), resource.DeleteRequest{
+					State: state,
+				}, &response)
+				require.False(t, response.Diagnostics.HasError(), response.Diagnostics)
+			}
+
+			require.Len(t, bodies, 2)
+
+			if method == http.MethodPut {
+				assert.JSONEq(t, testJSON(map[string]any{
+					"value": webhookSigningSecretTestValue,
+				}), bodies[0])
+			} else {
+				assert.Empty(t, bodies[0])
+			}
+
+			assert.Equal(t, bodies[0], bodies[1])
+		})
 	}
 }

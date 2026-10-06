@@ -241,7 +241,9 @@ func (h *entryUpdateVersionMismatchAdapter) ServeHTTP(responseWriter http.Respon
 }
 
 func (h *entryRateLimitAdapter) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	if request.Method == http.MethodPut && request.URL.Path == h.path && h.shot.take() {
+	if (request.Method == http.MethodPut || request.Method == http.MethodPost) && request.URL.Path == h.path && h.shot.take() {
+		responseWriter.Header().Set("Retry-After", "0")
+
 		message := "injected rate limit"
 		_ = cmt.WriteContentfulManagementErrorResponse(responseWriter, http.StatusTooManyRequests, "RateLimitExceeded", &message, nil)
 

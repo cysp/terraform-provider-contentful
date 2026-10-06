@@ -100,10 +100,14 @@ func TestContentfulRetryPolicy(t *testing.T) {
 		assertContentfulRetryPolicy(t, method+" rate limit", method, http.StatusTooManyRequests, nil, true)
 	}
 
+	for _, method := range mutationMethods {
+		assertContentfulRetryPolicy(t, method+" rate limit with transport error", method, http.StatusTooManyRequests, errContentfulRetryTestConnectionLost, false)
+	}
+
 	assertContentfulRetryPolicy(t, "non-retryable read response", http.MethodGet, http.StatusBadRequest, nil, false)
 }
 
-func TestGeneratedLifecycleMutationRequestsPreserveNoRetrySignal(t *testing.T) {
+func TestGeneratedLifecycleMutationRequestsPreserveRedirectPolicyAndRetryRateLimits(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]func(context.Context, cm.Invoker){
@@ -141,10 +145,16 @@ func TestGeneratedLifecycleMutationRequestsPreserveNoRetrySignal(t *testing.T) {
 			var requestCount atomic.Int64
 
 			baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-				requestCount.Add(1)
-				assert.Equal(t, true, request.Context().Value(contentfulRequestNoRetryContextKey{}))
+				attempt := requestCount.Add(1)
 
-				response := contentfulRetryTestResponse(request, http.StatusTooManyRequests)
+				assert.Equal(t, true, request.Context().Value(contentfulRequestNoRedirectContextKey{}))
+
+				status := http.StatusTooManyRequests
+				if attempt > 1 {
+					status = http.StatusBadRequest
+				}
+
+				response := contentfulRetryTestResponse(request, status)
 				response.Header.Set("Content-Type", "application/json")
 				response.Body = io.NopCloser(strings.NewReader(testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "RateLimitExceeded"}, "message": "rate limit"})))
 
@@ -160,9 +170,9 @@ func TestGeneratedLifecycleMutationRequestsPreserveNoRetrySignal(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			invoke(withContentfulRequestNoRetry(t.Context()), client)
+			invoke(withContentfulRequestNoRedirect(t.Context()), client)
 
-			assert.EqualValues(t, 1, requestCount.Load())
+			assert.EqualValues(t, 2, requestCount.Load())
 		})
 	}
 }
@@ -247,7 +257,7 @@ func TestContentfulHTTPClientWiresSafeReadRetries(t *testing.T) {
 	}
 }
 
-func TestContentfulHTTPClientWiresMutationNoRetryPolicy(t *testing.T) {
+func TestContentfulHTTPClientStopsMutationRetriesAfterUncertainFailures(t *testing.T) {
 	t.Parallel()
 
 	methods := []string{http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete}
@@ -438,7 +448,7 @@ func TestContentfulHTTPClientPreservesAlreadyExpiredDeadline(t *testing.T) {
 	assert.Zero(t, requestCount.Load())
 }
 
-func TestContentfulHTTPClientDeclinesRateLimitRetryBeyondDeadline(t *testing.T) {
+func TestContentfulHTTPClientDeclinesNoRedirectMutationRateLimitRetryBeyondDeadline(t *testing.T) {
 	t.Parallel()
 
 	var requestCount atomic.Int64
@@ -457,7 +467,7 @@ func TestContentfulHTTPClientDeclinesRateLimitRetryBeyondDeadline(t *testing.T) 
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
 	t.Cleanup(cancel)
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodDelete, "https://api.test.contentful.com/resource", nil)
+	request, err := http.NewRequestWithContext(withContentfulRequestNoRedirect(ctx), http.MethodDelete, "https://api.test.contentful.com/resource", nil)
 	require.NoError(t, err)
 
 	response, err := contentfulRetryTestDoWithin(t, client, request)
@@ -1078,4 +1088,85 @@ func TestNewContentfulHTTPClientUsesDefaultAndInjectedTransports(t *testing.T) {
 			assert.Equal(t, test.expectedStatus, response.StatusCode)
 		})
 	}
+}
+
+func TestContentfulHTTPClientMutationRateLimitRetriesExactRequest(t *testing.T) {
+	t.Parallel()
+
+	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete} {
+		for _, noRedirect := range []bool{false, true} {
+			for _, outcome := range []struct {
+				name   string
+				status int
+				err    error
+			}{
+				{name: "success", status: http.StatusOK},
+				{name: "version conflict", status: http.StatusConflict},
+				{name: "server error", status: http.StatusInternalServerError},
+				{name: "transport error", err: errContentfulRetryTestConnectionLost},
+			} {
+				t.Run(fmt.Sprintf("%s/redirect-disabled=%t/%s", method, noRedirect, outcome.name), func(t *testing.T) {
+					t.Parallel()
+					testContentfulMutationRateLimitRetry(t, method, noRedirect, outcome.status, outcome.err)
+				})
+			}
+		}
+	}
+}
+
+func testContentfulMutationRateLimitRetry(t *testing.T, method string, noRedirect bool, terminalStatus int, terminalErr error) {
+	t.Helper()
+
+	const body = `{"name":"unchanged retry payload"}`
+
+	var bodies []string
+
+	client, retryClient := contentfulRetryTestClient(t, &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
+		assert.Equal(t, method, request.Method)
+		assert.Equal(t, "/resource", request.URL.Path)
+		assert.Equal(t, []string{"7"}, request.Header.Values("X-Contentful-Version"))
+		data, err := io.ReadAll(request.Body)
+		require.NoError(t, err)
+
+		bodies = append(bodies, string(data))
+		if len(bodies) == 1 {
+			return contentfulRetryTestResponse(request, http.StatusTooManyRequests), nil
+		}
+
+		if len(bodies) > 2 {
+			return contentfulRetryTestResponse(request, http.StatusBadRequest), nil
+		}
+
+		if terminalErr != nil {
+			return nil, terminalErr
+		}
+
+		return contentfulRetryTestResponse(request, terminalStatus), nil
+	})})
+	removeContentfulRetryTestDelay(retryClient)
+
+	ctx := t.Context()
+	if noRedirect {
+		ctx = withContentfulRequestNoRedirect(ctx)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, method, "https://api.test.contentful.com/resource", strings.NewReader(body))
+	require.NoError(t, err)
+	request.Header.Set("X-Contentful-Version", "7")
+
+	response, err := client.Do(request)
+	if response != nil {
+		require.NoError(t, response.Body.Close())
+	}
+
+	if terminalErr != nil {
+		require.ErrorIs(t, err, terminalErr)
+		assert.Nil(t, response)
+	} else {
+		require.NoError(t, err)
+		require.NotNil(t, response)
+		assert.Equal(t, terminalStatus, response.StatusCode)
+	}
+
+	assert.Equal(t, []string{body, body}, bodies, "retry must preserve the request and stop at the next non-429 outcome")
 }

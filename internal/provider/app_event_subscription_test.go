@@ -350,11 +350,11 @@ func TestAppEventSubscriptionReadDeleteFailures(t *testing.T) {
 				} else {
 					response := resource.DeleteResponse{State: state}
 					implementation.Delete(ctx, resource.DeleteRequest{State: state}, &response)
-					assert.Equal(t, status == 403 || status == 503 || status == 429, response.Diagnostics.HasError(), response.Diagnostics)
+					assert.Equal(t, status == 403 || status == 503, response.Diagnostics.HasError(), response.Diagnostics)
 				}
 
 				expected := int64(1)
-				if method == http.MethodGet && (status == 429 || status == 503) {
+				if status == 429 || (method == http.MethodGet && status == 503) {
 					expected = 2
 				}
 
@@ -455,12 +455,26 @@ func appEventRetryHandler(t *testing.T, method string, status int, count *atomic
 	}
 }
 
-func TestAppEventSubscriptionUpsertRateLimitIsNotRetried(t *testing.T) {
+func TestAppEventSubscriptionUpsertRetriesRateLimit(t *testing.T) {
 	t.Parallel()
 
 	var count atomic.Int64
 
-	implementation := appEventTestResource(t, func(w http.ResponseWriter, _ *http.Request) {
+	bodies := make(chan string, 2)
+
+	implementation := appEventTestResource(t, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPut, r.Method)
+		assert.Equal(t, appEventTestPath, r.URL.Path)
+		assert.Empty(t, r.Header.Values("X-Contentful-Version"))
+		body, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+
+		select {
+		case bodies <- string(body):
+		default:
+			t.Error("unexpected extra request")
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 
 		if count.Add(1) == 1 {
@@ -477,12 +491,16 @@ func TestAppEventSubscriptionUpsertRateLimitIsNotRetried(t *testing.T) {
 	var logs bytes.Buffer
 
 	ctx := tflogtest.RootLogger(t.Context(), &logs)
-	_, diags, consistency := implementation.put(ctx, appEventTestModel())
-	require.True(t, diags.HasError())
-	assert.Contains(t, diags.Errors()[0].Detail(), "429")
-	assert.NotContains(t, diags.Errors()[0].Detail(), "sentinel")
+	data, diags, consistency := implementation.put(ctx, appEventTestModel())
+	require.False(t, diags.HasError(), diags)
 	assert.Empty(t, consistency)
-	assert.EqualValues(t, 1, count.Load())
+	require.EqualValues(t, 2, count.Load())
+
+	first, second := <-bodies, <-bodies
+	assert.JSONEq(t, testJSON(map[string]any{"topics": []any{"Asset.publish", "Entry.publish"}, "targetUrl": "https://example.invalid/events?secret=sentinel"}), first)
+	assert.Equal(t, first, second)
+	assert.Equal(t, "organization/app", data.ID.ValueString())
+	assert.Equal(t, "https://example.invalid/events?secret=sentinel", data.TargetURL.ValueString())
 	assert.NotContains(t, logs.String(), "sentinel")
 	assert.NotContains(t, logs.String(), "test-token")
 }

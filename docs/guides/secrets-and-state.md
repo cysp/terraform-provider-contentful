@@ -29,7 +29,7 @@ Contentful returns only a redacted representation. Refresh preserves the complet
 
 ### Uncertain writes
 
-A failed request can leave the remote secret changed. The provider does not retry the mutation, and a read cannot confirm the complete value. A later apply can overwrite or delete intervening changes.
+The provider retries explicit rate limiting (HTTP 429) with the same request within the operation timeout. Connection errors and server errors (HTTP 5xx) are not automatically retried. A failed request can leave the remote secret changed, and a read cannot confirm the complete value. A later apply can overwrite or delete intervening changes.
 
 After an uncertain create, [importing without rotation](#importing-signing-secrets) can adopt an existing secret without another write. This confirms its presence, not which value Contentful stored.
 
