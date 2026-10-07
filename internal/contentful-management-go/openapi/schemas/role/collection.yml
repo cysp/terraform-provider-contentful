@@ -14,6 +14,13 @@ RoleCollection:
       type: integer
     limit:
       type: integer
+    pages:
+      type: object
+      properties:
+        next:
+          type: string
+        prev:
+          type: string
     items:
       type: array
       items:

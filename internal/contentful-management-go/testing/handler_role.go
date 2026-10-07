@@ -3,8 +3,12 @@ package cmtesting
 import (
 	"cmp"
 	"context"
+	"fmt"
+	"math"
 	"net/http"
+	"net/url"
 	"slices"
+	"strconv"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
@@ -22,20 +26,59 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 	// The fixture store is a map; choose a repeatable response order for tests.
 	slices.SortFunc(values, func(a, b *cm.Role) int { return cmp.Compare(a.Sys.ID, b.Sys.ID) })
 
-	skip, limit := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
-	if skip < 0 || limit < 1 {
+	if params.PageNext.IsSet() && params.PagePrev.IsSet() {
+		return NewContentfulManagementErrorStatusCodeBadRequest(new("Conflicting pagination parameters"), nil), nil
+	}
+
+	limit64 := params.Limit.Or(100) //nolint:mnd
+	if limit64 < 1 || limit64 > math.MaxInt {
 		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
 	}
 
-	start := min(skip, int64(len(values)))
-	end := start + min(limit, int64(len(values))-start)
+	limit := int(limit64)
+	offset := 0
+
+	cursor := params.PageNext
+	if params.PagePrev.IsSet() {
+		cursor = params.PagePrev
+	}
+
+	if cursor.IsSet() {
+		var err error
+
+		offset, err = strconv.Atoi(cursor.Value)
+		if err != nil || offset < 0 {
+			return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid cursor"), nil), nil
+		}
+	}
+
+	start := min(offset, len(values))
+	end := start + min(limit, len(values)-start)
 
 	items := make([]cm.Role, 0, end-start)
 	for _, value := range values[start:end] {
 		items = append(items, *value)
 	}
 
-	return &cm.RoleCollection{Sys: cm.RoleCollectionSys{Type: cm.RoleCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}, nil
+	pages := cm.RoleCollectionPages{}
+
+	link := func(parameter string, offset int) string {
+		return fmt.Sprintf("/spaces/%s/roles?%s=%d&limit=%d", url.PathEscape(params.SpaceID), parameter, offset, limit)
+	}
+	if end < len(values) {
+		pages.Next = cm.NewOptString(link("pageNext", end))
+	}
+
+	if start > 0 {
+		pages.Prev = cm.NewOptString(link("pagePrev", max(0, start-limit)))
+	}
+
+	return &cm.RoleCollection{
+		Sys:   cm.RoleCollectionSys{Type: cm.RoleCollectionSysTypeArray},
+		Limit: cm.NewOptInt(limit),
+		Items: items,
+		Pages: cm.NewOptRoleCollectionPages(pages),
+	}, nil
 }
 
 //nolint:ireturn

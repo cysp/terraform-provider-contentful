@@ -224,6 +224,17 @@ Mocked acceptance tests use isolated local HTTP servers. Mock-only tests always
 use those servers; live-capable tests use them when `TF_ACC_MOCKED` is nonempty.
 Check the affected test before treating an unset `TF_ACC_MOCKED` as evidence that
 it ran live.
+
+`TestAccRolesDataSourceLivePagination` reads the shared acceptance Space without
+changing its Roles. It requires at least two existing Roles and a complete
+single-page baseline at the provider's default limit. A second step uses a
+test-only HTTP override to request one Role per page, compares the full Terraform
+`roles` value with the baseline, and requires complete multi-page traversals.
+Retries and repeated initial reads do not count as continuation pages. The test
+logs the observed protocol; an offset pass does not establish live cursor support.
+It skips when `TF_ACC_MOCKED` is set and fails if the fixture cannot exercise
+pagination.
+
 The App Action lifecycle uses the same organization fixture as App Definition tests
 and creates a temporary App Definition and actions. It requires no additional
 environment variables. It covers Function-link import and transitions between
