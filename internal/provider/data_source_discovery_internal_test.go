@@ -91,8 +91,16 @@ func TestDiscoveryDataSourcesPagination(t *testing.T) {
 				assert.Equal(t, "Bearer synthetic-token", request.Header.Get("Authorization"))
 				assert.Equal(t, family.organization, request.Header.Get("X-Contentful-Organization"))
 				assert.Equal(t, "100", request.URL.Query().Get("limit"))
-				assert.Len(t, request.URL.Query(), 2)
+
 				skip := request.URL.Query().Get("skip")
+				if family.cursorPagination && len(offsets) == 0 {
+					assert.Empty(t, skip)
+					assert.Len(t, request.URL.Query(), 1)
+
+					skip = "0"
+				} else {
+					assert.Len(t, request.URL.Query(), 2)
+				}
 
 				offsets = append(offsets, skip)
 				if skip == "0" {
@@ -136,14 +144,20 @@ func TestDiscoveryDataSourcesPaginationMetadataBoundaries(t *testing.T) {
 			t.Parallel()
 			body := discoveryFixture(t, family.name)
 
+			withoutMetadata := []string{
+				testJSON(map[string]any{"sys": map[string]any{"type": "Array"}, "items": []any{json.RawMessage(body)}}),
+				testJSON(map[string]any{"sys": map[string]any{"type": "Array"}, "items": []any{}}),
+			}
+
 			cases := []struct {
 				name      string
 				pages     []string
 				wantCount int
 			}{
-				{"without metadata", []string{testJSON(map[string]any{"sys": map[string]any{"type": "Array"}, "items": []any{json.RawMessage(body)}}), testJSON(map[string]any{"sys": map[string]any{"type": "Array"}, "items": []any{}})}, 1},
+				{"without metadata", withoutMetadata, 1},
 				{"empty before total and incorrect echoed metadata", []string{discoveryPage(99, 0, 10, body), discoveryPage(99, 0, 10)}, 1},
 			}
+
 			for _, testcase := range cases {
 				t.Run(testcase.name, func(t *testing.T) {
 					t.Parallel()
@@ -151,7 +165,13 @@ func TestDiscoveryDataSourcesPaginationMetadataBoundaries(t *testing.T) {
 					count := 0
 					response := discoveryReadTest(t.Context(), t, family.plural, family.scopes, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 						require.Less(t, count, len(testcase.pages))
-						assert.Equal(t, strconv.Itoa(count), request.URL.Query().Get("skip"))
+
+						expectedSkip := strconv.Itoa(count)
+						if family.cursorPagination && count == 0 {
+							expectedSkip = ""
+						}
+
+						assert.Equal(t, expectedSkip, request.URL.Query().Get("skip"))
 						assert.Equal(t, "100", request.URL.Query().Get("limit"))
 
 						page := testcase.pages[count]
@@ -530,7 +550,12 @@ func TestDiscoveryCollectionsPreserveIrregularItemIDs(t *testing.T) {
 					response := discoveryReadTest(t.Context(), t, family.plural, family.scopes, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 						count++
 						if count == 1 {
-							assert.Equal(t, "0", request.URL.Query().Get("skip"))
+							expectedSkip := "0"
+							if family.cursorPagination {
+								expectedSkip = ""
+							}
+
+							assert.Equal(t, expectedSkip, request.URL.Query().Get("skip"))
 
 							return discoveryHTTPResponse(request, 200, discoveryPage(0, 100, 3, body)), nil
 						}

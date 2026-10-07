@@ -204,6 +204,11 @@ Mocked acceptance tests use isolated local HTTP servers. Mock-only tests always
 use those servers; live-capable tests use them when `TF_ACC_MOCKED` is nonempty.
 Check the affected test before treating an unset `TF_ACC_MOCKED` as evidence that
 it ran live.
+
+`TestAccRolesDataSourceLivePagination` reads the shared acceptance Space and requires
+at least two Roles that fit in a single default-sized page. It skips in mocked mode.
+The test reports whether it traversed the collection with offsets or cursors.
+
 The live-only App Key test skips in mocked mode. Live-capable tests serialize access to shared account quotas. Query tests require Terraform 1.14 or later.
 
 ### CI coverage
