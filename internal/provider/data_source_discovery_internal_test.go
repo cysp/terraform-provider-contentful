@@ -215,8 +215,16 @@ func TestDiscoveryDataSourcesPagination(t *testing.T) {
 				assert.Equal(t, "Bearer synthetic-token", request.Header.Get("Authorization"))
 				assert.Equal(t, family.organization, request.Header.Get("X-Contentful-Organization"))
 				assert.Equal(t, "100", request.URL.Query().Get("limit"))
-				assert.Len(t, request.URL.Query(), 2)
+
 				skip := request.URL.Query().Get("skip")
+				if family.name == "role" && len(offsets) == 0 {
+					assert.Empty(t, skip)
+					assert.Len(t, request.URL.Query(), 1)
+
+					skip = "0"
+				} else {
+					assert.Len(t, request.URL.Query(), 2)
+				}
 
 				offsets = append(offsets, skip)
 				if skip == "0" {
@@ -271,6 +279,10 @@ func TestDiscoveryDataSourcesPaginationMatchesTeams(t *testing.T) {
 				{"changing total and duplicates", []string{discoveryPage(0, 100, 3, body), discoveryPage(1, 100, 2, body)}, 2},
 				{"echoed metadata does not control progress", []string{discoveryPage(99, 0, 2, body), discoveryPage(99, 0, 1, body)}, 2},
 			}
+			if family.name == "role" {
+				cases[0].pages = cases[0].pages[:1] // No offset metadata and no next link is terminal.
+			}
+
 			for _, testcase := range cases {
 				t.Run(testcase.name, func(t *testing.T) {
 					t.Parallel()
@@ -278,7 +290,13 @@ func TestDiscoveryDataSourcesPaginationMatchesTeams(t *testing.T) {
 					count := 0
 					response := discoveryReadTest(t.Context(), t, family.plural, family.scopes, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 						require.Less(t, count, len(testcase.pages))
-						assert.Equal(t, strconv.Itoa(count), request.URL.Query().Get("skip"))
+
+						expectedSkip := strconv.Itoa(count)
+						if family.name == "role" && count == 0 {
+							expectedSkip = ""
+						}
+
+						assert.Equal(t, expectedSkip, request.URL.Query().Get("skip"))
 						assert.Equal(t, "100", request.URL.Query().Get("limit"))
 
 						page := testcase.pages[count]
@@ -891,7 +909,12 @@ func TestDiscoveryCollectionsPreserveIrregularItemIDs(t *testing.T) {
 					response := discoveryReadTest(t.Context(), t, family.plural, family.scopes, roundTripFunc(func(request *http.Request) (*http.Response, error) {
 						count++
 						if count == 1 {
-							assert.Equal(t, "0", request.URL.Query().Get("skip"))
+							expectedSkip := "0"
+							if family.name == "role" {
+								expectedSkip = ""
+							}
+
+							assert.Equal(t, expectedSkip, request.URL.Query().Get("skip"))
 
 							return discoveryHTTPResponse(request, 200, discoveryPage(0, 100, 3, body)), nil
 						}
