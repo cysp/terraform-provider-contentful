@@ -82,6 +82,10 @@ func (ts *Handler) PutLocale(_ context.Context, req *cm.LocaleData, params cm.Pu
 		return NewContentfulManagementErrorStatusCodeValidationFailed(new("A fallback locale's code and delivery availability cannot be changed"), nil), nil
 	}
 
+	if req.Code != locale.Code {
+		ts.changeLocaleContent(params.SpaceID, environmentID, locale.Code, req.Code)
+	}
+
 	updateLocaleFromData(locale, *req)
 
 	return &cm.LocaleStatusCode{
@@ -114,6 +118,7 @@ func (ts *Handler) DeleteLocale(_ context.Context, params cm.DeleteLocaleParams)
 		return NewContentfulManagementErrorStatusCodeValidationFailed(new("A fallback locale cannot be deleted"), nil), nil
 	}
 
+	ts.changeLocaleContent(params.SpaceID, environmentID, locale.Code, "")
 	ts.locales.Delete(params.SpaceID, environmentID, params.LocaleID)
 
 	return &cm.NoContent{}, nil
