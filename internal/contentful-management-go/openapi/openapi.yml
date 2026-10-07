@@ -1989,6 +1989,14 @@ paths:
       parameters:
         - $ref: "#/components/parameters/skip"
         - $ref: "#/components/parameters/limit"
+        - name: pageNext
+          in: query
+          schema:
+            type: string
+        - name: pagePrev
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: Role collection

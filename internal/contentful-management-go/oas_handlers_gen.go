@@ -9793,6 +9793,14 @@ func (s *Server) handleGetRolesRequest(args [1]string, argsEscaped bool, w http.
 					In:   "query",
 				}: params.Limit,
 				{
+					Name: "pageNext",
+					In:   "query",
+				}: params.PageNext,
+				{
+					Name: "pagePrev",
+					In:   "query",
+				}: params.PagePrev,
+				{
 					Name: "space_id",
 					In:   "path",
 				}: params.SpaceID,

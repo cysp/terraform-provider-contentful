@@ -9888,9 +9888,11 @@ func decodeGetRoleParams(args [2]string, argsEscaped bool, r *http.Request) (par
 
 // GetRolesParams is parameters of getRoles operation.
 type GetRolesParams struct {
-	Skip    OptInt64 `json:",omitempty,omitzero"`
-	Limit   OptInt64 `json:",omitempty,omitzero"`
-	SpaceID string
+	Skip     OptInt64  `json:",omitempty,omitzero"`
+	Limit    OptInt64  `json:",omitempty,omitzero"`
+	PageNext OptString `json:",omitempty,omitzero"`
+	PagePrev OptString `json:",omitempty,omitzero"`
+	SpaceID  string
 }
 
 func unpackGetRolesParams(packed middleware.Parameters) (params GetRolesParams) {
@@ -9910,6 +9912,24 @@ func unpackGetRolesParams(packed middleware.Parameters) (params GetRolesParams) 
 		}
 		if v, ok := packed[key]; ok {
 			params.Limit = v.(OptInt64)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "pageNext",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.PageNext = v.(OptString)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "pagePrev",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.PagePrev = v.(OptString)
 		}
 	}
 	{
@@ -10002,6 +10022,88 @@ func decodeGetRolesParams(args [1]string, argsEscaped bool, r *http.Request) (pa
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "limit",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: pageNext.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "pageNext",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotPageNextVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotPageNextVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.PageNext.SetTo(paramsDotPageNextVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "pageNext",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: pagePrev.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "pagePrev",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotPagePrevVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotPagePrevVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.PagePrev.SetTo(paramsDotPagePrevVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "pagePrev",
 			In:   "query",
 			Err:  err,
 		}
