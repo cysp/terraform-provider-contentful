@@ -27,6 +27,10 @@ The value-semantics note starts with shared rules and includes a
 resource contract to that resource; special cases do not establish a general
 provider policy.
 
+The [App Installation Secret parameter investigation](app-installation-secret-parameters.md)
+records the current failure, solution alternatives, and a proposed recommendation;
+it is not an implemented design contract.
+
 ## Evidence boundaries
 
 API research retains published sources, sanitized observations, and limitations

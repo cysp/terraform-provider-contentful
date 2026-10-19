@@ -42,7 +42,8 @@ independently prove whether POST can select a bundle. [App definitions][definiti
 Installation parameter size has conflicting source descriptions: the CMA AppInstallation
 reference describes an object limited to **16 kB** after stringification; the App Parameters guide
 and pinned SDK comment say **32 kB**. The exact byte boundary and counting rules remain
-unverified. The guide describes undeclared parameters as a free-form object, while the
+unverified. The guide describes values as a free-form object when installation
+parameter definitions are omitted from the AppDefinition, while the
 SDK type also permits arrays and scalars; the observations below establish rejection of
 those shapes only for the tested app with declarations. Cloning an environment is
 documented to copy installations and parameters. [App installations][installations],
@@ -53,9 +54,10 @@ The App Parameters guide documents redaction of values whose keys match `Secret`
 installation declarations when read through a personal access token in CMA or the App
 SDK in the Contentful UI. App Identities, App Events, and Functions can receive the raw
 values. Such a management read therefore cannot reconstruct the original secret for a
-backup or subsequent write. The redaction marker and Secret omission/replacement
-behavior were not exercised by the parameter experiment below. [Secret installation
-parameters][secret-parameters].
+backup or subsequent write. [Secret installation parameters][secret-parameters].
+The separate [Secret parameter experiment](secret-installation-parameters.md#direct-cma-observations)
+establishes the observed asterisk masks, replacement and deletion behavior, and the
+exact-mask preservation placeholder using independent App Identity reads.
 
 Cross-environment discovery has a special SDK response: `{sys: {type: "Array"}, items:
 AppInstallation[], includes: {Environment: Environment[]}}`. It does not declare the
@@ -228,8 +230,9 @@ The evidence does not establish:
 
 - Clearing and defaults for other optional definition fields, or bundle selection during
   definition creation.
-- The effects of changing parameter declarations on existing installations, the exact
-  parameter size limit, behavior beyond the tested declarations, or Secret replacement.
+- The exact parameter size limit and behavior beyond the tested declarations. The
+  [Secret parameter experiment](secret-installation-parameters.md) separately covers
+  replacement and selected declaration changes; other type migrations remain unverified.
 - Complete permission and concurrency rules.
 - The effects of grant revocation on existing installations, the exact targeted-grant
   enum, or how Contentful derives shared metadata.

@@ -14,6 +14,7 @@ For decisions about how the provider uses these APIs, see [provider design](../d
 | --- | --- |
 | App Framework | [Resource relationships and API inventory](app-framework/README.md): ownership, installation scope, identity, transport, and collection forms |
 | App configuration | [Definitions, installations, and sharing](app-framework/configuration.md): AppDefinition, AppInstallation, AppDetails, AppAccessGrant, and installation eligibility |
+| App installation secrets | [Secret parameter observations](app-framework/secret-installation-parameters.md): PAT masking, App Identity verification, replacement, preservation placeholders, and deletion |
 | App deployment | [Uploads, bundles, and activation](app-framework/deployment.md): AppUpload, AppBundle, selected bundles, and Function deployment |
 | App Events | [Subscriptions, topics, and payloads](app-framework/events.md): HTTP targets, Function roles, topic validation, and event data |
 | App Actions | [Definitions, invocation, and outcomes](app-framework/actions.md): parameter schemas, calls, status, and raw responses |

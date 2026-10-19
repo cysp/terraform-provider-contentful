@@ -75,7 +75,9 @@ Parameter omission has different effects for these resources. Follow each resour
 
 Contentful redacts App Installation parameters declared as `Secret` when read through the Content Management API with a personal access token. The provider records the returned parameter object on refresh and import, without preserving the original secret values. Import cannot recover those values, and redacted values returned during refresh can cause Terraform to plan further parameter updates. See [Contentful's Secret installation parameter documentation](https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/#secret-installation-parameters).
 
-Omission and replacement of `Secret` values have not been verified against Contentful. Terraform sensitivity controls output redaction; it does not resolve these read and update limitations.
+Controlled API experiments found that omitting a Secret key removes it, an empty parameter object clears optional values, and omitting the entire parameter object removes it. Sending the exact current asterisk mask preserves the existing secret; a different-length mask can instead become a literal secret. Do not copy masks into configuration as if they were recovered values.
+
+With the current provider, an update returning masked values can also fail with `Provider produced inconsistent result after apply`, even when Contentful accepted the write. Terraform sensitivity controls output redaction; it does not resolve these read and update limitations. `ignore_changes = [parameters]` suppresses changes to the entire JSON object, including ordinary configuration and intentional secret rotation, so it does not provide selective Secret management. It also does not guarantee that a later update to another resource attribute will avoid sending parameters.
 
 ## Personal access tokens
 
