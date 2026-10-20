@@ -5,6 +5,11 @@ resource "contentful_app_installation" "custom" {
   environment_id = var.contentful_environment_id
 
   app_definition_id = var.app_definition_id
+
+  # This app declares apiKey as a Secret installation parameter.
+  parameters = jsonencode({
+    apiKey = var.app_api_key
+  })
 }
 
 resource "contentful_app_installation" "marketplace" {

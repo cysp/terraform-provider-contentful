@@ -16,7 +16,7 @@ Refresh can verify a value only when Contentful returns it. Import starts withou
 | [App signing secret](#app-signing-secrets) | Preserves stored value | `value` is null |
 | [Webhook Basic password](#basic-authentication) | Preserves managed password | `http_basic_password` is null |
 | [Secret webhook header](#secret-custom-headers) | Preserves managed value for matching header | Unreadable value is null |
-| [App Installation `Secret` parameter](#app-and-extension-parameters), read with a personal access token | Preserves known managed value for an all-asterisk response | Retains mask; original value unavailable |
+| [App Installation `Secret` parameter](#app-installation-secrets), read with a personal access token | Can retain prior state for an all-asterisk response | Retains mask; original value unavailable |
 | [Personal Access Token](#personal-access-tokens) | Preserves token from creation | `token` is null |
 | Delivery API access token | Reads token | Reads token |
 | [App Key public JWK](#app-keys) | Reads public key | Reads public key; private key unavailable |
@@ -73,21 +73,37 @@ The `parameters` values on [`contentful_app_installation`](../resources/app_inst
 
 Parameter omission has different effects for these resources. Follow each resource's `parameters` description before importing an existing object or removing configured values.
 
+## App Installation secrets
+
+Terraform sends the complete planned `parameters` object whenever it writes an App Installation. Include every parameter you want to retain, including secrets. Refresh cannot reliably detect secrets rotated outside Terraform. A later parameter or Marketplace update can overwrite such a rotation.
+
+### Configuring and rotating secrets
+
+Use `jsonencode(...)` to configure the parameter object and supply secrets through sensitive Terraform expressions, as shown in the [App Installation example](../resources/app_installation#example-usage). To rotate a secret through Terraform, change its configured value and apply.
+
 Contentful redacts App Installation parameters declared as `Secret` when read through the Content Management API with a personal access token. See [Contentful's Secret installation parameter documentation](https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/#secret-installation-parameters).
 
-For each top-level parameter, the provider preserves the planned value after a successful write, or the previously stored value during refresh, when Contentful returns a nonempty string made entirely of `*` characters. Preservation requires a known, nonempty reference string containing at least one character other than `*`. Mask length does not affect this rule. Missing keys, empty strings, nulls, other value types, and values inside nested objects or arrays retain their returned meaning.
+When a top-level parameter is returned as asterisks, the provider can retain its planned value after a successful write or its prior state value during refresh. A retained value does not confirm the current remote secret. Mask length does not establish equality, and even an ordinary string changed remotely to literal asterisks can be hidden. Missing keys and values inside nested objects or arrays are not restored.
 
-Preservation is silent and does not verify remote equality. External Secret rotations of any length can remain invisible, as can an ordinary string changed remotely to a literal all-asterisk value. State records the last intended value. To rotate a secret through Terraform, change the configured value and apply.
+Changing only `timeouts` does not write the installation. Changing `marketplace` acknowledgments still writes the complete planned parameter object.
 
-Each actual write submits the complete planned parameter object, including planned secrets. Updating an ordinary parameter can therefore restore a secret that someone rotated outside Terraform. A readable response that contradicts the plan can still cause an inconsistent-result error after Contentful has accepted the write; failure does not imply rollback.
+A failed apply does not imply that Contentful rolled back the write. A readable response that contradicts the plan can cause an inconsistent-result error after Contentful accepted the request; a redacted response cannot confirm which secret was stored after an uncertain write.
 
-Changing only `timeouts` does not write the installation. Changing `marketplace` acknowledgments still writes the complete effective parameter object.
+### Importing an installation
 
-Import cannot recover plaintext and retains returned masks. Configure the complete object, including the Secret values Terraform should manage, before applying. Controlled API experiments found that omitting a Secret key removes it, an empty parameter object clears optional values, and omitting the entire parameter object removes it.
+Import retains returned masks and cannot recover the original Secret values. Before applying, configure the complete object, including the Secret values Terraform should manage. Do not copy masks into configuration as if they were recovered values.
 
-Sending the exact current asterisk mask can preserve the existing secret; a stale or different-length mask can instead become a literal secret. A requested literal all-asterisk value equal to the current mask can preserve the old secret rather than replace it. Do not copy masks into configuration as if they were recovered values.
+On a successful write, omitted keys are removed, including secrets. An empty object clears optional values; Contentful can reject an object that omits a required parameter. Omitting the entire `parameters` object can clear existing values, including after import.
 
-`ignore_changes = [parameters]` suppresses changes to the entire JSON object, including ordinary configuration and intentional secret rotation. It does not provide selective Secret management. If a later update requires a write, the provider still sends the complete effective plan, including any retained masks. This cannot guarantee preservation after a concurrent external rotation. A masked read also cannot prove that an uncertain write succeeded.
+Sending the exact current asterisk mask can preserve the existing secret. A stale or different-length mask can instead become a literal secret. This also means that requesting a literal all-asterisk value equal to the current mask can leave the old secret in place.
+
+### Changes outside Terraform
+
+Updating an ordinary parameter resubmits the planned secrets and can overwrite a secret rotated outside Terraform, even when refresh reported no change to it.
+
+During updates, `ignore_changes = [parameters]` suppresses configured changes to the entire JSON object, including ordinary parameters and intentional secret rotation. It does not provide selective Secret management. Creation still uses the configured values.
+
+If a later update requires a write, such as a change to `marketplace`, the provider sends the complete effective plan, including any values retained by `ignore_changes`. Those values may be older plaintext or imported masks, so this setting cannot guarantee preservation of an external rotation.
 
 ## Personal access tokens
 

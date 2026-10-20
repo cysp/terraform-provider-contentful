@@ -10,10 +10,12 @@ description: |-
 
 {{ .Description | trimspace }}
 
-~> When adopting or updating an installation, configure every parameter you want to retain. Omitting `parameters` can clear existing values. See [parameter ownership](#parameter-ownership) and [secret parameter limitations](../guides/secrets-and-state#app-and-extension-parameters).
+~> When adopting or updating an installation, configure every parameter you want to retain. Omitting `parameters` can clear existing values. See [parameter ownership](#parameter-ownership) and [App Installation secrets](../guides/secrets-and-state#app-installation-secrets).
 
 {{ if .HasExamples -}}
 ## Example Usage
+
+The custom app example requires an App Definition with an `apiKey` installation parameter of type `Secret`. Declare `app_api_key` as a sensitive Terraform variable and supply its value through your usual secret input mechanism. Terraform still stores it in state and saved plans.
 
 {{- range .ExampleFiles }}
 
@@ -23,11 +25,11 @@ description: |-
 
 ## Parameter ownership
 
-Each write sends the complete planned `parameters` object. Removing a key deletes that parameter; omitting the object can clear existing values. Changing an ordinary parameter also resubmits the planned secrets, which can overwrite external rotations that refresh could not detect.
+Each write sends the complete planned `parameters` object. A successful write removes omitted keys; Contentful can reject the request if a required parameter is missing. Omitting the entire object can clear existing values. Changing an ordinary parameter also resubmits the planned secrets, which can overwrite external rotations that refresh could not detect.
 
 Changing only `timeouts` updates Terraform state without writing the installation. Changing `marketplace` acknowledgments still writes the complete planned parameter object.
 
-When Contentful returns an all-asterisk value, the provider can preserve the corresponding known managed value. This prevents spurious updates caused by redaction but does not verify the stored secret. Import retains returned masks because the original values are unavailable. See the [secrets guide](../guides/secrets-and-state#app-and-extension-parameters) for reconciliation boundaries, literal-asterisk limitations, and `ignore_changes`.
+When Contentful returns an all-asterisk value, the provider can preserve the corresponding value from the plan or prior state. A preserved value does not verify the current remote secret. Import retains returned masks because the original values are unavailable. See [App Installation secrets](../guides/secrets-and-state#app-installation-secrets) for rotation, import, and changes outside Terraform.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
