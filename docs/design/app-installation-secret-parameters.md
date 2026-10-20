@@ -1,7 +1,7 @@
 # App Installation Secret parameters
 
-This note records the agreed implementation proposal for reconciling redacted App
-Installation parameters. The proposal is not implemented yet. The
+This note defines response reconciliation for redacted App Installation parameters
+and its ownership limitations. The
 [API evidence](../research/app-framework/secret-installation-parameters.md) is the
 authority for observed Contentful behavior; the
 [secrets guide](../guides/secrets-and-state.md#app-and-extension-parameters) describes
@@ -37,7 +37,7 @@ persist that refreshed snapshot to the original state file. The inconsistent-res
 error occurs after the remote write, so an apply failure does not imply rollback.
 These results describe the pinned provider revision, not every future release.
 
-## Agreed response contract
+## Response contract
 
 Retain the existing `parameters` schema and request semantics. Reconcile only an
 installation's response, without a definition lookup, new configuration argument,
@@ -82,15 +82,10 @@ retained by `ignore_changes` and imported all-asterisk values. Do not omit masks
 replace configured plaintext with masks, or add an extra GET before writing.
 Omission can delete a secret; an extra read cannot remove the concurrent-write race.
 
-Update reads prior State as well as Plan. If parameters are equivalent under the
-existing normalized JSON semantics and Marketplace acknowledgments are unchanged,
-update local timeout state without issuing a PUT. A parameter or Marketplace change
-still writes; Marketplace acknowledgments affect the outgoing header.
-
 An ordinary parameter update can reassert a configured secret after an invisible
 external rotation. Terraform continues to own the complete effective parameter
 object. A mask returned after an uncertain write never proves that write succeeded;
-this proposal adds no recovery read or retry behavior.
+reconciliation adds no recovery read or retry behavior.
 
 ## Accepted limitations
 
@@ -111,39 +106,31 @@ This change does not make `parameters` write-only or alter sensitivity. Secrets
 remain in Terraform state and require the protections described in the
 [secrets guide](../guides/secrets-and-state.md).
 
-## Implementation boundaries
+## Implementation
 
-Add one resource-specific, directional parameter helper beside
-[`app_installation_model_response.go`](../../internal/provider/app_installation_model_response.go).
-It takes the projected response and reference parameter values and returns the
-reconciled value plus any JSON-processing diagnostics. It needs no lifecycle mode
-flag: choosing Plan or State is the caller's responsibility.
+The resource-specific helper in
+[`app_installation_parameters_response.go`](../../internal/provider/app_installation_parameters_response.go)
+takes the projected response and reference parameter values and returns the
+reconciled value plus any JSON-processing diagnostics. Choosing Plan or State is
+the caller's responsibility.
 
-Keep ordinary response projection intact. Call the helper from Create, Read, and
-Update after projection and before the existing identity/state publication boundary.
-Only successful mutations reach reconciliation. Existing errors for invalid JSON,
-unknown request values, and failed state encoding remain errors; new diagnostics
-must not include parameter values.
+Create, Read, and Update call the helper after ordinary response projection and
+before the existing identity/state publication boundary. Only successful mutations
+reach reconciliation. Invalid JSON, unknown request values, and failed state
+encoding remain errors. Reconciliation diagnostics do not include parameter values.
 
-Reuse the existing number-preserving opaque JSON utilities or raw JSON members.
-Do not decode through `float64`, which could change unrelated large integers.
-When no property qualifies for substitution, retain the projected response.
-Normalization must preserve every other value, including number tokens, null,
-empty collections, and nested structures.
+Raw JSON members preserve unrelated numeric tokens without converting through
+`float64`. When no property qualifies for substitution, the helper retains the
+projected response. Normalization preserves every other value, including number
+tokens, null, empty collections, and nested structures.
 
-Keep the Update guard in
-[`resource_app_installation.go`](../../internal/provider/resource_app_installation.go),
-using the existing normalized JSON equivalence helper and set equality for
-Marketplace acknowledgments. Follow the existing resource-local publication
-pattern for updating timeouts without remote I/O.
+## Verification
 
-## Verification and documentation
-
-Tests must distinguish stored values from redacted wire responses. Use a focused
-test fixture with explicit Secret declarations and independent backing values;
-do not call the provider's reconciliation helper to construct the response or the
-expected result. Keep changes to shared mock behavior limited to the fidelity
-required by these scenarios. Follow [Testing](../testing.md).
+The resource-local HTTP fixture distinguishes stored values from redacted wire
+responses using explicit Secret declarations and independent backing values. It
+does not call the provider's reconciliation helper to construct responses or
+expected results. The shared CMA mock is unchanged. Follow [Testing](../testing.md)
+when extending this coverage.
 
 | Concern | Required evidence |
 | --- | --- |
@@ -152,7 +139,7 @@ required by these scenarios. Follow [Testing](../testing.md).
 | Reconciliation boundary | Same- and different-length masks; Unicode reference; ordinary literal asterisks; missing/added keys; empty/null/non-string values; nested values; no usable reference |
 | JSON fidelity | Unrelated large integers, numeric forms, escaping, and object ordering survive reconciliation under existing JSON semantics |
 | Import and effective Plan | Import retains masks; later configuration takes ownership; `ignore_changes` retains the effective value on a subsequent write |
-| Ownership and local changes | Exact full-object request reasserts the intended secret after external rotation; timeout-only changes issue no PUT; Marketplace changes still write |
+| Ownership | Exact full-object request reasserts the intended secret after external rotation; Marketplace changes still write |
 | Failures | Readable mutation contradictions remain errors; uncertain writes gain no success inference; no secret values in new diagnostics |
 
 For lifecycle tests, assert exact requests and backing values separately from
@@ -161,11 +148,10 @@ supplies the observed server cases. A deliberately different-length response tes
 the provider's compatibility policy; it does not claim Contentful emitted that
 representation in the live experiments.
 
-When implementing, update the resource documentation, secrets guide, and value
-semantics reading map to describe the delivered behavior and accepted limitations.
-Run generation for changed documentation inputs and the focused behavior,
-formatting, and lint checks required by [Development](../../DEVELOPMENT.md#validation-scope).
-Until then, practitioner documentation continues to describe the existing provider.
+The resource documentation and secrets guide describe these ownership and
+reconciliation limits for practitioners. Changes require the focused behavior,
+formatting, lint, and generation checks in
+[Development](../../DEVELOPMENT.md#validation-scope).
 
 [schema]: https://github.com/cysp/terraform-provider-contentful/blob/8db2a7bc70666b6c1b1b7011c2e688373eb8ed2b/internal/provider/resource_app_installation_schema.go
 [request]: https://github.com/cysp/terraform-provider-contentful/blob/8db2a7bc70666b6c1b1b7011c2e688373eb8ed2b/internal/provider/app_installation_model_request.go

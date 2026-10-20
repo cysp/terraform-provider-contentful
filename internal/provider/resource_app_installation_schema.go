@@ -54,7 +54,7 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"parameters": schema.StringAttribute{
-				Description: "Complete installation parameter object encoded with `jsonencode(...)`. Configure every value you want to retain. Omission sends no parameter object and can clear existing values on apply, including after import. Supply secrets through sensitive expressions. See [secret parameter limitations](../guides/secrets-and-state#app-and-extension-parameters).",
+				Description: "Complete installation parameter object encoded with `jsonencode(...)`. Configure every value you want to retain. Omission sends no parameter object and can clear existing values on apply, including after import. Redacted responses preserve known managed values, but external secret changes may remain undetected. Supply secrets through sensitive expressions. See [secret parameter limitations](../guides/secrets-and-state#app-and-extension-parameters).",
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 			},

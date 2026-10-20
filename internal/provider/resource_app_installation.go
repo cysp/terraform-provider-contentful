@@ -113,6 +113,15 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 
 	data.Timeouts = plan.Timeouts
 
+	parameters, parameterDiags := reconcileAppInstallationParameters(data.Parameters, plan.Parameters)
+	resp.Diagnostics.Append(parameterDiags...)
+
+	data.Parameters = parameters
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appInstallationIdentityAttributeNames(), &data)...)
 }
 
@@ -173,6 +182,15 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	data.Timeouts = state.Timeouts
+
+	parameters, parameterDiags := reconcileAppInstallationParameters(data.Parameters, state.Parameters)
+	resp.Diagnostics.Append(parameterDiags...)
+
+	data.Parameters = parameters
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appInstallationIdentityAttributeNames(), &data)...)
 }
@@ -240,6 +258,15 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	data.Timeouts = plan.Timeouts
+
+	parameters, parameterDiags := reconcileAppInstallationParameters(data.Parameters, plan.Parameters)
+	resp.Diagnostics.Append(parameterDiags...)
+
+	data.Parameters = parameters
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appInstallationIdentityAttributeNames(), &data)...)
 }
