@@ -24,7 +24,11 @@ jobs:
           cache: true
 
       - name: update indirect dependencies
-        run: for x in $(go list -f '{{if .Indirect}}{{.Path}}{{end}}' -m all); do go get -u "$x"; done || true
+        run: |
+          indirect_dependencies="$(go list -f '{{if .Indirect}}{{.Path}}{{end}}' -m all)"
+          for dependency in $indirect_dependencies; do
+            go get -u "$dependency"
+          done
 
       - name: go mod tidy
         run: go mod tidy -v
