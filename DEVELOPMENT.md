@@ -279,6 +279,13 @@ golangci-lint fmt --diff
 
 Run `golangci-lint fmt` to apply the configured formatting, including gofumpt.
 
+## Vulnerability checks
+
+For a local vulnerability check, run the `go run` command from the
+[govulncheck workflow](.github/workflows/govulncheck.yml) at the repository root.
+The workflow pins the scanner version; update that pin explicitly when upgrading
+the scanner. Each run still consults the current Go vulnerability database.
+
 ## Releases
 
 See [Provider releases](docs/releasing.md) for the publishing and verification
