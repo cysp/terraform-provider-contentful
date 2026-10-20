@@ -234,7 +234,7 @@ func TestEntryResourceDestroyDoesNotConsumePrivateVersion(t *testing.T) {
 			require.Empty(t, configureResponse.Diagnostics)
 
 			stateModel := EntryModel{
-				IDIdentityModel:    IDIdentityModel{ID: types.StringValue("space/environment/entry")},
+				ID:                 types.StringValue("space/environment/entry"),
 				EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
 				ContentTypeID:      types.StringValue("article"),
 				Fields:             NewTypedMap(map[string]jsontypes.Normalized{}),

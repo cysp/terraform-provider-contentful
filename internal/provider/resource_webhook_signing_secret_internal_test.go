@@ -47,10 +47,10 @@ func webhookSigningSecretTestState(t *testing.T, value types.String) (tfsdk.Stat
 	t.Helper()
 	ctx := t.Context()
 	model := WebhookSigningSecretModel{
-		IDIdentityModel:                   NewIDIdentityModelFromMultipartID("space"),
-		WebhookSigningSecretIdentityModel: WebhookSigningSecretIdentityModel{SpaceID: types.StringValue("space")},
-		Value:                             value,
-		Timeouts:                          TimeoutsNull(),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID("space"),
+		SpaceID:         types.StringValue("space"),
+		Value:           value,
+		Timeouts:        TimeoutsNull(),
 	}
 	state := tfsdk.State{Schema: WebhookSigningSecretResourceSchema(ctx)}
 	require.Empty(t, state.Set(ctx, &model))

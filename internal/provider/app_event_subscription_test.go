@@ -40,7 +40,7 @@ var appEventHTTPResponse = testJSON(map[string]any{
 })
 
 func appEventTestModel() AppEventSubscriptionModel {
-	return AppEventSubscriptionModel{IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()}, OrganizationID: types.StringValue("organization"), AppDefinitionID: types.StringValue("app"), Topics: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("Entry.publish"), types.StringValue("Asset.publish")}), TargetURL: types.StringValue("https://example.invalid/events?secret=sentinel"), FilterFunctionID: types.StringNull(), TransformationFunctionID: types.StringNull(), HandlerFunctionID: types.StringNull(), Timeouts: TimeoutsNull()}
+	return AppEventSubscriptionModel{ID: types.StringUnknown(), OrganizationID: types.StringValue("organization"), AppDefinitionID: types.StringValue("app"), Topics: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("Entry.publish"), types.StringValue("Asset.publish")}), TargetURL: types.StringValue("https://example.invalid/events?secret=sentinel"), FilterFunctionID: types.StringNull(), TransformationFunctionID: types.StringNull(), HandlerFunctionID: types.StringNull(), Timeouts: TimeoutsNull()}
 }
 
 func appEventTestResource(t *testing.T, handler http.HandlerFunc) *appEventSubscriptionResource {

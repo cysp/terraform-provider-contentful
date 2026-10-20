@@ -517,11 +517,9 @@ func TestEntryUpdateRequestConversionErrorStopsBeforeAPIRequest(t *testing.T) {
 	client, requestCount := mutationRequestCountingClient(t)
 	implementation := entryResource{providerData: ContentfulProviderData{client: client}}
 	model := EntryModel{
-		EntryIdentityModel: EntryIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("environment"),
-			EntryID:       types.StringValue("entry"),
-		},
+		SpaceID:       types.StringValue("space"),
+		EnvironmentID: types.StringValue("environment"),
+		EntryID:       types.StringValue("entry"),
 		ContentTypeID: types.StringValue("content-type"),
 		Fields:        NewTypedMapUnknown[jsontypes.Normalized](),
 		Metadata: NewTypedObject(EntryMetadataValue{
@@ -545,11 +543,9 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 	ctx := t.Context()
 
 	deliveryAPIKeyPlan := DeliveryAPIKeyModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
-		DeliveryAPIKeyIdentityModel: DeliveryAPIKeyIdentityModel{
-			SpaceID:  types.StringValue("space"),
-			APIKeyID: types.StringUnknown(),
-		},
+		ID:              types.StringUnknown(),
+		SpaceID:         types.StringValue("space"),
+		APIKeyID:        types.StringUnknown(),
 		Name:            types.StringValue("Key"),
 		Description:     types.StringNull(),
 		Environments:    NewTypedListUnknown[types.String](),
@@ -565,18 +561,14 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 	deliveryAPIKeyConfig.PreviewAPIKeyID = types.StringNull()
 
 	appDefinitionPlan := AppDefinitionResourceModel{
-		AppDefinitionBaseModel: AppDefinitionBaseModel{
-			IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
-			AppDefinitionIdentityModel: AppDefinitionIdentityModel{
-				OrganizationID:  types.StringValue("organization"),
-				AppDefinitionID: types.StringUnknown(),
-			},
-			Name:      types.StringValue("App"),
-			Src:       types.StringUnknown(),
-			BundleID:  types.StringNull(),
-			Locations: []AppDefinitionLocationsItem{},
-		},
-		Timeouts: TimeoutsNull(),
+		ID:              types.StringUnknown(),
+		OrganizationID:  types.StringValue("organization"),
+		AppDefinitionID: types.StringUnknown(),
+		Name:            types.StringValue("App"),
+		Src:             types.StringUnknown(),
+		BundleID:        types.StringNull(),
+		Locations:       []AppDefinitionLocationsItem{},
+		Timeouts:        TimeoutsNull(),
 	}
 	appDefinitionConfig := appDefinitionPlan
 	appDefinitionConfig.ID = types.StringNull()
@@ -584,18 +576,16 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 	appDefinitionConfig.Src = types.StringValue("https://example.com/app.js")
 
 	contentTypePlan := ContentTypeModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
-		ContentTypeIdentityModel: ContentTypeIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("environment"),
-			ContentTypeID: types.StringValue("content-type"),
-		},
-		Name:         types.StringValue("Content type"),
-		Description:  types.StringValue("Description"),
-		DisplayField: types.StringValue("title"),
-		Fields:       NewTypedList([]TypedObject[ContentTypeFieldValue]{}),
-		Metadata:     NewTypedObjectUnknown[ContentTypeMetadataValue](),
-		Timeouts:     TimeoutsNull(),
+		ID:            types.StringUnknown(),
+		SpaceID:       types.StringValue("space"),
+		EnvironmentID: types.StringValue("environment"),
+		ContentTypeID: types.StringValue("content-type"),
+		Name:          types.StringValue("Content type"),
+		Description:   types.StringValue("Description"),
+		DisplayField:  types.StringValue("title"),
+		Fields:        NewTypedList([]TypedObject[ContentTypeFieldValue]{}),
+		Metadata:      NewTypedObjectUnknown[ContentTypeMetadataValue](),
+		Timeouts:      TimeoutsNull(),
 	}
 	contentTypeConfig := contentTypePlan
 	contentTypeConfig.ID = types.StringNull()
@@ -605,12 +595,10 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 	})
 
 	extensionPlan := ExtensionModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
-		ExtensionIdentityModel: ExtensionIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("environment"),
-			ExtensionID:   types.StringValue("extension"),
-		},
+		ID:            types.StringUnknown(),
+		SpaceID:       types.StringValue("space"),
+		EnvironmentID: types.StringValue("environment"),
+		ExtensionID:   types.StringValue("extension"),
 		Extension: &ExtensionConfiguration{
 			Name:       types.StringValue("Extension"),
 			Src:        types.StringNull(),
@@ -632,11 +620,9 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 	}
 
 	webhookPlan := WebhookModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
-		WebhookIdentityModel: WebhookIdentityModel{
-			SpaceID:   types.StringValue("space"),
-			WebhookID: types.StringUnknown(),
-		},
+		ID:                types.StringUnknown(),
+		SpaceID:           types.StringValue("space"),
+		WebhookID:         types.StringUnknown(),
 		Name:              types.StringValue("Webhook"),
 		URL:               types.StringValue("https://example.com/webhook"),
 		Topics:            NewTypedListNull[types.String](),
@@ -654,10 +640,8 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 	webhookConfig.Headers = NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{})
 
 	spaceEnablementsPlan := SpaceEnablementsModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
-		SpaceEnablementsIdentityModel: SpaceEnablementsIdentityModel{
-			SpaceID: types.StringValue("space"),
-		},
+		ID:                types.StringUnknown(),
+		SpaceID:           types.StringValue("space"),
 		CrossSpaceLinks:   types.BoolUnknown(),
 		SpaceTemplates:    types.BoolNull(),
 		StudioExperiences: types.BoolNull(),

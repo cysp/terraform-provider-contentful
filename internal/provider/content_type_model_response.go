@@ -24,11 +24,9 @@ func newContentTypeResourceModelFromResponseAt(ctx context.Context, root path.Pa
 
 	model := ContentTypeModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID, contentTypeID),
-		ContentTypeIdentityModel: ContentTypeIdentityModel{
-			SpaceID:       types.StringValue(spaceID),
-			EnvironmentID: types.StringValue(environmentID),
-			ContentTypeID: types.StringValue(contentTypeID),
-		},
+		SpaceID:         types.StringValue(spaceID),
+		EnvironmentID:   types.StringValue(environmentID),
+		ContentTypeID:   types.StringValue(contentTypeID),
 	}
 
 	model.Name = types.StringValue(contentType.Name)

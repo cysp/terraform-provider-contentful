@@ -151,11 +151,9 @@ func TestPreviewEnvironmentMutationConsistencyErrorCheckpointsResponseStateIdent
 
 func previewEnvironmentCheckpointModel(id, previewEnvironmentID types.String, name string) PreviewEnvironmentModel {
 	return PreviewEnvironmentModel{
-		IDIdentityModel: IDIdentityModel{ID: id},
-		PreviewEnvironmentIdentityModel: PreviewEnvironmentIdentityModel{
-			SpaceID:              types.StringValue("space"),
-			PreviewEnvironmentID: previewEnvironmentID,
-		},
+		ID:                        id,
+		SpaceID:                   types.StringValue("space"),
+		PreviewEnvironmentID:      previewEnvironmentID,
 		Name:                      types.StringValue(name),
 		Description:               types.StringValue(""),
 		ContentTypeConfigurations: NewTypedMap(map[string]TypedObject[PreviewEnvironmentContentTypeConfigurationValue]{}),

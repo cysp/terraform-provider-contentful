@@ -23,8 +23,6 @@ var _ ht.Client = (*transportClient)(nil)
 //
 // It sets the default User-Agent on outgoing requests and normalizes Contentful
 // vendor JSON response Content-Type values to application/json before decoding.
-//
-//nolint:revive
 func NewTransportClient(client ht.Client, userAgent string) *transportClient {
 	return &transportClient{
 		client:    client,

@@ -12,10 +12,8 @@ func NewDeliveryAPIKeyResourceModelFromResponse(apiKey cm.ApiKey) DeliveryAPIKey
 
 	model := DeliveryAPIKeyModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, apiKeyID),
-		DeliveryAPIKeyIdentityModel: DeliveryAPIKeyIdentityModel{
-			SpaceID:  types.StringValue(spaceID),
-			APIKeyID: types.StringValue(apiKeyID),
-		},
+		SpaceID:         types.StringValue(spaceID),
+		APIKeyID:        types.StringValue(apiKeyID),
 	}
 
 	model.Name = types.StringValue(apiKey.Name)

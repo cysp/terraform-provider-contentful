@@ -328,12 +328,10 @@ func validResourceTypeRequestModel() ResourceTypeModel {
 
 func validTagRequestModel() TagModel {
 	return TagModel{
-		TagIdentityModel: TagIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("environment"),
-			TagID:         types.StringValue("tag"),
-		},
-		Name:       types.StringValue("Tag"),
-		Visibility: types.StringValue("private"),
+		SpaceID:       types.StringValue("space"),
+		EnvironmentID: types.StringValue("environment"),
+		TagID:         types.StringValue("tag"),
+		Name:          types.StringValue("Tag"),
+		Visibility:    types.StringValue("private"),
 	}
 }

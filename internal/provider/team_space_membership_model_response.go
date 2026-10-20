@@ -11,13 +11,11 @@ func NewTeamSpaceMembershipResourceModelFromResponse(response cm.TeamSpaceMember
 	teamID := response.Sys.Team.Sys.ID
 
 	model := TeamSpaceMembershipModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, teamSpaceMembershipID),
-		TeamSpaceMembershipIdentityModel: TeamSpaceMembershipIdentityModel{
-			SpaceID:               types.StringValue(spaceID),
-			TeamSpaceMembershipID: types.StringValue(teamSpaceMembershipID),
-		},
-		TeamID: types.StringValue(teamID),
-		Admin:  types.BoolValue(response.Admin),
+		IDIdentityModel:       NewIDIdentityModelFromMultipartID(spaceID, teamSpaceMembershipID),
+		SpaceID:               types.StringValue(spaceID),
+		TeamSpaceMembershipID: types.StringValue(teamSpaceMembershipID),
+		TeamID:                types.StringValue(teamID),
+		Admin:                 types.BoolValue(response.Admin),
 	}
 
 	if response.Roles != nil {

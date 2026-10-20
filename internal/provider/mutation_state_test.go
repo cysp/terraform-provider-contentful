@@ -21,12 +21,10 @@ func TestContentTypeMutationStateRetainsCompleteResponseOnAnyOwnedMismatch(t *te
 	mutationResponse := contentTypeMutationStateTestResponse()
 
 	plan := ContentTypeModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID("planned-space", "planned-environment", "planned-content-type"),
-		ContentTypeIdentityModel: ContentTypeIdentityModel{
-			SpaceID:       types.StringValue("planned-space"),
-			EnvironmentID: types.StringValue("planned-environment"),
-			ContentTypeID: types.StringValue("planned-content-type"),
-		},
+		IDIdentityModel:  NewIDIdentityModelFromMultipartID("planned-space", "planned-environment", "planned-content-type"),
+		SpaceID:          types.StringValue("planned-space"),
+		EnvironmentID:    types.StringValue("planned-environment"),
+		ContentTypeID:    types.StringValue("planned-content-type"),
 		Name:             types.StringValue("Planned name"),
 		Description:      types.StringValue("Planned description"),
 		DisplayField:     types.StringValue("planned-field"),

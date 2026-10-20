@@ -183,9 +183,9 @@ func NewTaxonomyConceptModelFromResponse(ctx context.Context, response cm.Taxono
 	diags.Append(valueDiags...)
 
 	return TaxonomyConceptModel{
-		IDIdentityModel:              NewIDIdentityModelFromMultipartID(organizationID, conceptID),
-		TaxonomyConceptIdentityModel: TaxonomyConceptIdentityModel{OrganizationID: types.StringValue(organizationID), ConceptID: types.StringValue(conceptID)},
-		URI:                          types.StringPointerValue(response.URI.ValueStringPointer()), PrefLabel: prefLabel, AltLabels: altLabelsValue, HiddenLabels: hiddenLabelsValue,
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, conceptID),
+		OrganizationID:  types.StringValue(organizationID), ConceptID: types.StringValue(conceptID),
+		URI: types.StringPointerValue(response.URI.ValueStringPointer()), PrefLabel: prefLabel, AltLabels: altLabelsValue, HiddenLabels: hiddenLabelsValue,
 		Notations: notations, Note: localizedStringValue(ctx, response.Note, &diags), ChangeNote: localizedStringValue(ctx, response.ChangeNote, &diags),
 		Definition: localizedStringValue(ctx, response.Definition, &diags), EditorialNote: localizedStringValue(ctx, response.EditorialNote, &diags),
 		Example: localizedStringValue(ctx, response.Example, &diags), HistoryNote: localizedStringValue(ctx, response.HistoryNote, &diags), ScopeNote: localizedStringValue(ctx, response.ScopeNote, &diags),
@@ -229,9 +229,9 @@ func NewTaxonomyConceptSchemeModelFromResponse(ctx context.Context, response cm.
 	diags.Append(valueDiags...)
 
 	return TaxonomyConceptSchemeModel{
-		IDIdentityModel:                    NewIDIdentityModelFromMultipartID(organizationID, schemeID),
-		TaxonomyConceptSchemeIdentityModel: TaxonomyConceptSchemeIdentityModel{OrganizationID: types.StringValue(organizationID), ConceptSchemeID: types.StringValue(schemeID)},
-		URI:                                types.StringPointerValue(response.URI.ValueStringPointer()), PrefLabel: prefLabel, Definition: localizedStringValue(ctx, response.Definition, &diags),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, schemeID),
+		OrganizationID:  types.StringValue(organizationID), ConceptSchemeID: types.StringValue(schemeID),
+		URI: types.StringPointerValue(response.URI.ValueStringPointer()), PrefLabel: prefLabel, Definition: localizedStringValue(ctx, response.Definition, &diags),
 		TopConceptIDs: topIDs, ConceptIDs: ids, TotalConcepts: types.Int64Value(int64(response.TotalConcepts)),
 	}, diags
 }

@@ -17,10 +17,8 @@ func NewLivePreviewVariablesResourceModelFromResponse(response cm.LivePreviewVar
 	environmentID := response.Sys.Environment.Sys.ID
 	model := LivePreviewVariablesModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID),
-		LivePreviewVariablesIdentityModel: LivePreviewVariablesIdentityModel{
-			SpaceID:       types.StringValue(spaceID),
-			EnvironmentID: types.StringValue(environmentID),
-		},
+		SpaceID:         types.StringValue(spaceID),
+		EnvironmentID:   types.StringValue(environmentID),
 	}
 
 	if !json.Valid(response.Variables) {

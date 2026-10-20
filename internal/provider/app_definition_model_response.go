@@ -37,10 +37,8 @@ func NewAppDefinitionBaseModelFromResponse(ctx context.Context, response cm.AppD
 
 	model := AppDefinitionBaseModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, appDefinitionID),
-		AppDefinitionIdentityModel: AppDefinitionIdentityModel{
-			OrganizationID:  types.StringValue(organizationID),
-			AppDefinitionID: types.StringValue(appDefinitionID),
-		},
+		OrganizationID:  types.StringValue(organizationID),
+		AppDefinitionID: types.StringValue(appDefinitionID),
 	}
 
 	model.Name = types.StringValue(response.Name)

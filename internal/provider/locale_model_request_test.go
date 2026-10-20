@@ -13,11 +13,9 @@ import (
 
 func validLocaleRequestModel() provider.LocaleModel {
 	return provider.LocaleModel{
-		LocaleIdentityModel: provider.LocaleIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("environment"),
-			LocaleID:      types.StringValue("locale"),
-		},
+		SpaceID:              types.StringValue("space"),
+		EnvironmentID:        types.StringValue("environment"),
+		LocaleID:             types.StringValue("locale"),
 		Name:                 types.StringValue("English (Australia)"),
 		Code:                 types.StringValue("en-AU"),
 		FallbackCode:         types.StringNull(),

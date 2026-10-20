@@ -136,13 +136,11 @@ func previewEnvironmentCreateTestPlan(
 	t.Helper()
 
 	model := PreviewEnvironmentModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},
-		PreviewEnvironmentIdentityModel: PreviewEnvironmentIdentityModel{
-			SpaceID:              types.StringValue("space"),
-			PreviewEnvironmentID: previewEnvironmentID,
-		},
-		Name:        types.StringValue("Preview"),
-		Description: types.StringValue(""),
+		ID:                   types.StringUnknown(),
+		SpaceID:              types.StringValue("space"),
+		PreviewEnvironmentID: previewEnvironmentID,
+		Name:                 types.StringValue("Preview"),
+		Description:          types.StringValue(""),
 		ContentTypeConfigurations: NewTypedMap(map[string]TypedObject[PreviewEnvironmentContentTypeConfigurationValue]{
 			"page": NewTypedObject(PreviewEnvironmentContentTypeConfigurationValue{
 				URL: types.StringValue("https://preview.invalid/page"),

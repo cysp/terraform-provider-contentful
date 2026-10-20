@@ -354,13 +354,11 @@ func appSigningSecretLogSentinel(label string) string {
 
 func appSigningSecretTestModel(value string) AppSigningSecretModel {
 	return AppSigningSecretModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringValue("organization/app-definition")},
-		AppSigningSecretIdentityModel: AppSigningSecretIdentityModel{
-			OrganizationID:  types.StringValue("organization"),
-			AppDefinitionID: types.StringValue("app-definition"),
-		},
-		Value:    types.StringValue(value),
-		Timeouts: TimeoutsNull(),
+		ID:              types.StringValue("organization/app-definition"),
+		OrganizationID:  types.StringValue("organization"),
+		AppDefinitionID: types.StringValue("app-definition"),
+		Value:           types.StringValue(value),
+		Timeouts:        TimeoutsNull(),
 	}
 }
 

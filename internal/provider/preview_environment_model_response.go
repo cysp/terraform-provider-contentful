@@ -71,11 +71,9 @@ func newPreviewEnvironmentResourceModelFromResponse(previewEnvironment cm.Previe
 	}
 
 	return PreviewEnvironmentModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, previewEnvironmentID),
-		PreviewEnvironmentIdentityModel: PreviewEnvironmentIdentityModel{
-			SpaceID:              types.StringValue(spaceID),
-			PreviewEnvironmentID: types.StringValue(previewEnvironmentID),
-		},
+		IDIdentityModel:           NewIDIdentityModelFromMultipartID(spaceID, previewEnvironmentID),
+		SpaceID:                   types.StringValue(spaceID),
+		PreviewEnvironmentID:      types.StringValue(previewEnvironmentID),
 		Name:                      types.StringValue(previewEnvironment.Name),
 		Description:               types.StringValue(previewEnvironment.Description),
 		ContentTypeConfigurations: NewTypedMap(configurations),

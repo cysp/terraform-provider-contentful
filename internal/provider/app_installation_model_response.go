@@ -18,11 +18,9 @@ func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallat
 
 	model := AppInstallationModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID, appDefinitionID),
-		AppInstallationIdentityModel: AppInstallationIdentityModel{
-			SpaceID:         types.StringValue(spaceID),
-			EnvironmentID:   types.StringValue(environmentID),
-			AppDefinitionID: types.StringValue(appDefinitionID),
-		},
+		SpaceID:         types.StringValue(spaceID),
+		EnvironmentID:   types.StringValue(environmentID),
+		AppDefinitionID: types.StringValue(appDefinitionID),
 	}
 
 	if appInstallation.Parameters != nil {

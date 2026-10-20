@@ -137,10 +137,8 @@ type extensionParameterLabelsV0 struct {
 
 func (prior extensionStateV0) currentModel() ExtensionModel {
 	model := ExtensionModel{
-		IDIdentityModel: IDIdentityModel{ID: prior.ID},
-		ExtensionIdentityModel: ExtensionIdentityModel{
-			SpaceID: prior.SpaceID, EnvironmentID: prior.EnvironmentID, ExtensionID: prior.ExtensionID,
-		},
+		ID:      prior.ID,
+		SpaceID: prior.SpaceID, EnvironmentID: prior.EnvironmentID, ExtensionID: prior.ExtensionID,
 		Parameters: prior.Parameters,
 		Timeouts:   timeouts.Value{Object: prior.Timeouts},
 	}

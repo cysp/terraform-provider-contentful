@@ -71,17 +71,13 @@ func TestPrivateVersionValuesAreForwardedToRepresentativeMutations(t *testing.T)
 
 	cases = append(cases,
 		privateVersionForwardingCase{
-			requiredPrivateVersionResourceCase: requiredPrivateVersionResourceCase{
-				name: "taxonomy concept delete", typeName: "contentful_taxonomy_concept",
-				resourceSchema: TaxonomyConceptResourceSchema(t.Context()), model: taxonomyConceptDeleteState(), delete: true,
-			},
+			name: "taxonomy concept delete", typeName: "contentful_taxonomy_concept",
+			resourceSchema: TaxonomyConceptResourceSchema(t.Context()), model: taxonomyConceptDeleteState(), delete: true,
 			method: http.MethodDelete, path: "/organizations/organization-id/taxonomy/concepts/concept",
 		},
 		privateVersionForwardingCase{
-			requiredPrivateVersionResourceCase: requiredPrivateVersionResourceCase{
-				name: "taxonomy concept scheme delete", typeName: "contentful_taxonomy_concept_scheme",
-				resourceSchema: TaxonomyConceptSchemeResourceSchema(t.Context()), model: taxonomyConceptSchemeDeleteState(), delete: true,
-			},
+			name: "taxonomy concept scheme delete", typeName: "contentful_taxonomy_concept_scheme",
+			resourceSchema: TaxonomyConceptSchemeResourceSchema(t.Context()), model: taxonomyConceptSchemeDeleteState(), delete: true,
 			method: http.MethodDelete, path: "/organizations/organization-id/taxonomy/concept-schemes/scheme",
 		},
 	)
@@ -268,23 +264,19 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 	editorInterface.Timeouts = updateOnlyTimeoutsNull()
 
 	tag := TagModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringValue("space/environment/tag")},
-		TagIdentityModel: TagIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("environment"),
-			TagID:         types.StringValue("tag"),
-		},
-		Name:       types.StringValue("Tag"),
-		Visibility: types.StringValue("private"),
-		Timeouts:   TimeoutsNull(),
+		ID:            types.StringValue("space/environment/tag"),
+		SpaceID:       types.StringValue("space"),
+		EnvironmentID: types.StringValue("environment"),
+		TagID:         types.StringValue("tag"),
+		Name:          types.StringValue("Tag"),
+		Visibility:    types.StringValue("private"),
+		Timeouts:      TimeoutsNull(),
 	}
 	locale := LocaleModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringValue("space/environment/locale")},
-		LocaleIdentityModel: LocaleIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("environment"),
-			LocaleID:      types.StringValue("locale"),
-		},
+		ID:                   types.StringValue("space/environment/locale"),
+		SpaceID:              types.StringValue("space"),
+		EnvironmentID:        types.StringValue("environment"),
+		LocaleID:             types.StringValue("locale"),
 		Name:                 types.StringValue("English (Australia)"),
 		Code:                 types.StringValue("en-AU"),
 		FallbackCode:         types.StringNull(),
@@ -305,7 +297,7 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 	plannedContentType := contentType
 	plannedContentType.Name = types.StringValue("Changed content type")
 	entry := EntryModel{
-		IDIdentityModel:    IDIdentityModel{ID: types.StringValue("space/environment/entry")},
+		ID:                 types.StringValue("space/environment/entry"),
 		EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
 		ContentTypeID:      types.StringValue("content-type"),
 		Fields:             NewTypedMap(map[string]jsontypes.Normalized{}),
@@ -472,33 +464,31 @@ func taxonomyConceptDeleteState() TaxonomyConceptModel {
 	listType := types.ListType{ElemType: types.StringType}
 
 	return TaxonomyConceptModel{
-		IDIdentityModel:              NewIDIdentityModelFromMultipartID("organization-id", "concept"),
-		TaxonomyConceptIdentityModel: TaxonomyConceptIdentityModel{OrganizationID: types.StringValue("organization-id"), ConceptID: types.StringValue("concept")},
-		URI:                          types.StringNull(),
-		PrefLabel:                    types.MapNull(types.StringType),
-		AltLabels:                    types.MapNull(listType),
-		HiddenLabels:                 types.MapNull(listType),
-		Notations:                    types.ListNull(types.StringType),
-		Note:                         types.MapNull(types.StringType),
-		ChangeNote:                   types.MapNull(types.StringType),
-		Definition:                   types.MapNull(types.StringType),
-		EditorialNote:                types.MapNull(types.StringType),
-		Example:                      types.MapNull(types.StringType),
-		HistoryNote:                  types.MapNull(types.StringType),
-		ScopeNote:                    types.MapNull(types.StringType),
-		BroaderConceptIDs:            types.ListNull(types.StringType),
-		RelatedConceptIDs:            types.ListNull(types.StringType),
-		ConceptSchemeIDs:             types.SetNull(types.StringType),
-		Timeouts:                     TimeoutsNull(),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID("organization-id", "concept"),
+		OrganizationID:  types.StringValue("organization-id"), ConceptID: types.StringValue("concept"),
+		URI:               types.StringNull(),
+		PrefLabel:         types.MapNull(types.StringType),
+		AltLabels:         types.MapNull(listType),
+		HiddenLabels:      types.MapNull(listType),
+		Notations:         types.ListNull(types.StringType),
+		Note:              types.MapNull(types.StringType),
+		ChangeNote:        types.MapNull(types.StringType),
+		Definition:        types.MapNull(types.StringType),
+		EditorialNote:     types.MapNull(types.StringType),
+		Example:           types.MapNull(types.StringType),
+		HistoryNote:       types.MapNull(types.StringType),
+		ScopeNote:         types.MapNull(types.StringType),
+		BroaderConceptIDs: types.ListNull(types.StringType),
+		RelatedConceptIDs: types.ListNull(types.StringType),
+		ConceptSchemeIDs:  types.SetNull(types.StringType),
+		Timeouts:          TimeoutsNull(),
 	}
 }
 
 func taxonomyConceptSchemeDeleteState() TaxonomyConceptSchemeModel {
 	return TaxonomyConceptSchemeModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID("organization-id", "scheme"),
-		TaxonomyConceptSchemeIdentityModel: TaxonomyConceptSchemeIdentityModel{
-			OrganizationID: types.StringValue("organization-id"), ConceptSchemeID: types.StringValue("scheme"),
-		},
+		OrganizationID:  types.StringValue("organization-id"), ConceptSchemeID: types.StringValue("scheme"),
 		URI:           types.StringNull(),
 		PrefLabel:     types.MapNull(types.StringType),
 		Definition:    types.MapNull(types.StringType),

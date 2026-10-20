@@ -25,8 +25,8 @@ func NewWebhookSigningSecretResourceModelFromResponse(response cm.WebhookSigning
 	}
 
 	return WebhookSigningSecretModel{
-		IDIdentityModel:                   NewIDIdentityModelFromMultipartID(response.Sys.Space.Sys.ID),
-		WebhookSigningSecretIdentityModel: WebhookSigningSecretIdentityModel{SpaceID: types.StringValue(response.Sys.Space.Sys.ID)},
-		Value:                             value,
+		IDIdentityModel: NewIDIdentityModelFromMultipartID(response.Sys.Space.Sys.ID),
+		SpaceID:         types.StringValue(response.Sys.Space.Sys.ID),
+		Value:           value,
 	}, diags
 }

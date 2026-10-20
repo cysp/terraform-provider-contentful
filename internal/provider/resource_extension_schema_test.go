@@ -53,12 +53,10 @@ func TestExtensionSourceSchemaMatchesContentfulContract(t *testing.T) {
 			ctx := t.Context()
 			resourceSchema := ExtensionResourceSchema(ctx)
 			model := ExtensionModel{
-				IDIdentityModel: IDIdentityModel{ID: types.StringNull()},
-				ExtensionIdentityModel: ExtensionIdentityModel{
-					SpaceID:       types.StringValue("space"),
-					EnvironmentID: types.StringValue("environment"),
-					ExtensionID:   types.StringValue("extension"),
-				},
+				ID:            types.StringNull(),
+				SpaceID:       types.StringValue("space"),
+				EnvironmentID: types.StringValue("environment"),
+				ExtensionID:   types.StringValue("extension"),
 				Extension: &ExtensionConfiguration{
 					Name:       types.StringValue("Extension"),
 					Src:        test.src,
