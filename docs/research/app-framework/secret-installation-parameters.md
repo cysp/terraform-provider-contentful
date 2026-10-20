@@ -291,9 +291,9 @@ rotation. Only app-authenticated reads verified exact stored values.
 
 ## Provider reproduction
 
-See the [provider diagnosis and agreed proposal](../../design/app-installation-secret-parameters.md)
-for a pinned Terraform reproduction and the chosen reconciliation policy.
-Implementation is pending; the policy does not change the API evidence above.
+See the [provider response contract](../../design/app-installation-secret-parameters.md)
+for a pinned Terraform reproduction and the reconciliation policy. That policy
+does not change the API evidence above.
 
 [parameters]: https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/#secret-installation-parameters
 [installation]: https://www.contentful.com/developers/docs/extensibility/app-framework/app-installation/

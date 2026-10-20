@@ -10,7 +10,7 @@ description: |-
 
 {{ .Description | trimspace }}
 
-~> When adopting or updating an installation, configure every parameter you want to retain. Omitting `parameters` can clear existing values. See [parameter management](#parameters-1) and [secret parameter limitations](../guides/secrets-and-state#app-and-extension-parameters).
+~> When adopting or updating an installation, configure every parameter you want to retain. Omitting `parameters` can clear existing values. See [parameter ownership](#parameter-ownership) and [secret parameter limitations](../guides/secrets-and-state#app-and-extension-parameters).
 
 {{ if .HasExamples -}}
 ## Example Usage
@@ -21,12 +21,18 @@ description: |-
 {{- end }}
 {{- end }}
 
+## Parameter ownership
+
+Each write sends the complete planned `parameters` object. Removing a key deletes that parameter; omitting the object can clear existing values. Changing an ordinary parameter also resubmits the planned secrets, which can overwrite external rotations that refresh could not detect.
+
+When Contentful returns an all-asterisk value, the provider can preserve the corresponding known managed value. This prevents spurious updates caused by redaction but does not verify the stored secret. Import retains returned masks because the original values are unavailable. See the [secrets guide](../guides/secrets-and-state#app-and-extension-parameters) for reconciliation boundaries, literal-asterisk limitations, and `ignore_changes`.
+
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
 
 ## Import
 
-Configure the complete `parameters` object you want to retain before applying an imported installation. See [parameter management](#parameters-1) for omission behavior.
+Configure the complete `parameters` object you want to retain before applying an imported installation. Import cannot recover Secret values; supply the values Terraform should manage. See [parameter ownership](#parameter-ownership) for omission behavior.
 
 Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
 {{- end }}

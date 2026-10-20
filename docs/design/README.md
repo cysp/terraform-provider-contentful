@@ -27,9 +27,9 @@ The value-semantics note starts with shared rules and includes a
 resource contract to that resource; special cases do not establish a general
 provider policy.
 
-The [App Installation Secret parameter proposal](app-installation-secret-parameters.md)
-records the current failure and the agreed reconciliation, ownership, and verification
-contract. Implementation is pending.
+The [App Installation Secret parameter contract](app-installation-secret-parameters.md)
+records response reconciliation, complete-object ownership, accepted limitations,
+and independent verification.
 
 ## Evidence boundaries
 

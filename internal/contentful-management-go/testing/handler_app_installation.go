@@ -18,10 +18,10 @@ func (ts *Handler) GetAppInstallation(_ context.Context, params cm.GetAppInstall
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
 	if appInstallation == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppInstallation not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"AppInstallation does not exist."`)), nil
 	}
 
-	return appInstallation, nil
+	return appInstallationResponse(appInstallation, ts.appDefinitions[params.AppDefinitionID])
 }
 
 //nolint:ireturn
@@ -33,26 +33,43 @@ func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallation
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
-	if ts.appDefinitions[params.AppDefinitionID] == nil {
+	definition := ts.appDefinitions[params.AppDefinitionID]
+	if definition == nil {
 		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
 	}
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
+
+	parameters, validation, err := appInstallationParameters(*req, *definition, appInstallation)
+	if err != nil {
+		return nil, err
+	}
+
+	if validation != nil {
+		return validation, nil
+	}
+
+	fields := cm.AppInstallationData{Parameters: parameters}
 	if appInstallation == nil {
-		newAppInstallation := NewAppInstallationFromFields(params.SpaceID, params.EnvironmentID, params.AppDefinitionID, *req)
+		newAppInstallation := NewAppInstallationFromFields(params.SpaceID, params.EnvironmentID, params.AppDefinitionID, fields)
 		ts.appInstallations.Set(params.SpaceID, params.EnvironmentID, params.AppDefinitionID, &newAppInstallation)
 
 		return &cm.AppInstallationStatusCode{
-			StatusCode: http.StatusCreated,
+			StatusCode: http.StatusOK,
 			Response:   newAppInstallation,
 		}, nil
 	}
 
-	UpdateAppInstallationFromFields(appInstallation, *req)
+	UpdateAppInstallationFromFields(appInstallation, fields)
+
+	response, err := appInstallationResponse(appInstallation, definition)
+	if err != nil {
+		return nil, err
+	}
 
 	return &cm.AppInstallationStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *appInstallation,
+		Response:   *response,
 	}, nil
 }
 
@@ -63,7 +80,7 @@ func (ts *Handler) DeleteAppInstallation(_ context.Context, params cm.DeleteAppI
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
 	if appInstallation == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppInstallation not found"), nil), nil
+		return NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"AppInstallation does not exist."`)), nil
 	}
 
 	ts.appInstallations.Delete(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
