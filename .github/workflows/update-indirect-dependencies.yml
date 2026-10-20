@@ -24,8 +24,10 @@ jobs:
           cache: true
 
       - name: update indirect dependencies
+        shell: bash
         run: |
-          indirect_dependencies="$(go list -f '{{if .Indirect}}{{.Path}}{{end}}' -m all)"
+          # The full module graph can include unused dependencies with obsolete module paths.
+          indirect_dependencies="$(go mod edit -json | jq -r '.Require[] | select(.Indirect) | .Path')"
           for dependency in $indirect_dependencies; do
             go get -u "$dependency"
           done
