@@ -3,6 +3,7 @@
 ## Execution and scope
 
 - Complete requested implementation work with relevant verification and documentation. For reviews and plans, deliver analysis without implementing changes unless requested.
+- When reviewing a pull request, commit range, or working-tree diff, follow [Reviewing changes](docs/reviewing.md).
 - Resolve routine choices from repository evidence. Ask when an unresolved question materially affects the public contract, scope, or authorization; continue independent work while awaiting the answer. Carry forward agreement already given in the conversation.
 
 ## Terminology and design

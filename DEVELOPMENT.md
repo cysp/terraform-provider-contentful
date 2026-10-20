@@ -22,6 +22,9 @@ link them from the instructions with the conditions that require reading them.
 See the [design documentation map](docs/design/README.md) for the distinction
 between provider-wide invariants and resource-specific contracts.
 
+For change reviews, follow [Reviewing changes](docs/reviewing.md), which covers
+requirements, adversarial reasoning, proportionate verification, and readiness.
+
 ## Repository map
 
 - `internal/provider/contentful_provider.go`, `resource_*.go`, `data_source_*.go`,
