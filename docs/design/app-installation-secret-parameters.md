@@ -82,6 +82,12 @@ retained by `ignore_changes` and imported all-asterisk values. Do not omit masks
 replace configured plaintext with masks, or add an extra GET before writing.
 Omission can delete a secret; an extra read cannot remove the concurrent-write race.
 
+Update compares effective Plan with prior State. When parameters are equivalent
+under the existing normalized JSON semantics and Marketplace acknowledgments are
+unchanged, it publishes local timeout changes without issuing a PUT. Timeout and
+request validation still run. A parameter or Marketplace change still writes;
+Marketplace acknowledgments affect the outgoing header.
+
 An ordinary parameter update can reassert a configured secret after an invisible
 external rotation. Terraform continues to own the complete effective parameter
 object. A mask returned after an uncertain write never proves that write succeeded;
@@ -124,6 +130,12 @@ Raw JSON members preserve unrelated numeric tokens without converting through
 projected response. Normalization preserves every other value, including number
 tokens, null, empty collections, and nested structures.
 
+The Update guard in
+[`resource_app_installation.go`](../../internal/provider/resource_app_installation.go)
+uses the existing normalized JSON equivalence helper and Marketplace set equality.
+It copies planned timeouts into prior State and uses the existing identity/state
+publication boundary.
+
 ## Verification
 
 The resource-local HTTP fixture distinguishes stored values from redacted wire
@@ -139,7 +151,7 @@ when extending this coverage.
 | Reconciliation boundary | Same- and different-length masks; Unicode reference; ordinary literal asterisks; missing/added keys; empty/null/non-string values; nested values; no usable reference |
 | JSON fidelity | Unrelated large integers, numeric forms, escaping, and object ordering survive reconciliation under existing JSON semantics |
 | Import and effective Plan | Import retains masks; later configuration takes ownership; `ignore_changes` retains the effective value on a subsequent write |
-| Ownership | Exact full-object request reasserts the intended secret after external rotation; Marketplace changes still write |
+| Ownership and local changes | Exact full-object request reasserts the intended secret after external rotation; timeout-only changes issue no PUT; Marketplace changes still write |
 | Failures | Readable mutation contradictions remain errors; uncertain writes gain no success inference; no secret values in new diagnostics |
 
 For lifecycle tests, assert exact requests and backing values separately from

@@ -5,6 +5,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -49,7 +50,6 @@ func (r *appInstallationResource) ImportState(ctx context.Context, req resource.
 	ImportStatePassthroughMultipartID(ctx, appInstallationIdentityAttributeNames(), req, resp)
 }
 
-//nolint:dupl
 func (r *appInstallationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan AppInstallationModel
 
@@ -195,11 +195,11 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appInstallationIdentityAttributeNames(), &data)...)
 }
 
-//nolint:dupl
 func (r *appInstallationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan AppInstallationModel
+	var plan, state AppInstallationModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -228,6 +228,20 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	parametersEqual, parameterDiags := normalizedJSONEquivalent(ctx, plan.Parameters, state.Parameters)
+	if parameterDiags.HasError() {
+		resp.Diagnostics.AddAttributeError(path.Root("parameters"), "Failed to compare app installation parameters", "The planned and prior app installation parameters could not be compared as JSON.")
+
+		return
+	}
+
+	if parametersEqual && plan.Marketplace.Equal(state.Marketplace) {
+		state.Timeouts = plan.Timeouts
+		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appInstallationIdentityAttributeNames(), &state)...)
+
 		return
 	}
 
