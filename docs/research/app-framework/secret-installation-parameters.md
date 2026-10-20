@@ -8,9 +8,9 @@ read.
 This reference separates published contracts and inspected first-party client
 behavior from service observations. See [configuration and installation](configuration.md)
 for ordinary parameter replacement and [research evidence conventions](../README.md#evidence-and-redaction).
-Mutable documentation was reviewed on 2026-10-20. SDK references are pinned to
-`883e2b9dc1c76413d5c24e45f74243da699071e4`; their behavior is client evidence, not proof
-of server acceptance. Provider policy belongs in [provider design](../../design/README.md).
+Mutable documentation was reviewed on 2026-10-20. First-party source references are
+pinned to inspected commits; their behavior is client evidence, not proof of server
+acceptance. Provider policy belongs in [provider design](../../design/README.md).
 
 ## Published Contentful contract
 
@@ -45,7 +45,7 @@ experiments below: compare a PAT read with the app's own read without changing t
 definition to expose its secrets.
 [App Identity][identity], [App Parameters][parameters]
 
-## First-party SDK evidence
+## Client source evidence
 
 The inspected `contentful-management.js` REST adapter copies the supplied installation
 payload and sends it via PUT. It does not merge parameters with an earlier read,
@@ -65,6 +65,53 @@ The SDK distinguishes installation declaration types from ordinary parameter typ
 by adding `Secret`. Parameter declarations contain `id`, `name`, `type`, and optional
 configuration metadata. The value type remains free-form and contains no explicit
 redaction discriminator. [Parameter types][sdk-parameters]
+
+The SDK's documented read-modify-update example changes one parameter on a fetched
+installation and calls `update()`. Because the implementation resends the object's
+parameters unchanged apart from the caller's edits, untouched returned masks would
+also be resent. This supports replay as a normal client workflow by inference; it
+does not define the server's preservation condition, mask character, length, or
+behavior under concurrent rotation. [Installation entity][sdk-entity]
+
+The inspected tests do not strengthen those representation guarantees. The
+AppInstallation unit fixture contains no `parameters`, and its update test checks
+that the response is wrapped. The Secret integration test creates an AppDefinition
+with a Secret declaration, but does not install the app or inspect secret values.
+No mask-recognition or UTF-16 length rule is established by these tests.
+[Installation fixture][sdk-fixture], [Installation tests][sdk-tests],
+[Update test helper][sdk-test-helper], [Secret declaration test][sdk-secret-test]
+
+The inspected `contentful-cli` installation helper checks whether the Merge app is
+installed and installs it with `parameters: {}` when needed. It provides no
+additional secret-mask handling or replay evidence. [CLI installation helper][cli-installation]
+
+Contentful's Audit Log Viewer supplies stronger, explicit replay evidence. Its save
+helper sends newly entered secrets, otherwise resends saved redacted strings, with
+a comment explaining that this preserves the original value. The configuration
+screen obtains those saved strings through `sdk.app.getParameters()` and returns
+the helper's output through `onConfigure`. Unit tests check unchanged pass-through
+using arbitrary `<redacted-a>` and `<redacted-b>` strings; they also use `***` as a
+saved-value fixture when replacing secrets. Those tests establish client behavior,
+not a server mask format or preservation rule.
+[Audit Log Viewer helper][audit-helper], [Configuration screen][audit-screen],
+[Helper tests][audit-tests]
+
+Contentful's Autotagger example likewise loads installation parameters and returns
+them on configuration, describing Secret values as redacted frontend strings that
+can be saved like other parameters. The App SDK passes `getParameters()` and the
+configuration handler result through its channel without inspecting mask contents.
+These application examples support replay through the app configuration flow;
+neither establishes the behavior of omitted keys in a direct CMA PUT or atomic
+preservation during concurrent rotation.
+[Autotagger configuration][autotagger], [App SDK channel][app-sdk-channel]
+
+Supplementary consumer evidence exists in Contentful's **partner-app** repository:
+Role Auto Tagger recognizes a stored Secret using `/^\*+$/`, with no length
+comparison. This is not first-party SDK code; the repository explicitly contains
+ecosystem partner apps. It supports asterisks as an assumption used by a client,
+but does not supply a Contentful API guarantee. None of the inspected sources above
+establishes UTF-16 mask length or a requirement to reject an unexpected length.
+[Role Auto Tagger][partner-tagger], [Partner repository scope][partner-scope]
 
 ## Direct CMA observations
 
@@ -244,14 +291,26 @@ rotation. Only app-authenticated reads verified exact stored values.
 
 ## Provider reproduction
 
-See the [provider diagnosis and solution comparison](../../design/app-installation-secret-parameters.md)
-for a pinned Terraform reproduction and the unresolved design choices. It does not
-define an adopted reconciliation contract.
+See the [provider diagnosis and agreed proposal](../../design/app-installation-secret-parameters.md)
+for a pinned Terraform reproduction and the chosen reconciliation policy.
+Implementation is pending; the policy does not change the API evidence above.
 
 [parameters]: https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/#secret-installation-parameters
 [installation]: https://www.contentful.com/developers/docs/extensibility/app-framework/app-installation/
 [put]: https://www.contentful.com/developers/docs/references/content-management-api/app-installations/install-or-update-an-app/
 [identity]: https://www.contentful.com/developers/docs/extensibility/app-framework/app-identity/
-[sdk-adapter]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-installation.ts
-[sdk-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/app-installation.ts
-[sdk-parameters]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/widget-parameters.ts
+[sdk-adapter]: https://github.com/contentful/contentful-management.js/blob/46cbc9a75ebfa59f5b90b4dba7d1954f346b63bf/lib/adapters/REST/endpoints/app-installation.ts#L30-L64
+[sdk-entity]: https://github.com/contentful/contentful-management.js/blob/46cbc9a75ebfa59f5b90b4dba7d1954f346b63bf/lib/entities/app-installation.ts#L9-L88
+[sdk-parameters]: https://github.com/contentful/contentful-management.js/blob/46cbc9a75ebfa59f5b90b4dba7d1954f346b63bf/lib/entities/widget-parameters.ts#L1-L21
+[sdk-fixture]: https://github.com/contentful/contentful-management.js/blob/46cbc9a75ebfa59f5b90b4dba7d1954f346b63bf/test/unit/mocks/entities.ts#L1170-L1177
+[sdk-tests]: https://github.com/contentful/contentful-management.js/blob/46cbc9a75ebfa59f5b90b4dba7d1954f346b63bf/test/unit/entities/app-installation.test.ts#L17-L48
+[sdk-test-helper]: https://github.com/contentful/contentful-management.js/blob/46cbc9a75ebfa59f5b90b4dba7d1954f346b63bf/test/unit/test-creators/instance-entity-methods.ts#L27-L51
+[sdk-secret-test]: https://github.com/contentful/contentful-management.js/blob/46cbc9a75ebfa59f5b90b4dba7d1954f346b63bf/test/integration/app-definition-integration.test.ts#L40-L73
+[cli-installation]: https://github.com/contentful/contentful-cli/blob/900b848ffb01368d147f4a645f48bd2ed51b94ad/lib/utils/app-installation.ts#L9-L65
+[audit-helper]: https://github.com/contentful/apps/blob/f71ce4c7d0a5cded82eb5395ab59cabb351da698/apps/audit-log-viewer/src/lib/configParams.ts#L58-L75
+[audit-screen]: https://github.com/contentful/apps/blob/f71ce4c7d0a5cded82eb5395ab59cabb351da698/apps/audit-log-viewer/src/locations/ConfigScreen.tsx#L100-L133
+[audit-tests]: https://github.com/contentful/apps/blob/f71ce4c7d0a5cded82eb5395ab59cabb351da698/apps/audit-log-viewer/src/lib/configParams.test.ts#L27-L39
+[autotagger]: https://github.com/contentful/apps/blob/f71ce4c7d0a5cded82eb5395ab59cabb351da698/examples/autotagger/src/locations/ConfigScreen.tsx#L18-L64
+[app-sdk-channel]: https://github.com/contentful/ui-extensions-sdk/blob/c21d9d6e175ec2586e9177a1fb486320381d8a29/lib/app.ts#L70-L109
+[partner-tagger]: https://github.com/contentful/marketplace-partner-apps/blob/95388c5a2b4e057234be4850956e3fa1e4baf9d7/apps/role-auto-tagger/src/locations/ConfigScreen.tsx#L192-L204
+[partner-scope]: https://github.com/contentful/marketplace-partner-apps/blob/95388c5a2b4e057234be4850956e3fa1e4baf9d7/README.md#L1-L11
