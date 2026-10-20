@@ -345,12 +345,10 @@ func TestContentTypeDraftMutationRequiredUnknownMetadataWithState(t *testing.T) 
 
 func contentTypeLifecycleTestModel() ContentTypeModel {
 	return ContentTypeModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID("space", "environment", "content-type"),
-		ContentTypeIdentityModel: ContentTypeIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("environment"),
-			ContentTypeID: types.StringValue("content-type"),
-		},
+		IDIdentityModel:  NewIDIdentityModelFromMultipartID("space", "environment", "content-type"),
+		SpaceID:          types.StringValue("space"),
+		EnvironmentID:    types.StringValue("environment"),
+		ContentTypeID:    types.StringValue("content-type"),
 		Name:             types.StringValue("Test"),
 		Description:      types.StringValue("Description"),
 		DisplayField:     types.StringValue("name"),

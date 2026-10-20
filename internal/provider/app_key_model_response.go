@@ -13,12 +13,10 @@ func NewAppKeyResourceModelFromResponse(appKey cm.AppKey) AppKeyModel {
 
 	model := AppKeyModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, appDefinitionID, keyKID),
-		AppKeyIdentityModel: AppKeyIdentityModel{
-			OrganizationID:  types.StringValue(organizationID),
-			AppDefinitionID: types.StringValue(appDefinitionID),
-			KeyKID:          types.StringValue(keyKID),
-		},
-		JWK: NewTypedObject(NewAppKeyJWKModelFromResponse(appKey.Jwk)),
+		OrganizationID:  types.StringValue(organizationID),
+		AppDefinitionID: types.StringValue(appDefinitionID),
+		KeyKID:          types.StringValue(keyKID),
+		JWK:             NewTypedObject(NewAppKeyJWKModelFromResponse(appKey.Jwk)),
 	}
 
 	model.CreatedAt = timetypes.NewRFC3339TimePointerValue(appKey.Sys.CreatedAt.ValueTimePointer())

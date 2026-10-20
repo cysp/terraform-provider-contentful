@@ -12,20 +12,18 @@ import (
 
 func appActionResponse(response cm.AppAction, target AppActionBaseModel) (AppActionBaseModel, diag.Diagnostics) {
 	data := AppActionBaseModel{
-		OrganizationID:  types.StringValue(response.Sys.Organization.Sys.ID),
-		AppDefinitionID: types.StringValue(response.Sys.AppDefinition.Sys.ID),
-		AppActionFields: AppActionFields{
-			AppActionID:      types.StringValue(response.Sys.ID),
-			Name:             types.StringValue(response.Name),
-			Category:         types.StringValue(response.Category),
-			Type:             types.StringValue(response.Type),
-			Description:      types.StringPointerValue(response.Description.ValueStringPointer()),
-			URL:              types.StringPointerValue(response.URL.ValueStringPointer()),
-			FunctionID:       types.StringNull(),
-			Parameters:       jsontypes.NewNormalizedNull(),
-			ParametersSchema: jsontypes.NewNormalizedNull(),
-			ResultSchema:     jsontypes.NewNormalizedNull(),
-		},
+		OrganizationID:   types.StringValue(response.Sys.Organization.Sys.ID),
+		AppDefinitionID:  types.StringValue(response.Sys.AppDefinition.Sys.ID),
+		AppActionID:      types.StringValue(response.Sys.ID),
+		Name:             types.StringValue(response.Name),
+		Category:         types.StringValue(response.Category),
+		Type:             types.StringValue(response.Type),
+		Description:      types.StringPointerValue(response.Description.ValueStringPointer()),
+		URL:              types.StringPointerValue(response.URL.ValueStringPointer()),
+		FunctionID:       types.StringNull(),
+		Parameters:       jsontypes.NewNormalizedNull(),
+		ParametersSchema: jsontypes.NewNormalizedNull(),
+		ResultSchema:     jsontypes.NewNormalizedNull(),
 	}
 
 	for _, field := range []struct {

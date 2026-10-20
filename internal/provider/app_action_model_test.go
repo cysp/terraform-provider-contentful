@@ -13,10 +13,10 @@ import (
 )
 
 func appActionTestModel() AppActionModel {
-	return AppActionModel{AppActionBaseModel: AppActionBaseModel{
+	return AppActionModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID("org", "app", "action"), OrganizationID: types.StringValue("org"), AppDefinitionID: types.StringValue("app"),
-		AppActionFields: AppActionFields{AppActionID: types.StringValue("action"), Name: types.StringValue("Action"), Category: types.StringValue("Custom"), Type: types.StringValue("endpoint"), URL: types.StringValue("https://example.invalid/action"), Parameters: jsontypes.NewNormalizedValue(testJSON([]any{}))},
-	}, Timeouts: TimeoutsNull()}
+		AppActionID: types.StringValue("action"), Name: types.StringValue("Action"), Category: types.StringValue("Custom"), Type: types.StringValue("endpoint"), URL: types.StringValue("https://example.invalid/action"), Parameters: jsontypes.NewNormalizedValue(testJSON([]any{})), Timeouts: TimeoutsNull(),
+	}
 }
 
 func appActionTestResponse() cm.AppAction {

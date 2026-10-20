@@ -1,6 +1,6 @@
 module github.com/cysp/terraform-provider-contentful
 
-go 1.26.6
+go 1.27.3
 
 require (
 	github.com/go-faster/errors v0.8.0

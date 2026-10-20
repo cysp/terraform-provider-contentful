@@ -10,9 +10,7 @@ func NewSpaceEnablementsResourceModelFromResponse(response cm.SpaceEnablement) S
 
 	model := SpaceEnablementsModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID),
-		SpaceEnablementsIdentityModel: SpaceEnablementsIdentityModel{
-			SpaceID: types.StringValue(spaceID),
-		},
+		SpaceID:         types.StringValue(spaceID),
 	}
 
 	model.CrossSpaceLinks = boolValueFromOptSpaceEnablementField(response.CrossSpaceLinks)

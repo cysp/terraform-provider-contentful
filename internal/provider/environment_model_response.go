@@ -11,11 +11,9 @@ func NewEnvironmentResourceModelFromResponse(environment cm.Environment) Environ
 
 	model := EnvironmentModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID),
-		EnvironmentIdentityModel: EnvironmentIdentityModel{
-			SpaceID:       types.StringValue(spaceID),
-			EnvironmentID: types.StringValue(environmentID),
-		},
-		Status: types.StringValue(environment.Sys.Status.Sys.ID),
+		SpaceID:         types.StringValue(spaceID),
+		EnvironmentID:   types.StringValue(environmentID),
+		Status:          types.StringValue(environment.Sys.Status.Sys.ID),
 	}
 
 	model.Name = types.StringValue(environment.Name)

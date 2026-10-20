@@ -24,10 +24,8 @@ func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 
 	model := WebhookModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, webhookID),
-		WebhookIdentityModel: WebhookIdentityModel{
-			SpaceID:   types.StringValue(spaceID),
-			WebhookID: types.StringValue(webhookID),
-		},
+		SpaceID:         types.StringValue(spaceID),
+		WebhookID:       types.StringValue(webhookID),
 	}
 
 	model.Name = types.StringValue(webhookDefinition.Name)

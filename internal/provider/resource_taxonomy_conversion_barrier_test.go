@@ -87,41 +87,39 @@ func taxonomyConceptUpdatePlan() TaxonomyConceptModel {
 	listType := types.ListType{ElemType: types.StringType}
 
 	return TaxonomyConceptModel{
-		IDIdentityModel:              NewIDIdentityModelFromMultipartID("organization", "concept"),
-		TaxonomyConceptIdentityModel: TaxonomyConceptIdentityModel{OrganizationID: types.StringValue("organization"), ConceptID: types.StringValue("concept")},
-		URI:                          types.StringNull(),
-		PrefLabel:                    types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Concept")}),
-		AltLabels:                    types.MapNull(listType),
-		HiddenLabels:                 types.MapNull(listType),
-		Notations:                    types.ListNull(types.StringType),
-		Note:                         types.MapNull(types.StringType),
-		ChangeNote:                   types.MapNull(types.StringType),
-		Definition:                   types.MapNull(types.StringType),
-		EditorialNote:                types.MapNull(types.StringType),
-		Example:                      types.MapNull(types.StringType),
-		HistoryNote:                  types.MapNull(types.StringType),
-		ScopeNote:                    types.MapNull(types.StringType),
-		BroaderConceptIDs:            types.ListNull(types.StringType),
-		RelatedConceptIDs:            types.ListNull(types.StringType),
-		ConceptSchemeIDs:             types.SetUnknown(types.StringType),
-		Timeouts:                     TimeoutsNull(),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID("organization", "concept"),
+		OrganizationID:  types.StringValue("organization"), ConceptID: types.StringValue("concept"),
+		URI:               types.StringNull(),
+		PrefLabel:         types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Concept")}),
+		AltLabels:         types.MapNull(listType),
+		HiddenLabels:      types.MapNull(listType),
+		Notations:         types.ListNull(types.StringType),
+		Note:              types.MapNull(types.StringType),
+		ChangeNote:        types.MapNull(types.StringType),
+		Definition:        types.MapNull(types.StringType),
+		EditorialNote:     types.MapNull(types.StringType),
+		Example:           types.MapNull(types.StringType),
+		HistoryNote:       types.MapNull(types.StringType),
+		ScopeNote:         types.MapNull(types.StringType),
+		BroaderConceptIDs: types.ListNull(types.StringType),
+		RelatedConceptIDs: types.ListNull(types.StringType),
+		ConceptSchemeIDs:  types.SetUnknown(types.StringType),
+		Timeouts:          TimeoutsNull(),
 	}
 }
 
 func taxonomyConceptSchemeUpdatePlan() TaxonomyConceptSchemeModel {
 	return TaxonomyConceptSchemeModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID("organization", "scheme"),
-		TaxonomyConceptSchemeIdentityModel: TaxonomyConceptSchemeIdentityModel{
-			OrganizationID:  types.StringValue("organization"),
-			ConceptSchemeID: types.StringValue("scheme"),
-		},
-		URI:           types.StringNull(),
-		PrefLabel:     types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Scheme")}),
-		Definition:    types.MapNull(types.StringType),
-		TopConceptIDs: types.ListNull(types.StringType),
-		ConceptIDs:    types.ListNull(types.StringType),
-		TotalConcepts: types.Int64Unknown(),
-		Timeouts:      TimeoutsNull(),
+		OrganizationID:  types.StringValue("organization"),
+		ConceptSchemeID: types.StringValue("scheme"),
+		URI:             types.StringNull(),
+		PrefLabel:       types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Scheme")}),
+		Definition:      types.MapNull(types.StringType),
+		TopConceptIDs:   types.ListNull(types.StringType),
+		ConceptIDs:      types.ListNull(types.StringType),
+		TotalConcepts:   types.Int64Unknown(),
+		Timeouts:        TimeoutsNull(),
 	}
 }
 
@@ -153,17 +151,15 @@ func TestTaxonomyConceptSchemeUpdateConversionErrorDoesNotPatch(t *testing.T) {
 
 	model := TaxonomyConceptSchemeModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID("organization", "scheme"),
-		TaxonomyConceptSchemeIdentityModel: TaxonomyConceptSchemeIdentityModel{
-			OrganizationID:  types.StringValue("organization"),
-			ConceptSchemeID: types.StringValue("scheme"),
-		},
-		URI:           types.StringUnknown(),
-		PrefLabel:     types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Scheme")}),
-		Definition:    types.MapNull(types.StringType),
-		TopConceptIDs: types.ListNull(types.StringType),
-		ConceptIDs:    types.ListNull(types.StringType),
-		TotalConcepts: types.Int64Unknown(),
-		Timeouts:      TimeoutsNull(),
+		OrganizationID:  types.StringValue("organization"),
+		ConceptSchemeID: types.StringValue("scheme"),
+		URI:             types.StringUnknown(),
+		PrefLabel:       types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Scheme")}),
+		Definition:      types.MapNull(types.StringType),
+		TopConceptIDs:   types.ListNull(types.StringType),
+		ConceptIDs:      types.ListNull(types.StringType),
+		TotalConcepts:   types.Int64Unknown(),
+		Timeouts:        TimeoutsNull(),
 	}
 
 	resourceSchema := TaxonomyConceptSchemeResourceSchema(ctx)

@@ -152,11 +152,9 @@ func environmentStatusReadyTestModel(
 ) EnvironmentStatusReadyModel {
 	return EnvironmentStatusReadyModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID("space", "environment"),
-		EnvironmentIdentityModel: EnvironmentIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("environment"),
-		},
-		Status:   status,
-		Timeouts: timeouts,
+		SpaceID:         types.StringValue("space"),
+		EnvironmentID:   types.StringValue("environment"),
+		Status:          status,
+		Timeouts:        timeouts,
 	}
 }

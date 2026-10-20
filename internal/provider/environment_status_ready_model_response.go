@@ -11,11 +11,9 @@ func NewEnvironmentStatusReadyModelFromResponse(environment cm.Environment) Envi
 
 	model := EnvironmentStatusReadyModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID),
-		EnvironmentIdentityModel: EnvironmentIdentityModel{
-			SpaceID:       types.StringValue(spaceID),
-			EnvironmentID: types.StringValue(environmentID),
-		},
-		Status: types.StringValue(environment.Sys.Status.Sys.ID),
+		SpaceID:         types.StringValue(spaceID),
+		EnvironmentID:   types.StringValue(environmentID),
+		Status:          types.StringValue(environment.Sys.Status.Sys.ID),
 	}
 
 	return model

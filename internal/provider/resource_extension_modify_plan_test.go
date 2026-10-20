@@ -151,12 +151,10 @@ func TestExtensionModifyPlanReconcilesSourceOwnership(t *testing.T) {
 
 func extensionPlanTestModel(src, srcdoc types.String) ExtensionModel {
 	return ExtensionModel{
-		IDIdentityModel: IDIdentityModel{ID: types.StringNull()},
-		ExtensionIdentityModel: ExtensionIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("environment"),
-			ExtensionID:   types.StringValue("extension"),
-		},
+		ID:            types.StringNull(),
+		SpaceID:       types.StringValue("space"),
+		EnvironmentID: types.StringValue("environment"),
+		ExtensionID:   types.StringValue("extension"),
 		Extension: &ExtensionConfiguration{
 			Name:       types.StringValue("Extension"),
 			Src:        src,

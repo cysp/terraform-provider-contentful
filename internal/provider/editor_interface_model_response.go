@@ -25,11 +25,9 @@ func newEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 
 	model := EditorInterfaceModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID, contentTypeID),
-		EditorInterfaceIdentityModel: EditorInterfaceIdentityModel{
-			SpaceID:       types.StringValue(spaceID),
-			EnvironmentID: types.StringValue(environmentID),
-			ContentTypeID: types.StringValue(contentTypeID),
-		},
+		SpaceID:         types.StringValue(spaceID),
+		EnvironmentID:   types.StringValue(environmentID),
+		ContentTypeID:   types.StringValue(contentTypeID),
 	}
 
 	if editorInterfaceEditorLayout, ok := editorInterface.EditorLayout.Get(); ok {

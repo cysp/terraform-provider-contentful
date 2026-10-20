@@ -11,10 +11,8 @@ func NewAppSigningSecretResourceModelFromResponse(res cm.AppSigningSecret) AppSi
 
 	model := AppSigningSecretModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, appDefinitionID),
-		AppSigningSecretIdentityModel: AppSigningSecretIdentityModel{
-			OrganizationID:  types.StringValue(organizationID),
-			AppDefinitionID: types.StringValue(appDefinitionID),
-		},
+		OrganizationID:  types.StringValue(organizationID),
+		AppDefinitionID: types.StringValue(appDefinitionID),
 	}
 
 	return model

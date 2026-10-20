@@ -27,10 +27,8 @@ func newRoleResourceModelFromResponseAtPath(ctx context.Context, role cm.Role, r
 
 	model := RoleModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, roleID),
-		RoleIdentityModel: RoleIdentityModel{
-			SpaceID: types.StringValue(spaceID),
-			RoleID:  types.StringValue(roleID),
-		},
+		SpaceID:         types.StringValue(spaceID),
+		RoleID:          types.StringValue(roleID),
 	}
 
 	model.Name = types.StringValue(role.Name)

@@ -17,10 +17,10 @@ import (
 
 func livePreviewVariablesModel(variables string) LivePreviewVariablesModel {
 	return LivePreviewVariablesModel{
-		IDIdentityModel:                   NewIDIdentityModelFromMultipartID("space", "environment"),
-		LivePreviewVariablesIdentityModel: LivePreviewVariablesIdentityModel{SpaceID: types.StringValue("space"), EnvironmentID: types.StringValue("environment")},
-		Variables:                         jsontypes.NewNormalizedValue(variables),
-		Timeouts:                          TimeoutsNull(),
+		IDIdentityModel: NewIDIdentityModelFromMultipartID("space", "environment"),
+		SpaceID:         types.StringValue("space"), EnvironmentID: types.StringValue("environment"),
+		Variables: jsontypes.NewNormalizedValue(variables),
+		Timeouts:  TimeoutsNull(),
 	}
 }
 

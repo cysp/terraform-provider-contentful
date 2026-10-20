@@ -13,12 +13,10 @@ func NewLocaleResourceModelFromResponse(locale cm.Locale) LocaleModel {
 	localeID := locale.Sys.ID
 
 	return LocaleModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID, localeID),
-		LocaleIdentityModel: LocaleIdentityModel{
-			SpaceID:       types.StringValue(spaceID),
-			EnvironmentID: types.StringValue(environmentID),
-			LocaleID:      types.StringValue(localeID),
-		},
+		IDIdentityModel:      NewIDIdentityModelFromMultipartID(spaceID, environmentID, localeID),
+		SpaceID:              types.StringValue(spaceID),
+		EnvironmentID:        types.StringValue(environmentID),
+		LocaleID:             types.StringValue(localeID),
 		Name:                 types.StringValue(locale.Name),
 		Code:                 types.StringValue(locale.Code),
 		FallbackCode:         types.StringPointerValue(locale.FallbackCode.ValueStringPointer()),

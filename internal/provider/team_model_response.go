@@ -11,10 +11,8 @@ func NewTeamResourceModelFromResponse(response cm.Team) TeamModel {
 
 	model := TeamModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, teamID),
-		TeamIdentityModel: TeamIdentityModel{
-			OrganizationID: types.StringValue(organizationID),
-			TeamID:         types.StringValue(teamID),
-		},
+		OrganizationID:  types.StringValue(organizationID),
+		TeamID:          types.StringValue(teamID),
 	}
 
 	model.Name = types.StringValue(response.Name)

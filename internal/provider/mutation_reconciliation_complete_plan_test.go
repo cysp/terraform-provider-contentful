@@ -179,12 +179,10 @@ resource "contentful_webhook" "test" {
 func completeRoleMutationPlan() RoleModel {
 	return RoleModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID("space", "role"),
-		RoleIdentityModel: RoleIdentityModel{
-			SpaceID: types.StringValue("space"),
-			RoleID:  types.StringValue("role"),
-		},
-		Name:        types.StringValue("Planned role"),
-		Description: types.StringValue("Planned description"),
+		SpaceID:         types.StringValue("space"),
+		RoleID:          types.StringValue("role"),
+		Name:            types.StringValue("Planned role"),
+		Description:     types.StringValue("Planned description"),
 		Permissions: NewTypedMap(map[string]TypedList[types.String]{
 			"Entry": NewTypedList([]types.String{types.StringValue("read"), types.StringValue("create")}),
 		}),
@@ -212,11 +210,9 @@ func completeRoleMutationResponse() cm.Role {
 func completeEditorInterfaceMutationPlan() EditorInterfaceModel {
 	return EditorInterfaceModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID("space", "master", "article"),
-		EditorInterfaceIdentityModel: EditorInterfaceIdentityModel{
-			SpaceID:       types.StringValue("space"),
-			EnvironmentID: types.StringValue("master"),
-			ContentTypeID: types.StringValue("article"),
-		},
+		SpaceID:         types.StringValue("space"),
+		EnvironmentID:   types.StringValue("master"),
+		ContentTypeID:   types.StringValue("article"),
 		EditorLayout: NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemValue]{
 			editorLayoutPlanGroup("main", "Main", NewTypedList([]TypedObject[EditorInterfaceEditorLayoutItemGroupItemValue]{})),
 		}),
@@ -296,11 +292,9 @@ func completeWebhookMutationPlan() WebhookModel {
 	})
 
 	return WebhookModel{
-		IDIdentityModel: NewIDIdentityModelFromMultipartID("space", "webhook"),
-		WebhookIdentityModel: WebhookIdentityModel{
-			SpaceID:   types.StringValue("space"),
-			WebhookID: types.StringValue("webhook"),
-		},
+		IDIdentityModel:   NewIDIdentityModelFromMultipartID("space", "webhook"),
+		SpaceID:           types.StringValue("space"),
+		WebhookID:         types.StringValue("webhook"),
 		Name:              types.StringValue("Planned webhook"),
 		URL:               types.StringValue("https://example.com/planned"),
 		Topics:            NewTypedList([]types.String{types.StringValue("Entry.create"), types.StringValue("Entry.save")}),

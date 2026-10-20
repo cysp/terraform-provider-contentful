@@ -12,13 +12,11 @@ func NewTagResourceModelFromResponse(tag cm.Tag) TagModel {
 
 	model := TagModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, environmentID, tagID),
-		TagIdentityModel: TagIdentityModel{
-			SpaceID:       types.StringValue(spaceID),
-			EnvironmentID: types.StringValue(environmentID),
-			TagID:         types.StringValue(tagID),
-		},
-		Name:       types.StringValue(tag.Name),
-		Visibility: types.StringValue(tag.Sys.Visibility),
+		SpaceID:         types.StringValue(spaceID),
+		EnvironmentID:   types.StringValue(environmentID),
+		TagID:           types.StringValue(tagID),
+		Name:            types.StringValue(tag.Name),
+		Visibility:      types.StringValue(tag.Sys.Visibility),
 	}
 
 	return model
