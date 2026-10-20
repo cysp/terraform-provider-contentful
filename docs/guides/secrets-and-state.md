@@ -81,6 +81,8 @@ Preservation is silent and does not verify remote equality. External Secret rota
 
 Each actual write submits the complete planned parameter object, including planned secrets. Updating an ordinary parameter can therefore restore a secret that someone rotated outside Terraform. A readable response that contradicts the plan can still cause an inconsistent-result error after Contentful has accepted the write; failure does not imply rollback.
 
+Changing only `timeouts` does not write the installation. Changing `marketplace` acknowledgments still writes the complete effective parameter object.
+
 Import cannot recover plaintext and retains returned masks. Configure the complete object, including the Secret values Terraform should manage, before applying. Controlled API experiments found that omitting a Secret key removes it, an empty parameter object clears optional values, and omitting the entire parameter object removes it.
 
 Sending the exact current asterisk mask can preserve the existing secret; a stale or different-length mask can instead become a literal secret. A requested literal all-asterisk value equal to the current mask can preserve the old secret rather than replace it. Do not copy masks into configuration as if they were recovered values.

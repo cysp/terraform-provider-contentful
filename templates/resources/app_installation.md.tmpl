@@ -25,6 +25,8 @@ description: |-
 
 Each write sends the complete planned `parameters` object. Removing a key deletes that parameter; omitting the object can clear existing values. Changing an ordinary parameter also resubmits the planned secrets, which can overwrite external rotations that refresh could not detect.
 
+Changing only `timeouts` updates Terraform state without writing the installation. Changing `marketplace` acknowledgments still writes the complete planned parameter object.
+
 When Contentful returns an all-asterisk value, the provider can preserve the corresponding known managed value. This prevents spurious updates caused by redaction but does not verify the stored secret. Import retains returned masks because the original values are unavailable. See the [secrets guide](../guides/secrets-and-state#app-and-extension-parameters) for reconciliation boundaries, literal-asterisk limitations, and `ignore_changes`.
 
 {{ .SchemaMarkdown | trimspace }}
