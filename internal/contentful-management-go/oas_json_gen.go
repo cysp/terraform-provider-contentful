@@ -18963,6 +18963,39 @@ func (s *OptResourceTypeDefaultFieldMappingImage) UnmarshalJSON(data []byte) err
 	return s.Decode(d)
 }
 
+// Encode encodes RoleCollectionPages as json.
+func (o OptRoleCollectionPages) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes RoleCollectionPages from json.
+func (o *OptRoleCollectionPages) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptRoleCollectionPages to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptRoleCollectionPages) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptRoleCollectionPages) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes SpaceEnablementField as json.
 func (o OptSpaceEnablementField) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -23578,6 +23611,12 @@ func (s *RoleCollection) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.Pages.Set {
+			e.FieldStart("pages")
+			s.Pages.Encode(e)
+		}
+	}
+	{
 		e.FieldStart("items")
 		e.ArrStart()
 		for _, elem := range s.Items {
@@ -23587,12 +23626,13 @@ func (s *RoleCollection) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfRoleCollection = [5]string{
+var jsonFieldsNameOfRoleCollection = [6]string{
 	0: "sys",
 	1: "total",
 	2: "skip",
 	3: "limit",
-	4: "items",
+	4: "pages",
+	5: "items",
 }
 
 // Decode decodes RoleCollection from json.
@@ -23644,8 +23684,18 @@ func (s *RoleCollection) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"limit\"")
 			}
+		case "pages":
+			if err := func() error {
+				s.Pages.Reset()
+				if err := s.Pages.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"pages\"")
+			}
 		case "items":
-			requiredBitSet[0] |= 1 << 4
+			requiredBitSet[0] |= 1 << 5
 			if err := func() error {
 				s.Items = make([]Role, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
@@ -23672,7 +23722,7 @@ func (s *RoleCollection) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00010001,
+		0b00100001,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -23714,6 +23764,86 @@ func (s *RoleCollection) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *RoleCollection) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *RoleCollectionPages) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *RoleCollectionPages) encodeFields(e *jx.Encoder) {
+	{
+		if s.Next.Set {
+			e.FieldStart("next")
+			s.Next.Encode(e)
+		}
+	}
+	{
+		if s.Prev.Set {
+			e.FieldStart("prev")
+			s.Prev.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfRoleCollectionPages = [2]string{
+	0: "next",
+	1: "prev",
+}
+
+// Decode decodes RoleCollectionPages from json.
+func (s *RoleCollectionPages) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode RoleCollectionPages to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "next":
+			if err := func() error {
+				s.Next.Reset()
+				if err := s.Next.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"next\"")
+			}
+		case "prev":
+			if err := func() error {
+				s.Prev.Reset()
+				if err := s.Prev.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"prev\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode RoleCollectionPages")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *RoleCollectionPages) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *RoleCollectionPages) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

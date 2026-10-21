@@ -10755,6 +10755,40 @@ func (c *Client) sendGetRoles(ctx context.Context, params GetRolesParams, reques
 			return res, errors.Wrap(err, "encode query")
 		}
 	}
+	{
+		// Encode "pageNext" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "pageNext",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.PageNext.Get(); ok {
+				return e.EncodeValue(conv.StringToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	{
+		// Encode "pagePrev" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "pagePrev",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.PagePrev.Get(); ok {
+				return e.EncodeValue(conv.StringToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
 	u.RawQuery = q.Values().Encode()
 
 	r, err := ht.NewRequest(ctx, "GET", u)

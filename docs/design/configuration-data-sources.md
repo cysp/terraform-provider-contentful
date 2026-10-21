@@ -2,7 +2,7 @@
 
 Space, Environment, Environment Alias, Locale, Role, and Content Type data sources
 provide read-only reference and discovery. Singular forms require addressing
-IDs. Plural forms use scoped offset collections. Space, Environment, Environment
+IDs. Plural forms use scoped collections. Space, Environment, Environment
 Alias, and Locale results are sorted by addressing ID; Role and Content Type results
 retain response order.
 The [practitioner guide](../guides/existing-configuration.md) supplies composition
@@ -64,7 +64,7 @@ live-verified assertion that every collection/detail response contains those fie
 
 ## Offset traversal
 
-Teams, Spaces, Environments, Environment Aliases, Locales, Roles, and Content Types
+Teams, Spaces, Environments, Environment Aliases, Locales, and Content Types
 share one collection reader. Each endpoint decodes its generated response into
 a typed collection or diagnostics before traversal. The collection element
 type and item projection input must agree at compile time. As with Terraform
@@ -87,6 +87,33 @@ Offset traversal does not establish a snapshot. Concurrent edits can cause
 omissions or duplicates, and alias reads do not establish uninterrupted target
 stability. A single-read Environment alias projection avoids a resolution race
 but does not promise stability after that response.
+
+## Role traversal
+
+Roles use a dedicated reader for the
+[announced cursor migration](../research/collections-and-errors.md#space-role-cursor-migration).
+The initial request supplies only `limit=100`. An initial response containing
+`total` or `skip` selects legacy offset progression by returned item count,
+with the same empty-page and total stopping rules above. Subsequent offset
+requests retain that mode even when response metadata is omitted.
+
+An initial response without offset metadata uses cursor navigation: absent
+`pages`, an empty object, or absent `next` ends traversal. Mixed offset and
+cursor metadata or a change of pagination mode during traversal is an error.
+
+The reader extracts exactly one nonempty `pageNext` from the next URL, whose
+path must address the original space Role collection. It accepts root-relative
+or HTTP(S) absolute links; it never follows their authority. Every request uses
+the configured client, API base path, original space and fixed page limit.
+Userinfo, fragments, malformed URLs/queries, `skip`, and `pagePrev` in forward
+links are rejected. Other link query parameters are not forwarded. Repeated
+cursor values after URL query decoding, including longer cycles, are errors.
+An empty intermediate page with a fresh next cursor is followed; continually
+changing cursors remain bounded by the operation deadline.
+
+Role response order and duplicate IDs are retained, with existing Space-link
+validation and projection diagnostics. All pages and retries share one read
+deadline, and a failed traversal publishes no partial state.
 
 ## Verification boundary
 

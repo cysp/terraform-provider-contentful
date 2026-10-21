@@ -19,7 +19,8 @@ their TypeScript signatures alone do not establish raw server validation or orde
 stability. Pagination does not establish a transactionally consistent inventory.
 
 Contentful has [announced a cursor transition for Role collections][role-cursor].
-The current Role reader uses offsets and cannot traverse a cursor-only response.
+See the [migration evidence and limitations](collections-and-errors.md#space-role-cursor-migration)
+and [provider traversal policy](../design/configuration-data-sources.md#role-traversal).
 
 Space `query` matches an exact Space ID or a partial Space name. A returned fuzzy
 match therefore does not establish unique identity. The [Space detail reference][space]

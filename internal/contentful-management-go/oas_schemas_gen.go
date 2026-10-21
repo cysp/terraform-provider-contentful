@@ -9328,6 +9328,52 @@ func (o OptResourceTypeDefaultFieldMappingImage) Or(d ResourceTypeDefaultFieldMa
 	return d
 }
 
+// NewOptRoleCollectionPages returns new OptRoleCollectionPages with value set to v.
+func NewOptRoleCollectionPages(v RoleCollectionPages) OptRoleCollectionPages {
+	return OptRoleCollectionPages{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptRoleCollectionPages is optional RoleCollectionPages.
+type OptRoleCollectionPages struct {
+	Value RoleCollectionPages
+	Set   bool
+}
+
+// IsSet returns true if OptRoleCollectionPages was set.
+func (o OptRoleCollectionPages) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptRoleCollectionPages) Reset() {
+	var v RoleCollectionPages
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptRoleCollectionPages) SetTo(v RoleCollectionPages) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptRoleCollectionPages) Get() (v RoleCollectionPages, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptRoleCollectionPages) Or(d RoleCollectionPages) RoleCollectionPages {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptSpaceEnablementField returns new OptSpaceEnablementField with value set to v.
 func NewOptSpaceEnablementField(v SpaceEnablementField) OptSpaceEnablementField {
 	return OptSpaceEnablementField{
@@ -11213,11 +11259,12 @@ func (*Role) getRoleRes() {}
 
 // Ref: #/RoleCollection
 type RoleCollection struct {
-	Sys   RoleCollectionSys `json:"sys"`
-	Total OptInt            `json:"total"`
-	Skip  OptInt            `json:"skip"`
-	Limit OptInt            `json:"limit"`
-	Items []Role            `json:"items"`
+	Sys   RoleCollectionSys      `json:"sys"`
+	Total OptInt                 `json:"total"`
+	Skip  OptInt                 `json:"skip"`
+	Limit OptInt                 `json:"limit"`
+	Pages OptRoleCollectionPages `json:"pages"`
+	Items []Role                 `json:"items"`
 }
 
 // GetSys returns the value of Sys.
@@ -11238,6 +11285,11 @@ func (s *RoleCollection) GetSkip() OptInt {
 // GetLimit returns the value of Limit.
 func (s *RoleCollection) GetLimit() OptInt {
 	return s.Limit
+}
+
+// GetPages returns the value of Pages.
+func (s *RoleCollection) GetPages() OptRoleCollectionPages {
+	return s.Pages
 }
 
 // GetItems returns the value of Items.
@@ -11265,12 +11317,42 @@ func (s *RoleCollection) SetLimit(val OptInt) {
 	s.Limit = val
 }
 
+// SetPages sets the value of Pages.
+func (s *RoleCollection) SetPages(val OptRoleCollectionPages) {
+	s.Pages = val
+}
+
 // SetItems sets the value of Items.
 func (s *RoleCollection) SetItems(val []Role) {
 	s.Items = val
 }
 
 func (*RoleCollection) getRolesRes() {}
+
+type RoleCollectionPages struct {
+	Next OptString `json:"next"`
+	Prev OptString `json:"prev"`
+}
+
+// GetNext returns the value of Next.
+func (s *RoleCollectionPages) GetNext() OptString {
+	return s.Next
+}
+
+// GetPrev returns the value of Prev.
+func (s *RoleCollectionPages) GetPrev() OptString {
+	return s.Prev
+}
+
+// SetNext sets the value of Next.
+func (s *RoleCollectionPages) SetNext(val OptString) {
+	s.Next = val
+}
+
+// SetPrev sets the value of Prev.
+func (s *RoleCollectionPages) SetPrev(val OptString) {
+	s.Prev = val
+}
 
 type RoleCollectionSys struct {
 	Type RoleCollectionSysType `json:"type"`
