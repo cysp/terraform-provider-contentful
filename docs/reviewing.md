@@ -16,12 +16,14 @@ concern.
    most consequential uncertainty first. Finish when every changed concern has
    expectations and affected boundaries identified, with uncovered areas explicit.
 
-3. For each material candidate, establish a reachable trigger, its consequence,
-   the violated expectation, and how this change introduces or worsens it.
-   Compare baseline behavior and seek evidence that would refute the candidate,
-   including validation elsewhere or an accepted tradeoff. Keep defects,
-   unresolved contract questions, and optional improvements distinct. Finish when
-   each material candidate is supported, refuted, or unresolved with a specific
+3. Assess whether the change achieves the requested outcome, including requested
+   design improvements. For each material candidate, establish its trigger,
+   consequence, and violated expectation. For regression findings, show how the
+   change introduces or worsens the problem. Compare baseline behavior and seek
+   evidence that would refute the candidate, including validation elsewhere or
+   an accepted tradeoff. Keep regressions, unmet requested outcomes, unresolved
+   contract questions, and optional improvements distinct. Finish when each
+   material candidate is supported, refuted, or unresolved with a specific
    evidence gap.
 
 4. A regression test added with a fix should fail for the intended reason before

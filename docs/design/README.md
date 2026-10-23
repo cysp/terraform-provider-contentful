@@ -7,8 +7,9 @@ Contentful's independent API contracts and observations are indexed in
 [Contentful API research](../research/README.md).
 
 Start with the contract for the behavior you are changing. Follow its links to
-implementation and evidence, and preserve its documented lifecycle boundaries
-when simplifying code or tests.
+implementation and evidence to establish which requirements each boundary
+protects. Apply the repository's design guidance when evaluating alternatives,
+and update affected design documentation alongside implementation changes.
 
 ## Design contracts
 
