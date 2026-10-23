@@ -19,6 +19,7 @@ when simplifying code or tests.
 | Entry publication recovery | [Entry publication contract](terraform-value-semantics.md#entry-publication-ownership-and-partial-field-ownership) and [Terraform lifecycle evidence](entry-publication-evidence.md) |
 | Content preview platform representation and requests (`contentful_preview_environment`) | [Configuration and reconciliation](content-preview-environments.md) |
 | Locale management (`contentful_locale`) | [Identity, values, and version handling](locale.md) |
+| Configuration data-source identity, traversal, alias context, or compatibility | [Configuration data sources](configuration-data-sources.md) |
 | CMA test-server behavior or tests that rely on its defaults | [CMA test-server conformance boundaries](cma-test-server-conformance.md) |
 | Practitioner and contributor documentation | [Provider documentation practices](provider-documentation.md) |
 
@@ -45,5 +46,3 @@ external evidence establishes. Mock behavior alone does not establish Contentful
 behavior. The [test-server conformance reference](cma-test-server-conformance.md)
 connects API evidence to fixture behavior and coverage. Deliberate faults belong
 in explicit adversarial cases rather than undocumented default behavior.
-
-[Configuration data sources](configuration-data-sources.md) defines read-only lookup identity, offset traversal, alias context, and compatibility boundaries.

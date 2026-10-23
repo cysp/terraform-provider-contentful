@@ -11,8 +11,9 @@
 - Preserve established Contentful, Terraform, API, protocol, and codebase terminology; do not substitute terminology merely to make naming seem more descriptive. Keep Contentful `sys.version` scoped as `version`; do not invent `currentVersion`. Add a term only when established vocabulary cannot express a concrete need, and confirm non-obvious terminology with the maintainer before introducing it.
 - Prefer the simplest cohesive implementation that preserves required behavior, public contracts, and explicit lifecycle boundaries. Evaluate the affected concern as a whole, and retain complexity only for a concrete current requirement. Treat requested examples as evidence of the desired outcome rather than an exhaustive checklist unless the user explicitly limits the scope. Keep each fact and policy in one authoritative place.
 - Before adding an abstraction, mode flag, shallow wrapper, provider-private marker, provider-private status field, or production seam, identify the concrete current production behavior or lifecycle boundary that requires it. Provider-private markers and status fields require maintainer agreement and must address that behavior or boundary rather than merely simplifying local control flow. Do not add production seams solely for tests.
-- When changing Terraform schemas, planning, validation, request conversion, response projection, or state publication, read and follow [Terraform value semantics](docs/design/terraform-value-semantics.md).
-- When changing HTTP retries, deadlines, or mutation recovery, read and follow the [Contentful HTTP retry policy](docs/design/contentful-http-retry-policy.md).
+- When changing or reviewing Terraform schemas, planning, validation, request conversion, response projection, or state publication, read and follow [Terraform value semantics](docs/design/terraform-value-semantics.md).
+- When changing or reviewing HTTP retries, deadlines, or mutation recovery, read and follow the [Contentful HTTP retry policy](docs/design/contentful-http-retry-policy.md).
+- For resource-specific behavior or CMA test-server behavior and defaults, use the [design documentation map](docs/design/README.md#design-contracts) to find and follow the applicable contract.
 
 ## Evidence and tests
 
@@ -26,7 +27,7 @@
 - When writing or reviewing documentation, read the [documentation practices](docs/design/provider-documentation.md).
 - Keep durable documentation current: record user-visible contracts, invariants, evidence, and limitations; do not retain dated audit inventories, cleanup chronology, or completed plans.
 - Leave unrelated concerns out of each change, preserve unrelated worktree changes, and use a separate worktree and pull request when concurrently pursuing an independent concern; keep history reviewable.
-- After changing a schema or another input to generated code or documentation, run `go generate ./...` and inspect both tracked changes and untracked output.
+- When changing generated code or generated documentation, use [Code generation](DEVELOPMENT.md#code-generation) and, for documentation, [Documentation authoring](DEVELOPMENT.md#documentation-authoring) to locate and edit the authoritative inputs. After changing a schema or another generation input, run `go generate ./...` and inspect both tracked changes and untracked output.
 - Review the final diff against the request and these rules. Report completed work, verification, and any remaining blocker, with relevant evidence.
 
 ## Commit messages
