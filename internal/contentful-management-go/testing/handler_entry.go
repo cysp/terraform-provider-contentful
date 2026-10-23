@@ -35,7 +35,7 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 			continue
 		}
 
-		entries = append(entries, projectEntryResponse(*entry))
+		entries = append(entries, ts.projectEntryResponse(*entry))
 	}
 
 	slices.SortFunc(entries, func(a, b cm.Entry) int {
@@ -67,6 +67,10 @@ func (ts *Handler) CreateEntry(_ context.Context, req *cm.EntryRequest, params c
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
 	}
 
+	if failure := ts.validateEntryLocales(params.SpaceID, params.EnvironmentID, req); failure != nil {
+		return failure, nil
+	}
+
 	entryID := generateResourceID()
 
 	newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, params.XContentfulContentType, entryID, req)
@@ -88,7 +92,7 @@ func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.Get
 		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
 	}
 
-	response := projectEntryResponse(*entry)
+	response := ts.projectEntryResponse(*entry)
 
 	return &response, nil
 }
@@ -111,6 +115,10 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 			), nil
 		}
 
+		if failure := ts.validateEntryLocales(params.SpaceID, params.EnvironmentID, req); failure != nil {
+			return failure, nil
+		}
+
 		newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, contentTypeID, params.EntryID, req)
 		ts.entries.Set(params.SpaceID, params.EnvironmentID, params.EntryID, &newEntry)
 
@@ -123,6 +131,10 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 	version, versionSet := params.XContentfulVersion.Get()
 	if !versionSet || version != entry.Sys.Version {
 		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
+	if failure := ts.validateEntryLocales(params.SpaceID, params.EnvironmentID, req); failure != nil {
+		return failure, nil
 	}
 
 	UpdateEntryFromRequest(entry, req)
@@ -166,6 +178,10 @@ func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams)
 		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
 	}
 
+	if failure := ts.validateEntryRequiredLocales(entry); failure != nil {
+		return failure, nil
+	}
+
 	publishEntry(entry)
 
 	return &cm.EntryStatusCode{
@@ -175,7 +191,7 @@ func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams)
 }
 
 func (ts *Handler) entryMutationResponse(entry cm.Entry) cm.Entry {
-	entry = projectEntryResponse(entry)
+	entry = ts.projectEntryResponse(entry)
 
 	if ts.omitEntryMutationResponseFields {
 		entry.Fields = cm.OptEntryFields{}
