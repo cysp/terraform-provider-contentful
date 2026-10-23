@@ -3,7 +3,6 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { appendFile, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 const versionTag = /^v\d+\.\d+\.\d+$/;
 const workflows = [
@@ -87,7 +86,7 @@ async function approvals(sha) {
 }
 
 function notes(body) {
-  const lines = body.split('\n');
+  const lines = body.replaceAll('\r\n', '\n').split('\n');
   const delimiters = lines.flatMap((line, index) => line.trim() === '---' ? [index] : []);
   assert.ok(delimiters.length >= 2, 'Release PR body must contain the Release Please notes delimiters');
   return lines.slice(delimiters[0] + 1, delimiters.at(-1)).join('\n').trim();
@@ -184,11 +183,19 @@ async function ready(sha, mergedAt, timeout = 0) {
       assert.ok(Array.isArray(sarif.runs) && sarif.runs.length > 0, 'CodeQL returned no SARIF runs');
       for (const run of sarif.runs) {
         for (const result of run.results || []) {
-          const rule = run.tool.driver.rules?.find(item => item.id === result.ruleId);
-          assert.ok(rule, `CodeQL result has no rule: ${result.ruleId}`);
-          const level = result.level || rule.defaultConfiguration?.level;
-          const severity = Number(rule.properties?.['security-severity'] || 0);
-          assert.ok(level !== 'error' && severity < 7, `Blocking CodeQL finding: ${result.ruleId}`);
+          const number = result.properties?.['github/alertNumber'];
+          assert.ok(Number.isSafeInteger(number) && number > 0, `CodeQL result has no alert number: ${result.ruleId}`);
+          const alert = await github(`code-scanning/alerts/${number}`);
+          assert.equal(alert.number, number, 'CodeQL alert identity differs');
+          assert.equal(alert.tool.name, 'CodeQL', 'CodeQL alert tool differs');
+          assert.equal(alert.rule.id, result.ruleId, 'CodeQL alert rule differs');
+          // A maintainer dismissal applies to this finding. A fix on a newer
+          // main commit does not clear its presence in the release's analysis.
+          if (alert.state === 'dismissed') continue;
+          assert.ok(['error', 'warning', 'note'].includes(alert.rule.severity), 'Unknown CodeQL severity');
+          const severity = alert.rule.security_severity_level;
+          assert.ok(severity == null || ['low', 'medium', 'high', 'critical'].includes(severity), 'Unknown CodeQL security severity');
+          assert.ok(alert.rule.severity !== 'error' && !['high', 'critical'].includes(severity), `Blocking CodeQL finding: ${result.ruleId}`);
         }
       }
     });
@@ -241,7 +248,7 @@ async function published(release) {
   await summary(`GitHub release ${release.tag_name} is published and immutable: ${release.html_url}`);
 }
 
-export async function main(command) {
+async function main(command) {
   assert.ok(['prepare', 'verify', 'publish', 'registry'].includes(command), 'Expected prepare, verify, publish, or registry');
   if (command === 'registry') {
     const version = process.env.GITHUB_REF_NAME.slice(1);
@@ -295,9 +302,4 @@ export async function main(command) {
   await verifyAssets(final, source.tag);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main(process.argv[2]).catch(error => {
-    console.error(error.message);
-    process.exitCode = 1;
-  });
-}
+await main(process.argv[2]);

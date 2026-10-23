@@ -5,7 +5,18 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { main } from './release.mjs';
+// Execute the CLI entry point with isolated module instances. No production
+// exports or injectable clients are needed to observe the command's behavior.
+let invocation = 0;
+async function main(command) {
+  const savedArgv = process.argv;
+  process.argv = [process.execPath, new URL('./release.mjs', import.meta.url).pathname, command];
+  try {
+    await import(`./release.mjs?invocation=${++invocation}`);
+  } finally {
+    process.argv = savedArgv;
+  }
+}
 
 const repository = 'cysp/terraform-provider-contentful';
 const tag = 'v0.0.71';
@@ -82,6 +93,7 @@ async function fixture(t) {
       { id: 101, commit_sha: sha, ref: 'refs/heads/main', tool: { name: 'CodeQL' }, category: '/language:go', error: '', created_at: '2026-10-24T00:10:00Z' },
       { id: 102, commit_sha: sha, ref: 'refs/heads/main', tool: { name: 'CodeQL' }, category: '/language:actions', error: '', created_at: '2026-10-24T00:10:00Z' },
     ],
+    alerts: {},
     sarif: { runs: [{ tool: { driver: { rules: [] } }, results: [] }] },
     assets: Object.entries(artifacts).map(([name, bytes], index) => ({ id: index + 1, name, state: 'uploaded', size: bytes.length, digest: `sha256:${hash(bytes)}` })),
     calls: [], override: () => undefined,
@@ -128,6 +140,7 @@ async function fixture(t) {
       assert.equal(url.searchParams.get('ref'), 'refs/heads/main');
       return json(data.analyses.slice((page - 1) * 100, page * 100));
     }
+    if (/^code-scanning\/alerts\/\d+$/.test(path)) return json(data.alerts[path.split('/')[2]]);
     if (/^code-scanning\/analyses\/\d+$/.test(path)) {
       assert.equal(options.headers.Accept, 'application/sarif+json');
       return json(data.sarif);
@@ -174,6 +187,13 @@ test('recovers an existing draft when Release Please outputs were lost, includin
   f.override = call => call.path === 'releases' && reads++ === 0 ? new Response('[]') : undefined;
   await f.prepare();
   assert.ok(reads >= 2);
+  assert.equal(f.mutations().length, 0);
+});
+
+test('approved CRLF PR notes match Release Please normalized release notes', async t => {
+  const f = await fixture(t);
+  f.pulls[901].body = f.pulls[901].body.replaceAll('\n', '\r\n');
+  await f.prepare();
   assert.equal(f.mutations().length, 0);
 });
 
@@ -244,18 +264,45 @@ test('main advancing does not substitute its newer CodeQL analysis', async t => 
   assert.equal(f.mutations().length, 0);
 });
 
-for (const [level, severity, blocked] of [['error', '0', true], ['warning', '8.1', true], ['warning', '6.9', false]]) {
-  test(`CodeQL level ${level}, security severity ${severity}`, async t => {
+// GitHub enriches SARIF with alert numbers. Rule metadata can live in query
+// pack extensions; use the linked alert for thresholds and dismissal state.
+for (const [level, severity, state, blocked] of [
+  ['error', null, 'open', true],
+  ['warning', 'high', 'open', true],
+  ['warning', 'critical', 'dismissed', false],
+  ['warning', 'high', 'fixed', true],
+  ['warning', 'medium', 'open', false],
+]) {
+  test(`CodeQL ${level}/${severity}, ${state}`, async t => {
     const f = await fixture(t);
     f.sarif.runs[0] = {
-      tool: { driver: { rules: [{ id: 'test/finding', defaultConfiguration: { level }, properties: { 'security-severity': severity } }] } },
-      results: [{ ruleId: 'test/finding' }],
+      tool: {
+        driver: { name: 'CodeQL', semanticVersion: '2.25.0' },
+        extensions: [{ name: 'codeql/go-queries', rules: [{ id: 'go/example' }] }],
+      },
+      results: [{ ruleId: 'go/example', properties: { 'github/alertNumber': 21 } }],
     };
+    f.alerts[21] = { number: 21, state, tool: { name: 'CodeQL' }, rule: { id: 'go/example', severity: level, security_severity_level: severity } };
     if (blocked) await assert.rejects(main('prepare'), /Blocking CodeQL/);
     else await f.prepare();
     assert.equal(f.mutations().length, 0);
   });
 }
+
+test('CodeQL findings without GitHub alert identity cannot pass', async t => {
+  const f = await fixture(t);
+  f.sarif.runs[0].results = [{ ruleId: 'go/example' }];
+  await assert.rejects(main('prepare'), /no alert number/);
+  assert.equal(f.mutations().length, 0);
+});
+
+test('CodeQL alert linkage must match the exact-analysis finding', async t => {
+  const f = await fixture(t);
+  f.sarif.runs[0].results = [{ ruleId: 'go/example', properties: { 'github/alertNumber': 21 } }];
+  f.alerts[21] = { number: 21, state: 'dismissed', tool: { name: 'CodeQL' }, rule: { id: 'go/other' } };
+  await assert.rejects(main('prepare'), /rule differs/);
+  assert.equal(f.mutations().length, 0);
+});
 
 for (const [name, change] of [
   ['wrong uploaded digest', f => { f.assets[0].digest = `sha256:${'0'.repeat(64)}`; }],

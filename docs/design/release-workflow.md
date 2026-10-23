@@ -61,11 +61,11 @@ The publisher requires successful `main` push runs at the exact release SHA for
 provider tests (including the live acceptance step), lint, generation,
 vulnerability checks, and release workflow checks. It rejects skipped jobs and
 uses the latest run and current attempt. It also requires Codecov's project
-status and CodeQL analyses for Go and Actions at that SHA. CodeQL SARIF error
-results or security severity of at least 7 block publication. The exact-commit
-analysis check is conservative: findings present in SARIF block even if a
-separate alert was dismissed. Resolve this evidence before releasing rather
-than substituting a newer `main` analysis. Missing/running checks wait for up to
+status and CodeQL analyses for Go and Actions at that SHA. GitHub-enriched SARIF establishes which findings
+belong to the release commit. Their linked alerts supply severity and maintainer
+dismissal state: error-level or high/critical security findings block unless
+dismissed. A finding fixed only on newer `main` still blocks this release.
+Missing/running checks wait for up to
 45 minutes; failed checks stop immediately. Publication rechecks all evidence.
 
 GoReleaser retains the approved notes and uploads only to an existing draft.
