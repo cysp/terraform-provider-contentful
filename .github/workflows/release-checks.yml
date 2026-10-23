@@ -1,22 +1,26 @@
-name: GoReleaser
+name: Release workflow checks
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
-    paths:
-      - ".github/workflows/goreleaser.yml"
-      - ".goreleaser.yml"
-      - ".tool-versions"
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
-  check:
-    name: Check configuration
+  release-checks:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+
+      - run: node --test .github/scripts/release.test.mjs
 
       - uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:

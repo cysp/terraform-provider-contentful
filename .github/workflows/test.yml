@@ -87,7 +87,13 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
 
-      - run: go test -count=1 -timeout=15m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... -run '^TestAcc' ./internal/provider/
+      - name: Require live acceptance credentials on main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: test "$CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE" = true
+
+      # The release gate checks this step's execution, not just the job conclusion.
+      - name: Live acceptance tests
+        run: go test -count=1 -timeout=15m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... -run '^TestAcc' ./internal/provider/
         if: env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE == 'true'
         env:
           TF_ACC: "1"
