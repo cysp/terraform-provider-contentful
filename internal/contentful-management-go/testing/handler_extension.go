@@ -40,6 +40,10 @@ func (ts *Handler) PutExtension(_ context.Context, req *cm.ExtensionData, params
 		}, nil
 	}
 
+	if params.XContentfulVersion != extension.Sys.Version {
+		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+	}
+
 	UpdateExtensionFromFields(extension, *req)
 
 	return &cm.ExtensionStatusCode{

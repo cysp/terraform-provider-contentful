@@ -15,6 +15,8 @@ func NewExtensionFromFields(spaceID, environmentID, extensionID string, fields c
 }
 
 func UpdateExtensionFromFields(extension *cm.Extension, fields cm.ExtensionData) {
+	extension.Sys.Version++
+
 	extensionExtension := cm.ExtensionExtension{
 		Name:       fields.Extension.Name,
 		Src:        fields.Extension.Src,
