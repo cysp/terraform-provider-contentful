@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"bytes"
 	"maps"
 	"net/http"
 	"net/http/httptest"
@@ -71,17 +70,30 @@ func TestContentTypeMetadataTaxonomyResponseUnknownLinkTypeIsRejectedAtHTTPBound
 
 	var replacedUnknownLinkType atomic.Bool
 
+	mutateResponse := contentTypeResponseMutator(t, func(response map[string]any) {
+		metadata := mustContentTypeResponseObject(response["metadata"])
+
+		taxonomy, ok := metadata["taxonomy"].([]any)
+		if !assert.True(t, ok) || !assert.Len(t, taxonomy, 1) {
+			return
+		}
+
+		item := mustContentTypeResponseObject(taxonomy[0])
+
+		sys := mustContentTypeResponseObject(item["sys"])
+		if !assert.Equal(t, "TaxonomyConcept", sys["linkType"]) {
+			return
+		}
+
+		sys["linkType"] = "FutureTaxonomyType"
+
+		replacedUnknownLinkType.Store(true)
+	})
+
 	server := httptest.NewServer(http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
 		recorder := httptest.NewRecorder()
 		contentfulServer.ServeHTTP(recorder, request)
-
-		responseBody := bytes.Replace(
-			recorder.Body.Bytes(),
-			[]byte(`"linkType":"TaxonomyConcept"`),
-			[]byte(`"linkType":"FutureTaxonomyType"`),
-			1,
-		)
-		replacedUnknownLinkType.Store(bytes.Contains(responseBody, []byte(`"linkType":"FutureTaxonomyType"`)))
+		responseBody := []byte(mutateResponse(recorder.Body.String()))
 
 		maps.Copy(responseWriter.Header(), recorder.Header())
 
