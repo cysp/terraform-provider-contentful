@@ -104,9 +104,18 @@ func (t TypedMapType[T]) ApplyTerraform5AttributePathStep(step tftypes.Attribute
 	return t.ElementType(), nil
 }
 
+// WithElementType retains the typed value when the replacement equals the
+// descriptor derived from T. Other replacements use the standard Framework type
+// so their values can preserve the requested descriptor.
+//
 //nolint:ireturn
 func (t TypedMapType[T]) WithElementType(typ attr.Type) attr.TypeWithElementType {
-	return TypedMapType[attr.Value]{elementType: typ}
+	var value T
+	if typ != nil && typ.Equal(value.Type(context.Background())) {
+		return TypedMapType[T]{elementType: typ}
+	}
+
+	return basetypes.MapType{ElemType: typ}
 }
 
 //nolint:ireturn
