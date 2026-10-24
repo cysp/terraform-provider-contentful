@@ -2,7 +2,6 @@ package provider_test
 
 import (
 	"bytes"
-	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -206,7 +205,7 @@ func TestAccAppKeyResourceMockExternalDeletion(t *testing.T) {
 			{
 				Config: resourceConfig,
 				PreConfig: func() {
-					response, err := server.Handler().DeleteAppKey(context.Background(), cm.DeleteAppKeyParams{
+					response, err := server.Handler().DeleteAppKey(t.Context(), cm.DeleteAppKeyParams{
 						OrganizationID:  testAccAppKeyOrganizationID,
 						AppDefinitionID: testAccAppKeyAppDefinitionID,
 						KeyKid:          jwk.kid,

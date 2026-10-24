@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -109,7 +108,7 @@ func TestContentfulRedirectPoliciesForOrdinaryRequests(t *testing.T) {
 	client = newContentfulHTTPClient(base)
 	// Call the provider's transport to observe the inner custom policy without
 	// the outer client's independently existing default behavior.
-	req, err = http.NewRequestWithContext(context.Background(), http.MethodGet, server.URL+"/start", nil)
+	req, err = http.NewRequestWithContext(t.Context(), http.MethodGet, server.URL+"/start", nil)
 	require.NoError(t, err)
 	resp, err = client.Transport.RoundTrip(req)
 	require.NoError(t, err)

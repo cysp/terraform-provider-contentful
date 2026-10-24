@@ -17,9 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func deleteTaxonomyConceptRemote(server *cmt.Server, organizationID, conceptID string) error {
-	ctx := context.Background()
-
+func deleteTaxonomyConceptRemote(ctx context.Context, server *cmt.Server, organizationID, conceptID string) error {
 	response, err := server.Handler().GetTaxonomyConcept(ctx, cm.GetTaxonomyConceptParams{
 		OrganizationID: organizationID, TaxonomyConceptID: conceptID,
 	})
@@ -46,9 +44,7 @@ func deleteTaxonomyConceptRemote(server *cmt.Server, organizationID, conceptID s
 	return nil
 }
 
-func deleteTaxonomyConceptSchemeRemote(server *cmt.Server, organizationID, schemeID string) error {
-	ctx := context.Background()
-
+func deleteTaxonomyConceptSchemeRemote(ctx context.Context, server *cmt.Server, organizationID, schemeID string) error {
 	response, err := server.Handler().GetTaxonomyConceptScheme(ctx, cm.GetTaxonomyConceptSchemeParams{
 		OrganizationID: organizationID, TaxonomyConceptSchemeID: schemeID,
 	})
@@ -586,13 +582,13 @@ func removePreferredLabelLocale(body []byte, locale string) []byte {
 func deleteTaxonomyConceptOutOfBand(t *testing.T, server *cmt.Server, organizationID, conceptID string) {
 	t.Helper()
 
-	err := deleteTaxonomyConceptRemote(server, organizationID, conceptID)
+	err := deleteTaxonomyConceptRemote(t.Context(), server, organizationID, conceptID)
 	require.NoError(t, err)
 }
 
 func deleteTaxonomyConceptSchemeOutOfBand(t *testing.T, server *cmt.Server, organizationID, schemeID string) {
 	t.Helper()
 
-	err := deleteTaxonomyConceptSchemeRemote(server, organizationID, schemeID)
+	err := deleteTaxonomyConceptSchemeRemote(t.Context(), server, organizationID, schemeID)
 	require.NoError(t, err)
 }

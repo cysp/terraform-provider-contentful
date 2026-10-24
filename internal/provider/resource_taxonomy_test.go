@@ -519,16 +519,16 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 		path          string
 		initialConfig string
 		changedConfig string
-		seed          func(*cmt.Server) error
-		attach        func(*cmt.Server) error
-		delete        func(*cmt.Server) error
+		seed          func(context.Context, *cmt.Server) error
+		attach        func(context.Context, *cmt.Server) error
+		delete        func(context.Context, *cmt.Server) error
 		refreshed     []statecheck.StateCheck
 		checks        []statecheck.StateCheck
 	}{
 		"concept": {
 			path: "/taxonomy/concepts/furniture", initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"),
-			seed: func(server *cmt.Server) error {
-				response, err := server.Handler().PutTaxonomyConcept(context.Background(), &cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Remote"}}, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "remote"})
+			seed: func(ctx context.Context, server *cmt.Server) error {
+				response, err := server.Handler().PutTaxonomyConcept(ctx, &cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Remote"}}, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "remote"})
 				if err != nil {
 					return fmt.Errorf("create remote taxonomy concept: %w", err)
 				}
@@ -539,8 +539,8 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 
 				return nil
 			},
-			attach: attachRemoteConceptToConcept, delete: func(server *cmt.Server) error {
-				return deleteTaxonomyConceptRemote(server, "organization-id", "remote")
+			attach: attachRemoteConceptToConcept, delete: func(ctx context.Context, server *cmt.Server) error {
+				return deleteTaxonomyConceptRemote(ctx, server, "organization-id", "remote")
 			},
 			refreshed: []statecheck.StateCheck{statecheck.ExpectKnownValue("contentful_taxonomy_concept.test", tfjsonpath.New("broader_concept_ids"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("remote")}))},
 			checks: []statecheck.StateCheck{
@@ -551,8 +551,8 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 		},
 		"scheme": {
 			path: "/taxonomy/concept-schemes/products", initialConfig: taxonomyConceptSchemeOmittedCollectionsConfig("Products"), changedConfig: taxonomyConceptSchemeOmittedCollectionsConfig("Home products"),
-			seed: func(server *cmt.Server) error {
-				response, err := server.Handler().PutTaxonomyConcept(context.Background(), &cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Remote"}}, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "remote"})
+			seed: func(ctx context.Context, server *cmt.Server) error {
+				response, err := server.Handler().PutTaxonomyConcept(ctx, &cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Remote"}}, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "remote"})
 				if err != nil {
 					return fmt.Errorf("create remote taxonomy concept: %w", err)
 				}
@@ -563,8 +563,8 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 
 				return nil
 			},
-			attach: attachRemoteConceptToScheme, delete: func(server *cmt.Server) error {
-				return deleteTaxonomyConceptRemote(server, "organization-id", "remote")
+			attach: attachRemoteConceptToScheme, delete: func(ctx context.Context, server *cmt.Server) error {
+				return deleteTaxonomyConceptRemote(ctx, server, "organization-id", "remote")
 			},
 			refreshed: []statecheck.StateCheck{statecheck.ExpectKnownValue("contentful_taxonomy_concept_scheme.test", tfjsonpath.New("concept_ids"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("remote")})), statecheck.ExpectKnownValue("contentful_taxonomy_concept_scheme.test", tfjsonpath.New("top_concept_ids"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("remote")}))},
 			checks: []statecheck.StateCheck{
@@ -585,10 +585,13 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 			recorder := &taxonomyRequestBodyRecorder{next: hook}
 			testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.initialConfig},
-				{PreConfig: func() { require.NoError(t, test.seed(server)); require.NoError(t, test.attach(server)) }, Config: test.initialConfig, ConfigStateChecks: test.refreshed},
+				{PreConfig: func() {
+					require.NoError(t, test.seed(t.Context(), server))
+					require.NoError(t, test.attach(t.Context(), server))
+				}, Config: test.initialConfig, ConfigStateChecks: test.refreshed},
 				{PreConfig: func() {
 					recorder.reset()
-					hook.runOnce(http.MethodPatch, test.path, func() error { return test.delete(server) })
+					hook.runOnce(http.MethodPatch, test.path, func() error { return test.delete(t.Context(), server) })
 				}, Config: test.changedConfig, ConfigStateChecks: test.checks},
 			}})
 			require.True(t, hook.wasCalled())
@@ -839,7 +842,7 @@ func TestAccTaxonomyResourcesSurfaceVersionConflicts(t *testing.T) {
 		method        string
 		path          string
 		expectedError string
-		bumpVersion   func(*cmt.Server) error
+		bumpVersion   func(context.Context, *cmt.Server) error
 	}{
 		"concept update": {
 			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"),
@@ -875,7 +878,7 @@ func TestAccTaxonomyResourcesSurfaceVersionConflicts(t *testing.T) {
 				{Config: test.initialConfig},
 				{
 					PreConfig: func() {
-						hook.runOnce(test.method, test.path, func() error { return test.bumpVersion(server) })
+						hook.runOnce(test.method, test.path, func() error { return test.bumpVersion(t.Context(), server) })
 					},
 					Config: test.changedConfig, ExpectError: regexp.MustCompile(test.expectedError),
 				},
@@ -903,16 +906,16 @@ func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.
 		initialConfig    string
 		mismatchedConfig string
 		recoveredConfig  string
-		prepareRemote    func(*cmt.Server) error
-		mutateRemote     func(*cmt.Server) error
+		prepareRemote    func(context.Context, *cmt.Server) error
+		mutateRemote     func(context.Context, *cmt.Server) error
 	}{
 		"concept owned label map": {
 			path:             "/taxonomy/concepts/furniture",
 			initialConfig:    taxonomyConceptRecoveryLabelMapsConfig("Furniture", "Furniture"),
 			mismatchedConfig: taxonomyConceptRecoveryLabelMapsConfig("Home furniture", "Furniture"),
 			recoveredConfig:  taxonomyConceptRecoveredLabelMapConfig("Final furniture"),
-			mutateRemote: func(server *cmt.Server) error {
-				return mutateTaxonomyConceptAltLabels(server, "en-US", []string{"Remote furniture"})
+			mutateRemote: func(ctx context.Context, server *cmt.Server) error {
+				return mutateTaxonomyConceptAltLabels(ctx, server, "en-US", []string{"Remote furniture"})
 			},
 		},
 		"scheme owned concepts": {
@@ -920,10 +923,10 @@ func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.
 			initialConfig:    taxonomyConceptSchemeConfig("Products"),
 			mismatchedConfig: taxonomyConceptSchemeConfig("Home products"),
 			recoveredConfig:  taxonomyConceptSchemeRecoveredConceptsConfig("Final products"),
-			prepareRemote: func(server *cmt.Server) error {
+			prepareRemote: func(ctx context.Context, server *cmt.Server) error {
 				request := cm.TaxonomyConceptRequest{PrefLabel: cm.LocalizedString{"en-US": "Furniture"}}
 
-				_, err := server.Handler().PutTaxonomyConcept(context.Background(), &request, cm.PutTaxonomyConceptParams{
+				_, err := server.Handler().PutTaxonomyConcept(ctx, &request, cm.PutTaxonomyConceptParams{
 					OrganizationID: "organization-id", TaxonomyConceptID: "furniture",
 				})
 				if err != nil {
@@ -932,8 +935,8 @@ func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.
 
 				return nil
 			},
-			mutateRemote: func(server *cmt.Server) error {
-				response, err := server.Handler().GetTaxonomyConceptScheme(context.Background(), cm.GetTaxonomyConceptSchemeParams{
+			mutateRemote: func(ctx context.Context, server *cmt.Server) error {
+				response, err := server.Handler().GetTaxonomyConceptScheme(ctx, cm.GetTaxonomyConceptSchemeParams{
 					OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products",
 				})
 				if err != nil {
@@ -960,7 +963,7 @@ func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.
 			require.NoError(t, err)
 
 			if test.prepareRemote != nil {
-				require.NoError(t, test.prepareRemote(server))
+				require.NoError(t, test.prepareRemote(t.Context(), server))
 			}
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
@@ -971,7 +974,7 @@ func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.
 					{Config: test.initialConfig},
 					{
 						PreConfig: func() {
-							require.NoError(t, test.mutateRemote(server))
+							require.NoError(t, test.mutateRemote(t.Context(), server))
 						},
 						Config:      test.mismatchedConfig,
 						ExpectError: regexp.MustCompile("Unexpected Contentful taxonomy"),
@@ -1001,18 +1004,18 @@ func TestAccTaxonomyResourcesAllowConcurrentDeletion(t *testing.T) {
 	tests := map[string]struct {
 		initialConfig string
 		path          string
-		deleteRemote  func(*cmt.Server) error
+		deleteRemote  func(context.Context, *cmt.Server) error
 	}{
 		"concept": {
 			initialConfig: taxonomyConceptConfig("Furniture"), path: "/taxonomy/concepts/furniture",
-			deleteRemote: func(server *cmt.Server) error {
-				return deleteTaxonomyConceptRemote(server, "organization-id", "furniture")
+			deleteRemote: func(ctx context.Context, server *cmt.Server) error {
+				return deleteTaxonomyConceptRemote(ctx, server, "organization-id", "furniture")
 			},
 		},
 		"scheme": {
 			initialConfig: taxonomyConceptSchemeConfig("Products"), path: "/taxonomy/concept-schemes/products",
-			deleteRemote: func(server *cmt.Server) error {
-				return deleteTaxonomyConceptSchemeRemote(server, "organization-id", "products")
+			deleteRemote: func(ctx context.Context, server *cmt.Server) error {
+				return deleteTaxonomyConceptSchemeRemote(ctx, server, "organization-id", "products")
 			},
 		},
 	}
@@ -1029,7 +1032,7 @@ func TestAccTaxonomyResourcesAllowConcurrentDeletion(t *testing.T) {
 				{Config: test.initialConfig},
 				{
 					PreConfig: func() {
-						hook.runOnce(http.MethodDelete, test.path, func() error { return test.deleteRemote(server) })
+						hook.runOnce(http.MethodDelete, test.path, func() error { return test.deleteRemote(t.Context(), server) })
 					},
 					Config: "# intentionally empty\n",
 				},
@@ -1146,7 +1149,7 @@ func TestAccTaxonomyTaintedReplacementFetchesMissingDeleteVersion(t *testing.T) 
 		resourceName string
 		config       string
 		path         string
-		bumpVersion  func(*cmt.Server) error
+		bumpVersion  func(context.Context, *cmt.Server) error
 	}{
 		"concept": {
 			resourceName: "contentful_taxonomy_concept.test", config: taxonomyConceptConfig("Furniture"),
@@ -1171,7 +1174,7 @@ func TestAccTaxonomyTaintedReplacementFetchesMissingDeleteVersion(t *testing.T) 
 				Steps: []resource.TestStep{
 					{Config: test.config},
 					{
-						PreConfig: func() { require.NoError(t, test.bumpVersion(server)) },
+						PreConfig: func() { require.NoError(t, test.bumpVersion(t.Context(), server)) },
 						Config:    test.config, Taint: []string{test.resourceName},
 					},
 				},
@@ -1199,7 +1202,7 @@ func TestAccTaxonomyTaintedReplacementPreservesDeleteVersionLock(t *testing.T) {
 		resourceName string
 		config       string
 		path         string
-		bumpVersion  func(*cmt.Server) error
+		bumpVersion  func(context.Context, *cmt.Server) error
 	}{
 		"concept": {
 			resourceName: "contentful_taxonomy_concept.test", config: taxonomyConceptConfig("Furniture"),
@@ -1226,8 +1229,8 @@ func TestAccTaxonomyTaintedReplacementPreservesDeleteVersionLock(t *testing.T) {
 					{Config: test.config},
 					{
 						PreConfig: func() {
-							require.NoError(t, test.bumpVersion(server))
-							hook.runOnce(http.MethodDelete, test.path, func() error { return test.bumpVersion(server) })
+							require.NoError(t, test.bumpVersion(t.Context(), server))
+							hook.runOnce(http.MethodDelete, test.path, func() error { return test.bumpVersion(t.Context(), server) })
 						},
 						Config: test.config, Taint: []string{test.resourceName},
 						ExpectError: regexp.MustCompile(`version precondition was not\s+satisfied`),
@@ -1261,18 +1264,18 @@ func TestAccTaxonomyTaintedReplacementHandlesMissingResource(t *testing.T) {
 		resourceName string
 		config       string
 		path         string
-		deleteRemote func(*cmt.Server) error
+		deleteRemote func(context.Context, *cmt.Server) error
 	}{
 		"concept": {
 			resourceName: "contentful_taxonomy_concept.test", config: taxonomyConceptConfig("Furniture"), path: "/taxonomy/concepts/furniture",
-			deleteRemote: func(server *cmt.Server) error {
-				return deleteTaxonomyConceptRemote(server, "organization-id", "furniture")
+			deleteRemote: func(ctx context.Context, server *cmt.Server) error {
+				return deleteTaxonomyConceptRemote(ctx, server, "organization-id", "furniture")
 			},
 		},
 		"scheme": {
 			resourceName: "contentful_taxonomy_concept_scheme.test", config: taxonomyConceptSchemeConfig("Products"), path: "/taxonomy/concept-schemes/products",
-			deleteRemote: func(server *cmt.Server) error {
-				return deleteTaxonomyConceptSchemeRemote(server, "organization-id", "products")
+			deleteRemote: func(ctx context.Context, server *cmt.Server) error {
+				return deleteTaxonomyConceptSchemeRemote(ctx, server, "organization-id", "products")
 			},
 		},
 	}
@@ -1290,7 +1293,7 @@ func TestAccTaxonomyTaintedReplacementHandlesMissingResource(t *testing.T) {
 				Steps: []resource.TestStep{
 					{Config: test.config},
 					{
-						PreConfig: func() { require.NoError(t, test.deleteRemote(server)) },
+						PreConfig: func() { require.NoError(t, test.deleteRemote(t.Context(), server)) },
 						Config:    test.config, Taint: []string{test.resourceName},
 					},
 				},
@@ -1581,8 +1584,8 @@ resource "contentful_taxonomy_concept_scheme" "test" {
 `, label)
 }
 
-func attachRemoteConceptToConcept(server *cmt.Server) error {
-	response, err := server.Handler().GetTaxonomyConcept(context.Background(), cm.GetTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture"})
+func attachRemoteConceptToConcept(ctx context.Context, server *cmt.Server) error {
+	response, err := server.Handler().GetTaxonomyConcept(ctx, cm.GetTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture"})
 	if err != nil {
 		return fmt.Errorf("get taxonomy concept: %w", err)
 	}
@@ -1594,7 +1597,7 @@ func attachRemoteConceptToConcept(server *cmt.Server) error {
 
 	patch := cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/broader", Value: jx.Raw(testJSON([]any{map[string]any{"sys": map[string]any{"id": "remote", "linkType": "TaxonomyConcept", "type": "Link"}}}))}}
 
-	_, err = server.Handler().PatchTaxonomyConcept(context.Background(), patch, cm.PatchTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture", XContentfulVersion: concept.Sys.Version})
+	_, err = server.Handler().PatchTaxonomyConcept(ctx, patch, cm.PatchTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture", XContentfulVersion: concept.Sys.Version})
 	if err != nil {
 		return fmt.Errorf("patch taxonomy concept: %w", err)
 	}
@@ -1602,8 +1605,8 @@ func attachRemoteConceptToConcept(server *cmt.Server) error {
 	return nil
 }
 
-func attachRemoteConceptToScheme(server *cmt.Server) error {
-	response, err := server.Handler().GetTaxonomyConceptScheme(context.Background(), cm.GetTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products"})
+func attachRemoteConceptToScheme(ctx context.Context, server *cmt.Server) error {
+	response, err := server.Handler().GetTaxonomyConceptScheme(ctx, cm.GetTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products"})
 	if err != nil {
 		return fmt.Errorf("get taxonomy concept scheme: %w", err)
 	}
@@ -1615,7 +1618,7 @@ func attachRemoteConceptToScheme(server *cmt.Server) error {
 
 	patch := cm.TaxonomyPatch{{Op: cm.TaxonomyPatchItemOpAdd, Path: "/concepts", Value: jx.Raw(testJSON([]any{map[string]any{"sys": map[string]any{"id": "remote", "linkType": "TaxonomyConcept", "type": "Link"}}}))}, {Op: cm.TaxonomyPatchItemOpAdd, Path: "/topConcepts", Value: jx.Raw(testJSON([]any{map[string]any{"sys": map[string]any{"id": "remote", "linkType": "TaxonomyConcept", "type": "Link"}}}))}}
 
-	_, err = server.Handler().PatchTaxonomyConceptScheme(context.Background(), patch, cm.PatchTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products", XContentfulVersion: scheme.Sys.Version})
+	_, err = server.Handler().PatchTaxonomyConceptScheme(ctx, patch, cm.PatchTaxonomyConceptSchemeParams{OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products", XContentfulVersion: scheme.Sys.Version})
 	if err != nil {
 		return fmt.Errorf("patch taxonomy concept scheme: %w", err)
 	}
@@ -1623,9 +1626,7 @@ func attachRemoteConceptToScheme(server *cmt.Server) error {
 	return nil
 }
 
-func bumpTaxonomyConceptVersion(server *cmt.Server) error {
-	ctx := context.Background()
-
+func bumpTaxonomyConceptVersion(ctx context.Context, server *cmt.Server) error {
 	response, err := server.Handler().GetTaxonomyConcept(ctx, cm.GetTaxonomyConceptParams{
 		OrganizationID: "organization-id", TaxonomyConceptID: "furniture",
 	})
@@ -1652,8 +1653,8 @@ func bumpTaxonomyConceptVersion(server *cmt.Server) error {
 	return nil
 }
 
-func mutateTaxonomyConceptAltLabels(server *cmt.Server, locale string, labels []string) error {
-	response, err := server.Handler().GetTaxonomyConcept(context.Background(), cm.GetTaxonomyConceptParams{
+func mutateTaxonomyConceptAltLabels(ctx context.Context, server *cmt.Server, locale string, labels []string) error {
+	response, err := server.Handler().GetTaxonomyConcept(ctx, cm.GetTaxonomyConceptParams{
 		OrganizationID: "organization-id", TaxonomyConceptID: "furniture",
 	})
 	if err != nil {
@@ -1670,9 +1671,7 @@ func mutateTaxonomyConceptAltLabels(server *cmt.Server, locale string, labels []
 	return nil
 }
 
-func bumpTaxonomyConceptSchemeVersion(server *cmt.Server) error {
-	ctx := context.Background()
-
+func bumpTaxonomyConceptSchemeVersion(ctx context.Context, server *cmt.Server) error {
 	response, err := server.Handler().GetTaxonomyConceptScheme(ctx, cm.GetTaxonomyConceptSchemeParams{
 		OrganizationID: "organization-id", TaxonomyConceptSchemeID: "products",
 	})
@@ -1705,7 +1704,7 @@ func bumpTaxonomyConceptSchemeVersion(server *cmt.Server) error {
 func injectTaxonomyConceptLabelLocaleIntoStoredResponse(t *testing.T, server *cmt.Server, organizationID, conceptID, locale, altLabel, hiddenLabel string) {
 	t.Helper()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	response, err := server.Handler().GetTaxonomyConcept(ctx, cm.GetTaxonomyConceptParams{
 		OrganizationID: organizationID, TaxonomyConceptID: conceptID,
