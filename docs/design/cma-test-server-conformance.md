@@ -52,6 +52,27 @@ cover the modeled transitions; provider [lifecycle](../../internal/provider/reso
 and [recovery](../../internal/provider/resource_locale_recovery_test.go) tests
 exercise Terraform integration.
 
+### UI Extensions
+
+**Evidence:** The [Extension endpoint reference](https://www.contentful.com/developers/docs/references/content-management-api/ui-extensions/create-or-update-an-extension/)
+requires the last version for updates. The [CMA version-locking contract](https://www.contentful.com/developers/docs/references/content-management-api/overview/#updating-and-version-locking)
+requires rejecting writes after an intervening version change.
+
+**Default fake behavior:** Creation starts at version 1. Existing extensions
+require the exact stored version before PUT changes any fields. Accepted PUTs
+advance the version; rejected writes retain both fields and version.
+
+**Provider boundary:** Version 1 initialization follows the published response
+example. Advancing by one per accepted PUT and using HTTP 409 `VersionMismatch`
+are fixture conventions consistent with other versioned endpoints, not separate
+live Extension observations. Identical-payload update behavior is unverified.
+The generated server still requires a version header on Create; the provider
+sends zero. This does not model the documented optional Create header.
+
+**Coverage:** Raw HTTP tests cover changed-payload updates, stale/zero/future
+version rejection, and stored-state preservation. Mocked Extension lifecycle
+tests exercise the provider against that precondition boundary.
+
 ### Space Enablements
 
 **Evidence:** The [CMA

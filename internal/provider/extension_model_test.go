@@ -105,6 +105,8 @@ func FuzzExtensionModelRoundTrip(f *testing.F) {
 		}
 
 		output := cmt.NewExtensionFromFields(input.Sys.Space.Sys.ID, input.Sys.Environment.Sys.ID, input.Sys.ID, extensionFields)
+		// Version belongs to resource private state, not the configuration model.
+		output.Sys.Version = input.Sys.Version
 
 		assert.Equal(t, input, output, "Extension should be equal after roundtrip conversion")
 	})
