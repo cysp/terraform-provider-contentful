@@ -31,7 +31,7 @@
 - Keep durable documentation current: record user-visible contracts, invariants, evidence, and limitations; do not retain dated audit inventories, cleanup chronology, or completed plans.
 - Leave unrelated concerns out of each change, preserve unrelated worktree changes, and use a separate worktree and pull request when concurrently pursuing an independent concern; keep history reviewable.
 - When changing generated code or generated documentation, use [Code generation](DEVELOPMENT.md#code-generation) and, for documentation, [Documentation authoring](DEVELOPMENT.md#documentation-authoring) to locate and edit the authoritative inputs. After changing a schema or another generation input, run `go generate ./...` and inspect both tracked changes and untracked output.
-- Review the final diff against the request and these rules. Report completed work, verification, and any remaining blocker, with relevant evidence.
+- Review the final diff against the request and these rules. Account for each material requested outcome with supporting evidence or a specific limitation. For requested design improvements, explain the concrete benefit achieved or why retaining the existing design better meets the requirements.
 
 ## Commit messages
 
