@@ -206,7 +206,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 
 	defer cancel()
 
-	draft, draftDiagnostics := r.createContentTypeWithID(ctx, config, plan, request)
+	draft, draftDiagnostics := r.createContentTypeWithID(ctx, plan, request)
 	resp.Diagnostics.Append(draftDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
@@ -229,7 +229,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	activated, failure, activationDiagnostics := r.activateContentType(
-		ctx, config, plan, draft.version,
+		ctx, plan, draft.version,
 	)
 	resp.Diagnostics.Append(activationDiagnostics...)
 	resp.Diagnostics.Append(applyPendingLifecycleAuthorityOutcome(
@@ -427,7 +427,7 @@ func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	if !draftMutationRequired {
-		r.recoverContentTypeActivation(ctx, config, plan, pendingVersion, state.PublishedVersion, resp)
+		r.recoverContentTypeActivation(ctx, plan, pendingVersion, state.PublishedVersion, resp)
 
 		return
 	}
@@ -522,7 +522,6 @@ func (r *contentTypeResource) Delete(ctx context.Context, req resource.DeleteReq
 
 func (r *contentTypeResource) recoverContentTypeActivation(
 	ctx context.Context,
-	config ContentTypeModel,
 	plan ContentTypeModel,
 	pendingVersion int,
 	publishedVersion types.Int64,
@@ -538,7 +537,7 @@ func (r *contentTypeResource) recoverContentTypeActivation(
 	defer cancel()
 
 	activated, failure, activationDiagnostics := r.activateContentType(
-		ctx, config, plan, pendingVersion,
+		ctx, plan, pendingVersion,
 	)
 	r.applyContentTypeActivationTransition(ctx, publishedVersion, activated, failure, activationDiagnostics, resp)
 }
@@ -566,7 +565,7 @@ func (r *contentTypeResource) updateAndActivateContentType(
 
 	defer cancel()
 
-	draft, draftDiagnostics, versionMismatch := r.updateContentType(ctx, config, plan, updateContentTypeRequest, version)
+	draft, draftDiagnostics, versionMismatch := r.updateContentType(ctx, plan, updateContentTypeRequest, version)
 	resp.Diagnostics.Append(draftDiagnostics...)
 
 	if versionMismatch {
@@ -591,7 +590,7 @@ func (r *contentTypeResource) updateAndActivateContentType(
 	}
 
 	activated, failure, activationDiagnostics := r.activateContentType(
-		ctx, config, plan, draft.version,
+		ctx, plan, draft.version,
 	)
 	r.applyContentTypeActivationTransition(ctx, draft.state.PublishedVersion, activated, failure, activationDiagnostics, resp)
 }
@@ -636,7 +635,6 @@ func (r *contentTypeResource) applyContentTypeActivationTransition(
 
 func (r *contentTypeResource) createContentTypeWithID(
 	ctx context.Context,
-	config ContentTypeModel,
 	appliedPlan ContentTypeModel,
 	request cm.ContentTypeRequestData,
 ) (contentTypeMutationResult, diag.Diagnostics) {
@@ -658,7 +656,7 @@ func (r *contentTypeResource) createContentTypeWithID(
 	})
 
 	if response, ok := response.(*cm.ContentTypeStatusCode); ok {
-		return projectContentTypeDraftMutationResponse(ctx, config, appliedPlan, response.Response)
+		return projectContentTypeDraftMutationResponse(ctx, appliedPlan, response.Response)
 	}
 
 	var diagnostics diag.Diagnostics
@@ -669,7 +667,6 @@ func (r *contentTypeResource) createContentTypeWithID(
 
 func (r *contentTypeResource) updateContentType(
 	ctx context.Context,
-	config ContentTypeModel,
 	appliedPlan ContentTypeModel,
 	request cm.ContentTypeRequestData,
 	version int,
@@ -693,7 +690,7 @@ func (r *contentTypeResource) updateContentType(
 	})
 
 	if response, ok := response.(*cm.ContentTypeStatusCode); ok {
-		result, diagnostics := projectContentTypeDraftMutationResponse(ctx, config, appliedPlan, response.Response)
+		result, diagnostics := projectContentTypeDraftMutationResponse(ctx, appliedPlan, response.Response)
 
 		return result, diagnostics, false
 	}
@@ -706,11 +703,10 @@ func (r *contentTypeResource) updateContentType(
 
 func projectContentTypeDraftMutationResponse(
 	ctx context.Context,
-	config ContentTypeModel,
 	appliedPlan ContentTypeModel,
 	response cm.ContentType,
 ) (contentTypeMutationResult, diag.Diagnostics) {
-	mutationState, diagnostics, consistencyDiags := ProjectContentTypeMutationResponse(ctx, response, config, appliedPlan)
+	mutationState, diagnostics, consistencyDiags := ProjectContentTypeMutationResponse(ctx, response, appliedPlan)
 	consistencyDiags.Append(validateContentTypeDraftResponse(response)...)
 
 	return contentTypeMutationResult{
@@ -738,7 +734,6 @@ func validateContentTypeDraftResponse(response cm.ContentType) diag.Diagnostics 
 
 func (r *contentTypeResource) activateContentType(
 	ctx context.Context,
-	config ContentTypeModel,
 	appliedPlan ContentTypeModel,
 	expectedVersion int,
 ) (contentTypeMutationResult, *pendingLifecycleFailure, diag.Diagnostics) {
@@ -786,7 +781,7 @@ func (r *contentTypeResource) activateContentType(
 		}, diagnostics
 	}
 
-	mutationState, mutationStateDiagnostics, consistencyDiags := ProjectContentTypeMutationResponse(ctx, responseContentType.Response, config, appliedPlan)
+	mutationState, mutationStateDiagnostics, consistencyDiags := ProjectContentTypeMutationResponse(ctx, responseContentType.Response, appliedPlan)
 	diagnostics.Append(mutationStateDiagnostics...)
 
 	activationDiags := validateContentTypeActivationResponse(expectedVersion, responseContentType.Response)
