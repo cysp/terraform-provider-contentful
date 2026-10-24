@@ -354,6 +354,10 @@ and field equality never create that authority.
 
 A modeled Update uses the exact current Contentful version and the effective
 Terraform plan. This includes refreshed values protected by `ignore_changes`.
+When planning preserves omitted metadata taxonomy from prior state, that known
+planned taxonomy also constrains both the draft and activation responses. A
+contradictory draft response is checkpointed as recovery state and cannot grant
+activation authority. Unknown planned taxonomy remains response-owned.
 After Contentful accepts the draft, the provider checkpoints its returned state
 and version before recording the pending marker and activating that exact
 version. Confirmed activation checkpoints the returned state/version and clears

@@ -32,7 +32,7 @@ func TestContentTypeMutationStateRetainsCompleteResponseOnAnyOwnedMismatch(t *te
 		Fields:           plannedFields,
 		Metadata:         NewTypedObjectNull[ContentTypeMetadataValue](),
 	}
-	mutationState, mutationStateDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), mutationResponse, plan, plan)
+	mutationState, mutationStateDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), mutationResponse, plan)
 	require.False(t, mutationStateDiags.HasError())
 	assert.True(t, consistencyDiags.HasError())
 
@@ -74,7 +74,7 @@ func TestContentTypeMutationStateRejectsUnknownOwnedFieldsWithoutPublishingUnkno
 				Fields:       plannedFields,
 				Metadata:     NewTypedObjectUnknown[ContentTypeMetadataValue](),
 			}
-			mutationState, mutationStateDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), contentTypeMutationStateTestResponse(), plan, plan)
+			mutationState, mutationStateDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), contentTypeMutationStateTestResponse(), plan)
 			require.False(t, mutationStateDiags.HasError())
 			assert.True(t, consistencyDiags.HasError())
 			assert.False(t, mutationState.Fields.IsUnknown())
@@ -92,8 +92,6 @@ func TestContentTypeMutationStateRejectsContradictoryOwnedResponseValues(t *test
 	base := contentTypeMutationStateTestResponse()
 	plan, planDiags := NewContentTypeResourceModelFromResponse(t.Context(), base)
 	require.False(t, planDiags.HasError())
-	// This represents configured ownership for both metadata children.
-	config := plan
 
 	cases := map[string]struct {
 		mutation  func(*cm.ContentType)
@@ -122,7 +120,7 @@ func TestContentTypeMutationStateRejectsContradictoryOwnedResponseValues(t *test
 			response := base
 			response.Fields = append([]cm.ContentTypeFieldsItem(nil), base.Fields...)
 			mutate.mutation(&response)
-			state, responseDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, config, plan)
+			state, responseDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan)
 			require.False(t, responseDiags.HasError())
 			require.True(t, consistencyDiags.HasError())
 			diagnostic, ok := consistencyDiags.Errors()[0].(diag.DiagnosticWithPath)
@@ -153,7 +151,7 @@ func TestContentTypeMutationStateRejectsContradictoryOwnedResponseValues(t *test
 	}
 }
 
-func TestContentTypeMutationStateTreatsResolvedUnknownConfiguredTaxonomyAsOwned(t *testing.T) {
+func TestContentTypeMutationStateRejectsMissingKnownTaxonomy(t *testing.T) {
 	t.Parallel()
 
 	response := contentTypeMutationStateTestResponse()
@@ -163,9 +161,27 @@ func TestContentTypeMutationStateTreatsResolvedUnknownConfiguredTaxonomyAsOwned(
 	metadata := response.Metadata.Or(cm.ContentTypeMetadata{})
 	metadata.Taxonomy = nil
 	response.Metadata = cm.NewOptContentTypeMetadata(metadata)
-	_, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, ContentTypeModel{Metadata: NewTypedObjectUnknown[ContentTypeMetadataValue]()}, plan)
+	_, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan)
 	require.False(t, mutationDiags.HasError())
 	assert.True(t, consistencyDiags.HasError())
+}
+
+func TestContentTypeMutationStateLeavesUnknownTaxonomyResponseOwned(t *testing.T) {
+	t.Parallel()
+
+	response := contentTypeMutationStateTestResponse()
+	plan, responseDiags := NewContentTypeResourceModelFromResponse(t.Context(), response)
+	require.False(t, responseDiags.HasError())
+
+	metadata := plan.Metadata.Value()
+	metadata.Taxonomy = NewTypedListUnknown[TypedObject[ContentTypeMetadataTaxonomyItemValue]]()
+	plan.Metadata = NewTypedObject(metadata)
+
+	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan)
+	require.False(t, mutationDiags.HasError())
+	require.False(t, consistencyDiags.HasError())
+	require.Len(t, state.Metadata.Value().Taxonomy.Elements(), 1)
+	assert.Equal(t, "taxonomy-concept", state.Metadata.Value().Taxonomy.Elements()[0].Value().TaxonomyConcept.Value().ID.ValueString())
 }
 
 func TestContentTypeMutationStateAcceptsNormalizedJSONEquivalence(t *testing.T) {
@@ -197,7 +213,7 @@ func TestContentTypeMutationStateAcceptsNormalizedJSONEquivalence(t *testing.T) 
 	})
 	planField.Items = NewTypedObject(planItems)
 	plan.Fields = NewTypedList([]TypedObject[ContentTypeFieldValue]{NewTypedObject(planField)})
-	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan, plan)
+	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan)
 	require.False(t, mutationDiags.HasError())
 	assert.False(t, consistencyDiags.HasError())
 	assert.Equal(t, plan.Metadata.Value().Annotations.ValueString(), state.Metadata.Value().Annotations.ValueString())
@@ -219,7 +235,7 @@ func TestContentTypeMutationStateMissingMetadataUsesNullChildSemantics(t *testin
 		Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 	})
 
-	_, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan, plan)
+	_, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan)
 	require.False(t, mutationDiags.HasError())
 	assert.False(t, consistencyDiags.HasError())
 
@@ -228,7 +244,7 @@ func TestContentTypeMutationStateMissingMetadataUsesNullChildSemantics(t *testin
 		Annotations: jsontypes.NewNormalizedValue(testJSON(map[string]any{"configured": true})),
 		Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 	})
-	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, configured, configured)
+	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, configured)
 	require.False(t, mutationDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
 	diagnostic, ok := consistencyDiags.Errors()[0].(diag.DiagnosticWithPath)
@@ -292,7 +308,7 @@ func contentTypeMutationStateTestFields(fieldID, fieldName string, fieldItems Ty
 	})
 }
 
-func TestContentTypeMutationStateLeavesOmittedTaxonomyResponseOwned(t *testing.T) {
+func TestContentTypeMutationStateRejectsContradictoryKnownTaxonomyPlan(t *testing.T) {
 	t.Parallel()
 
 	response := contentTypeMutationStateTestResponse()
@@ -338,11 +354,10 @@ func TestContentTypeMutationStateLeavesOmittedTaxonomyResponseOwned(t *testing.T
 	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(
 		t.Context(),
 		response,
-		ContentTypeModel{Metadata: NewTypedObjectNull[ContentTypeMetadataValue]()},
 		plan,
 	)
 	require.False(t, mutationDiags.HasError())
-	require.False(t, consistencyDiags.HasError(), "%v", consistencyDiags)
+	require.True(t, consistencyDiags.HasError(), "%v", consistencyDiags)
 	assert.True(t, state.Metadata.Value().Annotations.IsNull())
 	require.Len(t, state.Metadata.Value().Taxonomy.Elements(), 1)
 	responseTaxonomy := state.Metadata.Value().Taxonomy.Elements()[0].Value()
