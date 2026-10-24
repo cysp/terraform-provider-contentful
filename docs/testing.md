@@ -142,12 +142,22 @@ and [test step reference](https://pkg.go.dev/github.com/hashicorp/terraform-plug
 ## Reviewing test consolidation
 
 When removing or combining tests, account for each affected behavior and lifecycle
-transition in the pull request or review. Identify the replacement evidence at
-the phase where the behavior occurs: importing a value does not prove Create
-writes it, and checking state after refresh does not prove import produced it.
-Use a targeted negative control when replacement coverage is uncertain, and
-record the observed failure. Keep this evidence with the change rather than
-maintaining a separate coverage inventory.
+transition in the pull request or review. Judge each check by the concrete faults
+it detects and its maintenance cost, independently of how assertions are grouped.
+Compare narrower ways to preserve useful protection before retiring it with
+brittle setup or unrelated assertions. Identify replacement evidence for retained
+guarantees and justify consequential coverage deliberately relinquished.
+
+Check replacement evidence at the phase where the behavior occurs: importing a
+value does not prove Create writes it, and checking state after refresh does not
+prove import produced it. A focused check can establish a particular property
+without proving the whole workflow.
+
+Use a targeted negative control when replacement coverage is uncertain. To claim
+regression detection, exercise the faulty behavior with unchanged expectations
+and confirm the relevant failure and restored pass. Altering an expected value
+shows that an assertion executes; report that narrower result. Keep this evidence
+with the change rather than maintaining a separate coverage inventory.
 
 ## Terraform fixtures
 
