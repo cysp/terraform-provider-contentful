@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"testing"
@@ -80,29 +81,46 @@ func TestAccContentTypeResourceOmittedTaxonomyDoesNotAuthorizeContradictoryDraft
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 
-	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
-		{Config: contentTypeMetadataIgnoreChangesConfig("Original", "{ ContentType = [] }", `taxonomy = [{ taxonomy_concept = { id = "concept" } }]`, "metadata.annotations")},
-		{
-			PreConfig: func() {
-				handler.resetRequestHistory()
-				handler.mutatePutResponse = contentTypeResponseMutator(t, func(response map[string]any) {
-					mustContentTypeResponseObject(response["metadata"])["taxonomy"] = []any{map[string]any{
-						"sys":      map[string]any{"type": "Link", "id": "contradictory", "linkType": "TaxonomyConcept"},
+	testAccMockedResource(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{Config: contentTypeMetadataIgnoreChangesConfig("Original", "{ ContentType = [] }", `taxonomy = [{ taxonomy_concept = { id = "concept" } }]`, "metadata.annotations")},
+			{
+				PreConfig: func() {
+					handler.resetRequestHistory()
+					handler.mutatePutResponse = contentTypeResponseMutator(t, func(response map[string]any) {
+						mustContentTypeResponseObject(response["metadata"])["taxonomy"] = []any{map[string]any{
+							"sys":      map[string]any{"type": "Link", "id": "contradictory", "linkType": "TaxonomyConcept"},
+							"required": false,
+						}}
+					})
+				},
+				Config:      contentTypeMetadataIgnoreChangesConfig("Updated", "{ ContentType = [] }", "", "metadata.annotations"),
+				ExpectError: regexp.MustCompile(`Unexpected Contentful content type response`),
+			},
+			{
+				PreConfig: func() {
+					require.Equal(t, 1, handler.eventCount(contentTypeOperationPut))
+					require.Equal(t, 0, handler.eventCount(contentTypeOperationActivate))
+
+					var request map[string]any
+					require.NoError(t, json.Unmarshal(handler.lastPutBody(), &request))
+					require.Equal(t, []any{map[string]any{
+						"sys":      map[string]any{"type": "Link", "id": "concept", "linkType": "TaxonomyConcept"},
 						"required": false,
-					}}
-				})
+					}}, mustContentTypeResponseObject(request["metadata"])["taxonomy"])
+					handler.resetRequestHistory()
+				},
+				Config: contentTypeMetadataIgnoreChangesConfig("Updated", "{ ContentType = [] }", "", "metadata.annotations"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					expectResponseStateInPlan{
+						address:   "contentful_content_type.test",
+						valuePath: tfjsonpath.New("metadata").AtMapKey("taxonomy").AtSliceIndex(0).AtMapKey("taxonomy_concept").AtMapKey("id"),
+						value:     "contradictory",
+					},
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
 			},
-			Config:      contentTypeMetadataIgnoreChangesConfig("Updated", "{ ContentType = [] }", "", "metadata.annotations"),
-			ExpectError: regexp.MustCompile(`Unexpected Contentful content type response`),
 		},
-		{
-			PreConfig: func() {
-				require.Equal(t, 1, handler.eventCount(contentTypeOperationPut))
-				require.Equal(t, 0, handler.eventCount(contentTypeOperationActivate))
-				handler.resetRequestHistory()
-			},
-			Config: contentTypeMetadataIgnoreChangesConfig("Updated", "{ ContentType = [] }", "", "metadata.annotations"),
-			Check:  contentTypeActivationRequestCheck(handler, 0, 0),
-		},
-	}})
+	})
 }
