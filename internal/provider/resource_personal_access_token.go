@@ -7,6 +7,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -85,7 +86,8 @@ func (r *personalAccessTokenResource) Create(ctx context.Context, req resource.C
 
 	switch response := response.(type) {
 	case *cm.PersonalAccessTokenStatusCode:
-		data = NewPersonalAccessTokenResourceModelFromResponse(response.Response, plan.Token, plan.ExpiresIn)
+		// Create has no prior token to preserve when the response omits it.
+		data = NewPersonalAccessTokenResourceModelFromResponse(response.Response, types.StringNull(), plan.ExpiresIn)
 
 	default:
 		resp.Diagnostics.AddError("Failed to create personal access token", util.ErrorDetailFromContentfulManagementResponse(response, err))
