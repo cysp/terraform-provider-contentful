@@ -117,6 +117,49 @@ func TestPaginateContentfulCollectionItemsAsListResultsHonorsTerraformLimit(t *t
 	assert.Equal(t, []string{"1", "2"}, results)
 }
 
+func TestPaginateContentfulCollectionItemsAsListResultsLimitsOversizedPages(t *testing.T) {
+	t.Parallel()
+
+	for _, testCase := range []struct {
+		name     string
+		pages    [][]int
+		requests []testListParams
+	}{
+		{name: "first page", pages: [][]int{{1, 2, 3}}, requests: []testListParams{{skip: 0, limit: 2}}},
+		{name: "later page", pages: [][]int{{1}, {2, 3}}, requests: []testListParams{{skip: 0, limit: 2}, {skip: 1, limit: 1}}},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			var (
+				requests []testListParams
+				built    []int
+			)
+
+			results := collectTestListResults(t, paginateContentfulCollectionItemsAsListResults(
+				t.Context(), list.ListRequest{Limit: 2},
+				func(_ context.Context, skip, limit int64) (contentfulCollection[int], diag.Diagnostics) {
+					page := len(requests)
+					requests = append(requests, testListParams{skip: skip, limit: limit})
+
+					require.Less(t, page, len(testCase.pages))
+
+					return testListCollection{total: cm.NewOptInt(10), items: testCase.pages[page]}, nil
+				},
+				func(item int) list.ListResult {
+					built = append(built, item)
+
+					return testListResult(item)
+				},
+			))
+
+			assert.Equal(t, testCase.requests, requests)
+			assert.Equal(t, []string{"1", "2"}, results)
+			assert.Equal(t, []int{1, 2}, built)
+		})
+	}
+}
+
 func TestPaginateContentfulCollectionItemsAsListResultsReturnsFetchDiagnostics(t *testing.T) {
 	t.Parallel()
 

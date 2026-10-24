@@ -27,12 +27,7 @@ func paginateContentfulCollectionItemsAsListResults[Item any](
 			limit := defaultPageLimit
 
 			if req.Limit > 0 {
-				remaining := req.Limit - emitted
-				if remaining <= 0 {
-					return
-				}
-
-				limit = min(limit, remaining)
+				limit = min(limit, req.Limit-emitted)
 			}
 
 			collection, diagnostics := fetchPage(ctx, skip, limit)
@@ -49,6 +44,9 @@ func paginateContentfulCollectionItemsAsListResults[Item any](
 				}
 
 				emitted++
+				if req.Limit > 0 && emitted >= req.Limit {
+					return
+				}
 			}
 
 			itemCount := int64(len(items))
