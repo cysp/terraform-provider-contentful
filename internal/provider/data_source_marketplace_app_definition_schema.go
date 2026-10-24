@@ -4,7 +4,6 @@ package provider
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -50,14 +49,14 @@ func MarketplaceAppDefinitionDataSourceSchema(ctx context.Context) schema.Schema
 					"installation": schema.ListNestedAttribute{
 						Description: "Parameter definitions for each app installation.",
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: MarketplaceAppDefinitionParameterDataSourceSchemaAttributes(ctx),
+							Attributes: AppDefinitionParameterDataSourceSchemaAttributes(ctx),
 						},
 						Computed: true,
 					},
 					"instance": schema.ListNestedAttribute{
 						Description: "Parameter definitions for each use of the app, such as a field editor.",
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: MarketplaceAppDefinitionParameterDataSourceSchemaAttributes(ctx),
+							Attributes: AppDefinitionParameterDataSourceSchemaAttributes(ctx),
 						},
 						Computed: true,
 					},
@@ -65,61 +64,6 @@ func MarketplaceAppDefinitionDataSourceSchema(ctx context.Context) schema.Schema
 				Computed: true,
 			},
 			"timeouts": timeouts.Attributes(ctx),
-		},
-	}
-}
-
-//nolint:dupl
-func MarketplaceAppDefinitionParameterDataSourceSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"id": schema.StringAttribute{
-			Description: "Unique identifier for the parameter.",
-			Computed:    true,
-		},
-		"type": schema.StringAttribute{
-			Description: "The type of this parameter.",
-			Computed:    true,
-		},
-		"name": schema.StringAttribute{
-			Description: "The name of this parameter.",
-			Computed:    true,
-		},
-		"description": schema.StringAttribute{
-			Description: "Description of this parameter.",
-			Computed:    true,
-		},
-		"required": schema.BoolAttribute{
-			Description: "Whether this parameter is required.",
-			Computed:    true,
-		},
-		"default": schema.StringAttribute{
-			Description: "Default value for this parameter in JSON format.",
-			CustomType:  jsontypes.NormalizedType{},
-			Computed:    true,
-		},
-		"options": schema.ListAttribute{
-			Description: "Allowed options for an Enum parameter, each encoded as JSON. An option may be a string or an object with string values.",
-			ElementType: jsontypes.NormalizedType{},
-			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
-			Computed:    true,
-		},
-		"labels": schema.SingleNestedAttribute{
-			Description: "Display labels for Boolean values and the empty Enum selection.",
-			Attributes: map[string]schema.Attribute{
-				"empty": schema.StringAttribute{
-					Description: "Label displayed when no Enum option is selected.",
-					Computed:    true,
-				},
-				"true": schema.StringAttribute{
-					Description: "Label for true value.",
-					Computed:    true,
-				},
-				"false": schema.StringAttribute{
-					Description: "Label for false value.",
-					Computed:    true,
-				},
-			},
-			Computed: true,
 		},
 	}
 }
