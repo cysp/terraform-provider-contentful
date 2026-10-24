@@ -143,7 +143,7 @@ func (t TypedObjectType[T]) ApplyTerraform5AttributePathStep(step tftypes.Attrib
 
 //nolint:ireturn
 func (t TypedObjectType[T]) WithAttributeTypes(attributeTypes map[string]attr.Type) attr.TypeWithAttributeTypes {
-	return TypedObjectType[struct{}]{attributeTypes: attributeTypes}
+	return TypedObjectType[T]{attributeTypes: attributeTypes}
 }
 
 func (t TypedObjectType[T]) AttributeTypes() map[string]attr.Type {
