@@ -15,15 +15,25 @@ requires Terraform on `PATH`; acceptance-test options are under [Tests](#tests).
 
 ## Repository guidance
 
-[AGENTS.md](AGENTS.md) is the authoritative repository guidance;
-[CLAUDE.md](CLAUDE.md) and [GEMINI.md](GEMINI.md) import it. Keep shared rules
-there and command details here. Design contracts belong in `docs/design/`;
-link them from the instructions with the conditions that require reading them.
+Keep broadly applicable repository guidance in [AGENTS.md](AGENTS.md), which
+[CLAUDE.md](CLAUDE.md) and [GEMINI.md](GEMINI.md) import. Keep task-specific
+development instructions, including commit conventions, here. Design contracts
+belong in `docs/design/`; link them from the instructions with the conditions
+that require reading them.
 See the [design documentation map](docs/design/README.md) for the distinction
 between provider-wide invariants and resource-specific contracts.
 
 For change reviews, follow [Reviewing changes](docs/reviewing.md), which covers
 requirements, adversarial reasoning, proportionate verification, and readiness.
+
+## Commit conventions
+
+- Use Conventional Commit messages. The type describes the kind of change, the scope identifies the affected component or maintenance concern, and the subject describes the specific change.
+- For components under `internal/`, use the immediate directory's exact name as the scope, such as `contentful-management-go` or `provider`. Name individual resources in the subject.
+- Tests, examples, generated files, and documentation about a component use that component's scope, regardless of their location.
+- For repository maintenance, use the established concern name, such as `deps`, `lint`, `generate`, `release`, or `agents`. Scope workflow changes by their purpose.
+- When a cohesive change spans components, use its primary concern as the scope if one clearly owns the change; otherwise omit the scope. Split independently useful changes into separate commits where appropriate.
+- For a new concern, prefer an existing directory, tool, or workflow name. Use recent history to resolve choices left open by these rules.
 
 ## Repository map
 
