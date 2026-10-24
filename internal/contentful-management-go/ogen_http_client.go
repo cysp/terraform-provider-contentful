@@ -12,25 +12,26 @@ const (
 	contentTypeContentfulJSON  = "application/vnd.contentful.management.v1+json"
 )
 
-type transportClient struct {
+// TransportClient applies Contentful request headers and response media types.
+type TransportClient struct {
 	client    ht.Client
 	userAgent string
 }
 
-var _ ht.Client = (*transportClient)(nil)
+var _ ht.Client = (*TransportClient)(nil)
 
 // NewTransportClient wraps client with Contentful transport behavior.
 //
 // It sets the default User-Agent on outgoing requests and normalizes Contentful
 // vendor JSON response Content-Type values to application/json before decoding.
-func NewTransportClient(client ht.Client, userAgent string) *transportClient {
-	return &transportClient{
+func NewTransportClient(client ht.Client, userAgent string) *TransportClient {
+	return &TransportClient{
 		client:    client,
 		userAgent: userAgent,
 	}
 }
 
-func (c *transportClient) Do(req *http.Request) (*http.Response, error) {
+func (c *TransportClient) Do(req *http.Request) (*http.Response, error) {
 	if req.Header.Get("User-Agent") == "" && c.userAgent != "" {
 		req.Header.Set("User-Agent", c.userAgent)
 	}
