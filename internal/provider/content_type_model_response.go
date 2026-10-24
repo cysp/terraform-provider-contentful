@@ -56,10 +56,9 @@ func newContentTypeResourceModelFromResponseAt(ctx context.Context, root path.Pa
 // ProjectContentTypeMutationResponse makes the CMA response the recovery state
 // first. Exact plan values are restored only after every owned value has been
 // proven equivalent; this prevents a successful but contradictory CMA response
-// being hidden in Terraform state. Configuration remains separate from Plan so
-// an omitted Optional+Computed taxonomy stays Contentful-owned even after plan
-// reconciliation has made it known.
-func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.ContentType, config, plan ContentTypeModel) (ContentTypeModel, diag.Diagnostics, diag.Diagnostics) {
+// being hidden in Terraform state. A known effective Plan constrains taxonomy
+// even when configuration omitted it and planning preserved the prior value.
+func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.ContentType, plan ContentTypeModel) (ContentTypeModel, diag.Diagnostics, diag.Diagnostics) {
 	data, responseDiags := NewContentTypeResourceModelFromResponse(ctx, contentType)
 
 	data.Timeouts = plan.Timeouts
@@ -117,7 +116,7 @@ func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.Cont
 		mismatch = true
 	}
 
-	metadataProjects, metadataMismatch := contentTypeMetadataReconciliations(config, plan, &data, &consistencyDiags)
+	metadataProjects, metadataMismatch := contentTypeMetadataReconciliations(plan, &data, &consistencyDiags)
 	project = append(project, metadataProjects...)
 	mismatch = mismatch || metadataMismatch
 
@@ -130,21 +129,19 @@ func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.Cont
 	return data, responseDiags, consistencyDiags
 }
 
-func contentTypeMetadataReconciliations(config, plan ContentTypeModel, data *ContentTypeModel, diags *diag.Diagnostics) ([]func(), bool) {
+func contentTypeMetadataReconciliations(plan ContentTypeModel, data *ContentTypeModel, diags *diag.Diagnostics) ([]func(), bool) {
 	planMetadata, planKnown := plan.Metadata.GetValue()
 	if !planKnown {
 		return nil, false
 	}
 
-	configMetadata, configKnown := config.Metadata.GetValue()
-	taxonomyOwned := config.Metadata.IsUnknown() || (configKnown && !configMetadata.Taxonomy.IsNull())
 	dataMetadata, dataKnown := data.Metadata.GetValue()
 	annotationsPath := path.Root("metadata").AtName("annotations")
 	taxonomyPath := path.Root("metadata").AtName("taxonomy")
 
 	if !dataKnown {
 		annotationsEquivalent := planMetadata.Annotations.IsUnknown() || contentTypeNormalizedJSONEquivalent(planMetadata.Annotations, jsontypes.NewNormalizedNull())
-		taxonomyEquivalent := !taxonomyOwned || planMetadata.Taxonomy.IsUnknown() || planMetadata.Taxonomy.IsNull()
+		taxonomyEquivalent := planMetadata.Taxonomy.IsUnknown() || planMetadata.Taxonomy.IsNull()
 
 		if !annotationsEquivalent {
 			diags.AddAttributeError(annotationsPath, "Unexpected Contentful content type response", "The metadata annotations response was missing from Contentful.")
@@ -174,7 +171,7 @@ func contentTypeMetadataReconciliations(config, plan ContentTypeModel, data *Con
 		}
 	}
 
-	if taxonomyOwned && !planMetadata.Taxonomy.IsUnknown() {
+	if !planMetadata.Taxonomy.IsUnknown() {
 		if planMetadata.Taxonomy.Equal(dataMetadata.Taxonomy) {
 			projects = append(projects, func() {
 				metadata := data.Metadata.Value()
