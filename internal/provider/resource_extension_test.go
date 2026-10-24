@@ -404,7 +404,8 @@ resource "contentful_extension" "test" {
 					},
 					{
 						PreConfig: func() {
-							_, putErr := server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
+							params.XContentfulVersion = 2
+							response, putErr := server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
 								Extension: cm.ExtensionDataExtension{
 									Name:       "Updated",
 									Src:        test.driftSrc,
@@ -413,6 +414,7 @@ resource "contentful_extension" "test" {
 								},
 							}, params)
 							require.NoError(t, putErr)
+							require.IsType(t, &cm.ExtensionStatusCode{}, response)
 						},
 						Config: config("Updated after drift"),
 						Check: resource.ComposeTestCheckFunc(
