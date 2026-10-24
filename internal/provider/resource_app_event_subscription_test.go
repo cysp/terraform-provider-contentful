@@ -2,7 +2,6 @@ package provider_test
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"io"
 	"maps"
@@ -251,7 +250,7 @@ func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 	}
 
 	steps = append(steps, resource.TestStep{PreConfig: func() {
-		_, deleteErr := server.Handler().DeleteAppEventSubscription(context.Background(), cm.DeleteAppEventSubscriptionParams{OrganizationID: "organization", AppDefinitionID: "app"})
+		_, deleteErr := server.Handler().DeleteAppEventSubscription(t.Context(), cm.DeleteAppEventSubscriptionParams{OrganizationID: "organization", AppDefinitionID: "app"})
 		require.NoError(t, deleteErr)
 	}, ConfigFile: config.TestNameFile("main.tf"), ConfigVariables: config.Variables{"subscription": config.ObjectVariable(cases[len(cases)-1].subscription)}, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}})
 	testAccMockedResource(t, handler, resource.TestCase{Steps: steps})
@@ -329,7 +328,7 @@ func TestAccAppEventSubscriptionResourceParentDisappears(t *testing.T) {
 	testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 		{ConfigFile: config.TestNameFile("main.tf")},
 		{PreConfig: func() {
-			_, deleteErr := server.Handler().DeleteAppDefinition(context.Background(), cm.DeleteAppDefinitionParams{OrganizationID: "organization", AppDefinitionID: "app"})
+			_, deleteErr := server.Handler().DeleteAppDefinition(t.Context(), cm.DeleteAppDefinitionParams{OrganizationID: "organization", AppDefinitionID: "app"})
 			require.NoError(t, deleteErr)
 		}, ConfigFile: config.TestNameFile("main.tf"), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}, ExpectError: regexp.MustCompile(`Failed to upsert app event subscription`)},
 		{PreConfig: func() { server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "Restored app"}) }, ConfigFile: config.TestNameFile("main.tf"), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appEventResourceAddress, plancheck.ResourceActionCreate)}}},

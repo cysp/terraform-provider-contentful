@@ -382,7 +382,7 @@ func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
 						knownvalue.Int64Exact(1),
 					),
 				},
-				Check: contentTypeMockRemoteVersionCheck(server, contentTypeID, 2, 1),
+				Check: contentTypeMockRemoteVersionCheck(t.Context(), server, contentTypeID, 2, 1),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/3"),
@@ -421,7 +421,7 @@ func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
 						knownvalue.Int64Exact(1),
 					),
 				},
-				Check: contentTypeMockRemoteVersionCheck(server, contentTypeID, 2, 1),
+				Check: contentTypeMockRemoteVersionCheck(t.Context(), server, contentTypeID, 2, 1),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/2"),
@@ -444,7 +444,7 @@ func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
 						knownvalue.Int64Exact(3),
 					),
 				},
-				Check: contentTypeMockRemoteVersionCheck(server, contentTypeID, 4, 3),
+				Check: contentTypeMockRemoteVersionCheck(t.Context(), server, contentTypeID, 4, 3),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/3"),
@@ -467,7 +467,7 @@ func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
 						knownvalue.Int64Exact(5),
 					),
 				},
-				Check: contentTypeMockRemoteVersionCheck(server, contentTypeID, 6, 5),
+				Check: contentTypeMockRemoteVersionCheck(t.Context(), server, contentTypeID, 6, 5),
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccContentTypeResourceRemovePublishedField/3"),
@@ -477,7 +477,7 @@ func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
 						plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
 					},
 				},
-				Check: contentTypeMockRemoteVersionCheck(server, contentTypeID, 6, 5),
+				Check: contentTypeMockRemoteVersionCheck(t.Context(), server, contentTypeID, 6, 5),
 			},
 		},
 	})
@@ -486,6 +486,7 @@ func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
 var errUnexpectedContentTypeVersion = errors.New("unexpected content type version")
 
 func contentTypeMockRemoteVersionCheck(
+	ctx context.Context,
 	server *cmt.Server,
 	contentTypeID string,
 	wantVersion int,
@@ -496,7 +497,7 @@ func contentTypeMockRemoteVersionCheck(
 			return nil
 		}
 
-		response, err := server.Handler().GetContentType(context.Background(), cm.GetContentTypeParams{
+		response, err := server.Handler().GetContentType(ctx, cm.GetContentTypeParams{
 			SpaceID: "0p38pssr0fi3", EnvironmentID: "test", ContentTypeID: contentTypeID,
 		})
 		if err != nil {
@@ -723,7 +724,7 @@ func setContentTypeTaxonomyDrift(
 ) {
 	t.Helper()
 
-	response, err := server.Handler().GetContentType(context.Background(), cm.GetContentTypeParams{
+	response, err := server.Handler().GetContentType(t.Context(), cm.GetContentTypeParams{
 		SpaceID: "0p38pssr0fi3", EnvironmentID: "test", ContentTypeID: contentTypeID,
 	})
 	require.NoError(t, err)

@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -103,7 +102,7 @@ func TestAccPersonalAccessTokenResourceMockImportedTimeoutUpdate(t *testing.T) {
 
 	const importedResourceName = "terraform-provider-contentful-acctest-imported-timeouts"
 
-	response, err := server.Handler().CreatePersonalAccessToken(context.Background(), &cm.PersonalAccessTokenRequestData{
+	response, err := server.Handler().CreatePersonalAccessToken(t.Context(), &cm.PersonalAccessTokenRequestData{
 		Name:   importedResourceName,
 		Scopes: []string{"content_management_read"},
 	})

@@ -69,6 +69,7 @@ func TestAccExtensionResourceLifecycle(t *testing.T) {
 					identity.AddStateValue("contentful_extension.test", tfjsonpath.New("id")), statecheck.ExpectKnownValue("contentful_extension.test", tfjsonpath.New("extension"), knownvalue.ObjectPartial(map[string]knownvalue.Check{"src": knownvalue.Null(), "srcdoc": knownvalue.StringExact("<!DOCTYPE html>")})),
 				},
 				Check: testAccExtensionSources(
+					t.Context(),
 					server,
 					"0p38pssr0fi3",
 					"test",
@@ -89,6 +90,7 @@ func TestAccExtensionResourceLifecycle(t *testing.T) {
 					identity.AddStateValue("contentful_extension.test", tfjsonpath.New("id")), statecheck.ExpectKnownValue("contentful_extension.test", tfjsonpath.New("extension"), knownvalue.ObjectPartial(map[string]knownvalue.Check{"src": knownvalue.StringExact("http://localhost:3000/entry-field.js"), "srcdoc": knownvalue.Null()})),
 				},
 				Check: testAccExtensionSources(
+					t.Context(),
 					server,
 					"0p38pssr0fi3",
 					"test",
@@ -149,6 +151,7 @@ resource "contentful_extension" "test" {
 }
 
 func testAccExtensionSources(
+	ctx context.Context,
 	server *cmt.Server,
 	spaceID string,
 	environmentID string,
@@ -173,6 +176,7 @@ func testAccExtensionSources(
 		}
 
 		return testContentfulExtensionSources(
+			ctx,
 			func(ctx context.Context, params cm.GetExtensionParams) (cm.GetExtensionRes, error) {
 				return client.GetExtension(ctx, params)
 			},
@@ -184,12 +188,13 @@ func testAccExtensionSources(
 		)
 	}
 
-	return testContentfulExtensionSources(server.Handler().GetExtension, spaceID, environmentID, extensionID, expectedSrc, expectedSrcdoc)
+	return testContentfulExtensionSources(ctx, server.Handler().GetExtension, spaceID, environmentID, extensionID, expectedSrc, expectedSrcdoc)
 }
 
 type extensionGetter func(context.Context, cm.GetExtensionParams) (cm.GetExtensionRes, error)
 
 func testContentfulExtensionSources(
+	ctx context.Context,
 	getExtension extensionGetter,
 	spaceID string,
 	environmentID string,
@@ -198,7 +203,7 @@ func testContentfulExtensionSources(
 	expectedSrcdoc cm.OptString,
 ) resource.TestCheckFunc {
 	return func(*terraform.State) error {
-		response, err := getExtension(context.Background(), cm.GetExtensionParams{
+		response, err := getExtension(ctx, cm.GetExtensionParams{
 			SpaceID:       spaceID,
 			EnvironmentID: environmentID,
 			ExtensionID:   extensionID,
@@ -248,6 +253,7 @@ resource "contentful_extension" "test" {
 }
 `,
 				Check: testContentfulExtensionSources(
+					t.Context(),
 					server.Handler().GetExtension,
 					"space",
 					"environment",
@@ -392,7 +398,7 @@ resource "contentful_extension" "test" {
 					{
 						Config: config("Updated"),
 						Check: resource.ComposeTestCheckFunc(
-							testContentfulExtensionSources(server.Handler().GetExtension, "space", "environment", extensionID, test.initialSrc, test.initialSrcdoc),
+							testContentfulExtensionSources(t.Context(), server.Handler().GetExtension, "space", "environment", extensionID, test.initialSrc, test.initialSrcdoc),
 							recorder.checkLastSource(test.wantInitialKey),
 						),
 					},
@@ -410,7 +416,7 @@ resource "contentful_extension" "test" {
 						},
 						Config: config("Updated after drift"),
 						Check: resource.ComposeTestCheckFunc(
-							testContentfulExtensionSources(server.Handler().GetExtension, "space", "environment", extensionID, test.driftSrc, test.driftSrcdoc),
+							testContentfulExtensionSources(t.Context(), server.Handler().GetExtension, "space", "environment", extensionID, test.driftSrc, test.driftSrcdoc),
 							recorder.checkLastSource(test.wantDriftKey),
 						),
 					},

@@ -97,7 +97,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 					})
 				},
 				Config: spaceEnablementsTestConfig("cross_space_links = false\n  space_templates = false"),
-				Check:  requireStoredSpaceEnablements(server.Handler(), 2, false),
+				Check:  requireStoredSpaceEnablements(t.Context(), server.Handler(), 2, false),
 			},
 			{
 				PreConfig: func() {
@@ -111,7 +111,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 			},
 			{
 				PreConfig: func() {
-					require.NoError(t, requireStoredSpaceEnablementsFields(server.Handler(), 2, false))
+					require.NoError(t, requireStoredSpaceEnablementsFields(t.Context(), server.Handler(), 2, false))
 					recorder.expectNextRequestFields(map[string]bool{
 						"crossSpaceLinks": true,
 						"spaceTemplates":  true,
@@ -121,7 +121,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: requireStoredSpaceEnablements(server.Handler(), 3, true),
+				Check: requireStoredSpaceEnablements(t.Context(), server.Handler(), 3, true),
 			},
 		},
 	})
@@ -277,21 +277,23 @@ func compareSpaceEnablementsRequestFields(actual map[string]json.RawMessage, exp
 }
 
 func requireStoredSpaceEnablements(
+	ctx context.Context,
 	handler *cmt.Handler,
 	expectedVersion int,
 	expectedEnabled bool,
 ) resource.TestCheckFunc {
 	return func(*terraform.State) error {
-		return requireStoredSpaceEnablementsFields(handler, expectedVersion, expectedEnabled)
+		return requireStoredSpaceEnablementsFields(ctx, handler, expectedVersion, expectedEnabled)
 	}
 }
 
 func requireStoredSpaceEnablementsFields(
+	ctx context.Context,
 	handler *cmt.Handler,
 	expectedVersion int,
 	expectedEnabled bool,
 ) error {
-	response, err := handler.GetSpaceEnablements(context.Background(), cm.GetSpaceEnablementsParams{SpaceID: "space"})
+	response, err := handler.GetSpaceEnablements(ctx, cm.GetSpaceEnablementsParams{SpaceID: "space"})
 	if err != nil {
 		return fmt.Errorf("get stored Space Enablements: %w", err)
 	}
