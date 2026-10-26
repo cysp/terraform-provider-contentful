@@ -107,7 +107,9 @@ func (r *teamSpaceMembershipResource) Create(ctx context.Context, req resource.C
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data, "team space membership", map[string]string{"space_id": params.SpaceID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl
@@ -224,7 +226,9 @@ func (r *teamSpaceMembershipResource) Update(ctx context.Context, req resource.U
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data, "team space membership", map[string]string{"space_id": params.SpaceID, "team_space_membership_id": params.TeamSpaceMembershipID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl

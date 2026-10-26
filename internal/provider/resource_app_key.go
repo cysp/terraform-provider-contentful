@@ -120,7 +120,9 @@ func (r *appKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appKeyIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, appKeyIdentityAttributeNames(), &data, "app key", map[string]string{"organization_id": params.OrganizationID, "app_definition_id": params.AppDefinitionID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *appKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
