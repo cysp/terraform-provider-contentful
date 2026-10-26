@@ -69,18 +69,17 @@ above supports this retry policy but does not establish an at-most-once server
 commitment guarantee. Transport errors and ordinary 5xx responses remain
 ambiguous and do not authorize automatic mutation replay.
 
-Entry Create, specified-ID Create, Update, and Publish, Content Type Create,
-Update, and Activate, WebhookSigningSecret and AppEventSubscription PUT/DELETE,
-and AppAction POST/PUT/DELETE use a private request-context signal to prevent
-redirects in both nested provider HTTP clients. This covers method-preserving
-307/308 and method-rewriting 301/302/303 responses. The signal survives generated
-request construction and does not alter retry classification.
+All mutation requests reject redirects in both nested provider HTTP clients.
+This covers method-preserving 307/308 and method-rewriting 301/302/303 responses.
+The redirect policy examines the original request method so a proposed GET
+redirect cannot hide an original POST, PUT, PATCH, or DELETE. Callers do not need
+a separate context signal. Redirect rejection does not change explicit 429 retries.
 
-For requests without the redirect restriction, the inner client follows redirects up to the
-default ten-request limit. A supplied `CheckRedirect` policy replaces that default.
-The outer client has a separate default redirect policy and can follow a redirect
-returned by an inner policy using `http.ErrUseLastResponse`. GET and other CMA
-operations use the retry classification described above.
+GET, HEAD, and OPTIONS retain the existing redirect behavior: the inner client
+uses a supplied CheckRedirect policy or the default ten-request limit. The outer
+client has its own default policy and can follow a redirect returned by an inner
+policy using http.ErrUseLastResponse. A caller-supplied policy cannot authorize
+mutation redirects.
 
 WebhookSigningSecret mutations are unversioned space-wide overwrites/deletions.
 A read cannot establish complete-secret equality, so this resource cannot recover
