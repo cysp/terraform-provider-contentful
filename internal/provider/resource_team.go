@@ -106,13 +106,15 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data, "team", map[string]string{"organization_id": params.OrganizationID})
+	resp.Diagnostics.Append(stateDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl
@@ -245,13 +247,15 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data, "team", map[string]string{"organization_id": params.OrganizationID, "team_id": params.TeamID})
+	resp.Diagnostics.Append(stateDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl

@@ -107,7 +107,9 @@ func (r *appDefinitionResourceTypeResource) Create(ctx context.Context, req reso
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceTypeIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, resourceTypeIdentityAttributeNames(), &data, "resource type", map[string]string{"organization_id": params.OrganizationID, "app_definition_id": params.AppDefinitionID, "resource_type_id": params.ResourceTypeID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -225,7 +227,9 @@ func (r *appDefinitionResourceTypeResource) Update(ctx context.Context, req reso
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceTypeIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, resourceTypeIdentityAttributeNames(), &data, "resource type", map[string]string{"organization_id": params.OrganizationID, "app_definition_id": params.AppDefinitionID, "resource_type_id": params.ResourceTypeID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl

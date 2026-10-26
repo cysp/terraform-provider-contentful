@@ -256,10 +256,22 @@ Plan values over it. Unknown values come from the response. Projection warnings
 are retained. A later Read skips this reconciliation and projects the remote
 representation so meaningful remote drift remains visible.
 
-When a successful taxonomy mutation response disagrees with the requested
-endpoint identity, recovery preserves the complete returned response except
-that the requested endpoint identity and legacy ID intentionally remain the
-Terraform target.
+Successful mutation responses cannot retarget Terraform to a different addressed
+endpoint. The provider retains requested path components, rebuilds the legacy
+multipart ID, and publishes the representable returned values and private version
+before reporting identity contradictions. Server-generated IDs from POST remain
+response-owned. A body ID for a singleton, an Environment Alias target, or a
+related-resource reference is not an addressed path component and must retain
+its returned value.
+
+The mutation publication boundary takes the explicit endpoint components from
+request parameters. It stages the state and identity together; encoding failure
+publishes neither. Identity diagnostics remain separate until private version
+checkpointing completes. Resources with additional semantic reconciliation retain
+those checks. Read and import use their own response contracts rather than this
+mutation boundary. The unconfirmed-write policy for
+[Webhook Signing Secret](webhook-signing-secret.md#failures-and-confidentiality)
+remains a separate secret-acknowledgement contract.
 
 Preview Environment mutation recovery has the same targeted endpoint-identity
 exception. When a successful response contradicts the requested space or

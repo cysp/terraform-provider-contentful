@@ -101,13 +101,15 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, tagIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, tagIdentityAttributeNames(), &data, "tag", map[string]string{"space_id": params.SpaceID, "environment_id": params.EnvironmentID, "tag_id": params.TagID})
+	resp.Diagnostics.Append(stateDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -233,13 +235,15 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, tagIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, tagIdentityAttributeNames(), &data, "tag", map[string]string{"space_id": params.SpaceID, "environment_id": params.EnvironmentID, "tag_id": params.TagID})
+	resp.Diagnostics.Append(stateDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

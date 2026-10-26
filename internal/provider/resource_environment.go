@@ -111,13 +111,15 @@ func (r *environmentResource) Create(ctx context.Context, req resource.CreateReq
 	data.Timeouts = plan.Timeouts
 	data.SourceEnvironmentID = plan.SourceEnvironmentID
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, environmentIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, environmentIdentityAttributeNames(), &data, "environment", map[string]string{"space_id": params.SpaceID, "environment_id": params.EnvironmentID})
+	resp.Diagnostics.Append(stateDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *environmentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -252,13 +254,15 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 	data.Timeouts = plan.Timeouts
 	data.SourceEnvironmentID = plan.SourceEnvironmentID
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, environmentIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, environmentIdentityAttributeNames(), &data, "environment", map[string]string{"space_id": params.SpaceID, "environment_id": params.EnvironmentID})
+	resp.Diagnostics.Append(stateDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl
