@@ -178,6 +178,12 @@ func (r *appKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, appKeyIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appKeyIdentityAttributeNames(), &data)...)
 }
 

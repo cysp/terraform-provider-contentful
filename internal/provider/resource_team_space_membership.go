@@ -165,6 +165,12 @@ func (r *teamSpaceMembershipResource) Read(ctx context.Context, req resource.Rea
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, teamSpaceMembershipIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamSpaceMembershipIdentityAttributeNames(), &data)...)
 }
 

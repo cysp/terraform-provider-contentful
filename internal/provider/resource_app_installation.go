@@ -192,6 +192,12 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, appInstallationIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appInstallationIdentityAttributeNames(), &data)...)
 }
 

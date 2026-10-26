@@ -201,6 +201,12 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, editorInterfaceIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, editorInterfaceIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {

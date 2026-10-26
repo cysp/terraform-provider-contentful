@@ -197,6 +197,12 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, webhookIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, webhookIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {

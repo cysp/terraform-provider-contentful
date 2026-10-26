@@ -330,6 +330,14 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
+	data.Timeouts = state.Timeouts
+
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, contentTypeIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	pendingVersion, pending, pendingDiags := optionalPendingLifecycleVersion(
 		ctx, req.Private, contentTypePendingActivationVersionPrivateKey, "Content Type activation",
 	)
@@ -351,8 +359,6 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 	) {
 		resp.Diagnostics.Append(resp.Private.SetKey(ctx, contentTypePendingActivationVersionPrivateKey, nil)...)
 	}
-
-	data.Timeouts = state.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, contentTypeIdentityAttributeNames(), &data)...)
 
