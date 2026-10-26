@@ -13,7 +13,7 @@ func (ts *Handler) CreateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequest
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
 	apiKeyID := generateResourceID()
@@ -31,10 +31,10 @@ func (ts *Handler) CreateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequest
 	ts.apiKeys.Set(params.SpaceID, apiKeyID, &apiKey)
 	ts.previewAPIKeys.Set(params.SpaceID, previewAPIKeyID, &previewAPIKey)
 
-	return &cm.ApiKeyStatusCode{
+	return snapshotResponse(&cm.ApiKeyStatusCode{
 		StatusCode: http.StatusCreated,
 		Response:   apiKey,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -44,10 +44,10 @@ func (ts *Handler) GetDeliveryAPIKey(_ context.Context, params cm.GetDeliveryAPI
 
 	apiKey := ts.apiKeys.Get(params.SpaceID, params.APIKeyID)
 	if apiKey == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ApiKey not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ApiKey not found"), nil)), nil
 	}
 
-	return apiKey, nil
+	return snapshotResponse(apiKey), nil
 }
 
 //nolint:ireturn
@@ -56,7 +56,7 @@ func (ts *Handler) UpdateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequest
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
 	apiKey := ts.apiKeys.Get(params.SpaceID, params.APIKeyID)
@@ -64,23 +64,23 @@ func (ts *Handler) UpdateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequest
 		newAPIKey := NewAPIKeyFromRequestFields(params.SpaceID, params.APIKeyID, *req)
 		ts.apiKeys.Set(params.SpaceID, params.APIKeyID, &newAPIKey)
 
-		return &cm.ApiKeyStatusCode{
+		return snapshotResponse(&cm.ApiKeyStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   newAPIKey,
-		}, nil
+		}), nil
 	}
 
 	if params.XContentfulVersion != apiKey.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeConflict(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeConflict(nil, nil)), nil
 	}
 
 	apiKey.Sys.Version++
 	UpdateAPIKeyFromRequestFields(apiKey, *req)
 
-	return &cm.ApiKeyStatusCode{
+	return snapshotResponse(&cm.ApiKeyStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *apiKey,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -90,10 +90,10 @@ func (ts *Handler) DeleteDeliveryAPIKey(_ context.Context, params cm.DeleteDeliv
 
 	apiKey := ts.apiKeys.Get(params.SpaceID, params.APIKeyID)
 	if apiKey == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ApiKey not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ApiKey not found"), nil)), nil
 	}
 
 	ts.apiKeys.Delete(params.SpaceID, params.APIKeyID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

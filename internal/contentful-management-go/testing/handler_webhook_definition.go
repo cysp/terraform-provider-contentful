@@ -13,21 +13,21 @@ func (ts *Handler) CreateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 	defer ts.mu.Unlock()
 
 	if len(req.Topics) == 0 {
-		return newEmptyWebhookTopicsValidationError(), nil
+		return snapshotResponse(newEmptyWebhookTopicsValidationError()), nil
 	}
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
 	webhookDefinition := NewWebhookDefinitionFromFields(params.SpaceID, generateResourceID(), *req)
 	ts.webhookDefinitions.Set(params.SpaceID, webhookDefinition.Sys.ID, &webhookDefinition)
 	response := redactWebhookDefinitionSecrets(webhookDefinition)
 
-	return &cm.WebhookDefinitionStatusCode{
+	return snapshotResponse(&cm.WebhookDefinitionStatusCode{
 		StatusCode: http.StatusCreated,
 		Response:   response,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -37,12 +37,12 @@ func (ts *Handler) GetWebhookDefinition(_ context.Context, params cm.GetWebhookD
 
 	webhookDefinition := ts.webhookDefinitions.Get(params.SpaceID, params.WebhookDefinitionID)
 	if webhookDefinition == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("WebhookDefinition not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("WebhookDefinition not found"), nil)), nil
 	}
 
 	response := redactWebhookDefinitionSecrets(*webhookDefinition)
 
-	return &response, nil
+	return snapshotResponse(&response), nil
 }
 
 //nolint:ireturn
@@ -51,11 +51,11 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 	defer ts.mu.Unlock()
 
 	if len(req.Topics) == 0 {
-		return newEmptyWebhookTopicsValidationError(), nil
+		return snapshotResponse(newEmptyWebhookTopicsValidationError()), nil
 	}
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
 	webhookDefinition := ts.webhookDefinitions.Get(params.SpaceID, params.WebhookDefinitionID)
@@ -64,23 +64,23 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 		ts.webhookDefinitions.Set(params.SpaceID, newWebhookDefinition.Sys.ID, &newWebhookDefinition)
 		response := redactWebhookDefinitionSecrets(newWebhookDefinition)
 
-		return &cm.WebhookDefinitionStatusCode{
+		return snapshotResponse(&cm.WebhookDefinitionStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   response,
-		}, nil
+		}), nil
 	}
 
 	if params.XContentfulVersion != webhookDefinition.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	UpdateWebhookDefinitionFromFields(webhookDefinition, *req)
 	response := redactWebhookDefinitionSecrets(*webhookDefinition)
 
-	return &cm.WebhookDefinitionStatusCode{
+	return snapshotResponse(&cm.WebhookDefinitionStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   response,
-	}, nil
+	}), nil
 }
 
 func missingWebhookTopicsValidationDetails() []byte {
@@ -101,10 +101,10 @@ func (ts *Handler) DeleteWebhookDefinition(_ context.Context, params cm.DeleteWe
 
 	webhookDefinition := ts.webhookDefinitions.Get(params.SpaceID, params.WebhookDefinitionID)
 	if webhookDefinition == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("WebhookDefinition not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("WebhookDefinition not found"), nil)), nil
 	}
 
 	ts.webhookDefinitions.Delete(params.SpaceID, params.WebhookDefinitionID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

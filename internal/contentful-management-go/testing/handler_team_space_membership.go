@@ -13,17 +13,17 @@ func (ts *Handler) CreateTeamSpaceMembership(_ context.Context, req *cm.TeamSpac
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
 	teamSpaceMembershipID := generateResourceID()
 	teamSpaceMembership := NewTeamSpaceMembershipFromFields(params.SpaceID, teamSpaceMembershipID, params.XContentfulTeam, *req)
 	ts.teamSpaceMemberships.Set(params.SpaceID, teamSpaceMembership.Sys.ID, &teamSpaceMembership)
 
-	return &cm.TeamSpaceMembershipStatusCode{
+	return snapshotResponse(&cm.TeamSpaceMembershipStatusCode{
 		StatusCode: http.StatusCreated,
 		Response:   teamSpaceMembership,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -33,10 +33,10 @@ func (ts *Handler) GetTeamSpaceMembership(_ context.Context, params cm.GetTeamSp
 
 	teamSpaceMembership := ts.teamSpaceMemberships.Get(params.SpaceID, params.TeamSpaceMembershipID)
 	if teamSpaceMembership == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Team space membership not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Team space membership not found"), nil)), nil
 	}
 
-	return teamSpaceMembership, nil
+	return snapshotResponse(teamSpaceMembership), nil
 }
 
 //nolint:ireturn
@@ -46,15 +46,15 @@ func (ts *Handler) PutTeamSpaceMembership(_ context.Context, req *cm.TeamSpaceMe
 
 	teamSpaceMembership := ts.teamSpaceMemberships.Get(params.SpaceID, params.TeamSpaceMembershipID)
 	if teamSpaceMembership == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Team space membership not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Team space membership not found"), nil)), nil
 	}
 
 	UpdateTeamSpaceMembershipFromFields(teamSpaceMembership, params.SpaceID, params.TeamSpaceMembershipID, teamSpaceMembership.Sys.Team.Sys.ID, *req)
 
-	return &cm.TeamSpaceMembershipStatusCode{
+	return snapshotResponse(&cm.TeamSpaceMembershipStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *teamSpaceMembership,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -64,10 +64,10 @@ func (ts *Handler) DeleteTeamSpaceMembership(_ context.Context, params cm.Delete
 
 	teamSpaceMembership := ts.teamSpaceMemberships.Get(params.SpaceID, params.TeamSpaceMembershipID)
 	if teamSpaceMembership == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Team space membership not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Team space membership not found"), nil)), nil
 	}
 
 	ts.teamSpaceMemberships.Delete(params.SpaceID, params.TeamSpaceMembershipID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

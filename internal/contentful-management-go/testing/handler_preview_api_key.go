@@ -13,8 +13,8 @@ func (ts *Handler) GetPreviewAPIKey(_ context.Context, params cm.GetPreviewAPIKe
 
 	previewAPIKey := ts.previewAPIKeys.Get(params.SpaceID, params.PreviewAPIKeyID)
 	if previewAPIKey == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("PreviewApiKey not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("PreviewApiKey not found"), nil)), nil
 	}
 
-	return previewAPIKey, nil
+	return snapshotResponse(previewAPIKey), nil
 }

@@ -14,10 +14,10 @@ func (ts *Handler) GetEditorInterface(_ context.Context, params cm.GetEditorInte
 
 	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if editorInterface == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("EditorInterface not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("EditorInterface not found"), nil)), nil
 	}
 
-	return editorInterface, nil
+	return snapshotResponse(editorInterface), nil
 }
 
 //nolint:ireturn
@@ -27,22 +27,22 @@ func (ts *Handler) PutEditorInterface(_ context.Context, req *cm.EditorInterface
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil)), nil
 	}
 
 	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if editorInterface == nil {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("The content type you sent could not be found or was not activated."), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("The content type you sent could not be found or was not activated."), nil)), nil
 	}
 
 	if params.XContentfulVersion != editorInterface.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	UpdateEditorInterfaceFromFields(editorInterface, *req)
 
-	return &cm.EditorInterfaceStatusCode{
+	return snapshotResponse(&cm.EditorInterfaceStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *editorInterface,
-	}, nil
+	}), nil
 }

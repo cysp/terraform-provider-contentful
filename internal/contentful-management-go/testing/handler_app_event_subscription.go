@@ -17,10 +17,10 @@ func (ts *Handler) GetAppEventSubscription(_ context.Context, params cm.GetAppEv
 
 	value := ts.appEventSubscriptions[[2]string{params.OrganizationID, params.AppDefinitionID}]
 	if parent == nil || parent.Sys.Organization.Sys.ID != params.OrganizationID || value == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppEventSubscription not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppEventSubscription not found"), nil)), nil
 	}
 
-	return value, nil
+	return snapshotResponse(value), nil
 }
 
 // PutAppEventSubscription models complete document replacement. Function links
@@ -34,17 +34,17 @@ func (ts *Handler) PutAppEventSubscription(_ context.Context, req *cm.AppEventSu
 
 	parent := ts.appDefinitions[params.AppDefinitionID]
 	if parent == nil || parent.Sys.Organization.Sys.ID != params.OrganizationID {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
 
 	if len(req.Topics) == 0 {
-		return NewContentfulManagementErrorStatusCode(http.StatusUnprocessableEntity, "ValidationFailed", new("At least one topic is required"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCode(http.StatusUnprocessableEntity, "ValidationFailed", new("At least one topic is required"), nil)), nil
 	}
 
 	seen := make(map[string]bool, len(req.Topics))
 	for _, topic := range req.Topics {
 		if topic == "" || seen[topic] {
-			return NewContentfulManagementErrorStatusCode(http.StatusUnprocessableEntity, "ValidationFailed", new("Topics must be nonempty and unique"), nil), nil
+			return snapshotResponse(NewContentfulManagementErrorStatusCode(http.StatusUnprocessableEntity, "ValidationFailed", new("Topics must be nonempty and unique"), nil)), nil
 		}
 
 		seen[topic] = true
@@ -52,10 +52,10 @@ func (ts *Handler) PutAppEventSubscription(_ context.Context, req *cm.AppEventSu
 
 	if target, ok := req.TargetUrl.Get(); ok {
 		if !strings.HasPrefix(target, "https://") || len(target) == len("https://") {
-			return NewContentfulManagementErrorStatusCode(http.StatusUnprocessableEntity, "ValidationFailed", new("An HTTPS target is required"), nil), nil
+			return snapshotResponse(NewContentfulManagementErrorStatusCode(http.StatusUnprocessableEntity, "ValidationFailed", new("An HTTPS target is required"), nil)), nil
 		}
 	} else if !req.Functions.IsSet() {
-		return NewContentfulManagementErrorStatusCode(http.StatusBadRequest, "BadRequest", new("A target is required for HTTP subscriptions"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCode(http.StatusBadRequest, "BadRequest", new("A target is required for HTTP subscriptions"), nil)), nil
 	}
 
 	key := [2]string{params.OrganizationID, params.AppDefinitionID}
@@ -69,12 +69,12 @@ func (ts *Handler) PutAppEventSubscription(_ context.Context, req *cm.AppEventSu
 	if prior == nil {
 		result := cm.PutAppEventSubscriptionCreated(value)
 
-		return &result, nil
+		return snapshotResponse(&result), nil
 	}
 
 	result := cm.PutAppEventSubscriptionOK(value)
 
-	return &result, nil
+	return snapshotResponse(&result), nil
 }
 
 //nolint:ireturn
@@ -86,10 +86,10 @@ func (ts *Handler) DeleteAppEventSubscription(_ context.Context, params cm.Delet
 
 	parent := ts.appDefinitions[params.AppDefinitionID]
 	if parent == nil || parent.Sys.Organization.Sys.ID != params.OrganizationID || ts.appEventSubscriptions[key] == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppEventSubscription not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppEventSubscription not found"), nil)), nil
 	}
 
 	delete(ts.appEventSubscriptions, key)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

@@ -14,7 +14,7 @@ func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.En
 
 	environment := ts.environments.Get(params.SpaceID, data.Environment.Sys.ID)
 	if environment == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
 	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
@@ -22,22 +22,22 @@ func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.En
 		environmentAlias := NewEnvironmentAliasFromEnvironmentAliasData(params.SpaceID, params.EnvironmentAliasID, *data)
 		ts.environmentAliases.Set(params.SpaceID, params.EnvironmentAliasID, &environmentAlias)
 
-		return &cm.EnvironmentAliasStatusCode{
+		return snapshotResponse(&cm.EnvironmentAliasStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   environmentAlias,
-		}, nil
+		}), nil
 	}
 
 	if params.XContentfulVersion != environmentAlias.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	UpdateEnvironmentAliasFromEnvironmentAliasData(environmentAlias, *data)
 
-	return &cm.EnvironmentAliasStatusCode{
+	return snapshotResponse(&cm.EnvironmentAliasStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *environmentAlias,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -47,10 +47,10 @@ func (ts *Handler) GetEnvironmentAlias(_ context.Context, params cm.GetEnvironme
 
 	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
 	if environmentAlias == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
-	return environmentAlias, nil
+	return snapshotResponse(environmentAlias), nil
 }
 
 //nolint:ireturn
@@ -60,10 +60,10 @@ func (ts *Handler) DeleteEnvironmentAlias(_ context.Context, params cm.DeleteEnv
 
 	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
 	if environmentAlias == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
 	ts.environmentAliases.Delete(params.SpaceID, params.EnvironmentAliasID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

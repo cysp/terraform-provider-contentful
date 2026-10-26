@@ -736,6 +736,7 @@ func setContentTypeTaxonomyDrift(
 	metadata.Taxonomy = taxonomy
 	contentType.Metadata.SetTo(metadata)
 	contentType.Sys.Version++
+	server.SetContentTypeResponse(*contentType)
 }
 
 func contentTypeTaxonomyConceptScheme(id string) cm.ContentTypeMetadataTaxonomyItem {

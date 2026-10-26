@@ -23,7 +23,7 @@ func (ts *Handler) GetTeams(_ context.Context, params cm.GetTeamsParams) (cm.Get
 	limit := params.Limit.Or(100) //nolint:mnd
 
 	if skip < 0 || limit < 1 || limit > 100 {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil)), nil
 	}
 
 	start := min(skip, int64(len(teams)))
@@ -42,7 +42,7 @@ func (ts *Handler) GetTeams(_ context.Context, params cm.GetTeamsParams) (cm.Get
 		})
 	}
 
-	return &cm.TeamCollection{
+	return snapshotResponse(&cm.TeamCollection{
 		Sys: cm.TeamCollectionSys{
 			Type: cm.TeamCollectionSysTypeArray,
 		},
@@ -50,7 +50,7 @@ func (ts *Handler) GetTeams(_ context.Context, params cm.GetTeamsParams) (cm.Get
 		Skip:  cm.NewOptInt(int(skip)),
 		Limit: cm.NewOptInt(int(limit)),
 		Items: items,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -62,10 +62,10 @@ func (ts *Handler) CreateTeam(_ context.Context, req *cm.TeamData, params cm.Cre
 	team := NewTeamFromFields(params.OrganizationID, teamID, *req)
 	ts.teams.Set(params.OrganizationID, team.Sys.ID, &team)
 
-	return &cm.TeamStatusCode{
+	return snapshotResponse(&cm.TeamStatusCode{
 		StatusCode: http.StatusCreated,
 		Response:   team,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -75,10 +75,10 @@ func (ts *Handler) GetTeam(_ context.Context, params cm.GetTeamParams) (cm.GetTe
 
 	team := ts.teams.Get(params.OrganizationID, params.TeamID)
 	if team == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Team not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Team not found"), nil)), nil
 	}
 
-	return team, nil
+	return snapshotResponse(team), nil
 }
 
 //nolint:ireturn
@@ -91,22 +91,22 @@ func (ts *Handler) PutTeam(_ context.Context, req *cm.TeamData, params cm.PutTea
 		newTeam := NewTeamFromFields(params.OrganizationID, params.TeamID, *req)
 		ts.teams.Set(params.OrganizationID, newTeam.Sys.ID, &newTeam)
 
-		return &cm.TeamStatusCode{
+		return snapshotResponse(&cm.TeamStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   newTeam,
-		}, nil
+		}), nil
 	}
 
 	if params.XContentfulVersion != team.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	UpdateTeamFromFields(team, params.OrganizationID, params.TeamID, *req)
 
-	return &cm.TeamStatusCode{
+	return snapshotResponse(&cm.TeamStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *team,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -116,10 +116,10 @@ func (ts *Handler) DeleteTeam(_ context.Context, params cm.DeleteTeamParams) (cm
 
 	team := ts.teams.Get(params.OrganizationID, params.TeamID)
 	if team == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Team not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Team not found"), nil)), nil
 	}
 
 	ts.teams.Delete(params.OrganizationID, params.TeamID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

@@ -14,10 +14,10 @@ func (ts *Handler) GetExtension(_ context.Context, params cm.GetExtensionParams)
 
 	extension := ts.extensions.Get(params.SpaceID, params.EnvironmentID, params.ExtensionID)
 	if extension == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Extension not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Extension not found"), nil)), nil
 	}
 
-	return extension, nil
+	return snapshotResponse(extension), nil
 }
 
 //nolint:ireturn
@@ -26,7 +26,7 @@ func (ts *Handler) PutExtension(_ context.Context, req *cm.ExtensionData, params
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
 	extension := ts.extensions.Get(params.SpaceID, params.EnvironmentID, params.ExtensionID)
@@ -34,18 +34,18 @@ func (ts *Handler) PutExtension(_ context.Context, req *cm.ExtensionData, params
 		newExtension := NewExtensionFromFields(params.SpaceID, params.EnvironmentID, params.ExtensionID, *req)
 		ts.extensions.Set(params.SpaceID, params.EnvironmentID, params.ExtensionID, &newExtension)
 
-		return &cm.ExtensionStatusCode{
+		return snapshotResponse(&cm.ExtensionStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   newExtension,
-		}, nil
+		}), nil
 	}
 
 	UpdateExtensionFromFields(extension, *req)
 
-	return &cm.ExtensionStatusCode{
+	return snapshotResponse(&cm.ExtensionStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *extension,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -55,10 +55,10 @@ func (ts *Handler) DeleteExtension(_ context.Context, params cm.DeleteExtensionP
 
 	extension := ts.extensions.Get(params.SpaceID, params.EnvironmentID, params.ExtensionID)
 	if extension == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Extension not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Extension not found"), nil)), nil
 	}
 
 	ts.extensions.Delete(params.SpaceID, params.EnvironmentID, params.ExtensionID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

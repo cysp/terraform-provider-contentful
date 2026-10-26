@@ -20,19 +20,19 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
 	contentTypes := ts.contentTypes.List(params.SpaceID, params.EnvironmentID)
 
 	skip := params.Skip.Or(0)
 	if skip < 0 {
-		return NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "skip" is invalid. Please provide a value larger than or equal to 0`), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "skip" is invalid. Please provide a value larger than or equal to 0`), nil)), nil
 	}
 
 	limit := params.Limit.Or(100) //nolint:mnd
 	if limit < 0 || limit > 1000 {
-		return NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "limit" is invalid. Please provide a value between 0 and 1000`), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "limit" is invalid. Please provide a value between 0 and 1000`), nil)), nil
 	}
 
 	items := make([]cm.ContentType, 0, len(contentTypes))
@@ -47,7 +47,7 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 	start := min(skip, int64(len(items)))
 	end := min(start+limit, int64(len(items)))
 
-	return &cm.ContentTypeCollection{
+	return snapshotResponse(&cm.ContentTypeCollection{
 		Sys: cm.ContentTypeCollectionSys{
 			Type: cm.ContentTypeCollectionSysTypeArray,
 		},
@@ -55,7 +55,7 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 		Skip:  cm.NewOptInt(int(skip)),
 		Limit: cm.NewOptInt(int(limit)),
 		Items: items[start:end],
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -65,10 +65,10 @@ func (ts *Handler) GetContentType(_ context.Context, params cm.GetContentTypePar
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil)), nil
 	}
 
-	return contentType, nil
+	return snapshotResponse(contentType), nil
 }
 
 //nolint:ireturn
@@ -78,11 +78,11 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
 	if environment == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
 	if metadata, metadataSet := req.Metadata.Get(); metadataSet && contentTypeMetadataIsRejectedAsEmpty(metadata) {
-		return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), nil)), nil
 	}
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
@@ -90,15 +90,15 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 		newContentType := NewContentTypeFromRequestFields(params.SpaceID, params.EnvironmentID, params.ContentTypeID, *req)
 		ts.contentTypes.Set(params.SpaceID, params.EnvironmentID, params.ContentTypeID, &newContentType)
 
-		return &cm.ContentTypeStatusCode{
+		return snapshotResponse(&cm.ContentTypeStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   newContentType,
-		}, nil
+		}), nil
 	}
 
 	version, versionSet := params.XContentfulVersion.Get()
 	if !versionSet || version != contentType.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	if contentType.Sys.PublishedVersion.IsSet() {
@@ -108,19 +108,19 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 			params.ContentTypeID,
 		)
 		if removesNonOmittedPublishedField(publicationSnapshot, req.Fields) {
-			return NewContentfulManagementErrorStatusCodeBadRequest(
+			return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(
 				new("You need to omit a field before deleting it"),
 				nil,
-			), nil
+			)), nil
 		}
 	}
 
 	UpdateContentTypeFromRequestFields(contentType, *req)
 
-	return &cm.ContentTypeStatusCode{
+	return snapshotResponse(&cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *contentType,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -130,18 +130,18 @@ func (ts *Handler) DeleteContentType(_ context.Context, params cm.DeleteContentT
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil)), nil
 	}
 
 	if contentType.Sys.PublishedVersion.IsSet() {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Cannot delete published"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Cannot delete published"), nil)), nil
 	}
 
 	ts.contentTypes.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	ts.contentTypePublications.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	ts.editorInterfaces.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }
 
 //nolint:ireturn
@@ -151,11 +151,11 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil)), nil
 	}
 
 	if params.XContentfulVersion != contentType.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	publishContentType(contentType, time.Now().UTC())
@@ -181,10 +181,10 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 		newContentTypePublicationSnapshot(contentType.Fields),
 	)
 
-	return &cm.ContentTypeStatusCode{
+	return snapshotResponse(&cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *contentType,
-	}, nil
+	}), nil
 }
 
 func newContentTypePublicationSnapshot(fields []cm.ContentTypeFieldsItem) *contentTypePublicationSnapshot {
@@ -230,11 +230,11 @@ func (ts *Handler) DeactivateContentType(_ context.Context, params cm.Deactivate
 
 	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 	if contentType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil)), nil
 	}
 
 	if !contentType.Sys.PublishedVersion.IsSet() {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Not published"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Not published"), nil)), nil
 	}
 
 	contentType.Sys.PublishedVersion.Reset()
@@ -243,5 +243,5 @@ func (ts *Handler) DeactivateContentType(_ context.Context, params cm.Deactivate
 
 	ts.editorInterfaces.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
 
-	return contentType, nil
+	return snapshotResponse(contentType), nil
 }

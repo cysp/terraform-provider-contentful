@@ -14,10 +14,10 @@ func (ts *Handler) GetTag(_ context.Context, params cm.GetTagParams) (cm.GetTagR
 
 	tag := ts.tags.Get(params.SpaceID, params.EnvironmentID, params.TagID)
 	if tag == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Tag not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Tag not found"), nil)), nil
 	}
 
-	return tag, nil
+	return snapshotResponse(tag), nil
 }
 
 //nolint:ireturn
@@ -26,7 +26,7 @@ func (ts *Handler) PutTag(_ context.Context, req *cm.TagRequest, params cm.PutTa
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
 	tag := ts.tags.Get(params.SpaceID, params.EnvironmentID, params.TagID)
@@ -34,23 +34,23 @@ func (ts *Handler) PutTag(_ context.Context, req *cm.TagRequest, params cm.PutTa
 		newTag := NewTagFromRequest(params.SpaceID, params.EnvironmentID, params.TagID, req)
 		ts.tags.Set(params.SpaceID, params.EnvironmentID, params.TagID, &newTag)
 
-		return &cm.TagStatusCode{
+		return snapshotResponse(&cm.TagStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   newTag,
-		}, nil
+		}), nil
 	}
 
 	version, versionSet := params.XContentfulVersion.Get()
 	if !versionSet || version != tag.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	UpdateTagFromRequest(tag, req)
 
-	return &cm.TagStatusCode{
+	return snapshotResponse(&cm.TagStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *tag,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -60,10 +60,10 @@ func (ts *Handler) DeleteTag(_ context.Context, params cm.DeleteTagParams) (cm.D
 
 	tag := ts.tags.Get(params.SpaceID, params.EnvironmentID, params.TagID)
 	if tag == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Tag not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Tag not found"), nil)), nil
 	}
 
 	ts.tags.Delete(params.SpaceID, params.EnvironmentID, params.TagID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }
