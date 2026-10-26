@@ -147,8 +147,6 @@ func TestGeneratedLifecycleMutationRequestsPreserveRedirectPolicyAndRetryRateLim
 			baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
 				attempt := requestCount.Add(1)
 
-				assert.Equal(t, true, request.Context().Value(contentfulRequestNoRedirectContextKey{}))
-
 				status := http.StatusTooManyRequests
 				if attempt > 1 {
 					status = http.StatusBadRequest
@@ -170,7 +168,7 @@ func TestGeneratedLifecycleMutationRequestsPreserveRedirectPolicyAndRetryRateLim
 			)
 			require.NoError(t, err)
 
-			invoke(withContentfulRequestNoRedirect(t.Context()), client)
+			invoke(t.Context(), client)
 
 			assert.EqualValues(t, 2, requestCount.Load())
 		})
@@ -467,7 +465,7 @@ func TestContentfulHTTPClientDeclinesNoRedirectMutationRateLimitRetryBeyondDeadl
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
 	t.Cleanup(cancel)
 
-	request, err := http.NewRequestWithContext(withContentfulRequestNoRedirect(ctx), http.MethodDelete, "https://api.test.contentful.com/resource", nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodDelete, "https://api.test.contentful.com/resource", nil)
 	require.NoError(t, err)
 
 	response, err := contentfulRetryTestDoWithin(t, client, request)
@@ -1094,27 +1092,25 @@ func TestContentfulHTTPClientMutationRateLimitRetriesExactRequest(t *testing.T) 
 	t.Parallel()
 
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete} {
-		for _, noRedirect := range []bool{false, true} {
-			for _, outcome := range []struct {
-				name   string
-				status int
-				err    error
-			}{
-				{name: "success", status: http.StatusOK},
-				{name: "version conflict", status: http.StatusConflict},
-				{name: "server error", status: http.StatusInternalServerError},
-				{name: "transport error", err: errContentfulRetryTestConnectionLost},
-			} {
-				t.Run(fmt.Sprintf("%s/redirect-disabled=%t/%s", method, noRedirect, outcome.name), func(t *testing.T) {
-					t.Parallel()
-					testContentfulMutationRateLimitRetry(t, method, noRedirect, outcome.status, outcome.err)
-				})
-			}
+		for _, outcome := range []struct {
+			name   string
+			status int
+			err    error
+		}{
+			{name: "success", status: http.StatusOK},
+			{name: "version conflict", status: http.StatusConflict},
+			{name: "server error", status: http.StatusInternalServerError},
+			{name: "transport error", err: errContentfulRetryTestConnectionLost},
+		} {
+			t.Run(method+"/"+outcome.name, func(t *testing.T) {
+				t.Parallel()
+				testContentfulMutationRateLimitRetry(t, method, outcome.status, outcome.err)
+			})
 		}
 	}
 }
 
-func testContentfulMutationRateLimitRetry(t *testing.T, method string, noRedirect bool, terminalStatus int, terminalErr error) {
+func testContentfulMutationRateLimitRetry(t *testing.T, method string, terminalStatus int, terminalErr error) {
 	t.Helper()
 
 	const body = `{"name":"unchanged retry payload"}`
@@ -1146,9 +1142,6 @@ func testContentfulMutationRateLimitRetry(t *testing.T, method string, noRedirec
 	removeContentfulRetryTestDelay(retryClient)
 
 	ctx := t.Context()
-	if noRedirect {
-		ctx = withContentfulRequestNoRedirect(ctx)
-	}
 
 	request, err := http.NewRequestWithContext(ctx, method, "https://api.test.contentful.com/resource", strings.NewReader(body))
 	require.NoError(t, err)

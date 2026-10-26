@@ -15,8 +15,6 @@ import (
 
 type contentfulRequestMethodContextKey struct{}
 
-type contentfulRequestNoRedirectContextKey struct{}
-
 type contentfulRequestRetryStateContextKey struct{}
 
 type contentfulRequestRetryState struct {
@@ -225,10 +223,6 @@ func contentfulRetryPolicy(ctx context.Context, response *http.Response, err err
 	}
 }
 
-func withContentfulRequestNoRedirect(ctx context.Context) context.Context {
-	return context.WithValue(ctx, contentfulRequestNoRedirectContextKey{}, true)
-}
-
 const contentfulDefaultRedirectLimit = 10
 
 var errContentfulRedirectLimit = errors.New("stopped after 10 redirects")
@@ -237,7 +231,16 @@ var errContentfulRedirectLimit = errors.New("stopped after 10 redirects")
 // the outer client can follow a redirect that the inner client declined.
 func contentfulCheckRedirect(policy func(*http.Request, []*http.Request) error) func(*http.Request, []*http.Request) error {
 	return func(request *http.Request, via []*http.Request) error {
-		if noRedirect, _ := request.Context().Value(contentfulRequestNoRedirectContextKey{}).(bool); noRedirect {
+		// Inspect the original method: 301/302/303 may already have rewritten
+		// the proposed request to GET before CheckRedirect runs.
+		method := request.Method
+		if len(via) > 0 {
+			method = via[0].Method
+		}
+
+		switch method {
+		case http.MethodGet, http.MethodHead, http.MethodOptions:
+		default:
 			return http.ErrUseLastResponse
 		}
 
