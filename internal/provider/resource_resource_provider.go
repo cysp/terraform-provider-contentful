@@ -107,7 +107,9 @@ func (r *appDefinitionResourceProviderResource) Create(ctx context.Context, req 
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceProviderIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, resourceProviderIdentityAttributeNames(), &data, "resource provider", map[string]string{"organization_id": params.OrganizationID, "app_definition_id": params.AppDefinitionID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl
@@ -224,7 +226,9 @@ func (r *appDefinitionResourceProviderResource) Update(ctx context.Context, req 
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceProviderIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, resourceProviderIdentityAttributeNames(), &data, "resource provider", map[string]string{"organization_id": params.OrganizationID, "app_definition_id": params.AppDefinitionID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl

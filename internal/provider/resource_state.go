@@ -20,6 +20,27 @@ func setResourceIdentityAndState(
 	identityAttributeNames []string,
 	stateModel any,
 ) diag.Diagnostics {
+	stagedState := *state
+
+	diags := stagedState.Set(ctx, stateModel)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(publishResourceIdentityAndState(ctx, identity, state, identityAttributeNames, stagedState)...)
+
+	return diags
+}
+
+// publishResourceIdentityAndState commits an already encoded state and its
+// derived identity together. Neither target changes if identity encoding fails.
+func publishResourceIdentityAndState(
+	ctx context.Context,
+	identity *tfsdk.ResourceIdentity,
+	state *tfsdk.State,
+	identityAttributeNames []string,
+	stagedState tfsdk.State,
+) diag.Diagnostics {
 	if identity == nil {
 		return diag.Diagnostics{
 			diag.NewErrorDiagnostic(
@@ -30,12 +51,8 @@ func setResourceIdentityAndState(
 	}
 
 	stagedIdentity := *identity
-	stagedState := *state
 
-	diags := stagedState.Set(ctx, stateModel)
-	if diags.HasError() {
-		return diags
-	}
+	var diags diag.Diagnostics
 
 	for _, attributeName := range identityAttributeNames {
 		attributePath := path.Root(attributeName)

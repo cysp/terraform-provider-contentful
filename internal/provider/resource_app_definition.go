@@ -118,7 +118,9 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appDefinitionIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, appDefinitionIdentityAttributeNames(), &data, "app definition", map[string]string{"organization_id": params.OrganizationID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl
@@ -251,7 +253,9 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appDefinitionIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, appDefinitionIdentityAttributeNames(), &data, "app definition", map[string]string{"organization_id": params.OrganizationID, "app_definition_id": params.AppDefinitionID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl

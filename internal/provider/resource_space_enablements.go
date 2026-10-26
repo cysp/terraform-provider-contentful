@@ -109,13 +109,15 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, spaceEnablementsIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, spaceEnablementsIdentityAttributeNames(), &data, "space enablements", map[string]string{"space_id": params.SpaceID})
+	resp.Diagnostics.Append(stateDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -250,13 +252,15 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, spaceEnablementsIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, spaceEnablementsIdentityAttributeNames(), &data, "space enablements", map[string]string{"space_id": params.SpaceID})
+	resp.Diagnostics.Append(stateDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *spaceEnablementsResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {

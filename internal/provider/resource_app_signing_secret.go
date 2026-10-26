@@ -112,7 +112,9 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data, "app signing secret", map[string]string{"organization_id": params.OrganizationID, "app_definition_id": params.AppDefinitionID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -253,7 +255,9 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data, "app signing secret", map[string]string{"organization_id": params.OrganizationID, "app_definition_id": params.AppDefinitionID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func maskAppSigningSecretValues(ctx context.Context, values ...types.String) context.Context {

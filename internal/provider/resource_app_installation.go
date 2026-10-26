@@ -122,7 +122,9 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appInstallationIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, appInstallationIdentityAttributeNames(), &data, "app installation", map[string]string{"space_id": params.SpaceID, "environment_id": params.EnvironmentID, "app_definition_id": params.AppDefinitionID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -282,7 +284,9 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appInstallationIdentityAttributeNames(), &data)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, appInstallationIdentityAttributeNames(), &data, "app installation", map[string]string{"space_id": params.SpaceID, "environment_id": params.EnvironmentID, "app_definition_id": params.AppDefinitionID})
+	resp.Diagnostics.Append(stateDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl
