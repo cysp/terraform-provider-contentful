@@ -312,6 +312,7 @@ func TestAccRoleResourceImportedVersionUsedForUpdate(t *testing.T) {
 	require.True(t, ok)
 	// Seed before serving any requests; the mock does not model version increments.
 	role.Sys.Version = 37
+	server.SetRoleResponse(*role)
 
 	var puts, posts atomic.Int64
 

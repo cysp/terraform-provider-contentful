@@ -16,11 +16,11 @@ func (ts *Handler) CreateAppAction(_ context.Context, req *cm.AppActionCreateDat
 	defer ts.mu.Unlock()
 
 	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
-		return appDefinitionDoesNotExistError(), nil
+		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 
 	if req.ID.Set && req.Type != "function-invocation" {
-		return NewContentfulManagementErrorStatusCodeValidationFailed(new("The property \"id\" is not expected"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeValidationFailed(new("The property \"id\" is not expected"), nil)), nil
 	}
 
 	actionID := generateResourceID()
@@ -35,12 +35,12 @@ func (ts *Handler) CreateAppAction(_ context.Context, req *cm.AppActionCreateDat
 
 	action, validation := newAppAction(params.OrganizationID, params.AppDefinitionID, actionID, data)
 	if validation != nil {
-		return validation, nil
+		return snapshotResponse(validation), nil
 	}
 
 	ts.appActions[[3]string{params.OrganizationID, params.AppDefinitionID, action.Sys.ID}] = action
 
-	return action, nil
+	return snapshotResponse(action), nil
 }
 
 //nolint:ireturn
@@ -50,17 +50,17 @@ func (ts *Handler) UpdateAppAction(_ context.Context, req *cm.AppActionData, par
 
 	key := [3]string{params.OrganizationID, params.AppDefinitionID, params.AppActionID}
 	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) || ts.appActions[key] == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppAction not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppAction not found"), nil)), nil
 	}
 
 	action, validation := newAppAction(params.OrganizationID, params.AppDefinitionID, params.AppActionID, *req)
 	if validation != nil {
-		return validation, nil
+		return snapshotResponse(validation), nil
 	}
 
 	ts.appActions[key] = action
 
-	return action, nil
+	return snapshotResponse(action), nil
 }
 
 //nolint:ireturn
@@ -70,10 +70,10 @@ func (ts *Handler) GetAppAction(_ context.Context, params cm.GetAppActionParams)
 
 	action := ts.appActions[[3]string{params.OrganizationID, params.AppDefinitionID, params.AppActionID}]
 	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) || action == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppAction not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppAction not found"), nil)), nil
 	}
 
-	return action, nil
+	return snapshotResponse(action), nil
 }
 
 //nolint:ireturn
@@ -83,12 +83,12 @@ func (ts *Handler) DeleteAppAction(_ context.Context, params cm.DeleteAppActionP
 
 	key := [3]string{params.OrganizationID, params.AppDefinitionID, params.AppActionID}
 	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) || ts.appActions[key] == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppAction not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppAction not found"), nil)), nil
 	}
 
 	delete(ts.appActions, key)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }
 
 const defaultAppActionCollectionLimit = 100
@@ -99,12 +99,12 @@ func (ts *Handler) GetAppActions(_ context.Context, params cm.GetAppActionsParam
 	defer ts.mu.Unlock()
 
 	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
-		return appDefinitionDoesNotExistError(), nil
+		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 
 	skip, limit := params.Skip.Or(0), params.Limit.Or(defaultAppActionCollectionLimit)
 	if skip < 0 || limit < 1 || limit > 1000 {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination: skip must be nonnegative and limit must be between 1 and 1000"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination: skip must be nonnegative and limit must be between 1 and 1000"), nil)), nil
 	}
 
 	items := make([]cm.AppAction, 0)
@@ -119,10 +119,10 @@ func (ts *Handler) GetAppActions(_ context.Context, params cm.GetAppActionsParam
 	start := min(skip, int64(len(items)))
 	end := min(start+limit, int64(len(items)))
 
-	return &cm.AppActionCollection{
+	return snapshotResponse(&cm.AppActionCollection{
 		Sys:   cm.AppActionCollectionSys{Type: cm.AppActionCollectionSysTypeArray},
 		Total: cm.NewOptInt(len(items)), Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Items: items[start:end],
-	}, nil
+	}), nil
 }
 
 // newAppAction models the definition forms verified in docs/research/app-framework/actions.md.

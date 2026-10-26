@@ -15,10 +15,10 @@ func (ts *Handler) GetResourceProvider(_ context.Context, params cm.GetResourceP
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil)), nil
 	}
 
-	return appDefinitionResourceProvider, nil
+	return snapshotResponse(appDefinitionResourceProvider), nil
 }
 
 //nolint:ireturn
@@ -28,7 +28,7 @@ func (ts *Handler) PutResourceProvider(_ context.Context, req *cm.ResourceProvid
 
 	appDefinition := ts.appDefinitions[params.AppDefinitionID]
 	if appDefinition == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
@@ -36,18 +36,18 @@ func (ts *Handler) PutResourceProvider(_ context.Context, req *cm.ResourceProvid
 		appDefinitionResourceProvider := NewResourceProviderFromRequest(params.OrganizationID, params.AppDefinitionID, *req)
 		ts.appDefinitionResourceProviders[params.AppDefinitionID] = &appDefinitionResourceProvider
 
-		return &cm.ResourceProviderStatusCode{
+		return snapshotResponse(&cm.ResourceProviderStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   appDefinitionResourceProvider,
-		}, nil
+		}), nil
 	}
 
 	UpdateResourceProviderFromRequest(appDefinitionResourceProvider, params.OrganizationID, params.AppDefinitionID, *req)
 
-	return &cm.ResourceProviderStatusCode{
+	return snapshotResponse(&cm.ResourceProviderStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *appDefinitionResourceProvider,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -57,10 +57,10 @@ func (ts *Handler) DeleteResourceProvider(_ context.Context, params cm.DeleteRes
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil)), nil
 	}
 
 	delete(ts.appDefinitionResourceProviders, params.AppDefinitionID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

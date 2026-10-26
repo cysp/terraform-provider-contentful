@@ -15,10 +15,10 @@ func (ts *Handler) GetAppSigningSecret(_ context.Context, params cm.GetAppSignin
 
 	appSigningSecret := ts.appSigningSecrets[params.AppDefinitionID]
 	if appSigningSecret == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppSigningSecret not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppSigningSecret not found"), nil)), nil
 	}
 
-	return appSigningSecret, nil
+	return snapshotResponse(appSigningSecret), nil
 }
 
 //nolint:ireturn
@@ -28,7 +28,7 @@ func (ts *Handler) PutAppSigningSecret(_ context.Context, req *cm.AppSigningSecr
 
 	appDefinition := ts.appDefinitions[params.AppDefinitionID]
 	if appDefinition == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
 
 	appSigningSecret := ts.appSigningSecrets[params.AppDefinitionID]
@@ -37,18 +37,18 @@ func (ts *Handler) PutAppSigningSecret(_ context.Context, req *cm.AppSigningSecr
 
 		ts.appSigningSecrets[params.AppDefinitionID] = &appSigningSecret
 
-		return &cm.AppSigningSecretStatusCode{
+		return snapshotResponse(&cm.AppSigningSecretStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   appSigningSecret,
-		}, nil
+		}), nil
 	}
 
 	UpdateAppSigningSecretFromRequest(appSigningSecret, params.OrganizationID, params.AppDefinitionID, *req)
 
-	return &cm.AppSigningSecretStatusCode{
+	return snapshotResponse(&cm.AppSigningSecretStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *appSigningSecret,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -58,10 +58,10 @@ func (ts *Handler) DeleteAppSigningSecret(_ context.Context, params cm.DeleteApp
 
 	appSigningSecret := ts.appSigningSecrets[params.AppDefinitionID]
 	if appSigningSecret == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppSigningSecret not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppSigningSecret not found"), nil)), nil
 	}
 
 	delete(ts.appSigningSecrets, params.AppDefinitionID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

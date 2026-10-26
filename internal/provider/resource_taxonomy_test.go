@@ -949,6 +949,7 @@ func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.
 				}
 
 				scheme.Concepts = []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("furniture")}
+				server.SetTaxonomyConceptSchemeResponse(*scheme)
 
 				return nil
 			},
@@ -1667,6 +1668,7 @@ func mutateTaxonomyConceptAltLabels(ctx context.Context, server *cmt.Server, loc
 	}
 
 	concept.AltLabels = cm.NewOptLocalizedStringList(cm.LocalizedStringList{locale: labels})
+	server.SetTaxonomyConceptResponse(*concept)
 
 	return nil
 }
@@ -1728,6 +1730,7 @@ func injectTaxonomyConceptLabelLocaleIntoStoredResponse(t *testing.T, server *cm
 	concept.AltLabels = cm.NewOptLocalizedStringList(altLabels)
 	concept.HiddenLabels = cm.NewOptLocalizedStringList(hiddenLabels)
 	concept.Sys.Version++
+	server.SetTaxonomyConceptResponse(*concept)
 }
 
 func taxonomyConfigVariables(conceptLabel, schemeLabel string) config.Variables {

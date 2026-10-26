@@ -14,15 +14,15 @@ func (ts *Handler) GetResourceType(_ context.Context, params cm.GetResourceTypeP
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil)), nil
 	}
 
 	appDefinitionResourceType := ts.appDefinitionResourceTypes[params.ResourceTypeID]
 	if appDefinitionResourceType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceType not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ResourceType not found"), nil)), nil
 	}
 
-	return appDefinitionResourceType, nil
+	return snapshotResponse(appDefinitionResourceType), nil
 }
 
 //nolint:ireturn
@@ -32,7 +32,7 @@ func (ts *Handler) PutResourceType(_ context.Context, req *cm.ResourceTypeData, 
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil)), nil
 	}
 
 	resourceProviderID := appDefinitionResourceProvider.Sys.ID
@@ -43,18 +43,18 @@ func (ts *Handler) PutResourceType(_ context.Context, req *cm.ResourceTypeData, 
 		newResourceType := NewResourceTypeFromRequest(params.OrganizationID, params.AppDefinitionID, resourceProviderID, params.ResourceTypeID, *req)
 		ts.appDefinitionResourceTypes[params.ResourceTypeID] = &newResourceType
 
-		return &cm.ResourceTypeStatusCode{
+		return snapshotResponse(&cm.ResourceTypeStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   newResourceType,
-		}, nil
+		}), nil
 	}
 
 	UpdateResourceTypeFromFields(appDefinitionResourceType, params.OrganizationID, params.AppDefinitionID, resourceProviderID, params.ResourceTypeID, *req)
 
-	return &cm.ResourceTypeStatusCode{
+	return snapshotResponse(&cm.ResourceTypeStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *appDefinitionResourceType,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -64,15 +64,15 @@ func (ts *Handler) DeleteResourceType(_ context.Context, params cm.DeleteResourc
 
 	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
 	if appDefinitionResourceProvider == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil)), nil
 	}
 
 	appDefinitionResourceType := ts.appDefinitionResourceTypes[params.ResourceTypeID]
 	if appDefinitionResourceType == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("ResourceType not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ResourceType not found"), nil)), nil
 	}
 
 	delete(ts.appDefinitionResourceTypes, params.ResourceTypeID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

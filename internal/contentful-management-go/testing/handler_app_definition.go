@@ -16,10 +16,10 @@ func (ts *Handler) CreateAppDefinition(_ context.Context, req *cm.AppDefinitionD
 	appDefinition := NewAppDefinitionFromFields(params.OrganizationID, appDefinitionID, *req)
 	ts.appDefinitions[appDefinition.Sys.ID] = &appDefinition
 
-	return &cm.AppDefinitionStatusCode{
+	return snapshotResponse(&cm.AppDefinitionStatusCode{
 		StatusCode: http.StatusCreated,
 		Response:   appDefinition,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -29,10 +29,10 @@ func (ts *Handler) GetAppDefinition(_ context.Context, params cm.GetAppDefinitio
 
 	appDefinition := ts.appDefinitions[params.AppDefinitionID]
 	if appDefinition == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
 
-	return appDefinition, nil
+	return snapshotResponse(appDefinition), nil
 }
 
 //nolint:ireturn
@@ -45,18 +45,18 @@ func (ts *Handler) PutAppDefinition(_ context.Context, req *cm.AppDefinitionData
 		newAppDefinition := NewAppDefinitionFromFields(params.OrganizationID, params.AppDefinitionID, *req)
 		ts.appDefinitions[newAppDefinition.Sys.ID] = &newAppDefinition
 
-		return &cm.AppDefinitionStatusCode{
+		return snapshotResponse(&cm.AppDefinitionStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   newAppDefinition,
-		}, nil
+		}), nil
 	}
 
 	UpdateAppDefinitionFromFields(appDefinition, params.OrganizationID, params.AppDefinitionID, *req)
 
-	return &cm.AppDefinitionStatusCode{
+	return snapshotResponse(&cm.AppDefinitionStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *appDefinition,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -66,7 +66,7 @@ func (ts *Handler) DeleteAppDefinition(_ context.Context, params cm.DeleteAppDef
 
 	appDefinition := ts.appDefinitions[params.AppDefinitionID]
 	if appDefinition == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
 
 	for key := range ts.appActions {
@@ -78,5 +78,5 @@ func (ts *Handler) DeleteAppDefinition(_ context.Context, params cm.DeleteAppDef
 	delete(ts.appDefinitions, params.AppDefinitionID)
 	delete(ts.appEventSubscriptions, [2]string{params.OrganizationID, params.AppDefinitionID})
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

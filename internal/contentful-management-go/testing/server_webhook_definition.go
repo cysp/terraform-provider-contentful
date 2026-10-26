@@ -23,8 +23,5 @@ func (s *Server) StoredWebhookDefinition(spaceID, webhookID string) (cm.WebhookD
 		return cm.WebhookDefinition{}, false
 	}
 
-	result := *stored
-	result.Headers = append(cm.WebhookDefinitionHeaders(nil), stored.Headers...)
-
-	return result, true
+	return snapshotResponse(*stored), true
 }
