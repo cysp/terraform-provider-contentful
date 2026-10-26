@@ -163,6 +163,12 @@ func (r *localeResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, localeIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, localeIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {

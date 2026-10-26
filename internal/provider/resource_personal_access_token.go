@@ -155,6 +155,12 @@ func (r *personalAccessTokenResource) Read(ctx context.Context, req resource.Rea
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, personalAccessTokenIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, personalAccessTokenIdentityAttributeNames(), &data)...)
 }
 
