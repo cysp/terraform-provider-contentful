@@ -15,17 +15,17 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
 	skip := params.Skip.Or(0)
 	if skip < 0 {
-		return NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "skip" is invalid. Please provide a value larger than or equal to 0`), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "skip" is invalid. Please provide a value larger than or equal to 0`), nil)), nil
 	}
 
 	limit := params.Limit.Or(100) //nolint:mnd
 	if limit < 0 || limit > 1000 {
-		return NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "limit" is invalid. Please provide a value between 0 and 1000`), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeInvalidQuery(new(`The value provided for "limit" is invalid. Please provide a value between 0 and 1000`), nil)), nil
 	}
 
 	entries := make([]cm.Entry, 0)
@@ -55,7 +55,7 @@ func (ts *Handler) GetEntries(_ context.Context, params cm.GetEntriesParams) (cm
 		Items: entries[start:end],
 	}
 
-	return &collection, nil
+	return snapshotResponse(&collection), nil
 }
 
 //nolint:ireturn
@@ -64,7 +64,7 @@ func (ts *Handler) CreateEntry(_ context.Context, req *cm.EntryRequest, params c
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
 	entryID := generateResourceID()
@@ -72,10 +72,10 @@ func (ts *Handler) CreateEntry(_ context.Context, req *cm.EntryRequest, params c
 	newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, params.XContentfulContentType, entryID, req)
 	ts.entries.Set(params.SpaceID, params.EnvironmentID, entryID, &newEntry)
 
-	return &cm.EntryStatusCode{
+	return snapshotResponse(&cm.EntryStatusCode{
 		StatusCode: http.StatusCreated,
 		Response:   ts.entryMutationResponse(newEntry),
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -85,12 +85,12 @@ func (ts *Handler) GetEntry(_ context.Context, params cm.GetEntryParams) (cm.Get
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil)), nil
 	}
 
 	response := projectEntryResponse(*entry)
 
-	return &response, nil
+	return snapshotResponse(&response), nil
 }
 
 //nolint:ireturn
@@ -99,38 +99,38 @@ func (ts *Handler) PutEntry(_ context.Context, req *cm.EntryRequest, params cm.P
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
 		contentTypeID, contentTypeSet := params.XContentfulContentType.Get()
 		if !contentTypeSet {
-			return NewContentfulManagementErrorStatusCodeBadRequest(
+			return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(
 				new("You should provide a content type in X-Contentful-Content-Type request header."), nil,
-			), nil
+			)), nil
 		}
 
 		newEntry := NewEntryFromRequest(params.SpaceID, params.EnvironmentID, contentTypeID, params.EntryID, req)
 		ts.entries.Set(params.SpaceID, params.EnvironmentID, params.EntryID, &newEntry)
 
-		return &cm.EntryStatusCode{
+		return snapshotResponse(&cm.EntryStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   ts.entryMutationResponse(newEntry),
-		}, nil
+		}), nil
 	}
 
 	version, versionSet := params.XContentfulVersion.Get()
 	if !versionSet || version != entry.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	UpdateEntryFromRequest(entry, req)
 
-	return &cm.EntryStatusCode{
+	return snapshotResponse(&cm.EntryStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   ts.entryMutationResponse(*entry),
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -140,16 +140,16 @@ func (ts *Handler) DeleteEntry(_ context.Context, params cm.DeleteEntryParams) (
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), nil)), nil
 	}
 
 	if entry.Sys.PublishedVersion.IsSet() {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Cannot delete published"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Cannot delete published"), nil)), nil
 	}
 
 	ts.entries.Delete(params.SpaceID, params.EnvironmentID, params.EntryID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }
 
 //nolint:ireturn
@@ -159,19 +159,19 @@ func (ts *Handler) PublishEntry(_ context.Context, params cm.PublishEntryParams)
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Entry not found"), nil)), nil
 	}
 
 	if params.XContentfulVersion != entry.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	publishEntry(entry)
 
-	return &cm.EntryStatusCode{
+	return snapshotResponse(&cm.EntryStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   ts.entryMutationResponse(*entry),
-	}, nil
+	}), nil
 }
 
 func (ts *Handler) entryMutationResponse(entry cm.Entry) cm.Entry {
@@ -191,11 +191,11 @@ func (ts *Handler) UnpublishEntry(_ context.Context, params cm.UnpublishEntryPar
 
 	entry := ts.entries.Get(params.SpaceID, params.EnvironmentID, params.EntryID)
 	if entry == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), nil)), nil
 	}
 
 	if !entry.Sys.PublishedVersion.IsSet() {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Not published"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Not published"), nil)), nil
 	}
 
 	entry.Sys.Version++
@@ -203,5 +203,5 @@ func (ts *Handler) UnpublishEntry(_ context.Context, params cm.UnpublishEntryPar
 
 	response := ts.entryMutationResponse(*entry)
 
-	return &response, nil
+	return snapshotResponse(&response), nil
 }

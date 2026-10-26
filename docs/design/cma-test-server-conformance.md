@@ -15,6 +15,27 @@ The first-party source links below are pinned to reviewed
 `cc096a337f0e1db6114e8da645d69bb6eb90f11c` so that later upstream changes do
 not silently alter this evidence.
 
+## Response ownership
+
+Every Handler endpoint returns a detached snapshot of stored fixture data,
+including nested maps, slices, raw JSON, and collection items. The snapshot is
+copied while holding the handler mutex, before the generated HTTP server encodes
+it. Later mutations cannot change an earlier response, and direct callers cannot
+change stored data by editing returned values. StoredAppInstallation and
+StoredWebhookDefinition provide the same ownership guarantee for unredacted data.
+
+The private snapshot operation copies generated DTO values without invoking JSON
+codecs: optional flags, nil versus empty collections, timestamps, and intentionally
+invalid fault fixtures retain their Go representation. It supports the acyclic
+exported-field DTO graphs used by this server; it is not an arbitrary Go-object
+cloner. Response redaction remains the endpoint's responsibility before copying.
+
+Use SetContentTypeResponse, SetRoleResponse, SetTaxonomyConceptResponse, or
+SetTaxonomyConceptSchemeResponse when a test needs an exact stored response, including an adversarial version or value.
+These methods own a copy and bypass ordinary request validation and lifecycle
+side effects. Ordinary SetX methods and direct request inputs may retain caller
+storage; callers must not mutate that storage while the server retains it.
+
 ## Endpoint contracts
 
 The sections below separate external evidence, default fake behavior, the

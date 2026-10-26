@@ -20,10 +20,10 @@ func (ts *Handler) GetLivePreviewVariables(_ context.Context, params cm.GetLiveP
 
 	variables := ts.livePreviewVariables.Get(params.SpaceID, params.EnvironmentID)
 	if variables == nil {
-		return livePreviewVariablesError(http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found."), nil
+		return snapshotResponse(livePreviewVariablesError(http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")), nil
 	}
 
-	return variables, nil
+	return snapshotResponse(variables), nil
 }
 
 //nolint:ireturn
@@ -36,14 +36,14 @@ func (ts *Handler) PutLivePreviewVariables(_ context.Context, req *cm.LivePrevie
 	}
 
 	if params.XContentfulVersion < 0 {
-		return livePreviewVariablesError(http.StatusBadRequest, "BadRequest", "The 'x-contentful-version' header is missing or invalid."), nil
+		return snapshotResponse(livePreviewVariablesError(http.StatusBadRequest, "BadRequest", "The 'x-contentful-version' header is missing or invalid.")), nil
 	}
 
 	version := 1
 
 	if variables := ts.livePreviewVariables.Get(params.SpaceID, params.EnvironmentID); variables != nil {
 		if params.XContentfulVersion != variables.Sys.Version {
-			return livePreviewVariablesError(http.StatusConflict, cm.ErrorSysIDVersionMismatch, "The given version value is not the current one"), nil
+			return snapshotResponse(livePreviewVariablesError(http.StatusConflict, cm.ErrorSysIDVersionMismatch, "The given version value is not the current one")), nil
 		}
 
 		version = variables.Sys.Version + 1
@@ -55,7 +55,7 @@ func (ts *Handler) PutLivePreviewVariables(_ context.Context, req *cm.LivePrevie
 	}
 
 	if failure != nil {
-		return failure, nil
+		return snapshotResponse(failure), nil
 	}
 
 	variables := &cm.LivePreviewVariables{
@@ -68,7 +68,7 @@ func (ts *Handler) PutLivePreviewVariables(_ context.Context, req *cm.LivePrevie
 	}
 	ts.livePreviewVariables.Set(params.SpaceID, params.EnvironmentID, variables)
 
-	return variables, nil
+	return snapshotResponse(variables), nil
 }
 
 //nolint:ireturn
@@ -82,7 +82,7 @@ func (ts *Handler) DeleteLivePreviewVariables(_ context.Context, params cm.Delet
 
 	ts.livePreviewVariables.Delete(params.SpaceID, params.EnvironmentID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }
 
 func livePreviewVariablesError(statusCode int, id, message string) *cm.LivePreviewVariablesErrorStatusCode {

@@ -13,12 +13,12 @@ func (ts *Handler) GetAppInstallation(_ context.Context, params cm.GetAppInstall
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
 	if appInstallation == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"AppInstallation does not exist."`)), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"AppInstallation does not exist."`))), nil
 	}
 
 	return appInstallationResponse(appInstallation, ts.appDefinitions[params.AppDefinitionID])
@@ -30,12 +30,12 @@ func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallation
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
 	definition := ts.appDefinitions[params.AppDefinitionID]
 	if definition == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
@@ -46,7 +46,7 @@ func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallation
 	}
 
 	if validation != nil {
-		return validation, nil
+		return snapshotResponse(validation), nil
 	}
 
 	fields := cm.AppInstallationData{Parameters: parameters}
@@ -54,10 +54,10 @@ func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallation
 		newAppInstallation := NewAppInstallationFromFields(params.SpaceID, params.EnvironmentID, params.AppDefinitionID, fields)
 		ts.appInstallations.Set(params.SpaceID, params.EnvironmentID, params.AppDefinitionID, &newAppInstallation)
 
-		return &cm.AppInstallationStatusCode{
+		return snapshotResponse(&cm.AppInstallationStatusCode{
 			StatusCode: http.StatusOK,
 			Response:   newAppInstallation,
-		}, nil
+		}), nil
 	}
 
 	UpdateAppInstallationFromFields(appInstallation, fields)
@@ -67,10 +67,10 @@ func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallation
 		return nil, err
 	}
 
-	return &cm.AppInstallationStatusCode{
+	return snapshotResponse(&cm.AppInstallationStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *response,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -80,10 +80,10 @@ func (ts *Handler) DeleteAppInstallation(_ context.Context, params cm.DeleteAppI
 
 	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
 	if appInstallation == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"AppInstallation does not exist."`)), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"AppInstallation does not exist."`))), nil
 	}
 
 	ts.appInstallations.Delete(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

@@ -13,15 +13,15 @@ func (ts *Handler) GetWebhookSigningSecret(_ context.Context, params cm.GetWebho
 
 	// The master environment is the mock's existing space-presence fixture.
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
 	secret, ok := ts.webhookSigningSecrets[params.SpaceID]
 	if !ok {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"WebhookSigningSecret does not exist."`)), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"WebhookSigningSecret does not exist."`))), nil
 	}
 
-	return &secret, nil
+	return snapshotResponse(&secret), nil
 }
 
 //nolint:ireturn
@@ -30,11 +30,11 @@ func (ts *Handler) PutWebhookSigningSecret(_ context.Context, req *cm.WebhookSig
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
 	if req.Validate() != nil {
-		return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), nil)), nil
 	}
 
 	_, exists := ts.webhookSigningSecrets[params.SpaceID]
@@ -49,10 +49,10 @@ func (ts *Handler) PutWebhookSigningSecret(_ context.Context, req *cm.WebhookSig
 	ts.webhookSigningSecrets[params.SpaceID] = secret
 
 	if exists {
-		return (*cm.PutWebhookSigningSecretOK)(&secret), nil
+		return snapshotResponse((*cm.PutWebhookSigningSecretOK)(&secret)), nil
 	}
 
-	return (*cm.PutWebhookSigningSecretCreated)(&secret), nil
+	return snapshotResponse((*cm.PutWebhookSigningSecretCreated)(&secret)), nil
 }
 
 //nolint:ireturn
@@ -61,14 +61,14 @@ func (ts *Handler) DeleteWebhookSigningSecret(_ context.Context, params cm.Delet
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
 	if _, ok := ts.webhookSigningSecrets[params.SpaceID]; !ok {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"WebhookSigningSecret does not exist."`)), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"WebhookSigningSecret does not exist."`))), nil
 	}
 
 	delete(ts.webhookSigningSecrets, params.SpaceID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

@@ -29,5 +29,5 @@ func (ts *Handler) GetMarketplaceAppDefinitions(_ context.Context, params cm.Get
 		response.Total++
 	}
 
-	return &response, nil
+	return snapshotResponse(&response), nil
 }

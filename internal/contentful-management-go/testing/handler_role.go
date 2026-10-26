@@ -15,7 +15,7 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
 	values := ts.roles.List(params.SpaceID)
@@ -24,7 +24,7 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 
 	skip, limit := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
 	if skip < 0 || limit < 1 {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil)), nil
 	}
 
 	start := min(skip, int64(len(values)))
@@ -35,7 +35,7 @@ func (ts *Handler) GetRoles(_ context.Context, params cm.GetRolesParams) (cm.Get
 		items = append(items, *value)
 	}
 
-	return &cm.RoleCollection{Sys: cm.RoleCollectionSys{Type: cm.RoleCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}, nil
+	return snapshotResponse(&cm.RoleCollection{Sys: cm.RoleCollectionSys{Type: cm.RoleCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}), nil
 }
 
 //nolint:ireturn
@@ -44,16 +44,16 @@ func (ts *Handler) CreateRole(_ context.Context, req *cm.RoleData, params cm.Cre
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
 	role := NewRoleFromFields(params.SpaceID, generateResourceID(), *req)
 	ts.roles.Set(params.SpaceID, role.Sys.ID, &role)
 
-	return &cm.RoleStatusCode{
+	return snapshotResponse(&cm.RoleStatusCode{
 		StatusCode: http.StatusCreated,
 		Response:   role,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -63,10 +63,10 @@ func (ts *Handler) GetRole(_ context.Context, params cm.GetRoleParams) (cm.GetRo
 
 	role := ts.roles.Get(params.SpaceID, params.RoleID)
 	if role == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Role not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Role not found"), nil)), nil
 	}
 
-	return role, nil
+	return snapshotResponse(role), nil
 }
 
 //nolint:ireturn
@@ -75,7 +75,7 @@ func (ts *Handler) UpdateRole(_ context.Context, req *cm.RoleData, params cm.Upd
 	defer ts.mu.Unlock()
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
 	role := ts.roles.Get(params.SpaceID, params.RoleID)
@@ -83,22 +83,22 @@ func (ts *Handler) UpdateRole(_ context.Context, req *cm.RoleData, params cm.Upd
 		newRole := NewRoleFromFields(params.SpaceID, params.RoleID, *req)
 		ts.roles.Set(params.SpaceID, newRole.Sys.ID, &newRole)
 
-		return &cm.RoleStatusCode{
+		return snapshotResponse(&cm.RoleStatusCode{
 			StatusCode: http.StatusCreated,
 			Response:   newRole,
-		}, nil
+		}), nil
 	}
 
 	if params.XContentfulVersion != role.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	UpdateRoleFromFields(role, *req)
 
-	return &cm.RoleStatusCode{
+	return snapshotResponse(&cm.RoleStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *role,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -108,10 +108,10 @@ func (ts *Handler) DeleteRole(_ context.Context, params cm.DeleteRoleParams) (cm
 
 	role := ts.roles.Get(params.SpaceID, params.RoleID)
 	if role == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Role not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Role not found"), nil)), nil
 	}
 
 	ts.roles.Delete(params.SpaceID, params.RoleID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

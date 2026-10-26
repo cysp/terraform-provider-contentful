@@ -15,7 +15,7 @@ func (ts *Handler) CreatePersonalAccessToken(_ context.Context, req *cm.Personal
 
 	err := ValidatePersonalAccessTokenRequestData(req)
 	if err != nil {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new(err.Error()), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new(err.Error()), nil)), nil
 	}
 
 	personalAccessTokenID := generateResourceID()
@@ -26,10 +26,10 @@ func (ts *Handler) CreatePersonalAccessToken(_ context.Context, req *cm.Personal
 	personalAccessTokenWithToken := personalAccessToken
 	personalAccessTokenWithToken.Token.SetTo(generateResourceID())
 
-	return &cm.PersonalAccessTokenStatusCode{
+	return snapshotResponse(&cm.PersonalAccessTokenStatusCode{
 		StatusCode: http.StatusCreated,
 		Response:   personalAccessTokenWithToken,
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -39,10 +39,10 @@ func (ts *Handler) GetPersonalAccessToken(_ context.Context, params cm.GetPerson
 
 	personalAccessToken := ts.personalAccessTokens[params.AccessTokenID]
 	if personalAccessToken == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("PersonalAccessToken not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("PersonalAccessToken not found"), nil)), nil
 	}
 
-	return personalAccessToken, nil
+	return snapshotResponse(personalAccessToken), nil
 }
 
 //nolint:ireturn
@@ -52,13 +52,13 @@ func (ts *Handler) RevokePersonalAccessToken(_ context.Context, params cm.Revoke
 
 	personalAccessToken := ts.personalAccessTokens[params.AccessTokenID]
 	if personalAccessToken == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("PersonalAccessToken not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("PersonalAccessToken not found"), nil)), nil
 	}
 
 	personalAccessToken.RevokedAt.SetTo(time.Now())
 
-	return &cm.PersonalAccessTokenStatusCode{
+	return snapshotResponse(&cm.PersonalAccessTokenStatusCode{
 		StatusCode: http.StatusOK,
 		Response:   *personalAccessToken,
-	}, nil
+	}), nil
 }

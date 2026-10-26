@@ -36,10 +36,10 @@ func (h *Handler) GetSpace(_ context.Context, params cm.GetSpaceParams) (cm.GetS
 	defer h.mu.Unlock()
 
 	if space := h.spaces[params.SpaceID]; space != nil {
-		return space, nil
+		return snapshotResponse(space), nil
 	}
 
-	return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+	return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 }
 
 func (h *Handler) resolveEnvironmentAlias(spaceID, environmentID string) string {
@@ -57,17 +57,17 @@ func (h *Handler) GetLocale(_ context.Context, params cm.GetLocaleParams) (cm.Ge
 
 	environmentID := h.resolveEnvironmentAlias(params.SpaceID, params.EnvironmentID)
 	if h.environments.Get(params.SpaceID, environmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
 	locale := h.locales.Get(params.SpaceID, environmentID, params.LocaleID)
 	if locale == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
 	result := projectLocaleResponse(*locale, params.EnvironmentID)
 
-	return &result, nil
+	return snapshotResponse(&result), nil
 }
 
 //nolint:ireturn
@@ -86,7 +86,7 @@ func (h *Handler) GetSpaces(_ context.Context, params cm.GetSpacesParams) (cm.Ge
 
 	skip, limit := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
 	if skip < 0 || limit < 1 {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil)), nil
 	}
 
 	start := min(skip, int64(len(values)))
@@ -98,7 +98,7 @@ func (h *Handler) GetSpaces(_ context.Context, params cm.GetSpacesParams) (cm.Ge
 		items = append(items, item)
 	}
 
-	return &cm.SpaceCollection{Sys: cm.SpaceCollectionSys{Type: cm.SpaceCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}, nil
+	return snapshotResponse(&cm.SpaceCollection{Sys: cm.SpaceCollectionSys{Type: cm.SpaceCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}), nil
 }
 
 //nolint:ireturn,dupl // Keep generated endpoint interfaces and entity collections explicit.
@@ -107,7 +107,7 @@ func (h *Handler) GetEnvironments(_ context.Context, params cm.GetEnvironmentsPa
 	defer h.mu.Unlock()
 
 	if h.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
 	values := h.environments.List(params.SpaceID)
@@ -115,7 +115,7 @@ func (h *Handler) GetEnvironments(_ context.Context, params cm.GetEnvironmentsPa
 
 	skip, limit := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
 	if skip < 0 || limit < 1 {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil)), nil
 	}
 
 	start := min(skip, int64(len(values)))
@@ -127,7 +127,7 @@ func (h *Handler) GetEnvironments(_ context.Context, params cm.GetEnvironmentsPa
 		items = append(items, item)
 	}
 
-	return &cm.EnvironmentCollection{Sys: cm.EnvironmentCollectionSys{Type: cm.EnvironmentCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}, nil
+	return snapshotResponse(&cm.EnvironmentCollection{Sys: cm.EnvironmentCollectionSys{Type: cm.EnvironmentCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}), nil
 }
 
 //nolint:ireturn,dupl // Keep generated endpoint interfaces and entity collections explicit.
@@ -136,7 +136,7 @@ func (h *Handler) GetEnvironmentAliases(_ context.Context, params cm.GetEnvironm
 	defer h.mu.Unlock()
 
 	if h.environments.Get(params.SpaceID, "master") == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
 	values := h.environmentAliases.List(params.SpaceID)
@@ -144,7 +144,7 @@ func (h *Handler) GetEnvironmentAliases(_ context.Context, params cm.GetEnvironm
 
 	skip, limit := params.Skip.Or(0), params.Limit.Or(100) //nolint:mnd
 	if skip < 0 || limit < 1 {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil)), nil
 	}
 
 	start := min(skip, int64(len(values)))
@@ -156,7 +156,7 @@ func (h *Handler) GetEnvironmentAliases(_ context.Context, params cm.GetEnvironm
 		items = append(items, item)
 	}
 
-	return &cm.EnvironmentAliasCollection{Sys: cm.EnvironmentAliasCollectionSys{Type: cm.EnvironmentAliasCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}, nil
+	return snapshotResponse(&cm.EnvironmentAliasCollection{Sys: cm.EnvironmentAliasCollectionSys{Type: cm.EnvironmentAliasCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}), nil
 }
 
 //nolint:ireturn
@@ -166,7 +166,7 @@ func (h *Handler) GetLocales(_ context.Context, params cm.GetLocalesParams) (cm.
 
 	environmentID := h.resolveEnvironmentAlias(params.SpaceID, params.EnvironmentID)
 	if h.environments.Get(params.SpaceID, environmentID) == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
 	values := h.locales.List(params.SpaceID, environmentID)
@@ -178,7 +178,7 @@ func (h *Handler) GetLocales(_ context.Context, params cm.GetLocalesParams) (cm.
 	}
 
 	if skip < 0 || limit < 1 {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid pagination parameters"), nil)), nil
 	}
 
 	start := min(skip, int64(len(values)))
@@ -190,5 +190,5 @@ func (h *Handler) GetLocales(_ context.Context, params cm.GetLocalesParams) (cm.
 		items = append(items, item)
 	}
 
-	return &cm.LocaleCollection{Sys: cm.LocaleCollectionSys{Type: cm.LocaleCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}, nil
+	return snapshotResponse(&cm.LocaleCollection{Sys: cm.LocaleCollectionSys{Type: cm.LocaleCollectionSysTypeArray}, Skip: cm.NewOptInt(int(skip)), Limit: cm.NewOptInt(int(limit)), Total: cm.NewOptInt(len(values)), Items: items}), nil
 }
