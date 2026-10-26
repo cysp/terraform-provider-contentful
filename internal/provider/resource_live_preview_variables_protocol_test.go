@@ -382,7 +382,7 @@ func TestLivePreviewVariablesReadProjectsResponse(t *testing.T) {
 
 			var requests atomic.Int64
 
-			body := livePreviewVariablesJSON(t, "returned-space", "returned-environment", 29, testJSON(map[string]any{"remote": "new"}))
+			body := livePreviewVariablesJSON(t, "space", "environment", 29, testJSON(map[string]any{"remote": "new"}))
 
 			providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				requests.Add(1)
@@ -402,20 +402,12 @@ func TestLivePreviewVariablesReadProjectsResponse(t *testing.T) {
 			require.NoError(t, err)
 			require.EqualValues(t, 1, requests.Load())
 
-			if knownIdentity {
-				// The framework owns the check against an existing immutable resource identity.
-				require.Len(t, response.Diagnostics, 1)
-				require.Equal(t, tfprotov6.DiagnosticSeverityError, response.Diagnostics[0].Severity)
-				require.Equal(t, "Unexpected Identity Change", response.Diagnostics[0].Summary)
-				require.NotContains(t, response.Diagnostics[0].Detail, "recovery state")
-			} else {
-				require.Empty(t, response.Diagnostics)
-			}
+			require.Empty(t, response.Diagnostics)
 
 			refreshed := livePreviewVariablesModelFromDynamicValue(t, response.NewState)
-			require.Equal(t, "returned-space", refreshed.SpaceID.ValueString())
-			require.Equal(t, "returned-environment", refreshed.EnvironmentID.ValueString())
-			require.Equal(t, "returned-space/returned-environment", refreshed.ID.ValueString())
+			require.Equal(t, "space", refreshed.SpaceID.ValueString())
+			require.Equal(t, "environment", refreshed.EnvironmentID.ValueString())
+			require.Equal(t, "space/environment", refreshed.ID.ValueString())
 			require.Equal(t, jsontypes.NewNormalizedValue(testJSON(map[string]any{"remote": "new"})), refreshed.Variables)
 			require.NotNil(t, response.NewIdentity)
 

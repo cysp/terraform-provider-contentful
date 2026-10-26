@@ -176,6 +176,12 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, deliveryAPIKeyIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, deliveryAPIKeyIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {

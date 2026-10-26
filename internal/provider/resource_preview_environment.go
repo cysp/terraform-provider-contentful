@@ -221,6 +221,12 @@ func (r *previewEnvironmentResource) Read(ctx context.Context, req resource.Read
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, previewEnvironmentIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(
 		ctx,
 		resp.Identity,

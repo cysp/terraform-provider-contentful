@@ -255,6 +255,12 @@ func (r *extensionResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, extensionIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, extensionIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {

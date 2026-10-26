@@ -149,6 +149,12 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, taxonomyConceptIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, taxonomyConceptIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {
