@@ -96,6 +96,7 @@ func (d *environmentStatusReadyDataSource) Read(ctx context.Context, req datasou
 				ctx,
 				&resp.State,
 				*response,
+				params,
 				configuredTimeouts,
 			)
 			resp.Diagnostics.Append(responseDiags...)

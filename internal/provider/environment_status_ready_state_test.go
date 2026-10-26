@@ -83,6 +83,7 @@ func TestPublishEnvironmentStatusReadyResponsePreservesTimeoutsAndControlsPollin
 				ctx,
 				&state,
 				response,
+				cm.GetEnvironmentParams{SpaceID: "space", EnvironmentID: "environment"},
 				test.configuredTimeouts,
 			)
 
@@ -129,6 +130,7 @@ func TestPublishEnvironmentStatusReadyStatePublicationErrorStopsPollingAndLeaves
 		ctx,
 		&state,
 		response,
+		cm.GetEnvironmentParams{SpaceID: "space", EnvironmentID: "environment"},
 		environmentStatusReadyTimeoutValue(types.StringNull()),
 	)
 
