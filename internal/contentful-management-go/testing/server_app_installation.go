@@ -1,8 +1,6 @@
 package cmtesting
 
 import (
-	"slices"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
@@ -25,8 +23,5 @@ func (s *Server) StoredAppInstallation(spaceID, environmentID, appDefinitionID s
 		return cm.AppInstallation{}, false
 	}
 
-	result := *stored
-	result.Parameters = slices.Clone(stored.Parameters)
-
-	return result, true
+	return snapshotResponse(*stored), true
 }

@@ -28,7 +28,7 @@ func (ts *Handler) GetAppKeys(_ context.Context, params cm.GetAppKeysParams) (cm
 	defer ts.mu.Unlock()
 
 	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
-		return appDefinitionDoesNotExistError(), nil
+		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 
 	appKeys := ts.appKeys.List(params.OrganizationID, params.AppDefinitionID)
@@ -36,17 +36,17 @@ func (ts *Handler) GetAppKeys(_ context.Context, params cm.GetAppKeysParams) (cm
 	limit := int(params.Limit.Or(defaultAppKeyCollectionLimit))
 
 	if skip < 0 {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid skip parameter: should be a nonnegative integer"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid skip parameter: should be a nonnegative integer"), nil)), nil
 	}
 
 	if limit < 1 || limit > maximumAppKeyCollectionLimit {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid limit parameter: should be a positive integer lower or equal 1000"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Invalid limit parameter: should be a positive integer lower or equal 1000"), nil)), nil
 	}
 
 	start := min(skip, len(appKeys))
 	end := min(start+limit, len(appKeys))
 
-	return &cm.AppKeyCollection{
+	return snapshotResponse(&cm.AppKeyCollection{
 		Sys: cm.AppKeyCollectionSys{
 			Type: cm.AppKeyCollectionSysTypeArray,
 		},
@@ -54,7 +54,7 @@ func (ts *Handler) GetAppKeys(_ context.Context, params cm.GetAppKeysParams) (cm
 		Skip:  skip,
 		Limit: limit,
 		Items: appKeys[start:end],
-	}, nil
+	}), nil
 }
 
 //nolint:ireturn
@@ -63,27 +63,27 @@ func (ts *Handler) CreateAppKey(_ context.Context, req *cm.AppKeyRequestData, pa
 	defer ts.mu.Unlock()
 
 	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
-		return appDefinitionDoesNotExistError(), nil
+		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 
 	err := validateAppKeyRequest(*req)
 	if err != nil {
-		return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), nil)), nil
 	}
 
 	appKey := NewAppKeyFromRequest(params.OrganizationID, params.AppDefinitionID, *req)
 
 	if ts.appKeys.Contains(appKey.Sys.ID) {
-		return NewContentfulManagementErrorStatusCodeBadRequest(new("The key is already in use"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("The key is already in use"), nil)), nil
 	}
 
 	if len(ts.appKeys.List(params.OrganizationID, params.AppDefinitionID)) >= maximumAppKeysPerAppDefinition {
-		return NewContentfulManagementErrorStatusCodeAccessDenied(new("Forbidden"), []byte(`{"reasons":"Usage exceeded."}`)), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeAccessDenied(new("Forbidden"), []byte(`{"reasons":"Usage exceeded."}`))), nil
 	}
 
 	ts.appKeys.Set(params.OrganizationID, params.AppDefinitionID, appKey)
 
-	return &appKey, nil
+	return snapshotResponse(&appKey), nil
 }
 
 func validateAppKeyRequest(request cm.AppKeyRequestData) error {
@@ -129,15 +129,15 @@ func (ts *Handler) GetAppKey(_ context.Context, params cm.GetAppKeyParams) (cm.G
 	defer ts.mu.Unlock()
 
 	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
-		return appDefinitionDoesNotExistError(), nil
+		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 
 	appKey, ok := ts.appKeys.Get(params.OrganizationID, params.AppDefinitionID, params.KeyKid)
 	if !ok {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), []byte(`"AppKey does not exist."`)), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), []byte(`"AppKey does not exist."`))), nil
 	}
 
-	return &appKey, nil
+	return snapshotResponse(&appKey), nil
 }
 
 //nolint:ireturn
@@ -146,15 +146,15 @@ func (ts *Handler) DeleteAppKey(_ context.Context, params cm.DeleteAppKeyParams)
 	defer ts.mu.Unlock()
 
 	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
-		return appDefinitionDoesNotExistError(), nil
+		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 
 	_, ok := ts.appKeys.Get(params.OrganizationID, params.AppDefinitionID, params.KeyKid)
 	if !ok {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), []byte(`"AppKey does not exist."`)), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), []byte(`"AppKey does not exist."`))), nil
 	}
 
 	ts.appKeys.Delete(params.OrganizationID, params.AppDefinitionID, params.KeyKid)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }

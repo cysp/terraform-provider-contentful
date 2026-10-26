@@ -413,10 +413,10 @@ func (h *Handler) GetTaxonomyConcept(_ context.Context, params cm.GetTaxonomyCon
 
 	concept := h.taxonomyConcepts.Get(params.OrganizationID, params.TaxonomyConceptID)
 	if concept == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept not found"), nil)), nil
 	}
 
-	return concept, nil
+	return snapshotResponse(concept), nil
 }
 
 //nolint:ireturn
@@ -425,7 +425,7 @@ func (h *Handler) PutTaxonomyConcept(_ context.Context, req *cm.TaxonomyConceptR
 	defer h.mu.Unlock()
 
 	if h.taxonomyConcepts.Get(params.OrganizationID, params.TaxonomyConceptID) != nil {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	prefLabelValidationResponse, err := taxonomyPrefLabelValidationResponse(req.PrefLabel)
@@ -434,7 +434,7 @@ func (h *Handler) PutTaxonomyConcept(_ context.Context, req *cm.TaxonomyConceptR
 	}
 
 	if prefLabelValidationResponse != nil {
-		return prefLabelValidationResponse, nil
+		return snapshotResponse(prefLabelValidationResponse), nil
 	}
 
 	labelValidationResponse, err := taxonomyConceptLabelValidationResponse(normalizeTaxonomyPrefLabel(req.PrefLabel), taxonomyConceptLabelMaps{
@@ -445,12 +445,12 @@ func (h *Handler) PutTaxonomyConcept(_ context.Context, req *cm.TaxonomyConceptR
 	}
 
 	if labelValidationResponse != nil {
-		return labelValidationResponse, nil
+		return snapshotResponse(labelValidationResponse), nil
 	}
 
 	validationMessage := h.validateConceptLinks(params.OrganizationID, params.TaxonomyConceptID, req)
 	if validationMessage != "" {
-		return NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil)), nil
 	}
 
 	req.Broader = deduplicateConceptLinks(req.Broader)
@@ -458,7 +458,7 @@ func (h *Handler) PutTaxonomyConcept(_ context.Context, req *cm.TaxonomyConceptR
 	concept := taxonomyConceptFromRequest(params.OrganizationID, params.TaxonomyConceptID, req)
 	h.taxonomyConcepts.Set(params.OrganizationID, params.TaxonomyConceptID, &concept)
 
-	return &concept, nil
+	return snapshotResponse(&concept), nil
 }
 
 //nolint:ireturn
@@ -468,11 +468,11 @@ func (h *Handler) PatchTaxonomyConcept(_ context.Context, req cm.TaxonomyPatch, 
 
 	concept := h.taxonomyConcepts.Get(params.OrganizationID, params.TaxonomyConceptID)
 	if concept == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept not found"), nil)), nil
 	}
 
 	if params.XContentfulVersion != concept.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	current := cm.TaxonomyConceptRequest{URI: concept.URI, PrefLabel: concept.PrefLabel, AltLabels: concept.AltLabels, HiddenLabels: concept.HiddenLabels, Notations: concept.Notations, Note: concept.Note, ChangeNote: concept.ChangeNote, Definition: concept.Definition, EditorialNote: concept.EditorialNote, Example: concept.Example, HistoryNote: concept.HistoryNote, ScopeNote: concept.ScopeNote, Broader: concept.Broader, Related: concept.Related}
@@ -513,7 +513,7 @@ func (h *Handler) PatchTaxonomyConcept(_ context.Context, req cm.TaxonomyPatch, 
 	}
 
 	if prefLabelValidationResponse != nil {
-		return prefLabelValidationResponse, nil
+		return snapshotResponse(prefLabelValidationResponse), nil
 	}
 
 	labelValidationResponse, err := taxonomyConceptLabelValidationResponse(normalizeTaxonomyPrefLabel(updated.PrefLabel), patchedLabelMaps)
@@ -522,19 +522,19 @@ func (h *Handler) PatchTaxonomyConcept(_ context.Context, req cm.TaxonomyPatch, 
 	}
 
 	if labelValidationResponse != nil {
-		return labelValidationResponse, nil
+		return snapshotResponse(labelValidationResponse), nil
 	}
 
 	validationMessage := h.validateConceptLinks(params.OrganizationID, params.TaxonomyConceptID, &updated)
 	if validationMessage != "" {
-		return NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil)), nil
 	}
 
 	updated.Broader = deduplicateConceptLinks(updated.Broader)
 	updated.Related = deduplicateConceptLinks(updated.Related)
 	updateTaxonomyConcept(concept, &updated)
 
-	return concept, nil
+	return snapshotResponse(concept), nil
 }
 
 //nolint:ireturn
@@ -544,7 +544,7 @@ func (h *Handler) DeleteTaxonomyConcept(_ context.Context, params cm.DeleteTaxon
 
 	concept := h.taxonomyConcepts.Get(params.OrganizationID, params.TaxonomyConceptID)
 	if concept == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept not found"), nil)), nil
 	}
 
 	if params.XContentfulVersion <= 0 {
@@ -552,7 +552,7 @@ func (h *Handler) DeleteTaxonomyConcept(_ context.Context, params cm.DeleteTaxon
 	}
 
 	if params.XContentfulVersion != concept.Sys.Version {
-		return taxonomyDeleteVersionMismatchResponse(concept.Sys.Version, params.XContentfulVersion), nil
+		return snapshotResponse(taxonomyDeleteVersionMismatchResponse(concept.Sys.Version, params.XContentfulVersion)), nil
 	}
 
 	h.taxonomyConcepts.Delete(params.OrganizationID, params.TaxonomyConceptID)
@@ -568,7 +568,7 @@ func (h *Handler) DeleteTaxonomyConcept(_ context.Context, params cm.DeleteTaxon
 		scheme.TotalConcepts = len(scheme.Concepts)
 	}
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }
 
 func linksWithoutID(links []cm.TaxonomyConceptLink, id string) []cm.TaxonomyConceptLink {
@@ -589,10 +589,10 @@ func (h *Handler) GetTaxonomyConceptScheme(_ context.Context, params cm.GetTaxon
 
 	scheme := h.taxonomyConceptSchemes.Get(params.OrganizationID, params.TaxonomyConceptSchemeID)
 	if scheme == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept scheme not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept scheme not found"), nil)), nil
 	}
 
-	return scheme, nil
+	return snapshotResponse(scheme), nil
 }
 
 //nolint:ireturn
@@ -601,7 +601,7 @@ func (h *Handler) PutTaxonomyConceptScheme(_ context.Context, req *cm.TaxonomyCo
 	defer h.mu.Unlock()
 
 	if h.taxonomyConceptSchemes.Get(params.OrganizationID, params.TaxonomyConceptSchemeID) != nil {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	prefLabelValidationResponse, err := taxonomyPrefLabelValidationResponse(req.PrefLabel)
@@ -610,12 +610,12 @@ func (h *Handler) PutTaxonomyConceptScheme(_ context.Context, req *cm.TaxonomyCo
 	}
 
 	if prefLabelValidationResponse != nil {
-		return prefLabelValidationResponse, nil
+		return snapshotResponse(prefLabelValidationResponse), nil
 	}
 
 	validationMessage := h.validateSchemeLinks(params.OrganizationID, req)
 	if validationMessage != "" {
-		return NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil)), nil
 	}
 
 	req.TopConcepts = deduplicateConceptLinks(req.TopConcepts)
@@ -624,7 +624,7 @@ func (h *Handler) PutTaxonomyConceptScheme(_ context.Context, req *cm.TaxonomyCo
 	h.taxonomyConceptSchemes.Set(params.OrganizationID, params.TaxonomyConceptSchemeID, &scheme)
 	h.syncConceptSchemeMembership(params.OrganizationID, params.TaxonomyConceptSchemeID, nil, scheme.Concepts)
 
-	return &scheme, nil
+	return snapshotResponse(&scheme), nil
 }
 
 //nolint:ireturn
@@ -634,11 +634,11 @@ func (h *Handler) PatchTaxonomyConceptScheme(_ context.Context, req cm.TaxonomyP
 
 	scheme := h.taxonomyConceptSchemes.Get(params.OrganizationID, params.TaxonomyConceptSchemeID)
 	if scheme == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept scheme not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept scheme not found"), nil)), nil
 	}
 
 	if params.XContentfulVersion != scheme.Sys.Version {
-		return NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
 	oldConcepts := append([]cm.TaxonomyConceptLink(nil), scheme.Concepts...)
@@ -657,12 +657,12 @@ func (h *Handler) PatchTaxonomyConceptScheme(_ context.Context, req cm.TaxonomyP
 	}
 
 	if prefLabelValidationResponse != nil {
-		return prefLabelValidationResponse, nil
+		return snapshotResponse(prefLabelValidationResponse), nil
 	}
 
 	validationMessage := h.validateSchemeLinks(params.OrganizationID, &updated)
 	if validationMessage != "" {
-		return NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeValidationFailed(new(validationMessage), nil)), nil
 	}
 
 	updated.TopConcepts = deduplicateConceptLinks(updated.TopConcepts)
@@ -670,7 +670,7 @@ func (h *Handler) PatchTaxonomyConceptScheme(_ context.Context, req cm.TaxonomyP
 	updateTaxonomyConceptScheme(scheme, &updated)
 	h.syncConceptSchemeMembership(params.OrganizationID, params.TaxonomyConceptSchemeID, oldConcepts, scheme.Concepts)
 
-	return scheme, nil
+	return snapshotResponse(scheme), nil
 }
 
 //nolint:ireturn
@@ -680,7 +680,7 @@ func (h *Handler) DeleteTaxonomyConceptScheme(_ context.Context, params cm.Delet
 
 	scheme := h.taxonomyConceptSchemes.Get(params.OrganizationID, params.TaxonomyConceptSchemeID)
 	if scheme == nil {
-		return NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept scheme not found"), nil), nil
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Taxonomy concept scheme not found"), nil)), nil
 	}
 
 	if params.XContentfulVersion <= 0 {
@@ -688,13 +688,13 @@ func (h *Handler) DeleteTaxonomyConceptScheme(_ context.Context, params cm.Delet
 	}
 
 	if params.XContentfulVersion != scheme.Sys.Version {
-		return taxonomyDeleteVersionMismatchResponse(scheme.Sys.Version, params.XContentfulVersion), nil
+		return snapshotResponse(taxonomyDeleteVersionMismatchResponse(scheme.Sys.Version, params.XContentfulVersion)), nil
 	}
 
 	h.syncConceptSchemeMembership(params.OrganizationID, params.TaxonomyConceptSchemeID, scheme.Concepts, nil)
 	h.taxonomyConceptSchemes.Delete(params.OrganizationID, params.TaxonomyConceptSchemeID)
 
-	return &cm.NoContent{}, nil
+	return snapshotResponse(&cm.NoContent{}), nil
 }
 
 func (h *Handler) syncConceptSchemeMembership(organizationID, schemeID string, oldLinks, newLinks []cm.TaxonomyConceptLink) {
