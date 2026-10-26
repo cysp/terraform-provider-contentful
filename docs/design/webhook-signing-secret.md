@@ -65,8 +65,8 @@ and local value.
 
 No version or conditional headers are sent. PUT/DELETE retry explicit 429
 responses with the same request body within the operation deadline. Transport
-failures and ordinary 5xx responses stop without replay. The request-context
-signal rejects redirects in both provider-owned HTTP client layers. GET retains
+failures and ordinary 5xx responses stop without replay. The shared HTTP
+policy rejects mutation redirects in both provider-owned client layers. GET retains
 normal finite deadline/retry behavior. There is no read-after-write recovery: presence cannot prove that
 requested secret bytes were stored. An ambiguous DELETE also returns an error;
 a subsequent refresh may observe absence.
