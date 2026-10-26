@@ -39,6 +39,16 @@ envelope. No ordering, deduplication, permission equivalence, admin transition, 
 update/delete behavior follows from these static comparisons. Individual user
 memberships and effective authorization were not examined.
 
+## Role update addressing
+
+The [CMA Role update reference](https://www.contentful.com/developers/docs/references/content-management-api/roles/update-a-role/)
+states that `PUT /spaces/{space_id}/roles/{role_id}` updates an existing Role and
+cannot create a Role with a specified ID. Role creation uses the collection's
+`POST` endpoint. An update must therefore not recreate a Role deleted since an
+earlier read. This published contract does not establish version progression or
+the exact error envelope for a missing Role; no live mutation observation is
+recorded here.
+
 [role]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/role.ts
 [membership]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/team-space-membership.ts
 [role-adapter]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/role.ts
