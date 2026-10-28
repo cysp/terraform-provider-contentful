@@ -257,6 +257,21 @@ invalid bounds, stable pages, and out-of-range skip echoing. Provider pagination
 `total` when present and otherwise continues until an empty page. ID ordering is a
 deterministic fake convention, not a claim about CMA's undocumented default ordering.
 
+### Role updates
+
+**Evidence:** The [Role update addressing contract](../research/space-access.md#role-update-addressing)
+requires an existing Role; the update endpoint cannot create one with a specified ID.
+
+**Default fake behavior:** Updating a missing or deleted Role returns 404
+`NotFound` without adding it to the store. The exact status and error envelope
+are fixture conventions consistent with the fake's missing-Role reads, not a
+recorded live observation.
+
+**Coverage:** Independent HTTP tests cover absent and deleted Roles, verify that
+failed updates leave them absent, and check that an existing Role can still be
+updated and read. Provider Role lifecycle tests exercise creation separately
+through `POST`.
+
 ### Organization teams
 
 **Evidence:** The [User Management API

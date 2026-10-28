@@ -80,13 +80,7 @@ func (ts *Handler) UpdateRole(_ context.Context, req *cm.RoleData, params cm.Upd
 
 	role := ts.roles.Get(params.SpaceID, params.RoleID)
 	if role == nil {
-		newRole := NewRoleFromFields(params.SpaceID, params.RoleID, *req)
-		ts.roles.Set(params.SpaceID, newRole.Sys.ID, &newRole)
-
-		return &cm.RoleStatusCode{
-			StatusCode: http.StatusCreated,
-			Response:   newRole,
-		}, nil
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Role not found"), nil), nil
 	}
 
 	if params.XContentfulVersion != role.Sys.Version {
