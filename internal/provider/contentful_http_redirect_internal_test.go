@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestContentfulNoRedirectRejectsRedirectsInBothClients(t *testing.T) {
+func TestContentfulMutationsRejectRedirectsInBothClients(t *testing.T) {
 	t.Parallel()
 
-	for _, method := range []string{http.MethodPut, http.MethodDelete} {
+	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete} {
 		for _, status := range []int{301, 302, 303, 307, 308} {
 			t.Run(method+"/"+http.StatusText(status), func(t *testing.T) {
 				t.Parallel()
@@ -38,7 +38,7 @@ func TestContentfulNoRedirectRejectsRedirectsInBothClients(t *testing.T) {
 				t.Cleanup(source.Close)
 				baseClient := source.Client()
 				client := newContentfulHTTPClient(baseClient)
-				req, err := http.NewRequestWithContext(withContentfulRequestNoRedirect(t.Context()), method, source.URL, strings.NewReader(testJSON(map[string]any{"value": "DO_NOT_FORWARD_SECRET"})))
+				req, err := http.NewRequestWithContext(t.Context(), method, source.URL, strings.NewReader(testJSON(map[string]any{"value": "DO_NOT_FORWARD_SECRET"})))
 				require.NoError(t, err)
 				resp, err := client.Do(req)
 				require.NoError(t, err)
