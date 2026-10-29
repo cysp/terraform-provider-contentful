@@ -13,8 +13,13 @@ func publishEnvironmentStatusReadyResponse(
 	ctx context.Context,
 	state *tfsdk.State,
 	response cm.Environment,
+	requested cm.GetEnvironmentParams,
 	configuredTimeouts datasourcetimeouts.Value,
 ) (bool, diag.Diagnostics) {
+	if response.Sys.Space.Sys.ID != requested.SpaceID || response.Sys.ID != requested.EnvironmentID {
+		return false, diag.Diagnostics{diag.NewErrorDiagnostic("Unexpected environment readiness identity", "Contentful did not return the requested space and environment identity. This response cannot establish readiness.")}
+	}
+
 	model := NewEnvironmentStatusReadyModelFromResponse(response)
 	diags := diag.Diagnostics{}
 

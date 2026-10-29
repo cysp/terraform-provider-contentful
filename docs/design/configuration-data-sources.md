@@ -56,6 +56,14 @@ replaces the addressing ID. Both published
 
 General Environment reads do not poll or classify statuses as failures. The
 readiness waiter owns polling, failure classification, and its timeout contract.
+Before publishing each observation, it requires the returned Space link and
+`sys.id` to match the requested space and environment address. A mismatch ends
+polling with an error and leaves the response state at its last validated
+observation, or its initial value if none was accepted. An environment alias
+remains the addressed ID; `aliasedEnvironment` is target metadata and does not
+substitute for that ID. No alias resolution or parent preflight is added. This
+publication rule does not claim preservation of a prior persisted data-source
+state across an errored Terraform apply.
 The curated Environment decoder requires `name` and `sys.status`:
 the [published detail example][environment-detail] omits both, while the pinned
 SDK and [alias reference][aliases] include them. A reduced response fails decoding;
