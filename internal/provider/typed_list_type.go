@@ -117,7 +117,7 @@ func (t TypedListType[T]) ApplyTerraform5AttributePathStep(step tftypes.Attribut
 
 //nolint:ireturn
 func (t TypedListType[T]) WithElementType(typ attr.Type) attr.TypeWithElementType {
-	return TypedListType[attr.Value]{elementType: typ}
+	return TypedListType[T]{elementType: typ}
 }
 
 //nolint:ireturn

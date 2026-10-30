@@ -115,7 +115,7 @@ func (t TypedMapType[T]) ApplyTerraform5AttributePathStep(step tftypes.Attribute
 
 //nolint:ireturn
 func (t TypedMapType[T]) WithElementType(typ attr.Type) attr.TypeWithElementType {
-	return TypedMapType[attr.Value]{elementType: typ}
+	return TypedMapType[T]{elementType: typ}
 }
 
 //nolint:ireturn
