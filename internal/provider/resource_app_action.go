@@ -165,9 +165,14 @@ func (r *appActionResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	base, identityDiags := appActionResourceResponse(*result, state.AppActionBaseModel)
+	resp.Diagnostics.Append(identityDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	state.AppActionBaseModel = base
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appActionIdentityAttributeNames(), &state)...)
-	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *appActionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

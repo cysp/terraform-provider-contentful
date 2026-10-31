@@ -190,6 +190,12 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, roleIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, roleIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {

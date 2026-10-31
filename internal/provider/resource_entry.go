@@ -190,13 +190,6 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	)
 	resp.Diagnostics.Append(pendingDiags...)
 
-	if pending {
-		pending, pendingDiags = reconcilePendingLifecycleAuthorityCheckpoint(
-			ctx, resp.Private, entryPendingPublicationVersionPrivateKey, pendingVersion,
-		)
-		resp.Diagnostics.Append(pendingDiags...)
-	}
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -251,6 +244,25 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
+	data.Timeouts = state.Timeouts
+
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, entryIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if pending {
+		pending, pendingDiags = reconcilePendingLifecycleAuthorityCheckpoint(
+			ctx, resp.Private, entryPendingPublicationVersionPrivateKey, pendingVersion,
+		)
+		resp.Diagnostics.Append(pendingDiags...)
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if pending && !pendingLifecycleDraftMatchesCheckpoint(
 		pendingVersion, version, observedPublishedVersion, state.PublishedVersion,
 	) {
@@ -261,8 +273,6 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	if entryMetadataEquivalent(data.Metadata, state.Metadata) {
 		data.Metadata = state.Metadata
 	}
-
-	data.Timeouts = state.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, entryIdentityAttributeNames(), &data)...)
 

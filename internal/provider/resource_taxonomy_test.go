@@ -1752,7 +1752,7 @@ func TestAccTaxonomyReadIdentityFailuresRetainPriorState(t *testing.T) {
 		resourceName  string
 	}{
 		"concept changed": {
-			path: "/taxonomy/concepts/furniture", initialConfig: taxonomyConceptConfig("Furniture"), resourceName: "contentful_taxonomy_concept.test", expectError: regexp.MustCompile("Unexpected Identity Change"),
+			path: "/taxonomy/concepts/furniture", initialConfig: taxonomyConceptConfig("Furniture"), resourceName: "contentful_taxonomy_concept.test", expectError: regexp.MustCompile("Unexpected Contentful read identity"),
 			mutate: func(mutator *taxonomyResponseMutator, path string) {
 				mutator.replaceIdentityOnce(http.MethodGet, path, "other-organization", "other-resource")
 			},
@@ -1762,7 +1762,7 @@ func TestAccTaxonomyReadIdentityFailuresRetainPriorState(t *testing.T) {
 			mutate: func(mutator *taxonomyResponseMutator, path string) { mutator.removeIdentityOnce(http.MethodGet, path) },
 		},
 		"scheme changed": {
-			path: "/taxonomy/concept-schemes/products", initialConfig: taxonomyConceptSchemeConfig("Products"), resourceName: "contentful_taxonomy_concept_scheme.test", expectError: regexp.MustCompile("Unexpected Identity Change"),
+			path: "/taxonomy/concept-schemes/products", initialConfig: taxonomyConceptSchemeConfig("Products"), resourceName: "contentful_taxonomy_concept_scheme.test", expectError: regexp.MustCompile("Unexpected Contentful read identity"),
 			mutate: func(mutator *taxonomyResponseMutator, path string) {
 				mutator.replaceIdentityOnce(http.MethodGet, path, "other-organization", "other-resource")
 			},

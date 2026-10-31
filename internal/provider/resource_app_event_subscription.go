@@ -118,13 +118,13 @@ func (r *appEventSubscriptionResource) Read(ctx context.Context, req resource.Re
 
 	data, projectionDiags, identityDiags := appEventSubscriptionResponse(ctx, *result, state)
 	resp.Diagnostics.Append(projectionDiags...)
+	resp.Diagnostics.Append(identityDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appEventSubscriptionIdentityAttributeNames(), &data)...)
-	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *appEventSubscriptionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

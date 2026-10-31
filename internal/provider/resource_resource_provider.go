@@ -165,6 +165,12 @@ func (r *appDefinitionResourceProviderResource) Read(ctx context.Context, req re
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, resourceProviderIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, resourceProviderIdentityAttributeNames(), &data)...)
 }
 

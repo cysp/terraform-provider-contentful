@@ -825,11 +825,32 @@ validation on readable remote data. Mutation reconciliation retains the supplied
 endpoint identity, diagnoses contradictory links or variables, and checkpoints
 representable response data and private `version` before reporting consistency
 errors. Exact planned JSON is preserved only after all reconciliation checks pass.
-Read projects response identity and values through the normal state-publication
-path, without mutation reconciliation, and checkpoints the returned version.
-The framework applies its normal check against an existing immutable resource
-identity. See the
+Read validates the addressed identity before publishing remote values and the
+returned version, following the shared [Read identity contract](#read-identity). See the
 [endpoint evidence and limitations](../research/live-preview-variables.md).
+
+## Read identity
+
+Managed Read compares response identity with the state attributes used to address
+its GET before publishing response state, ResourceIdentity, or changes to private
+versions and pending lifecycle authority. A contradictory response produces an
+attribute error and leaves prior state intact. App Action and App Event Subscription
+perform this check before publishing their endpoint-preserving projections;
+Webhook Signing Secret retains its existing explicit check.
+
+The comparison uses addressing attributes rather than requiring an existing
+ResourceIdentity, so it also applies when reading legacy state and immediately
+after import. An import with a contradictory Read fails without recording the
+resource as managed. The requested environment or alias remains the address;
+related-resource references and singleton body IDs are not endpoint identity.
+Matching responses still expose ordinary remote drift and retain established
+redacted-value and narrow canonicalization rules. A supported NotFound response
+still removes the resource.
+
+Read rejects a response from an unconfirmed target. This differs from mutation
+recovery, which may need to retain the addressed target and returned values to
+record a completed remote effect. Neither policy establishes that a successful
+response is a transactionally stable snapshot of Contentful.
 
 ## Diagnostics and local publication
 

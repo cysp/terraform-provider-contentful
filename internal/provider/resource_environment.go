@@ -178,6 +178,12 @@ func (r *environmentResource) Read(ctx context.Context, req resource.ReadRequest
 	data.Timeouts = state.Timeouts
 	data.SourceEnvironmentID = state.SourceEnvironmentID
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, environmentIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, environmentIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {

@@ -174,6 +174,12 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 
 	data.Timeouts = state.Timeouts
 
+	resp.Diagnostics.Append(validateResourceReadIdentity(ctx, req.State, spaceEnablementsIdentityAttributeNames(), &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, spaceEnablementsIdentityAttributeNames(), &data)...)
 
 	if resp.Diagnostics.HasError() {

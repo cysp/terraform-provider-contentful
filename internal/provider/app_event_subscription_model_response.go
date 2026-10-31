@@ -59,7 +59,7 @@ func appEventSubscriptionResponse(ctx context.Context, response cm.AppEventSubsc
 		{"app_definition_id", response.Sys.AppDefinition.Sys.ID, target.AppDefinitionID},
 	} {
 		if identity.actual != identity.expected.ValueString() {
-			identityDiags.AddAttributeError(path.Root(identity.name), "Contentful returned a different app event subscription identity", "The response parent differs from the addressed singleton. Terraform retained the requested identity and returned configuration. Review the subscription before applying again.")
+			identityDiags.AddAttributeError(path.Root(identity.name), "Contentful returned a different app event subscription identity", "The response parent differs from the addressed singleton. Review the subscription before applying again.")
 		}
 	}
 
