@@ -1,0 +1,52 @@
+name: Release Please
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  actions: write
+  id-token: write
+
+concurrency:
+  group: release-please
+  queue: max
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: release-preparation
+      deployment: false
+    steps:
+      - id: app
+        uses: chikachow/cyspbot-app-token-action@bf8d299cd20f755c47feb733e3c0f56331a4b49e # v0.0.12
+        with:
+          cyspbot-token-url: https://github-app-token-broker.chikachow.org/github/apps/cyspbot-releaser/token
+          scope: contents:write issues:write pull_requests:write
+
+      - name: Identify a release PR merged at this commit
+        id: merged
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          release_pr_merged="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq 'any(.[]; .merged_at != null and .base.ref == "main" and any(.labels[]; .name == "autorelease: pending"))')"
+          echo "release_pr_merged=$release_pr_merged" >> "$GITHUB_OUTPUT"
+
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ steps.app.outputs.token }}
+          target-branch: main
+          skip-github-release: ${{ steps.merged.outputs.release_pr_merged != 'true' }}
+
+      - name: Verify release commit and dispatch publisher
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+        run: |
+          test "$(gh api "repos/$GITHUB_REPOSITORY/commits/$RELEASE_TAG" --jq .sha)" = "$GITHUB_SHA"
+          gh workflow run release.yml --repo "$GITHUB_REPOSITORY" --ref "$RELEASE_TAG"
