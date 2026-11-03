@@ -1,10 +1,12 @@
 name: test
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+      CONTENTFUL_MANAGEMENT_ACCESS_TOKEN:
+        required: false
 
 permissions:
   contents: read
@@ -42,64 +44,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: test
 
-  contentful-management-go-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: "go.mod"
-          cache: true
-
-      - run: go test -race -shuffle=on -count=1 -timeout=10m -coverprofile=coverage.txt -covermode=atomic ./internal/contentful-management-go/...
-        timeout-minutes: 12
-
-      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          flags: contentful-management-go
-
-  testacc:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        terraform:
-          - "1.16.*"
-    concurrency:
-      group: testacc
-      queue: max
-    env:
-      CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN != '' }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: "go.mod"
-          cache: true
-
-      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
-        with:
-          terraform_version: ${{ matrix.terraform }}
-          terraform_wrapper: false
-
-      - run: go test -count=1 -timeout=15m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... -run '^TestAcc' ./internal/provider/
-        if: env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE == 'true'
-        env:
-          TF_ACC: "1"
-          CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
-        timeout-minutes: 20
-
-      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
-        if: env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE == 'true'
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          flags: testacc-${{ matrix.terraform }}
-
   testaccmocked:
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -134,3 +78,50 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: testaccmocked-${{ matrix.terraform }}
+
+  testacc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform:
+          - "1.16.*"
+    concurrency:
+      group: testacc
+      queue: max
+    env:
+      CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN != '' }}
+    steps:
+      - name: Require live acceptance credentials
+        if: github.event_name != 'pull_request'
+        run: |
+          if [ "$CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE" != true ]; then
+            echo "::error::CONTENTFUL_MANAGEMENT_ACCESS_TOKEN is required for main and manually dispatched CI."
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+
+      - run: go test -count=1 -timeout=15m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... -run '^TestAcc' ./internal/provider/
+        if: env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE == 'true'
+        env:
+          TF_ACC: "1"
+          CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
+        timeout-minutes: 20
+
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN_AVAILABLE == 'true'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: testacc-${{ matrix.terraform }}

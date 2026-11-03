@@ -1,17 +1,12 @@
-name: GoReleaser
+name: GoReleaser configuration check
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/goreleaser.yml"
-      - ".goreleaser.yml"
-      - ".tool-versions"
+  workflow_call:
 
 permissions: {}
 
 jobs:
   check:
-    name: Check configuration
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -1,14 +1,7 @@
 name: go generate
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "README.md"
-  pull_request:
-    paths-ignore:
-      - "README.md"
+  workflow_call:
 
 permissions:
   contents: read
@@ -28,13 +21,13 @@ jobs:
 
       - run: go generate ./...
 
+      - run: >-
+          go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+          validate --provider-name=terraform-provider-contentful
+
       - run: |
           generated_status="$(git status --short --untracked-files=all)"
           if [ -n "$generated_status" ]; then
             printf '%s\n' "$generated_status"
             exit 1
           fi
-
-      - run: >-
-          go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
-          validate --provider-name=terraform-provider-contentful
