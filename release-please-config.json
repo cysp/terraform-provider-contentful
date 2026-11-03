@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/v17.6.0/schemas/config.json",
+  "release-type": "go",
+  "versioning": "always-bump-patch",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
+  "include-v-in-release-name": true,
+  "draft": true,
+  "force-tag-creation": true,
+  "changelog-sections": [
+    { "type": "feat", "section": "Features" },
+    { "type": "feature", "section": "Features" },
+    { "type": "fix", "section": "Bug fixes" },
+    { "type": "perf", "section": "Performance" },
+    { "type": "revert", "section": "Reverts" },
+    { "type": "docs", "section": "Documentation" },
+    { "type": "build", "section": "Build" },
+    { "type": "ci", "section": "Continuous integration" },
+    { "type": "test", "section": "Tests" },
+    { "type": "refactor", "section": "Refactoring" },
+    { "type": "style", "section": "Style" },
+    { "type": "chore", "section": "Maintenance" }
+  ],
+  "packages": {
+    ".": {}
+  }
+}

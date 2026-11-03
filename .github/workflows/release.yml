@@ -1,21 +1,20 @@
 name: release
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
 
 permissions: {}
 
 jobs:
   release:
-    name: Publish release
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     environment:
       name: release
       deployment: false
     concurrency:
       group: release
+      queue: max
     permissions:
       contents: write
       id-token: write
@@ -24,35 +23,25 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check tag matches Release Please version manifest
+        run: |
+          [[ "$GITHUB_REF" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+          test "v$(jq -r '."."' .release-please-manifest.json)" = "$GITHUB_REF_NAME"
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: "go.mod"
           cache: true
 
-      - name: Require existing published release
-        id: release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          release="$(gh release view "$GITHUB_REF_NAME" \
-            --repo "$GITHUB_REPOSITORY" \
-            --json databaseId,isDraft,isPrerelease,name,tagName)"
-          test "$(jq -r .isDraft <<<"$release")" = false
-          test "$(jq -r .isPrerelease <<<"$release")" = false
-          test "$(jq -r .name <<<"$release")" = "$GITHUB_REF_NAME"
-          test "$(jq -r .tagName <<<"$release")" = "$GITHUB_REF_NAME"
-          echo "id=$(jq -r .databaseId <<<"$release")" >> "$GITHUB_OUTPUT"
-
-      - name: Import GPG key
-        id: import_gpg
+      - id: import_gpg
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         with:
           gpg_private_key: ${{ secrets.RELEASE_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.RELEASE_PASSPHRASE }}
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
+      - uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:
           distribution: goreleaser
           version-file: .tool-versions
@@ -67,11 +56,13 @@ jobs:
           project=terraform-provider-contentful
           checksum="${project}_${version}_SHA256SUMS"
           cp terraform-registry-manifest.json "dist/${project}_${version}_manifest.json"
-          (cd dist && sha256sum --check "$checksum")
           gpg --batch --verify "dist/${checksum}.sig" "dist/$checksum"
+          # The signed checksums must cover exactly the archives and Registry manifest.
+          diff -u <(cd dist && printf '%s\n' *.zip *_manifest.json | LC_ALL=C sort) \
+            <(cut -c67- "dist/$checksum" | LC_ALL=C sort)
+          (cd dist && sha256sum --check --strict "$checksum")
 
-      - name: Attest release artifacts
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: |
             dist/*.zip
@@ -79,24 +70,9 @@ jobs:
             dist/*_SHA256SUMS
             dist/*_SHA256SUMS.sig
 
-      - name: Verify published release
+      - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_ID: ${{ steps.release.outputs.id }}
         run: |
-          release="$(gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID")"
-          test "$(jq -r .draft <<<"$release")" = false
-          test "$(jq -r .prerelease <<<"$release")" = false
-          test "$(jq -r .name <<<"$release")" = "$GITHUB_REF_NAME"
-          test "$(jq -r .tag_name <<<"$release")" = "$GITHUB_REF_NAME"
-
-          subjects=(dist/*.zip dist/*_manifest.json \
-            dist/*_SHA256SUMS dist/*_SHA256SUMS.sig)
-          test "$(jq '.assets | length' <<<"$release")" = "${#subjects[@]}"
-          for subject in "${subjects[@]}"; do
-            name="${subject##*/}"
-            local_digest="sha256:$(sha256sum "$subject" | cut -d' ' -f1)"
-            remote_digest="$(jq -er --arg name "$name" \
-              '.assets[] | select(.name == $name) | .digest' <<<"$release")"
-            test "$local_digest" = "$remote_digest"
-          done
+          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false
+          echo "Published GitHub release $GITHUB_REF_NAME. Check the Terraform Registry before announcing it." >> "$GITHUB_STEP_SUMMARY"

@@ -31,3 +31,17 @@ jobs:
 
   goreleaser-check:
     uses: ./.github/workflows/goreleaser-check.yml
+
+  release-please:
+    needs:
+      - generate
+      - lint
+      - govulncheck
+      - test
+      - goreleaser-check
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      actions: write
+      id-token: write
+    uses: ./.github/workflows/release-please.yml

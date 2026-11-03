@@ -1,63 +1,110 @@
-# Provider releases
+# Release the provider
 
-The [release workflow](../.github/workflows/release.yml) publishes signed provider
-artifacts for `v*` tags. A GitHub release is complete only after this workflow
-succeeds; publishing the release page alone does not verify its artifacts.
+## Publish a GitHub release
 
-## Publish a release
+1. Merge ordinary changes to `main`. Release Please maintains a PR proposing
+   the next version and notes; ordinary merges do not publish a version.
+2. Review the release PR's version, changes, `CHANGELOG.md`, and notes. Add any
+   compatibility or migration guidance. The project's patch-increment policy
+   applies to features and breaking changes too; maintenance and dependency
+   changes appear in the notes. Use a
+   [Release-As override](https://github.com/googleapis/release-please/blob/v17.6.0/README.md#how-do-i-change-the-version-number)
+   to select another version. Publish or abandon any earlier unpublished version
+   first.
+3. Merge the release PR to approve publication. The [CI workflow](../.github/workflows/ci.yml)
+   checks that commit, then Release Please creates the version tag and a draft
+   GitHub release and dispatches the [publisher](../.github/workflows/release.yml)
+   on the tag.
+4. Watch the separate `release` run. GoReleaser builds the artifacts and uploads
+   them as assets to the draft release. The workflow verifies local signed
+   checksums, generates build provenance attestations, then publishes the GitHub
+   release. Successful CI alone does not mean GitHub publication completed.
+5. Before announcing the release, confirm its version and rendered documentation
+   in the [Terraform Registry](https://registry.terraform.io/providers/cysp/contentful).
 
-Before publishing, confirm that the `release` environment has the
-`RELEASE_GPG_PRIVATE_KEY` and `RELEASE_PASSPHRASE` secrets required by the
-[workflow](../.github/workflows/release.yml). The signing key must be registered
-for this provider in the Terraform Registry; see HashiCorp's
-[signing-key guidance](https://developer.hashicorp.com/terraform/registry/providers/publishing#preparing-and-adding-a-signing-key).
+CI job dependencies declared with `needs` require build/tests, lint, generation,
+govulncheck, and the GoReleaser configuration check to succeed before preparation.
+CodeQL and Codecov remain PR merge gates. Preparation permits tag creation only
+for a release PR merged at the checked commit and verifies that the tag identifies
+it. Only `main` is supported, including hotfixes; later merges need not wait for
+GitHub publication.
 
-1. Select the intended commit from `main` and review its checks using the
-   [validation scope](../DEVELOPMENT.md#validation-scope).
-2. Publish a GitHub release targeting that commit, using a new `v`-prefixed
-   semantic version tag, such as `v1.2.3`. Both the release name and tag must
-   equal that tag. The release must be neither a draft nor a prerelease when
-   the workflow checks it. Include release notes explaining user-visible
-   changes, compatibility requirements, and any migration steps; the
-   GoReleaser configuration disables automatic changelog generation.
-3. Follow the workflow triggered by the tag push. It uses the `release`
-   environment and serializes release jobs.
-4. Confirm that the workflow completed, including signed-checksum verification,
-   provenance attestation, and verification of the uploaded assets. If it failed,
-   follow [Recover a failed release](#recover-a-failed-release).
-5. Confirm that the version appears in the
-   [Terraform Registry](https://registry.terraform.io/providers/cysp/contentful)
-   and inspect its documentation. The GitHub workflow does not verify Registry
-   indexing or rendering.
-
-The trigger is a tag push. Publishing or editing a release for an already pushed
-tag does not itself trigger this workflow; use the existing tag's workflow run
-when one is available.
-
-## Artifacts and verification
-
-[GoReleaser](../.goreleaser.yml) builds provider archives and signs the checksum
-file. It uploads the archives, Registry manifest, checksums, and signature to
-the existing release. Its version is pinned in the workflow; target platforms
-and artifact names are defined in the GoReleaser configuration.
-
-The workflow verifies local checksums and the GPG signature, creates
-build-provenance attestations, then checks that the uploaded asset count and
-SHA-256 digests match the local artifacts. These checks establish the published
-GitHub artifacts; they do not check Terraform Registry indexing.
+The publisher runs in tag context: the workflow is dispatched with the version
+tag as its ref, without repeating CI. GitHub rules forbid version-tag updates
+and deletion, including tags associated with draft releases. GoReleaser preserves
+Release Please's notes and uploads assets to the draft release; successful
+uploads are trusted without remote byte comparisons. GitHub release immutability
+is optional and is not checked by the workflow.
 
 ## Recover a failed release
 
-A failed run can leave a published release with missing or incomplete artifacts.
-Inspect the failed step before treating that version as ready to use. For a
-release-metadata failure, correct the release name, tag, draft, or prerelease
-status to match the workflow's requirements. For a build, signing, or upload
-failure, resolve the reported cause before rerunning the failed workflow.
+| Failure | Recovery |
+| --- | --- |
+| CI | Fix the cause and rerun failed jobs on the original CI run. Preparation remains downstream of its checks. |
+| Preparation | Inspect the tag and draft. Rerun the original preparation job if the draft has not been created; otherwise follow the manual recovery below. |
+| Build, signing, upload, or attestation | Fix the cause and rerun failed jobs on the tag-context publisher. Draft assets are rebuilt and verified again. |
+| Dispatch failed or its response was lost | Check for an existing publisher run before dispatching manually. Rerunning preparation may not dispatch again after Release Please changes the PR's labels. |
+| GitHub publication failed or its response was lost | Inspect the release: retry only if still a draft. If published, check the Registry instead of rebuilding. |
+| Registry indexing | Investigate ingestion separately; preserve the published GitHub release. |
 
-Reruns rebuild and replace existing artifacts, then repeat all verification.
-Inspect which assets were already uploaded before rerunning: a rebuilt archive
-can have a different checksum even at the same commit. If the version has
-already been distributed, publish a new version rather than replacing it;
-HashiCorp warns that [replacing released artifacts can cause checksum errors](https://developer.hashicorp.com/terraform/registry/providers/publishing#creating-a-github-release).
-Keep the tag pointing at the intended release commit; do not move a published
-tag to recover a failed release.
+Before a manual publisher dispatch, resolve the version tag to its exact
+commit and confirm the CI dependencies listed above succeeded for it. Use the
+original CI run, or dispatch `ci.yml` on the tag and wait for success. Manual
+publisher dispatch does not enforce this prerequisite. Also restore any missing
+draft with its name equal to the tag, no prerelease flag, and the approved PR's
+notes: GoReleaser can create a draft but cannot restore those notes.
+
+Then dispatch the publisher, substituting the unpublished version's existing tag:
+
+```sh
+gh workflow run release.yml --repo cysp/terraform-provider-contentful --ref v0.0.71
+```
+
+After confirming GitHub publication, remove `autorelease: pending` from the
+release PR if it remains. Preparation can create the draft before failing to
+update the PR's labels; a merged PR with that label prevents Release Please from
+opening the next release PR.
+
+Never move or reuse a version tag or replace published assets. Once a tag exists,
+a source or workflow fix needs a higher version: reruns use the tagged workflow.
+Do not rerun legacy release jobs from before this workflow; they replace assets
+on published releases. When recovering an older unpublished version, check
+GitHub's Latest designation: publication leaves Latest selection unset and can
+change it.
+
+To abandon an unpublished version, cancel its active and queued CI and publication
+runs, delete only its draft release, remove `autorelease: pending` from the release
+PR if present, and record abandonment there.
+
+Keep the tag and choose a higher version. Mark the abandoned version as unpublished
+in the next changelog and carry changes and notes forward from the last
+published release; Release Please may otherwise use the abandoned tag as its
+comparison boundary.
+
+## Setup and maintenance
+
+- [Infrastructure](https://github.com/chikachow/infrastructure), `github/cysp`,
+  manages required checks, tag protections, and the GitHub Actions environments:
+  main-only `release-preparation` and tag-only `release`. Coordinate required-check
+  names with workflow changes.
+- Install the chikachow-owned [`cyspbot-releaser`](https://github.com/apps/cyspbot-releaser)
+  App on the repository with Contents, Issues, and Pull requests write permissions.
+  The [broker deployment](https://github.com/chikachow/github-app-token-broker-deploy)
+  owns its credentials and issuance policy; do not store its private key in
+  Terraform or Actions. Authorize this repository's `ci.yml` caller and
+  `release-please.yml` reusable workflow on `main`, in `release-preparation`,
+  for `push` and `workflow_dispatch`. Deploy that policy before enabling
+  preparation. The [token step](../.github/workflows/release-please.yml) specifies
+  the endpoint and broker-requested scopes for the installation access token.
+- Keep `RELEASE_GPG_PRIVATE_KEY` and `RELEASE_PASSPHRASE` in `release`, and
+  [register the signing key](https://developer.hashicorp.com/terraform/registry/providers/publishing#preparing-and-adding-a-signing-key)
+  with the Registry. Main and manually dispatched CI require live acceptance
+  credentials; see [Tests](../DEVELOPMENT.md#tests).
+- When bootstrapping, set the Release Please version manifest,
+  `.release-please-manifest.json`, to the last published version. Inspect the first
+  release PR and its checks before approving a release.
+
+For GoReleaser configuration changes, run the pinned `goreleaser check` command
+from the [configuration check workflow](../.github/workflows/goreleaser-check.yml).
+Local checks do not establish real OIDC issuance, signing, attestation delivery,
+GitHub publication, or Registry ingestion; verify those during rollout.
