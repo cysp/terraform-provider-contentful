@@ -251,13 +251,16 @@ merely to speed up tests. Query tests require Terraform 1.14 and skip on 1.13.
 The [test workflow](.github/workflows/test.yml) defines the Terraform version
 matrix. CI runs the full ordinary suite with cross-package coverage, race
 detection, and randomized test order, mocked acceptance tests on the two
-newest stable Terraform minors, and authorized live acceptance on the newest
-stable minor when the repository secret is available. The explicit minor ranges
+newest stable Terraform minors, and live acceptance on the newest stable minor.
+Main and manually dispatched CI require live acceptance credentials; PRs without
+the repository secret skip live tests. The explicit minor ranges
 select the latest patch in each minor; update them together through review when
 a new stable minor is released, and coordinate the corresponding GitHub required
 status check names before merging. This matrix defines CI coverage, not a minimum
-supported Terraform version. See the workflow for the separate ordinary, client,
-mocked, and live coverage flags.
+supported Terraform version. See the workflow for the ordinary, mocked, and live
+coverage flags.
+The ordinary suite includes the Contentful client; Codecov reports its coverage
+through the path-based component in `codecov.yml`.
 
 ### Diagnosing failures
 
