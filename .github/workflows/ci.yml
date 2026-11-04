@@ -32,7 +32,7 @@ jobs:
   goreleaser-check:
     uses: ./.github/workflows/goreleaser-check.yml
 
-  release-please:
+  create-release:
     needs:
       - generate
       - lint

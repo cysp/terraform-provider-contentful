@@ -2,8 +2,17 @@
 
 ## Publish a GitHub release
 
-1. Merge ordinary changes to `main`. Release Please maintains a PR proposing
-   the next version and notes; ordinary merges do not publish a version.
+1. Merge ordinary changes to `main`. When ready to prepare a release, run
+   [Prepare release PR](../.github/workflows/prepare-release-pr.yml) on `main`:
+
+   ```sh
+   gh workflow run prepare-release-pr.yml --repo cysp/terraform-provider-contentful --ref main
+   ```
+
+   Release Please creates or refreshes the release PR from the current `main`.
+   Ordinary merges do not create or update release PRs. If `main` advances before
+   merging the release PR, run Prepare release PR again so its notes include those
+   changes. This workflow does not publish a version; the release PR runs normal CI.
 2. Review the release PR's version, changes, `CHANGELOG.md`, and notes. Add any
    compatibility or migration guidance. The project's patch-increment policy
    applies to features and breaking changes too; maintenance and dependency
@@ -15,19 +24,19 @@
    checks that commit, then Release Please creates the version tag and a draft
    GitHub release and dispatches the [publisher](../.github/workflows/release.yml)
    on the tag.
-4. Watch the separate `release` run. GoReleaser builds the artifacts and uploads
-   them as assets to the draft release. The workflow verifies local signed
+4. Watch the separate `Publish release` run. GoReleaser builds the artifacts and
+   uploads them as assets to the draft release. The workflow verifies local signed
    checksums, generates build provenance attestations, then publishes the GitHub
    release. Successful CI alone does not mean GitHub publication completed.
 5. Before announcing the release, confirm its version and rendered documentation
    in the [Terraform Registry](https://registry.terraform.io/providers/cysp/contentful).
 
 CI job dependencies declared with `needs` require build/tests, lint, generation,
-govulncheck, and the GoReleaser configuration check to succeed before preparation.
-CodeQL and Codecov remain PR merge gates. Preparation permits tag creation only
-for a release PR merged at the checked commit and verifies that the tag identifies
-it. Only `main` is supported, including hotfixes; later merges need not wait for
-GitHub publication.
+govulncheck, and the GoReleaser configuration check to succeed before tag and draft
+creation. CodeQL and Codecov remain PR merge gates. A version tag is created only
+for a release PR merged at the checked commit, and its commit is verified before
+dispatching the publisher. Only `main` is supported, including hotfixes; later
+merges need not wait for GitHub publication.
 
 The publisher runs in tag context: the workflow is dispatched with the version
 tag as its ref, without repeating CI. GitHub rules forbid version-tag updates
@@ -40,10 +49,11 @@ is optional and is not checked by the workflow.
 
 | Failure | Recovery |
 | --- | --- |
-| CI | Fix the cause and rerun failed jobs on the original CI run. Preparation remains downstream of its checks. |
-| Preparation | Inspect the tag and draft. Rerun the original preparation job if the draft has not been created; otherwise follow the manual recovery below. |
+| Release PR preparation | Inspect any existing release PR, then rerun Prepare release PR on `main`. Review the refreshed version and notes. |
+| CI | Fix the cause and rerun failed jobs on the original CI run. Release creation remains downstream of its checks. |
+| Release creation | Inspect the tag and draft. Rerun the original release creation job if the draft has not been created; otherwise follow the manual recovery below. |
 | Build, signing, upload, or attestation | Fix the cause and rerun failed jobs on the tag-context publisher. Draft assets are rebuilt and verified again. |
-| Dispatch failed or its response was lost | Check for an existing publisher run before dispatching manually. Rerunning preparation may not dispatch again after Release Please changes the PR's labels. |
+| Dispatch failed or its response was lost | Check for an existing publisher run before dispatching manually. Rerunning release creation may not dispatch again after Release Please changes the PR's labels. |
 | GitHub publication failed or its response was lost | Inspect the release: retry only if still a draft. If published, check the Registry instead of rebuilding. |
 | Registry indexing | Investigate ingestion separately; preserve the published GitHub release. |
 
@@ -61,7 +71,7 @@ gh workflow run release.yml --repo cysp/terraform-provider-contentful --ref v0.0
 ```
 
 After confirming GitHub publication, remove `autorelease: pending` from the
-release PR if it remains. Preparation can create the draft before failing to
+release PR if it remains. Release Please can create the draft before failing to
 update the PR's labels; a merged PR with that label prevents Release Please from
 opening the next release PR.
 
@@ -91,10 +101,11 @@ comparison boundary.
   App on the repository with Contents, Issues, and Pull requests write permissions.
   The [broker deployment](https://github.com/chikachow/github-app-token-broker-deploy)
   owns its credentials and issuance policy; do not store its private key in
-  Terraform or Actions. Authorize this repository's `ci.yml` caller and
-  `release-please.yml` reusable workflow on `main`, in `release-preparation`,
-  for `push` and `workflow_dispatch`. Deploy that policy before enabling
-  preparation. The [token step](../.github/workflows/release-please.yml) specifies
+  Terraform or Actions. Authorize this repository's `ci.yml` caller for `push`
+  and `workflow_dispatch`, and `prepare-release-pr.yml` for `workflow_dispatch`.
+  Both must call `release-please.yml` on `main`, in `release-preparation`.
+  Deploy that policy before enabling preparation. The
+  [token step](../.github/workflows/release-please.yml) specifies
   the endpoint and broker-requested scopes for the installation access token.
 - Keep `RELEASE_GPG_PRIVATE_KEY` and `RELEASE_PASSPHRASE` in `release`, and
   [register the signing key](https://developer.hashicorp.com/terraform/registry/providers/publishing#preparing-and-adding-a-signing-key)
