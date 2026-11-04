@@ -12,4 +12,4 @@ jobs:
   release-please:
     uses: ./.github/workflows/release-please.yml
     with:
-      prepare-release-pr: true
+      operation: prepare-release-pr

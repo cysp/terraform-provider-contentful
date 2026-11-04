@@ -3,10 +3,10 @@ name: Release Please
 on:
   workflow_call:
     inputs:
-      prepare-release-pr:
-        description: Create or refresh the release PR without creating a release
-        type: boolean
-        default: false
+      operation:
+        description: Release Please operation (prepare-release-pr or create-release)
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -18,7 +18,7 @@ concurrency:
   queue: max
 
 jobs:
-  prepare:
+  release-please:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -26,6 +26,15 @@ jobs:
       name: release-preparation
       deployment: false
     steps:
+      - name: Validate operation
+        env:
+          OPERATION: ${{ inputs.operation }}
+        run: |
+          case "$OPERATION" in
+            prepare-release-pr|create-release) ;;
+            *) echo "::error::operation must be prepare-release-pr or create-release"; exit 1 ;;
+          esac
+
       - id: app
         uses: chikachow/cyspbot-app-token-action@bf8d299cd20f755c47feb733e3c0f56331a4b49e # v0.0.12
         with:
@@ -33,7 +42,7 @@ jobs:
           scope: contents:write issues:write pull_requests:write
 
       - name: Identify a release PR merged at this commit
-        if: ${{ !inputs.prepare-release-pr }}
+        if: inputs.operation == 'create-release'
         id: merged
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
@@ -43,13 +52,13 @@ jobs:
           echo "release_pr_merged=$release_pr_merged" >> "$GITHUB_OUTPUT"
 
       - id: release-please
-        if: inputs.prepare-release-pr || steps.merged.outputs.release_pr_merged == 'true'
+        if: inputs.operation == 'prepare-release-pr' || steps.merged.outputs.release_pr_merged == 'true'
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
           token: ${{ steps.app.outputs.token }}
           target-branch: main
-          skip-github-release: ${{ inputs.prepare-release-pr }}
-          skip-github-pull-request: ${{ !inputs.prepare-release-pr }}
+          skip-github-release: ${{ inputs.operation == 'prepare-release-pr' }}
+          skip-github-pull-request: ${{ inputs.operation == 'create-release' }}
 
       - name: Verify release commit and dispatch publisher
         if: steps.release-please.outputs.release_created == 'true'
