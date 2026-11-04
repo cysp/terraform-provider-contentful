@@ -2,6 +2,11 @@ name: Release Please
 
 on:
   workflow_call:
+    inputs:
+      prepare-release-pr:
+        description: Create or refresh the release PR without creating a release
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -14,6 +19,7 @@ concurrency:
 
 jobs:
   prepare:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
@@ -27,6 +33,7 @@ jobs:
           scope: contents:write issues:write pull_requests:write
 
       - name: Identify a release PR merged at this commit
+        if: ${{ !inputs.prepare-release-pr }}
         id: merged
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
@@ -35,18 +42,20 @@ jobs:
             --jq 'any(.[]; .merged_at != null and .base.ref == "main" and any(.labels[]; .name == "autorelease: pending"))')"
           echo "release_pr_merged=$release_pr_merged" >> "$GITHUB_OUTPUT"
 
-      - id: release
+      - id: release-please
+        if: inputs.prepare-release-pr || steps.merged.outputs.release_pr_merged == 'true'
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
           token: ${{ steps.app.outputs.token }}
           target-branch: main
-          skip-github-release: ${{ steps.merged.outputs.release_pr_merged != 'true' }}
+          skip-github-release: ${{ inputs.prepare-release-pr }}
+          skip-github-pull-request: ${{ !inputs.prepare-release-pr }}
 
       - name: Verify release commit and dispatch publisher
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.release-please.outputs.release_created == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+          RELEASE_TAG: ${{ steps.release-please.outputs.tag_name }}
         run: |
           test "$(gh api "repos/$GITHUB_REPOSITORY/commits/$RELEASE_TAG" --jq .sha)" = "$GITHUB_SHA"
           gh workflow run release.yml --repo "$GITHUB_REPOSITORY" --ref "$RELEASE_TAG"

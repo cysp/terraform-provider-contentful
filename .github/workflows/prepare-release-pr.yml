@@ -1,0 +1,15 @@
+name: Prepare release PR
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+  id-token: write
+
+jobs:
+  release-please:
+    uses: ./.github/workflows/release-please.yml
+    with:
+      prepare-release-pr: true
