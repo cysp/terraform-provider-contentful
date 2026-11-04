@@ -45,3 +45,5 @@ jobs:
       actions: write
       id-token: write
     uses: ./.github/workflows/release-please.yml
+    with:
+      operation: create-release
