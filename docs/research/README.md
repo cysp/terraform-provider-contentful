@@ -31,10 +31,12 @@ For decisions about how the provider uses these APIs, see [provider design](../d
 | Delivery API keys | [Environment selection and versions](delivery-api-keys.md): omission, empty arrays, null, Preview API key relationships, and locking |
 | UI Extensions | [Source values](ui-extensions.md): `src`, `srcdoc`, empty sources, and switching |
 | Editor Interfaces | [Response identity and sidebar values](editor-interfaces.md): list/detail metadata, collection envelope, and absent versus explicit `disabled: false` |
-| UI Config | [Singleton identity and returned configuration](ui-config.md): metadata discrepancies, views, Timeline, and read limits |
+| UI Config | [Identity, configuration, and updates](ui-config.md): metadata discrepancies, views, Timeline, preview-mode mutations, and omission limits |
 | Configuration discovery | [Spaces and scoped configuration endpoints](configuration-discovery.md): detail/list paths, organization scope, pagination evidence, and response discrepancies |
 | Locales | [Identity, configuration, and lifecycle](locales.md): identity, discovery, code changes, API flags, fallbacks, and publication |
-| Space access | [Role and TeamSpaceMembership representations](space-access.md): permission unions and static list/detail comparisons |
+| Space access | [Roles and memberships](space-access.md): permission unions, direct versus aggregate memberships, and static list/detail comparisons |
+| Organization settings | [Metadata, enablements, and access configuration](organization-settings.md): preferences, contacts, invitation lifecycle, and access-policy reads |
+| Embargoed assets | [Protection modes and asset keys](embargoed-assets.md): space-wide protection, publication across environments, and signing-key lifetime |
 | Environments | [Creation readiness](environment-readiness.md): asynchronous status and completion boundaries |
 | Environment aliases | [Routing and response identity](environment-aliases.md): alias/target comparisons and returned environment links |
 | Space Enablements | [Request values](space-enablements.md): routes, default-document creation, coupled features, and validation |
