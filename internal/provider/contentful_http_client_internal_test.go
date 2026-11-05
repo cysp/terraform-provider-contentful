@@ -107,7 +107,7 @@ func TestContentfulRetryPolicy(t *testing.T) {
 	assertContentfulRetryPolicy(t, "non-retryable read response", http.MethodGet, http.StatusBadRequest, nil, false)
 }
 
-func TestGeneratedLifecycleMutationRequestsPreserveRedirectPolicyAndRetryRateLimits(t *testing.T) {
+func TestGeneratedLifecycleMutationRequestsRetryRateLimits(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]func(context.Context, cm.Invoker){
@@ -446,7 +446,7 @@ func TestContentfulHTTPClientPreservesAlreadyExpiredDeadline(t *testing.T) {
 	assert.Zero(t, requestCount.Load())
 }
 
-func TestContentfulHTTPClientDeclinesNoRedirectMutationRateLimitRetryBeyondDeadline(t *testing.T) {
+func TestContentfulHTTPClientDeclinesMutationRateLimitRetryBeyondDeadline(t *testing.T) {
 	t.Parallel()
 
 	var requestCount atomic.Int64
