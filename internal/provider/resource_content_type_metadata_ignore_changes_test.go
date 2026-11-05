@@ -124,3 +124,60 @@ func TestAccContentTypeResourceOmittedTaxonomyDoesNotAuthorizeContradictoryDraft
 		},
 	})
 }
+
+func TestAccContentTypeResourceContradictoryDraftRevokesPendingActivation(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "environment")
+	handler := &contentTypeActivationTestHandler{delegate: server}
+	handler.failActivation.Store(true)
+
+	testAccMockedResource(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{Config: contentTypeMetadataIgnoreChangesConfig("Original", "{ ContentType = [] }", `taxonomy = [{ taxonomy_concept = { id = "concept" } }]`, "metadata.annotations"), ExpectNonEmptyPlan: true},
+			{
+				PreConfig: func() {
+					require.Equal(t, []int64{1}, handler.activationVersionHistory())
+					handler.resetRequestHistory()
+					handler.failActivation.Store(false)
+					handler.mutatePutResponse = contentTypeResponseMutator(t, func(response map[string]any) {
+						mustContentTypeResponseObject(response["sys"])["version"] = 1
+						mustContentTypeResponseObject(response["metadata"])["taxonomy"] = []any{map[string]any{
+							"sys":      map[string]any{"type": "Link", "id": "contradictory", "linkType": "TaxonomyConcept"},
+							"required": false,
+						}}
+					})
+				},
+				Config:      contentTypeMetadataIgnoreChangesConfig("Updated", "{ ContentType = [] }", "", "metadata.annotations"),
+				ExpectError: regexp.MustCompile(`Unexpected Contentful content type response`),
+			},
+			{
+				PreConfig: func() {
+					require.Equal(t, 1, handler.eventCount(contentTypeOperationPut))
+					require.Equal(t, 0, handler.eventCount(contentTypeOperationActivate))
+
+					var request map[string]any
+					require.NoError(t, json.Unmarshal(handler.lastPutBody(), &request))
+					require.Equal(t, []any{map[string]any{
+						"sys":      map[string]any{"type": "Link", "id": "concept", "linkType": "TaxonomyConcept"},
+						"required": false,
+					}}, mustContentTypeResponseObject(request["metadata"])["taxonomy"])
+					handler.resetRequestHistory()
+				},
+				Config: contentTypeMetadataIgnoreChangesConfig("Updated", "{ ContentType = [] }", "", "metadata.annotations"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_content_type.test", plancheck.ResourceActionNoop),
+					expectResponseStateInPlan{
+						address:   "contentful_content_type.test",
+						valuePath: tfjsonpath.New("metadata").AtMapKey("taxonomy").AtSliceIndex(0).AtMapKey("taxonomy_concept").AtMapKey("id"),
+						value:     "contradictory",
+					},
+				}},
+				Check: contentTypeActivationRequestCheck(handler, 0, 0),
+			},
+		},
+	})
+}

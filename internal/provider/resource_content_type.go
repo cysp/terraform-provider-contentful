@@ -582,6 +582,9 @@ func (r *contentTypeResource) updateAndActivateContentType(
 		return
 	}
 
+	// A returned draft supersedes earlier activation authority, even if its
+	// version is unchanged. Grant authority again only after validating it.
+	resp.Diagnostics.Append(resp.Private.SetKey(ctx, contentTypePendingActivationVersionPrivateKey, nil)...)
 	resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, draft)...)
 	resp.Diagnostics.Append(draft.consistencyDiags...)
 
