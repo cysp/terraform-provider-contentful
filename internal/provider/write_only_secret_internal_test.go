@@ -21,12 +21,17 @@ import (
 const writeOnlyTestHash = "$argon2id$v=19$m=65536,t=1,p=4$AAECAwQFBgcICQoLDA0ODw$8fzTBn/c7LLcUcsOYeZ+mTkErHvsHBw+y3yis5C8IQk"
 
 type writeOnlyTestPrivateData struct {
-	data   map[string][]byte
-	fail   bool
-	writes int
+	data     map[string][]byte
+	fail     bool
+	failRead bool
+	writes   int
 }
 
 func (p *writeOnlyTestPrivateData) GetKey(_ context.Context, key string) ([]byte, diag.Diagnostics) {
+	if p.failRead {
+		return nil, diag.Diagnostics{diag.NewErrorDiagnostic("Private read failed", "Test failure")}
+	}
+
 	return p.data[key], nil
 }
 
@@ -233,10 +238,13 @@ func TestSigningSecretPublicationFailurePreservesAcknowledgedState(t *testing.T)
 		name              string
 		failPrivateWrite  bool
 		invalidModel      bool
+		discardObsolete   bool
 		wantPrivateWrites int
 	}{
 		{name: "private write", failPrivateWrite: true, wantPrivateWrites: 1},
 		{name: "public state encoding", invalidModel: true},
+		{name: "obsolete verifier private write", discardObsolete: true, failPrivateWrite: true, wantPrivateWrites: 1},
+		{name: "obsolete verifier public state encoding", discardObsolete: true, invalidModel: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
@@ -246,10 +254,26 @@ func TestSigningSecretPublicationFailurePreservesAcknowledgedState(t *testing.T)
 			identity := appSigningSecretTestIdentity(ctx)
 			require.Empty(t, setResourceIdentityAndState(ctx, identity, &state, appSigningSecretIdentityAttributeNames(), &prior))
 			priorState, priorIdentity := state.Raw.Copy(), identity.Raw.Copy()
-			private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(writeOnlyTestPrivate)}, fail: test.failPrivateWrite}
-			hashes, diags := readWriteOnlySecretHashes(ctx, private)
-			require.Empty(t, diags)
-			require.Empty(t, hashes.set(ctx, path.Root("value_wo"), types.StringValue(strings.Repeat("b", 64))))
+
+			privateData := writeOnlyTestPrivate
+			if test.discardObsolete {
+				privateData = "invalid verifier data"
+			}
+
+			private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(privateData)}, fail: test.failPrivateWrite}
+
+			var hashes writeOnlySecretHashes
+
+			var diags diag.Diagnostics
+			if test.discardObsolete {
+				hashes, diags = readSigningSecretHashes(ctx, private, prior.Value)
+				require.Empty(t, diags)
+			} else {
+				hashes, diags = readWriteOnlySecretHashes(ctx, private)
+				require.Empty(t, diags)
+				require.Empty(t, hashes.set(ctx, path.Root("value_wo"), types.StringValue(strings.Repeat("b", 64))))
+			}
+
 			changed := appSigningSecretTestModel(strings.Repeat("b", 64))
 			changed.AppDefinitionID = types.StringValue("different-app")
 
@@ -262,7 +286,7 @@ func TestSigningSecretPublicationFailurePreservesAcknowledgedState(t *testing.T)
 			require.True(t, diags.HasError())
 			assert.True(t, priorState.Equal(state.Raw))
 			assert.True(t, priorIdentity.Equal(identity.Raw))
-			assert.JSONEq(t, writeOnlyTestPrivate, string(private.data[writeOnlySecretHashesPrivateKey]))
+			assert.Equal(t, privateData, string(private.data[writeOnlySecretHashesPrivateKey]))
 
 			assert.Equal(t, test.wantPrivateWrites, private.writes)
 
@@ -271,6 +295,16 @@ func TestSigningSecretPublicationFailurePreservesAcknowledgedState(t *testing.T)
 			}
 		})
 	}
+}
+
+func TestSigningSecretOrdinaryValueRequiresPrivateAccess(t *testing.T) {
+	t.Parallel()
+
+	private := &writeOnlyTestPrivateData{failRead: true}
+	_, diags := readSigningSecretHashes(t.Context(), private, types.StringValue(strings.Repeat("a", 64)))
+	require.Len(t, diags, 1)
+	assert.Equal(t, "Private read failed", diags[0].Summary())
+	assert.Zero(t, private.writes)
 }
 
 func TestWriteOnlySecretRepeatedPublication(t *testing.T) {
@@ -363,7 +397,7 @@ func TestSigningSecretRejectsOtherVerifierPaths(t *testing.T) {
 	t.Parallel()
 
 	private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "other", Hash: writeOnlyTestHash}}))}}
-	_, diags := readSigningSecretHashes(t.Context(), private)
+	_, diags := readSigningSecretHashes(t.Context(), private, types.StringNull())
 	require.True(t, diags.HasError())
 	assert.Contains(t, diags.Errors()[0].Detail(), "not supported by this signing-secret resource")
 	assert.NotContains(t, diags.Errors()[0].Detail(), writeOnlyTestHash)

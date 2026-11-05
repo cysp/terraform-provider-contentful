@@ -94,11 +94,18 @@ default runtime environment or performance on other workloads and machines.
 
 ## Invalid private state
 
-Update rejects invalid verifier data before mutation, even when a known ordinary
-value would suffice for comparison. Read and Delete do not inspect the verifier.
-During planning, invalid verifier contents produce a warning and unknown
-timestamps when the provider inspects a configured write-only value. Private-data
-access errors and cancellation remain errors.
+A known ordinary value supplies the authoritative comparison without decoding
+obsolete verifier contents. Successful updates remove those contents when keeping
+ordinary storage, or replace them with a fresh verifier when migrating to
+write-only storage. Matching bytes still require no PUT. Removal or replacement
+is staged until state publication, so a failed mutation or encoding leaves the
+prior private data intact.
+
+Without a known ordinary value, Update rejects invalid verifier data before
+mutation. Read and Delete do not inspect the verifier. During planning, invalid
+verifier contents produce a warning and unknown timestamps when comparison of a
+configured write-only value depends on that verifier. Private-data access errors
+and cancellation remain errors.
 
 Terraform can plan an update before selecting replacement or destruction. The
 planning warning lets Core reach those operations; it does not permit an

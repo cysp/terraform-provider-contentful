@@ -78,5 +78,6 @@ defines this intermediate-plan behavior.
 
 The same distinction applies to [invalid private state](signing-secret-write-only.md#invalid-private-state):
 planning must permit replacement and destruction while Update continues to reject
-invalid verifier data. Do not turn an Update precondition into an error that
+invalid verifier data when no known ordinary value supplies the comparison.
+Do not turn an Update precondition into an error that
 blocks Core from reaching those recovery operations.

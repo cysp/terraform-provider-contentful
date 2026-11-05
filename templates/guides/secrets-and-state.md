@@ -136,7 +136,9 @@ This setting suppresses configuration-driven rotation; it does not recover or ve
 
 ## Recovering invalid signing-secret state
 
-An **Invalid write-only secret private state** diagnostic means Terraform's stored comparison data cannot be used. In-place updates fail before writing the secret. Planning can warn about this problem and still succeed; other resources may change during apply before the signing-secret update fails.
+An **Invalid write-only secret private state** diagnostic means Terraform's stored comparison data cannot be used and no known ordinary value supplies the comparison. In-place updates fail before writing the secret. Planning can warn about this problem and still succeed; other resources may change during apply before the signing-secret update fails.
+
+When state already contains a known ordinary `value`, updates compare against it and discard obsolete verifier data after success. Migrating to `value_wo` prepares fresh comparison data; matching secret bytes require no PUT.
 
 Restore valid Terraform state before updating the resource. Explicit replacement and destruction remain available without repairing the comparison data. Destruction deletes the current remote secret.
 

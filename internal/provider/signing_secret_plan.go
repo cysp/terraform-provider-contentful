@@ -34,7 +34,7 @@ func modifySigningSecretPlan(ctx context.Context, req resource.ModifyPlanRequest
 		// room for a write even when the planning-time value matches.
 		possibleWrite = true
 
-		hashes, hashDiags := readSigningSecretHashes(ctx, req.Private)
+		hashes, hashDiags := readSigningSecretHashes(ctx, req.Private, stateValue)
 		for _, diagnostic := range hashDiags {
 			switch invalid := diagnostic.(type) {
 			case invalidWriteOnlySecretHashesDiagnostic:

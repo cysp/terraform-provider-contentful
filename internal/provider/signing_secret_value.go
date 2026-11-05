@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -25,9 +26,20 @@ func resolveSigningSecretValue(value, valueWO types.String, modelPath path.Path)
 	return value, valuePath, nil
 }
 
-// Signing-secret resources own only value_wo. The generic store also supports
-// dynamic paths whose prior records may outlive the current configuration.
-func readSigningSecretHashes(ctx context.Context, private PrivateProviderData) (writeOnlySecretHashes, diag.Diagnostics) {
+// A known ordinary value makes any verifier obsolete. Retain its original bytes
+// only to stage removal or replacement at the acknowledged publication boundary.
+// Otherwise, signing-secret resources require a valid value_wo verifier store.
+func readSigningSecretHashes(ctx context.Context, private PrivateProviderData, priorValue types.String) (writeOnlySecretHashes, diag.Diagnostics) {
+	if !priorValue.IsNull() && !priorValue.IsUnknown() {
+		if private == nil {
+			return writeOnlySecretHashes{}, nil
+		}
+
+		data, diags := private.GetKey(ctx, writeOnlySecretHashesPrivateKey)
+
+		return writeOnlySecretHashes{original: bytes.Clone(data)}, diags
+	}
+
 	hashes, diags := readWriteOnlySecretHashes(ctx, private)
 	if diags.HasError() {
 		return hashes, diags

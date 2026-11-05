@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Resource calls must set the policy themselves; the transport never tags their context.
+// Exercise the shared retry and redirect policies through resource operations.
 func TestAppSigningSecretMutationsStopAfterUncertainFailureOrRedirect(t *testing.T) {
 	t.Parallel()
 

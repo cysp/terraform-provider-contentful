@@ -173,7 +173,7 @@ func (r *webhookSigningSecretResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	hashes, hashDiags := readSigningSecretHashes(ctx, req.Private)
+	hashes, hashDiags := readSigningSecretHashes(ctx, req.Private, state.Value)
 	resp.Diagnostics.Append(hashDiags...)
 
 	if resp.Diagnostics.HasError() {
