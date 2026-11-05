@@ -59,4 +59,4 @@ Import examples show alternatives: choose one import block or the CLI command fo
 ### Optional
 
 - `access_token` (String, Sensitive) Contentful Management API access token. Set this attribute or the `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` environment variable. A non-null configured value takes precedence, including an empty string. The token must be known and non-empty when Terraform configures the provider.
-- `url` (String) Contentful Management API base URL. Set this attribute or the `CONTENTFUL_URL` environment variable. A non-null configured value takes precedence. If neither source supplies a URL, or the resolved value is empty, the provider uses the public Contentful Management API.
+- `url` (String) Contentful Management API base URL. Set this attribute or the `CONTENTFUL_URL` environment variable. A non-null configured value takes precedence. If neither source supplies a URL, or the resolved value is empty, the provider uses the public Contentful Management API. Configure the final API endpoint directly. The provider does not follow HTTP redirects for mutation requests (POST, PUT, PATCH, or DELETE).
