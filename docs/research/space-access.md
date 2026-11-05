@@ -1,8 +1,8 @@
-# Space access: Role and TeamSpaceMembership representations
+# Space access: roles and memberships
 
-Role describes permissions and policies within a space. TeamSpaceMembership relates a
-team to a space and carries an `admin` Boolean and Role links. Their static
-representations do not establish the behavior of permission changes.
+Roles describe a space's permissions and policies. Direct SpaceMemberships associate
+users with the space; TeamSpaceMemberships associate teams with it. SpaceMember
+combines users' direct and team memberships into an aggregate view of access.
 
 ## Addressing and representation
 
@@ -39,6 +39,20 @@ envelope. No ordering, deduplication, permission equivalence, admin transition, 
 update/delete behavior follows from these static comparisons. Individual user
 memberships and effective authorization were not examined.
 
+## Direct memberships and aggregate members
+
+The [CMA space-membership reference][direct-memberships] documents direct user
+membership and invitation operations at `/spaces/{space_id}/space_memberships`.
+This is separate from team-derived access through TeamSpaceMembership.
+The [UMA SpaceMember reference][aggregate-members] describes
+`/spaces/{space_id}/space_members` as an aggregate of users with access and their
+related memberships. Aggregate membership is not a separate direct access grant.
+Reads with a personal management token returned `200` for both collections on
+2026-07-14. Invitations, role changes, and access removal were not exercised.
+
+Organization membership and invitation relationships are described under
+[organization settings](organization-settings.md#memberships-and-invitations).
+
 ## Role update addressing
 
 The [CMA Role update reference](https://www.contentful.com/developers/docs/references/content-management-api/roles/update-a-role/)
@@ -63,3 +77,6 @@ recorded here.
 [membership]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/team-space-membership.ts
 [role-adapter]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/role.ts
 [membership-adapter]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/team-space-membership.ts
+
+[direct-memberships]: https://www.contentful.com/developers/docs/references/content-management-api/space-memberships/
+[aggregate-members]: https://www.contentful.com/developers/docs/references/user-management-api/space-members/get-all-space-members/

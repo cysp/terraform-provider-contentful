@@ -1,8 +1,9 @@
 # Configuration discovery endpoints
 
 These Content Management API operations address existing Spaces, Environments,
-Environment Aliases, Locales, Roles, and Content Types. Evidence here is limited to
-published references and pinned SDK source; direct observations are linked separately.
+Environment Aliases, Locales, Roles, and Content Types. The routes below come from
+published references and pinned SDK source. Direct read observations are dated
+where they appear.
 
 | Family | Detail and collection addressing | Collection evidence |
 | --- | --- | --- |
@@ -51,6 +52,12 @@ activation. Published examples do not establish how Content Type
 `sys.environment` is represented on an alias-routed response. The [environment
 alias guide][alias-guide] establishes routing for environment-aware resources,
 not a Content Type-specific response-link guarantee.
+
+On 2026-07-14, direct reads with a personal management token returned `200` from
+`/spaces/{space_id}/environments/{environment_id}/public/content_types`. The
+sampled definitions matched the ordinary collection, but their `sys` objects used
+`revision` and omitted management audit and version fields. That sample agreement
+does not make the two collections interchangeable when there are unactivated changes.
 
 ## First-party source
 
