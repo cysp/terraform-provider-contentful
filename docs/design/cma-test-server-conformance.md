@@ -26,7 +26,7 @@ establish CMA conformance or report a fresh live test result.
 ### Locales
 
 [Locale research](../research/locales.md) separates published constraints from
-sampled behavior. The fake models Locale entities, not their effects on content.
+sampled behavior. The fake models Locale entities and selected effects on content.
 
 Create generates an ID at version 1 and rejects blank names. Updates preserve
 identity/default status. Identical complete PUTs retain the version, including
@@ -44,13 +44,30 @@ removes Locale fixtures. Reads require an existing parent environment.
 Positive pagination and zero-limit defaulting are modeled; ID ordering remains
 a fixture convention.
 
-The fake does not model content relabeling/deletion, flag-dependent content
-projection, publication validation, capacity, cloning, delivery APIs, propagation,
-or negative pagination quirks. Tests needing these effects must supply explicit
-HTTP responses. [HTTP tests](../../internal/contentful-management-go/testing/handler_locale_test.go)
-cover the modeled transitions; provider [lifecycle](../../internal/provider/resource_locale_lifecycle_test.go)
-and [recovery](../../internal/provider/resource_locale_recovery_test.go) tests
-exercise Terraform integration.
+Entry fields and Content Type defaults follow renamed/deleted codes without
+content version changes. Editing-disabled keys are hidden in responses, rejected
+in writes, and lost on visible-only replacement. Publication validates required
+fields against Locale editing/optional flags, including the default/nonlocalized
+exceptions; delivery and Content Type field flags do not relax requirements.
+
+Write validation permits any locale code without Locale fixtures, but treats a
+populated inventory as complete. Publication validation requires both Locale and
+Content Type fixtures and reads the current fields, not a separate activated
+schema. Adding fixtures can therefore change other requests. The publication
+evidence covers required Symbol fields without additional validations; this is
+not a complete Content Type validator.
+
+The fake does not model capacity, cloning, Assets, delivery APIs, propagation,
+publication metadata absent from the client schema, or negative pagination
+quirks. Tests needing these effects must supply explicit HTTP responses.
+
+[Locale HTTP tests](../../internal/contentful-management-go/testing/handler_locale_test.go)
+and [content interaction tests](../../internal/contentful-management-go/testing/handler_locale_content_test.go)
+use independent fixtures for locking, validation, nonmutation, alias routing,
+content projection/replacement, deletion, and publication.
+[Locale lifecycle](../../internal/provider/resource_locale_lifecycle_test.go) and
+[recovery tests](../../internal/provider/resource_locale_recovery_test.go) verify
+Terraform integration.
 
 ### Space Enablements
 
