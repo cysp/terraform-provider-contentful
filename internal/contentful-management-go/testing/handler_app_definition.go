@@ -7,6 +7,15 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
+func (ts *Handler) appDefinition(organizationID, appDefinitionID string) *cm.AppDefinition {
+	appDefinition := ts.appDefinitions[appDefinitionID]
+	if appDefinition == nil || appDefinition.Sys.Organization.Sys.ID != organizationID {
+		return nil
+	}
+
+	return appDefinition
+}
+
 //nolint:ireturn
 func (ts *Handler) CreateAppDefinition(_ context.Context, req *cm.AppDefinitionData, params cm.CreateAppDefinitionParams) (cm.CreateAppDefinitionRes, error) {
 	ts.mu.Lock()
@@ -27,7 +36,7 @@ func (ts *Handler) GetAppDefinition(_ context.Context, params cm.GetAppDefinitio
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	appDefinition := ts.appDefinitions[params.AppDefinitionID]
+	appDefinition := ts.appDefinition(params.OrganizationID, params.AppDefinitionID)
 	if appDefinition == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
@@ -51,6 +60,10 @@ func (ts *Handler) PutAppDefinition(_ context.Context, req *cm.AppDefinitionData
 		}), nil
 	}
 
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil {
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
+	}
+
 	UpdateAppDefinitionFromFields(appDefinition, params.OrganizationID, params.AppDefinitionID, *req)
 
 	return snapshotResponse(&cm.AppDefinitionStatusCode{
@@ -64,7 +77,7 @@ func (ts *Handler) DeleteAppDefinition(_ context.Context, params cm.DeleteAppDef
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	appDefinition := ts.appDefinitions[params.AppDefinitionID]
+	appDefinition := ts.appDefinition(params.OrganizationID, params.AppDefinitionID)
 	if appDefinition == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}

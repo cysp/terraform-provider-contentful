@@ -1,4 +1,3 @@
-//nolint:dupl
 package cmtesting
 
 import (
@@ -14,7 +13,7 @@ func (ts *Handler) GetAppSigningSecret(_ context.Context, params cm.GetAppSignin
 	defer ts.mu.Unlock()
 
 	appSigningSecret := ts.appSigningSecrets[params.AppDefinitionID]
-	if appSigningSecret == nil {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil || appSigningSecret == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppSigningSecret not found"), nil)), nil
 	}
 
@@ -26,7 +25,7 @@ func (ts *Handler) PutAppSigningSecret(_ context.Context, req *cm.AppSigningSecr
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	appDefinition := ts.appDefinitions[params.AppDefinitionID]
+	appDefinition := ts.appDefinition(params.OrganizationID, params.AppDefinitionID)
 	if appDefinition == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
@@ -57,7 +56,7 @@ func (ts *Handler) DeleteAppSigningSecret(_ context.Context, params cm.DeleteApp
 	defer ts.mu.Unlock()
 
 	appSigningSecret := ts.appSigningSecrets[params.AppDefinitionID]
-	if appSigningSecret == nil {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil || appSigningSecret == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppSigningSecret not found"), nil)), nil
 	}
 

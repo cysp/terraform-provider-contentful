@@ -15,7 +15,7 @@ func (ts *Handler) CreateAppAction(_ context.Context, req *cm.AppActionCreateDat
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil {
 		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 
@@ -49,7 +49,7 @@ func (ts *Handler) UpdateAppAction(_ context.Context, req *cm.AppActionData, par
 	defer ts.mu.Unlock()
 
 	key := [3]string{params.OrganizationID, params.AppDefinitionID, params.AppActionID}
-	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) || ts.appActions[key] == nil {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil || ts.appActions[key] == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppAction not found"), nil)), nil
 	}
 
@@ -69,7 +69,7 @@ func (ts *Handler) GetAppAction(_ context.Context, params cm.GetAppActionParams)
 	defer ts.mu.Unlock()
 
 	action := ts.appActions[[3]string{params.OrganizationID, params.AppDefinitionID, params.AppActionID}]
-	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) || action == nil {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil || action == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppAction not found"), nil)), nil
 	}
 
@@ -82,7 +82,7 @@ func (ts *Handler) DeleteAppAction(_ context.Context, params cm.DeleteAppActionP
 	defer ts.mu.Unlock()
 
 	key := [3]string{params.OrganizationID, params.AppDefinitionID, params.AppActionID}
-	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) || ts.appActions[key] == nil {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil || ts.appActions[key] == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppAction not found"), nil)), nil
 	}
 
@@ -98,7 +98,7 @@ func (ts *Handler) GetAppActions(_ context.Context, params cm.GetAppActionsParam
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil {
 		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 

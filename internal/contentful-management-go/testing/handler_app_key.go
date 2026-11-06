@@ -27,7 +27,7 @@ func (ts *Handler) GetAppKeys(_ context.Context, params cm.GetAppKeysParams) (cm
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil {
 		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 
@@ -62,7 +62,7 @@ func (ts *Handler) CreateAppKey(_ context.Context, req *cm.AppKeyRequestData, pa
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil {
 		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 
@@ -113,12 +113,6 @@ func validateAppKeyRequest(request cm.AppKeyRequestData) error {
 	return nil
 }
 
-func (ts *Handler) appDefinitionBelongsToOrganization(organizationID, appDefinitionID string) bool {
-	appDefinition := ts.appDefinitions[appDefinitionID]
-
-	return appDefinition != nil && appDefinition.Sys.Organization.Sys.ID == organizationID
-}
-
 func appDefinitionDoesNotExistError() *cm.ErrorStatusCode {
 	return NewContentfulManagementErrorStatusCodeNotFound(new("The resource could not be found."), []byte(`"AppDefinition does not exist."`))
 }
@@ -128,7 +122,7 @@ func (ts *Handler) GetAppKey(_ context.Context, params cm.GetAppKeyParams) (cm.G
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil {
 		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 
@@ -145,7 +139,7 @@ func (ts *Handler) DeleteAppKey(_ context.Context, params cm.DeleteAppKeyParams)
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if !ts.appDefinitionBelongsToOrganization(params.OrganizationID, params.AppDefinitionID) {
+	if ts.appDefinition(params.OrganizationID, params.AppDefinitionID) == nil {
 		return snapshotResponse(appDefinitionDoesNotExistError()), nil
 	}
 

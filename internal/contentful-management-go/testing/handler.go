@@ -35,7 +35,7 @@ type Handler struct {
 	appKeys                        appKeyStore
 	appActions                     map[[3]string]*cm.AppAction
 	appDefinitionResourceProviders map[string]*cm.ResourceProvider
-	appDefinitionResourceTypes     map[string]*cm.ResourceType
+	appDefinitionResourceTypes     map[resourceTypeIdentity]*cm.ResourceType
 	appSigningSecrets              map[string]*cm.AppSigningSecret
 	appEventSubscriptions          map[[2]string]*cm.AppEventSubscription
 
@@ -85,7 +85,7 @@ func NewHandler() *Handler {
 		appKeys:                        appKeyStore{},
 		appActions:                     make(map[[3]string]*cm.AppAction),
 		appDefinitionResourceProviders: make(map[string]*cm.ResourceProvider),
-		appDefinitionResourceTypes:     make(map[string]*cm.ResourceType),
+		appDefinitionResourceTypes:     make(map[resourceTypeIdentity]*cm.ResourceType),
 		appSigningSecrets:              make(map[string]*cm.AppSigningSecret),
 		appEventSubscriptions:          make(map[[2]string]*cm.AppEventSubscription),
 		appInstallations:               cm.NewSpaceEnvironmentMap[*cm.AppInstallation](),
