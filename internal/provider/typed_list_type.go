@@ -29,52 +29,41 @@ func (t TypedListType[T]) TerraformType(ctx context.Context) tftypes.Type {
 
 //nolint:ireturn
 func (t TypedListType[T]) ValueFromTerraform(ctx context.Context, tfval tftypes.Value) (attr.Value, error) {
-	if tfval.Type() == nil {
+	value, err := (basetypes.ListType{ElemType: t.ElementTypeWithContext(ctx)}).ValueFromTerraform(ctx, tfval)
+	if err != nil {
+		return nil, fmt.Errorf("converting Terraform to typed list: %w", err)
+	}
+
+	// The Framework base type always returns its corresponding value type.
+	base, ok := value.(basetypes.ListValue)
+	if !ok {
+		//nolint:err113
+		return nil, fmt.Errorf("unexpected Framework list value %T", value)
+	}
+
+	if base.IsNull() {
 		return NewTypedListNull[T](), nil
 	}
 
-	elementType := t.ElementTypeWithContext(ctx)
-
-	if !tfval.Type().Equal(t.TerraformType(ctx)) {
-		//nolint:err113
-		return nil, fmt.Errorf("can't use %s as value of TypedList[%T], can only use %s values", tfval.String(), elementType, elementType.TerraformType(ctx).String())
-	}
-
-	if !tfval.IsKnown() {
+	if base.IsUnknown() {
 		return NewTypedListUnknown[T](), nil
 	}
 
-	if tfval.IsNull() {
-		return NewTypedListNull[T](), nil
-	}
+	// ValueFromList uses reflection and validates elements; raw decoding must not.
+	elements := base.Elements()
+	typed := make([]T, len(elements))
 
-	tfelems := []tftypes.Value{}
-
-	tfelemsErr := tfval.As(&tfelems)
-	if tfelemsErr != nil {
-		return nil, fmt.Errorf("error extracting elements from terraform value: %w", tfelemsErr)
-	}
-
-	elements := make([]T, len(tfelems))
-
-	for idx, elem := range tfelems {
-		attrval, attrvalErr := elementType.ValueFromTerraform(ctx, elem)
-		if attrvalErr != nil {
-			return nil, fmt.Errorf("error converting element from terraform value: %w", attrvalErr)
-		}
-
-		element, elementOk := attrval.(T)
-		if !elementOk {
+	for key, element := range elements {
+		value, ok := element.(T)
+		if !ok {
 			//nolint:err113
-			return nil, fmt.Errorf("can't use %s as value of TypedList[%T], can only use %s values", element.String(), elementType, elementType.TerraformType(ctx).String())
+			return nil, fmt.Errorf("unexpected typed list element %T at %v", element, key)
 		}
 
-		elements[idx] = element
+		typed[key] = value
 	}
 
-	list := NewTypedList(elements)
-
-	return list, nil
+	return NewTypedList(typed), nil
 }
 
 //nolint:ireturn

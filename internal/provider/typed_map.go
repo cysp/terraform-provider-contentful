@@ -51,28 +51,34 @@ func (v TypedMap[T]) CustomType(ctx context.Context) TypedMapType[T] {
 }
 
 func (v TypedMap[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := v.Type(ctx).TerraformType(ctx)
+	typ := v.CustomType(ctx)
+	terraformType := typ.TerraformType(ctx)
 
 	if v.IsNull() {
-		return tftypes.NewValue(tft, nil), nil
+		return tftypes.NewValue(terraformType, nil), nil
 	}
 
 	if v.IsUnknown() {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
+		return tftypes.NewValue(terraformType, tftypes.UnknownValue), nil
 	}
 
-	tfval := make(map[string]tftypes.Value, len(v.elements))
-
+	// Raw encoding must not invoke the custom-value validation in ToMapValue.
+	elements := make(map[string]attr.Value, len(v.elements))
 	for key, element := range v.elements {
-		tfvalelem, err := element.ToTerraformValue(ctx)
-		if err != nil {
-			return tftypes.NewValue(tft, tftypes.UnknownValue), err
-		}
-
-		tfval[key] = tfvalelem
+		elements[key] = element
 	}
 
-	return tftypes.NewValue(tft, tfval), nil
+	value, diags := types.MapValue(typ.ElementTypeWithContext(ctx), elements)
+	if diags.HasError() {
+		return tftypes.NewValue(terraformType, tftypes.UnknownValue), ErrorFromDiags(diags)
+	}
+
+	result, err := value.ToTerraformValue(ctx)
+	if err != nil {
+		return result, fmt.Errorf("converting typed map to Terraform: %w", err)
+	}
+
+	return result, nil
 }
 
 func (v TypedMap[T]) Equal(o attr.Value) bool {
@@ -132,7 +138,14 @@ func (v TypedMap[T]) ToMapValue(ctx context.Context) (basetypes.MapValue, diag.D
 		return types.MapUnknown(elementType), nil
 	}
 
-	return types.MapValueFrom(ctx, elementType, v.elements)
+	elements := make(map[string]attr.Value, len(v.elements))
+	for key, element := range v.elements {
+		elements[key] = element
+	}
+
+	// Framework configuration validation relies on this reflection adapter to
+	// validate custom elements. The non-nil map preserves known empty values.
+	return types.MapValueFrom(ctx, elementType, elements)
 }
 
 // ---

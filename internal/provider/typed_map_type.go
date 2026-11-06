@@ -29,50 +29,41 @@ func (t TypedMapType[T]) TerraformType(ctx context.Context) tftypes.Type {
 
 //nolint:ireturn
 func (t TypedMapType[T]) ValueFromTerraform(ctx context.Context, tfval tftypes.Value) (attr.Value, error) {
-	if tfval.Type() == nil {
+	value, err := (basetypes.MapType{ElemType: t.ElementTypeWithContext(ctx)}).ValueFromTerraform(ctx, tfval)
+	if err != nil {
+		return nil, fmt.Errorf("converting Terraform to typed map: %w", err)
+	}
+
+	// The Framework base type always returns its corresponding value type.
+	base, ok := value.(basetypes.MapValue)
+	if !ok {
+		//nolint:err113
+		return nil, fmt.Errorf("unexpected Framework map value %T", value)
+	}
+
+	if base.IsNull() {
 		return NewTypedMapNull[T](), nil
 	}
 
-	elementType := t.ElementTypeWithContext(ctx)
-
-	if !tfval.Type().Equal(t.TerraformType(ctx)) {
-		//nolint:err113
-		return nil, fmt.Errorf("can't use %s as value of TypedMap[%T], can only use %s values", tfval.String(), elementType, elementType.TerraformType(ctx).String())
-	}
-
-	if !tfval.IsKnown() {
+	if base.IsUnknown() {
 		return NewTypedMapUnknown[T](), nil
 	}
 
-	if tfval.IsNull() {
-		return NewTypedMapNull[T](), nil
-	}
+	// ValueFromMap uses reflection and validates elements; raw decoding must not.
+	elements := base.Elements()
+	typed := make(map[string]T, len(elements))
 
-	tfelems := map[string]tftypes.Value{}
-
-	tfelemsErr := tfval.As(&tfelems)
-	if tfelemsErr != nil {
-		return nil, fmt.Errorf("error extracting elements from terraform value: %w", tfelemsErr)
-	}
-
-	elements := make(map[string]T, len(tfelems))
-
-	for key, elem := range tfelems {
-		attrval, attrvalErr := elementType.ValueFromTerraform(ctx, elem)
-		if attrvalErr != nil {
-			return nil, fmt.Errorf("error converting element from terraform value: %w", attrvalErr)
-		}
-
-		element, elementOk := attrval.(T)
-		if !elementOk {
+	for key, element := range elements {
+		value, ok := element.(T)
+		if !ok {
 			//nolint:err113
-			return nil, fmt.Errorf("can't use %s as value of TypedMap[%T], can only use %s values", element.String(), elementType, elementType.TerraformType(ctx).String())
+			return nil, fmt.Errorf("unexpected typed map element %T at %v", element, key)
 		}
 
-		elements[key] = element
+		typed[key] = value
 	}
 
-	return NewTypedMap(elements), nil
+	return NewTypedMap(typed), nil
 }
 
 //nolint:ireturn
