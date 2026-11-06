@@ -42,8 +42,7 @@ func newContentTypeDataSourceItem(ctx context.Context, root path.Path, entity cm
 func readContentTypes(ctx context.Context, client *cm.Client, spaceID, environmentID string) ([]ContentTypeDataSourceItemModel, diag.Diagnostics) {
 	const errorTitle = "Failed to read content types"
 
-	// Project after paging so nested diagnostics use returned list indexes.
-	entities, diagnostics := readContentfulCollection(ctx, errorTitle,
+	return readContentfulCollection(ctx, errorTitle,
 		func(ctx context.Context, skip int64) (contentfulCollection[cm.ContentType], diag.Diagnostics) {
 			response, err := client.GetContentTypes(ctx, cm.GetContentTypesParams{
 				SpaceID:       spaceID,
@@ -62,32 +61,8 @@ func readContentTypes(ctx context.Context, client *cm.Client, spaceID, environme
 				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, contentfulListNonCollectionResponseDetail(response))}
 			}
 		},
-		func(entity cm.ContentType) (cm.ContentType, diag.Diagnostics) { return entity, nil },
+		func(index int, entity cm.ContentType) (ContentTypeDataSourceItemModel, diag.Diagnostics) {
+			return newContentTypeDataSourceItem(ctx, path.Root("content_types").AtListIndex(index), entity, spaceID, environmentID)
+		},
 	)
-	if diagnostics.HasError() {
-		return nil, diagnostics
-	}
-
-	items, itemDiagnostics := projectContentTypeDataSourceItems(ctx, entities, spaceID, environmentID)
-	diagnostics.Append(itemDiagnostics...)
-
-	return items, diagnostics
-}
-
-func projectContentTypeDataSourceItems(ctx context.Context, entities []cm.ContentType, spaceID, environmentID string) ([]ContentTypeDataSourceItemModel, diag.Diagnostics) {
-	diagnostics := diag.Diagnostics{}
-
-	items := make([]ContentTypeDataSourceItemModel, 0, len(entities))
-	for index, entity := range entities {
-		item, itemDiagnostics := newContentTypeDataSourceItem(ctx, path.Root("content_types").AtListIndex(index), entity, spaceID, environmentID)
-		diagnostics.Append(itemDiagnostics...)
-
-		if diagnostics.HasError() {
-			return nil, diagnostics
-		}
-
-		items = append(items, item)
-	}
-
-	return items, diagnostics
 }

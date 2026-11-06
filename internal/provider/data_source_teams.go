@@ -99,7 +99,7 @@ func readTeams(ctx context.Context, client *cm.Client, organizationID string) ([
 				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, contentfulListNonCollectionResponseDetail(response))}
 			}
 		},
-		func(team cm.TeamListItem) (TeamsDataSourceTeamModel, diag.Diagnostics) {
+		func(_ int, team cm.TeamListItem) (TeamsDataSourceTeamModel, diag.Diagnostics) {
 			return TeamsDataSourceTeamModel{
 				TeamID:      types.StringValue(team.Sys.ID),
 				Name:        types.StringValue(team.Name),
@@ -116,5 +116,5 @@ func readTeams(ctx context.Context, client *cm.Client, organizationID string) ([
 		return cmp.Compare(a.TeamID.ValueString(), b.TeamID.ValueString())
 	})
 
-	return teams, nil
+	return teams, diagnostics
 }

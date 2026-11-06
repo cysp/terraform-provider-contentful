@@ -47,7 +47,7 @@ func readEnvironments(ctx context.Context, client *cm.Client, spaceID string) ([
 				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, contentfulListNonCollectionResponseDetail(response))}
 			}
 		},
-		func(entity cm.Environment) (EnvironmentDataSourceItemModel, diag.Diagnostics) {
+		func(_ int, entity cm.Environment) (EnvironmentDataSourceItemModel, diag.Diagnostics) {
 			return newEnvironmentDataSourceItem(entity, spaceID)
 		},
 	)
@@ -59,5 +59,5 @@ func readEnvironments(ctx context.Context, client *cm.Client, spaceID string) ([
 		return cmp.Compare(a.EnvironmentID.ValueString(), b.EnvironmentID.ValueString())
 	})
 
-	return items, nil
+	return items, diagnostics
 }

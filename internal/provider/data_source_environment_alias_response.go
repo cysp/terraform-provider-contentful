@@ -42,7 +42,7 @@ func readEnvironmentAliases(ctx context.Context, client *cm.Client, spaceID stri
 				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, contentfulListNonCollectionResponseDetail(response))}
 			}
 		},
-		func(entity cm.EnvironmentAlias) (EnvironmentAliasDataSourceItemModel, diag.Diagnostics) {
+		func(_ int, entity cm.EnvironmentAlias) (EnvironmentAliasDataSourceItemModel, diag.Diagnostics) {
 			return newEnvironmentAliasDataSourceItem(entity, spaceID)
 		},
 	)
@@ -54,5 +54,5 @@ func readEnvironmentAliases(ctx context.Context, client *cm.Client, spaceID stri
 		return cmp.Compare(a.EnvironmentAliasID.ValueString(), b.EnvironmentAliasID.ValueString())
 	})
 
-	return items, nil
+	return items, diagnostics
 }

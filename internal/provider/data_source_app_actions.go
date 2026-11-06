@@ -79,7 +79,7 @@ func (d *appActionsDataSource) Read(ctx context.Context, req datasource.ReadRequ
 				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(title, contentfulListNonCollectionResponseDetail(response))}
 			}
 		},
-		func(entity cm.AppAction) (AppActionFields, diag.Diagnostics) {
+		func(_ int, entity cm.AppAction) (AppActionFields, diag.Diagnostics) {
 			item, diags := appActionResponse(entity, target)
 
 			return item.AppActionFields, diags

@@ -25,8 +25,7 @@ func newRoleDataSourceItem(ctx context.Context, entity cm.Role, root path.Path) 
 func readRoles(ctx context.Context, client *cm.Client, spaceID string) ([]RoleDataSourceItemModel, diag.Diagnostics) {
 	const errorTitle = "Failed to read roles"
 
-	// Project after pagination so diagnostics use the final roles[index] paths.
-	roles, diagnostics := readContentfulCollection(ctx, errorTitle,
+	return readContentfulCollection(ctx, errorTitle,
 		func(ctx context.Context, skip int64) (contentfulCollection[cm.Role], diag.Diagnostics) {
 			response, err := client.GetRoles(ctx, cm.GetRolesParams{SpaceID: spaceID, Skip: cm.NewOptInt64(skip), Limit: cm.NewOptInt64(defaultPageLimit)})
 			if err != nil {
@@ -40,35 +39,12 @@ func readRoles(ctx context.Context, client *cm.Client, spaceID string) ([]RoleDa
 				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, contentfulListNonCollectionResponseDetail(response))}
 			}
 		},
-		func(entity cm.Role) (cm.Role, diag.Diagnostics) {
+		func(index int, entity cm.Role) (RoleDataSourceItemModel, diag.Diagnostics) {
 			if entity.Sys.Space.Sys.ID != spaceID {
-				return cm.Role{}, discoveryResponseIdentityError(fmt.Sprintf("Role %q has a Space link that differs from the requested space %q.", entity.Sys.ID, spaceID))
+				return RoleDataSourceItemModel{}, discoveryResponseIdentityError(fmt.Sprintf("Role %q has a Space link that differs from the requested space %q.", entity.Sys.ID, spaceID))
 			}
 
-			return entity, nil
+			return newRoleDataSourceItem(ctx, entity, path.Root("roles").AtListIndex(index))
 		},
 	)
-	if diagnostics.HasError() {
-		return nil, diagnostics
-	}
-
-	return projectRoles(ctx, roles)
-}
-
-func projectRoles(ctx context.Context, roles []cm.Role) ([]RoleDataSourceItemModel, diag.Diagnostics) {
-	items := make([]RoleDataSourceItemModel, 0, len(roles))
-	diagnostics := diag.Diagnostics{}
-
-	for index, role := range roles {
-		item, itemDiagnostics := newRoleDataSourceItem(ctx, role, path.Root("roles").AtListIndex(index))
-		diagnostics.Append(itemDiagnostics...)
-
-		if diagnostics.HasError() {
-			return nil, diagnostics
-		}
-
-		items = append(items, item)
-	}
-
-	return items, diagnostics
 }
