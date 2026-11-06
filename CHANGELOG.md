@@ -5,6 +5,63 @@ Entries through 0.0.70 preserve the existing
 [GitHub release notes](https://github.com/cysp/terraform-provider-contentful/releases);
 dates are UTC publication dates.
 
+## [0.0.71](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.70...v0.0.71) (2026-11-06)
+
+
+### Features
+
+* **release:** prepare and publish releases with cyspbot-releaser ([06a3460](https://github.com/cysp/terraform-provider-contentful/commit/06a3460ef577a8c29d55a7e6d1c5ca20c1cf6ecc))
+* **release:** prepare release PRs on demand ([2af3fe6](https://github.com/cysp/terraform-provider-contentful/commit/2af3fe684ffcfe3235c1176ea10fe464722686b1))
+
+
+### Bug fixes
+
+* **contentful-management-go:** detach mock response snapshots ([ad5e562](https://github.com/cysp/terraform-provider-contentful/commit/ad5e562eb313a774b11e30e34cd7265411847d78))
+* **contentful-management-go:** enforce Extension mock versions ([510c803](https://github.com/cysp/terraform-provider-contentful/commit/510c803175de60e9751b4a13e0e959eb7bf19f1a))
+* **contentful-management-go:** export transport client result type ([9040651](https://github.com/cysp/terraform-provider-contentful/commit/9040651393f6392018d5b7141d9afaa30da9e6bd))
+* **contentful-management-go:** reject updates to missing mock roles ([3e39942](https://github.com/cysp/terraform-provider-contentful/commit/3e39942887563ef9308e13517afa9a278ad17abe))
+* **provider:** enforce planned content type taxonomy in responses ([025cf75](https://github.com/cysp/terraform-provider-contentful/commit/025cf752242143c437e0b8b5271e195769ca359c))
+* **provider:** keep personal access token create state known ([2d59b03](https://github.com/cysp/terraform-provider-contentful/commit/2d59b03f634382079abe1b3fb0222fa6021d1211))
+* **provider:** reject contradictory managed read identities ([51eb73b](https://github.com/cysp/terraform-provider-contentful/commit/51eb73b32f64baf2c89a9a0e03c22ad7df1920c8))
+* **provider:** reject redirects for every mutation ([56d4232](https://github.com/cysp/terraform-provider-contentful/commit/56d42324b4f24ba74b3822e6d1b9af32d9e5b161))
+* **provider:** revoke stale content type activation authority ([7ca7032](https://github.com/cysp/terraform-provider-contentful/commit/7ca70327450bcbfb32d293e157557a0cc0bde38f))
+* **provider:** validate environment readiness endpoint identity ([3b977d5](https://github.com/cysp/terraform-provider-contentful/commit/3b977d56057705a5f7da10fb3b9e648c7ec4ddbd))
+
+
+### Documentation
+
+* **agents:** clarify outcome and test evidence requirements ([96bd8e9](https://github.com/cysp/terraform-provider-contentful/commit/96bd8e968550f2614da8012b898614e7d25d97fc))
+* **agents:** evaluate designs against required outcomes ([75f2121](https://github.com/cysp/terraform-provider-contentful/commit/75f21216d9d93897a4701687ce12d6e4322f998e))
+* **agents:** refine design exceptions and route commit conventions ([384b387](https://github.com/cysp/terraform-provider-contentful/commit/384b3871bba4b3975512afc65c4dddcb6973eb81))
+* **agents:** route work to authoritative documentation ([7f79951](https://github.com/cysp/terraform-provider-contentful/commit/7f79951b13d98015147449a6c22bd427ce3e0f30))
+* **provider:** align signing secret redirect guidance ([17a8b5d](https://github.com/cysp/terraform-provider-contentful/commit/17a8b5dde8d61bb63fda31ab6edd9345491b2353))
+* **provider:** explain direct mutation endpoint requirement ([17fa3ee](https://github.com/cysp/terraform-provider-contentful/commit/17fa3ee7f341244536e2f5d9cf7c9e37dfefcbe8))
+
+
+### Continuous integration
+
+* **deps:** retire redundant Go dependency submission workflow ([57a5b0e](https://github.com/cysp/terraform-provider-contentful/commit/57a5b0e6b1f01cc1f0b020ff2c07284f73dafca1))
+* **release:** orchestrate checks through reusable workflows ([34086e8](https://github.com/cysp/terraform-provider-contentful/commit/34086e8d722befde6522f99ee88fdc8da108e536))
+
+
+### Tests
+
+* **provider:** construct unknown taxonomy responses structurally ([0da91a0](https://github.com/cysp/terraform-provider-contentful/commit/0da91a0a65572b3984674b925416960cab9820c3))
+* **provider:** pass owning contexts through test helpers ([84961b1](https://github.com/cysp/terraform-provider-contentful/commit/84961b1f989fb519748e0bfe6c399991667336bd))
+* **provider:** reproduce content type taxonomy activation mismatch ([6ae56e1](https://github.com/cysp/terraform-provider-contentful/commit/6ae56e1439ed1990d8a1b88bb5fb21592a47e4f9))
+
+
+### Refactoring
+
+* **provider:** share app definition discovery parameter schema ([642b0eb](https://github.com/cysp/terraform-provider-contentful/commit/642b0ebd9fad4e7a34fe31df17875002fb3d8ddf))
+* **release:** select explicit Release Please operations ([88c5860](https://github.com/cysp/terraform-provider-contentful/commit/88c58606bbf9943639c5e275b9e96f97cd70e7bf))
+
+
+### Maintenance
+
+* **deps:** bump indirect dependencies ([affc6e7](https://github.com/cysp/terraform-provider-contentful/commit/affc6e714c745ea995f023c0bd917bb02596a999))
+* **deps:** bump indirect dependencies ([a2b8df5](https://github.com/cysp/terraform-provider-contentful/commit/a2b8df5bbf3ffef7746b692a23cccb59f59d599c))
+
 ## [0.0.70](https://github.com/cysp/terraform-provider-contentful/releases/tag/v0.0.70) (2026-10-21)
 
 ### What's Changed
