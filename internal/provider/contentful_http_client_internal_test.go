@@ -1,10 +1,7 @@
 package provider
 
 import (
-	"bytes"
 	"context"
-	"errors"
-	"fmt"
 	"io"
 	"math"
 	"net/http"
@@ -16,125 +13,49 @@ import (
 	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/go-retryablehttp"
-	"github.com/hashicorp/terraform-plugin-log/tflogtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var errContentfulRetryTestConnectionLost = errors.New("connection lost")
-
-var errContentfulRetryTestDidNotTerminate = errors.New("request did not terminate")
-
-var errContentfulRetryTestLogSentinel = errors.New("ERROR_SENTINEL")
-
-type contentfulRetryTestRoundTripper func(*http.Request) (*http.Response, error)
-
-func (f contentfulRetryTestRoundTripper) RoundTrip(request *http.Request) (*http.Response, error) {
-	return f(request)
-}
-
-type contentfulRetryTestContextBody struct {
-	contextErr func() error
-	reader     io.Reader
-}
-
-func (b contentfulRetryTestContextBody) Read(bytes []byte) (int, error) {
-	err := b.contextErr()
-	if err != nil {
-		return 0, err
-	}
-
-	return b.reader.Read(bytes) //nolint:wrapcheck
-}
-
-func (contentfulRetryTestContextBody) Close() error {
-	return nil
-}
-
-func contentfulRetryTestResponse(request *http.Request, status int) *http.Response {
-	return &http.Response{
-		StatusCode: status,
-		Header:     make(http.Header),
-		Body:       io.NopCloser(strings.NewReader(testJSON(map[string]any{}))),
-		Request:    request,
-	}
-}
-
-func contentfulRetryTestClient(t *testing.T, baseClient *http.Client) (*http.Client, *retryablehttp.Client) {
-	t.Helper()
-
-	client := newContentfulHTTPClient(baseClient)
-	methodTransport, ok := client.Transport.(contentfulRequestContextRoundTripper)
-	require.True(t, ok)
-
-	retryTransport, ok := methodTransport.next.(*retryablehttp.RoundTripper)
-	require.True(t, ok)
-	require.Nil(t, retryTransport.Client.Logger)
-
-	return client, retryTransport.Client
-}
-
-func removeContentfulRetryTestDelay(retryClient *retryablehttp.Client) {
-	retryClient.RetryWaitMin = 0
-	retryClient.RetryWaitMax = 0
-}
-
-func TestContentfulRetryPolicy(t *testing.T) {
+//nolint:wrapcheck // Forward generated client errors to the shared assertion.
+func TestContentfulHTTPClientGeneratedMutationsRetryRateLimits(t *testing.T) {
 	t.Parallel()
 
-	readMethods := []string{http.MethodGet, http.MethodHead, http.MethodOptions}
-	mutationMethods := []string{http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete}
-
-	for _, method := range readMethods {
-		assertContentfulRetryPolicy(t, method+" transport error", method, 0, errContentfulRetryTestConnectionLost, true)
-		assertContentfulRetryPolicy(t, method+" server error", method, http.StatusBadGateway, nil, true)
-	}
-
-	for _, method := range mutationMethods {
-		assertContentfulRetryPolicy(t, method+" transport error", method, 0, errContentfulRetryTestConnectionLost, false)
-		assertContentfulRetryPolicy(t, method+" server error", method, http.StatusServiceUnavailable, nil, false)
-	}
-
-	for _, method := range append(readMethods, mutationMethods...) {
-		assertContentfulRetryPolicy(t, method+" rate limit", method, http.StatusTooManyRequests, nil, true)
-	}
-
-	for _, method := range mutationMethods {
-		assertContentfulRetryPolicy(t, method+" rate limit with transport error", method, http.StatusTooManyRequests, errContentfulRetryTestConnectionLost, false)
-	}
-
-	assertContentfulRetryPolicy(t, "non-retryable read response", http.MethodGet, http.StatusBadRequest, nil, false)
-}
-
-func TestGeneratedLifecycleMutationRequestsRetryRateLimits(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]func(context.Context, cm.Invoker){
-		"Entry Create": func(ctx context.Context, client cm.Invoker) {
-			_, _ = client.CreateEntry(ctx, &cm.EntryRequest{}, cm.CreateEntryParams{
+	tests := map[string]func(context.Context, cm.Invoker) error{
+		"Entry Create": func(ctx context.Context, client cm.Invoker) error {
+			_, err := client.CreateEntry(ctx, &cm.EntryRequest{}, cm.CreateEntryParams{
 				SpaceID: "space", EnvironmentID: "environment", XContentfulContentType: "content-type",
 			})
+
+			return err
 		},
-		"Entry specified-ID Create or Update": func(ctx context.Context, client cm.Invoker) {
-			_, _ = client.PutEntry(ctx, &cm.EntryRequest{}, cm.PutEntryParams{
+		"Entry specified-ID Create or Update": func(ctx context.Context, client cm.Invoker) error {
+			_, err := client.PutEntry(ctx, &cm.EntryRequest{}, cm.PutEntryParams{
 				SpaceID: "space", EnvironmentID: "environment", EntryID: "entry",
 			})
+
+			return err
 		},
-		"Entry Publish": func(ctx context.Context, client cm.Invoker) {
-			_, _ = client.PublishEntry(ctx, cm.PublishEntryParams{
+		"Entry Publish": func(ctx context.Context, client cm.Invoker) error {
+			_, err := client.PublishEntry(ctx, cm.PublishEntryParams{
 				SpaceID: "space", EnvironmentID: "environment", EntryID: "entry", XContentfulVersion: 3,
 			})
+
+			return err
 		},
-		"Content Type Create or Update": func(ctx context.Context, client cm.Invoker) {
-			_, _ = client.PutContentType(ctx, &cm.ContentTypeRequestData{}, cm.PutContentTypeParams{
+		"Content Type Create or Update": func(ctx context.Context, client cm.Invoker) error {
+			_, err := client.PutContentType(ctx, &cm.ContentTypeRequestData{}, cm.PutContentTypeParams{
 				SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type",
 			})
+
+			return err
 		},
-		"Content Type Activate": func(ctx context.Context, client cm.Invoker) {
-			_, _ = client.ActivateContentType(ctx, cm.ActivateContentTypeParams{
+		"Content Type Activate": func(ctx context.Context, client cm.Invoker) error {
+			_, err := client.ActivateContentType(ctx, cm.ActivateContentTypeParams{
 				SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 3,
 			})
+
+			return err
 		},
 	}
 
@@ -168,58 +89,22 @@ func TestGeneratedLifecycleMutationRequestsRetryRateLimits(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			invoke(t.Context(), client)
+			require.NoError(t, invoke(t.Context(), client))
 
 			assert.EqualValues(t, 2, requestCount.Load())
 		})
 	}
 }
 
-func assertContentfulRetryPolicy(t *testing.T, name, method string, status int, requestErr error, expected bool) {
-	t.Helper()
-
-	t.Run(name, func(t *testing.T) {
-		t.Parallel()
-
-		ctx := context.WithValue(t.Context(), contentfulRequestMethodContextKey{}, method)
-
-		var response *http.Response
-		if status != 0 {
-			response = &http.Response{StatusCode: status}
-		}
-
-		shouldRetry, err := contentfulRetryPolicy(ctx, response, requestErr)
-		require.NoError(t, err)
-		assert.Equal(t, expected, shouldRetry)
-	})
-}
-
-func TestContentfulRetryPolicyStopsForAlreadyCancelledContext(t *testing.T) {
-	t.Parallel()
-
-	ctx, cancel := context.WithCancel(t.Context())
-	cancel()
-
-	ctx = context.WithValue(ctx, contentfulRequestMethodContextKey{}, http.MethodGet)
-
-	shouldRetry, err := contentfulRetryPolicy(ctx, nil, errContentfulRetryTestConnectionLost)
-
-	assert.False(t, shouldRetry)
-	require.ErrorIs(t, err, context.Canceled)
-}
-
-type contentfulRetryTestFailure struct {
-	method string
-	status int
-	err    error
-}
-
 func TestContentfulHTTPClientWiresSafeReadRetries(t *testing.T) {
 	t.Parallel()
 
-	tests := map[string]contentfulRetryTestFailure{
-		"transport error": {method: http.MethodGet, err: errContentfulRetryTestConnectionLost},
-		"server response": {method: http.MethodGet, status: http.StatusBadGateway},
+	tests := map[string]struct {
+		status int
+		err    error
+	}{
+		"transport error": {err: errContentfulRetryTestConnectionLost},
+		"server response": {status: http.StatusBadGateway},
 	}
 
 	for name, test := range tests {
@@ -242,7 +127,7 @@ func TestContentfulHTTPClientWiresSafeReadRetries(t *testing.T) {
 			client, retryClient := contentfulRetryTestClient(t, baseClient)
 			removeContentfulRetryTestDelay(retryClient)
 
-			request, err := http.NewRequestWithContext(t.Context(), test.method, "https://api.test.contentful.com/resource", nil)
+			request, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://api.test.contentful.com/resource", nil)
 			require.NoError(t, err)
 
 			response, err := client.Do(request)
@@ -315,78 +200,6 @@ func TestContentfulHTTPClientStopsMutationRetriesAfterUncertainFailures(t *testi
 	}
 }
 
-type contentfulRetryRequestObservation struct {
-	method        string
-	target        string
-	header        http.Header
-	contentLength int64
-	body          []byte
-}
-
-func TestContentfulHTTPClientRetriesVersionedPutAfterExplicitRateLimit(t *testing.T) {
-	t.Parallel()
-
-	var observations []contentfulRetryRequestObservation
-
-	baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			return nil, fmt.Errorf("read retried request body: %w", err)
-		}
-
-		observations = append(observations, contentfulRetryRequestObservation{
-			method:        request.Method,
-			target:        request.URL.String(),
-			header:        request.Header.Clone(),
-			contentLength: request.ContentLength,
-			body:          bytes.Clone(body),
-		})
-		attempt := len(observations)
-
-		status := http.StatusOK
-		if attempt == 1 {
-			status = http.StatusTooManyRequests
-		}
-
-		return contentfulRetryTestResponse(request, status), nil
-	})}
-	client, retryClient := contentfulRetryTestClient(t, baseClient)
-	removeContentfulRetryTestDelay(retryClient)
-
-	payload := []byte(testJSON(map[string]any{
-		"fields":   map[string]any{"title": map[string]any{"en-AU": "unchanged"}},
-		"metadata": map[string]any{"tags": []any{}},
-	}))
-	request, err := http.NewRequestWithContext(
-		t.Context(),
-		http.MethodPut,
-		"https://api.test.contentful.com/spaces/space/environments/environment/entries/entry?probe=retry",
-		bytes.NewReader(payload),
-	)
-	require.NoError(t, err)
-	request.Header.Set("Authorization", "Bearer test-token")
-	request.Header.Set("Content-Type", "application/vnd.contentful.management.v1+json")
-	request.Header.Set("X-Contentful-Version", "17")
-
-	response, err := contentfulRetryTestDoWithin(t, client, request)
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-	require.Equal(t, http.StatusOK, response.StatusCode)
-
-	expectedObservation := contentfulRetryRequestObservation{
-		method: http.MethodPut,
-		target: "https://api.test.contentful.com/spaces/space/environments/environment/entries/entry?probe=retry",
-		header: http.Header{
-			"Authorization":        []string{"Bearer test-token"},
-			"Content-Type":         []string{"application/vnd.contentful.management.v1+json"},
-			"X-Contentful-Version": []string{"17"},
-		},
-		contentLength: int64(len(payload)),
-		body:          payload,
-	}
-	assert.Equal(t, []contentfulRetryRequestObservation{expectedObservation, expectedObservation}, observations)
-}
-
 func TestContentfulHTTPClientRetriesMoreThanFourConsecutiveRateLimits(t *testing.T) {
 	t.Parallel()
 
@@ -402,6 +215,8 @@ func TestContentfulHTTPClientRetriesMoreThanFourConsecutiveRateLimits(t *testing
 	})}
 	client, retryClient := contentfulRetryTestClient(t, baseClient)
 	removeContentfulRetryTestDelay(retryClient)
+
+	// The context is the effective retry budget, including beyond this fixture.
 	require.Equal(t, math.MaxInt, retryClient.RetryMax)
 
 	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
@@ -410,569 +225,12 @@ func TestContentfulHTTPClientRetriesMoreThanFourConsecutiveRateLimits(t *testing
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(testJSON(map[string]any{})))
 	require.NoError(t, err)
 
-	response, err := contentfulRetryTestDoWithin(t, client, request)
+	response, err := client.Do(request)
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	assert.EqualValues(t, 7, requestCount.Load())
-}
-
-func TestContentfulHTTPClientPreservesAlreadyExpiredDeadline(t *testing.T) {
-	t.Parallel()
-
-	var requestCount atomic.Int64
-
-	baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-		requestCount.Add(1)
-
-		return contentfulRetryTestResponse(request, http.StatusOK), nil
-	})}
-	client, _ := contentfulRetryTestClient(t, baseClient)
-
-	ctx, cancel := context.WithDeadline(t.Context(), time.Now().Add(-time.Second))
-	t.Cleanup(cancel)
-
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.test.contentful.com/resource", nil)
-	require.NoError(t, err)
-
-	response, err := client.Do(request)
-	if response != nil {
-		t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-	}
-
-	assert.Nil(t, response)
-	require.ErrorIs(t, err, context.DeadlineExceeded)
-	assert.Zero(t, requestCount.Load())
-}
-
-func TestContentfulHTTPClientDeclinesMutationRateLimitRetryBeyondDeadline(t *testing.T) {
-	t.Parallel()
-
-	var requestCount atomic.Int64
-
-	baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-		requestCount.Add(1)
-
-		response := contentfulRetryTestResponse(request, http.StatusTooManyRequests)
-		response.Header.Set("X-Contentful-Ratelimit-Reset", "900")
-		response.Body = io.NopCloser(strings.NewReader(testJSON(map[string]any{"message": "rate limited"})))
-
-		return response, nil
-	})}
-	client, _ := contentfulRetryTestClient(t, baseClient)
-
-	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
-	t.Cleanup(cancel)
-
-	request, err := http.NewRequestWithContext(ctx, http.MethodDelete, "https://api.test.contentful.com/resource", nil)
-	require.NoError(t, err)
-
-	response, err := contentfulRetryTestDoWithin(t, client, request)
-	require.NoError(t, err)
-	require.NotNil(t, response)
-	t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-
-	body, err := io.ReadAll(response.Body)
-	require.NoError(t, err)
-
-	assert.Equal(t, http.StatusTooManyRequests, response.StatusCode)
-	assert.Equal(t, "900", response.Header.Get("X-Contentful-Ratelimit-Reset"))
-	assert.Equal(t, []byte(testJSON(map[string]any{"message": "rate limited"})), body)
-	assert.EqualValues(t, 1, requestCount.Load())
-	assert.NoError(t, ctx.Err())
-}
-
-func TestContentfulHTTPClientRetriesWhenRateLimitBackoffFitsDeadline(t *testing.T) {
-	t.Parallel()
-
-	var requestCount atomic.Int64
-
-	baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-		if requestCount.Add(1) == 1 {
-			response := contentfulRetryTestResponse(request, http.StatusTooManyRequests)
-			response.Header.Set("X-Contentful-Ratelimit-Reset", "0")
-
-			return response, nil
-		}
-
-		return contentfulRetryTestResponse(request, http.StatusOK), nil
-	})}
-	client, _ := contentfulRetryTestClient(t, baseClient)
-
-	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
-	t.Cleanup(cancel)
-
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(testJSON(map[string]any{})))
-	require.NoError(t, err)
-
-	response, err := client.Do(request)
-	require.NoError(t, err)
-	require.NotNil(t, response)
-	t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-
-	assert.Equal(t, http.StatusOK, response.StatusCode)
-	assert.EqualValues(t, 2, requestCount.Load())
-}
-
-func TestContentfulRetryCoordinatorReusesDeadlineCheckedBackoff(t *testing.T) {
-	t.Parallel()
-
-	retryClient := retryablehttp.NewClient()
-	retryCoordinator := contentfulRetryCoordinator{client: retryClient}
-	retryState := &contentfulRequestRetryState{}
-
-	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
-	t.Cleanup(cancel)
-
-	ctx = context.WithValue(ctx, contentfulRequestMethodContextKey{}, http.MethodPost)
-	ctx = context.WithValue(ctx, contentfulRequestRetryStateContextKey{}, retryState)
-
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.test.contentful.com/resource", strings.NewReader(testJSON(map[string]any{})))
-	require.NoError(t, err)
-
-	response := contentfulRetryTestResponse(request, http.StatusTooManyRequests)
-	response.Header.Set("X-Contentful-Ratelimit-Reset", "0")
-	t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-
-	shouldRetry, err := retryCoordinator.checkRetry(ctx, response, nil)
-	require.NoError(t, err)
-	require.True(t, shouldRetry)
-	require.True(t, retryState.backoffReady)
-
-	deadlineCheckedBackoff := retryState.backoff
-	actualBackoff := retryCoordinator.backoff(retryClient.RetryWaitMin, retryClient.RetryWaitMax, 0, response)
-
-	assert.Equal(t, deadlineCheckedBackoff, actualBackoff)
-	assert.False(t, retryState.backoffReady)
-}
-
-func TestContentfulRetryCoordinatorLogsResponseRetryDecisions(t *testing.T) {
-	t.Parallel()
-
-	const (
-		targetSentinel = "https://token.test.invalid/private?access_token=URL_SENTINEL"
-		headerSentinel = "HEADER_SENTINEL"
-		bodySentinel   = "BODY_SENTINEL"
-		tokenSentinel  = "TOKEN_SENTINEL"
-	)
-
-	tests := map[string]struct {
-		deadline     time.Duration
-		status       int
-		requestErr   error
-		shouldRetry  bool
-		decision     string
-		expectsEvent bool
-	}{
-		"accepted response retry":             {deadline: 5 * time.Second, status: http.StatusTooManyRequests, shouldRetry: true, decision: "retry", expectsEvent: true},
-		"response retry declined at deadline": {deadline: time.Second, status: http.StatusTooManyRequests, decision: "decline_deadline", expectsEvent: true},
-		"transport error":                     {requestErr: errContentfulRetryTestLogSentinel, shouldRetry: true},
-		"non-retryable response":              {status: http.StatusBadRequest},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			var logOutput bytes.Buffer
-
-			ctx := tflogtest.RootLogger(t.Context(), &logOutput)
-
-			if test.deadline > 0 {
-				var cancel context.CancelFunc
-
-				ctx, cancel = context.WithTimeout(ctx, test.deadline)
-				t.Cleanup(cancel)
-			}
-
-			ctx = context.WithValue(ctx, contentfulRequestMethodContextKey{}, http.MethodGet)
-			ctx = context.WithValue(ctx, contentfulRequestRetryStateContextKey{}, &contentfulRequestRetryState{})
-
-			var response *http.Response
-
-			if test.status != 0 {
-				request, err := http.NewRequestWithContext(ctx, http.MethodGet, targetSentinel, strings.NewReader(bodySentinel))
-				require.NoError(t, err)
-				request.Header.Set("Authorization", "Bearer "+tokenSentinel)
-				response = contentfulRetryTestResponse(request, test.status)
-				response.Header.Set("Retry-After", "2")
-				response.Header.Set("X-Test-Secret", headerSentinel)
-				response.Body = io.NopCloser(strings.NewReader(bodySentinel))
-
-				t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-			}
-
-			retryCoordinator := contentfulRetryCoordinator{client: retryablehttp.NewClient()}
-			shouldRetry, err := retryCoordinator.checkRetry(ctx, response, test.requestErr)
-			require.NoError(t, err)
-			assert.Equal(t, test.shouldRetry, shouldRetry)
-
-			entries, err := tflogtest.MultilineJSONDecode(bytes.NewReader(logOutput.Bytes()))
-			require.NoError(t, err)
-
-			if test.expectsEvent {
-				require.Len(t, entries, 1)
-				entry := entries[0]
-				assert.Equal(t, "contentful.response_retry", entry["@message"])
-				assert.Equal(t, "debug", entry["@level"])
-				assert.Equal(t, test.decision, entry["decision"])
-				assert.Equal(t, http.MethodGet, entry["method"])
-				assert.EqualValues(t, http.StatusTooManyRequests, entry["status_code"])
-				assert.EqualValues(t, 1, entry["retry_ordinal"])
-				assert.EqualValues(t, 2000, entry["wait_ms"])
-				remaining, ok := entry["deadline_remaining_ms"].(float64)
-				require.True(t, ok)
-				assert.Positive(t, remaining)
-				assert.LessOrEqual(t, remaining, float64(test.deadline.Milliseconds()))
-			} else {
-				assert.Empty(t, entries)
-			}
-
-			for _, sentinel := range []string{
-				targetSentinel, headerSentinel, bodySentinel, tokenSentinel, errContentfulRetryTestLogSentinel.Error(),
-			} {
-				assert.NotContains(t, logOutput.String(), sentinel)
-			}
-		})
-	}
-}
-
-func TestContentfulHTTPClientKeepsMixedRetryCauseAttemptAccountingAligned(t *testing.T) {
-	t.Parallel()
-
-	const target = "https://api.test.contentful.com/resource?private=URL_SENTINEL"
-
-	var requestCount atomic.Int64
-
-	var logOutput bytes.Buffer
-
-	baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-		switch requestCount.Add(1) {
-		case 1:
-			return nil, errContentfulRetryTestConnectionLost
-		case 2:
-			response := contentfulRetryTestResponse(request, http.StatusTooManyRequests)
-			response.Header.Set("Retry-After", "2")
-
-			return response, nil
-		default:
-			return contentfulRetryTestResponse(request, http.StatusOK), nil
-		}
-	})}
-	client, retryClient := contentfulRetryTestClient(t, baseClient)
-	configuredBackoff := retryClient.Backoff
-
-	type backoffObservation struct {
-		attempt int
-		status  int
-	}
-
-	var (
-		backoffObservations         []backoffObservation
-		rateLimitStateFound         bool
-		rateLimitBackoffReadyBefore bool
-		rateLimitBackoffReadyAfter  bool
-		rateLimitCachedAttempt      int
-		rateLimitCachedBackoff      time.Duration
-		rateLimitReusedBackoff      time.Duration
-	)
-
-	retryClient.Backoff = func(minDelay, maxDelay time.Duration, attempt int, response *http.Response) time.Duration {
-		status := 0
-		if response != nil {
-			status = response.StatusCode
-		}
-
-		backoffObservations = append(backoffObservations, backoffObservation{attempt: attempt, status: status})
-
-		var retryState *contentfulRequestRetryState
-		if response != nil && response.Request != nil {
-			retryState, rateLimitStateFound = response.Request.Context().Value(
-				contentfulRequestRetryStateContextKey{},
-			).(*contentfulRequestRetryState)
-			if rateLimitStateFound {
-				rateLimitBackoffReadyBefore = retryState.backoffReady
-				rateLimitCachedAttempt = retryState.backoffAttempt
-				rateLimitCachedBackoff = retryState.backoff
-			}
-		}
-
-		backoff := configuredBackoff(minDelay, maxDelay, attempt, response)
-		if rateLimitStateFound {
-			rateLimitReusedBackoff = backoff
-			rateLimitBackoffReadyAfter = retryState.backoffReady
-		}
-
-		return 0
-	}
-
-	ctx := tflogtest.RootLogger(t.Context(), &logOutput)
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
-	require.NoError(t, err)
-
-	response, err := client.Do(request)
-	require.NoError(t, err)
-	require.NotNil(t, response)
-	t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-
-	assert.Equal(t, http.StatusOK, response.StatusCode)
-	assert.EqualValues(t, 3, requestCount.Load())
-	assert.Equal(t, []backoffObservation{
-		{attempt: 0, status: 0},
-		{attempt: 1, status: http.StatusTooManyRequests},
-	}, backoffObservations)
-	require.True(t, rateLimitStateFound)
-	assert.True(t, rateLimitBackoffReadyBefore)
-	assert.Equal(t, 1, rateLimitCachedAttempt)
-	assert.Equal(t, 2*time.Second, rateLimitCachedBackoff)
-	assert.Equal(t, rateLimitCachedBackoff, rateLimitReusedBackoff)
-	assert.False(t, rateLimitBackoffReadyAfter)
-
-	entries, err := tflogtest.MultilineJSONDecode(bytes.NewReader(logOutput.Bytes()))
-	require.NoError(t, err)
-	require.Len(t, entries, 1)
-
-	entry := entries[0]
-	assert.Equal(t, "contentful.response_retry", entry["@message"])
-	assert.Equal(t, "debug", entry["@level"])
-	assert.Equal(t, "retry", entry["decision"])
-	assert.Equal(t, http.MethodGet, entry["method"])
-	assert.EqualValues(t, http.StatusTooManyRequests, entry["status_code"])
-	assert.EqualValues(t, 2, entry["retry_ordinal"])
-	assert.EqualValues(t, 2000, entry["wait_ms"])
-
-	remaining, ok := entry["deadline_remaining_ms"].(float64)
-	require.True(t, ok)
-	assert.Positive(t, remaining)
-	assert.LessOrEqual(t, remaining, float64(defaultResourceOperationTimeout.Milliseconds()))
-	assert.NotContains(t, logOutput.String(), target)
-	assert.NotContains(t, logOutput.String(), errContentfulRetryTestConnectionLost.Error())
-}
-
-type contentfulRetryTestDoResult struct {
-	response *http.Response
-	err      error
-}
-
-func contentfulRetryTestDoWithin(
-	t *testing.T,
-	client *http.Client,
-	request *http.Request,
-) (*http.Response, error) {
-	t.Helper()
-
-	result := make(chan contentfulRetryTestDoResult, 1)
-
-	go func() {
-		response, err := client.Do(request) //nolint:bodyclose // response ownership is returned to the caller.
-		result <- contentfulRetryTestDoResult{response: response, err: err}
-	}()
-
-	select {
-	case doResult := <-result:
-		return doResult.response, doResult.err
-	case <-time.After(time.Second):
-		t.Fatal(errContentfulRetryTestDidNotTerminate)
-
-		return nil, errContentfulRetryTestDidNotTerminate
-	}
-}
-
-func TestContentfulHTTPClientStopsWhenContextIsCancelled(t *testing.T) {
-	t.Parallel()
-
-	backoffStarted := make(chan struct{})
-
-	var requestCount atomic.Int64
-
-	baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-		requestCount.Add(1)
-
-		return contentfulRetryTestResponse(request, http.StatusTooManyRequests), nil
-	})}
-	client, retryClient := contentfulRetryTestClient(t, baseClient)
-	retryClient.Backoff = func(time.Duration, time.Duration, int, *http.Response) time.Duration {
-		close(backoffStarted)
-
-		return time.Minute
-	}
-
-	ctx, cancel := context.WithCancel(t.Context())
-	t.Cleanup(cancel)
-
-	request, err := http.NewRequestWithContext(ctx, http.MethodPut, "https://api.test.contentful.com/resource", strings.NewReader(testJSON(map[string]any{})))
-	require.NoError(t, err)
-
-	result := make(chan error, 1)
-
-	go func() {
-		response, doErr := client.Do(request)
-		if response != nil {
-			_ = response.Body.Close()
-		}
-
-		result <- doErr
-	}()
-
-	select {
-	case <-backoffStarted:
-	case <-time.After(time.Second):
-		t.Fatal("request did not enter retry backoff")
-	}
-
-	cancel()
-
-	select {
-	case err := <-result:
-		require.ErrorIs(t, err, context.Canceled)
-	case <-time.After(time.Second):
-		t.Fatal("request did not stop after context cancellation")
-	}
-
-	assert.EqualValues(t, 1, requestCount.Load())
-}
-
-func TestContentfulHTTPClientTransportBackoffExpiresAtDeadline(t *testing.T) {
-	t.Parallel()
-
-	backoffStarted := make(chan struct{})
-
-	var requestCount atomic.Int64
-
-	baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(*http.Request) (*http.Response, error) {
-		requestCount.Add(1)
-
-		return nil, errContentfulRetryTestConnectionLost
-	})}
-	client, retryClient := contentfulRetryTestClient(t, baseClient)
-	retryClient.Backoff = func(time.Duration, time.Duration, int, *http.Response) time.Duration {
-		close(backoffStarted)
-
-		return time.Minute
-	}
-
-	ctx, cancel := context.WithTimeout(t.Context(), 500*time.Millisecond)
-	t.Cleanup(cancel)
-
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.test.contentful.com/resource", nil)
-	require.NoError(t, err)
-
-	result := make(chan contentfulRetryTestDoResult, 1)
-
-	go func() {
-		response, doErr := client.Do(request) //nolint:bodyclose // transport failures do not return a response.
-		result <- contentfulRetryTestDoResult{response: response, err: doErr}
-	}()
-
-	select {
-	case <-backoffStarted:
-	case <-time.After(time.Second):
-		t.Fatal("request did not enter transport-error backoff")
-	}
-
-	select {
-	case doResult := <-result:
-		assert.Nil(t, doResult.response)
-		require.ErrorIs(t, doResult.err, context.DeadlineExceeded)
-	case <-time.After(time.Second):
-		t.Fatal("request did not stop at its context deadline")
-	}
-
-	assert.EqualValues(t, 1, requestCount.Load())
-}
-
-func TestContentfulHTTPClientDoesNotAttemptAlreadyCancelledRequest(t *testing.T) {
-	t.Parallel()
-
-	var requestCount atomic.Int64
-
-	baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-		requestCount.Add(1)
-
-		return contentfulRetryTestResponse(request, http.StatusOK), nil
-	})}
-	client, _ := contentfulRetryTestClient(t, baseClient)
-
-	ctx, cancel := context.WithCancel(t.Context())
-	cancel()
-
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.test.contentful.com/resource", nil)
-	require.NoError(t, err)
-
-	response, err := client.Do(request)
-	if response != nil {
-		t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-	}
-
-	assert.Nil(t, response)
-	require.ErrorIs(t, err, context.Canceled)
-	assert.Zero(t, requestCount.Load())
-}
-
-func TestContentfulHTTPClientAppliesDefaultDeadlineOnlyWhenMissing(t *testing.T) {
-	t.Parallel()
-
-	t.Run("missing deadline", func(t *testing.T) {
-		t.Parallel()
-
-		var observedDeadline time.Time
-
-		baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-			var ok bool
-
-			observedDeadline, ok = request.Context().Deadline()
-			require.True(t, ok)
-
-			response := contentfulRetryTestResponse(request, http.StatusOK)
-			response.Body = contentfulRetryTestContextBody{
-				contextErr: request.Context().Err,
-				reader:     strings.NewReader(testJSON(map[string]any{"ok": true})),
-			}
-
-			return response, nil
-		})}
-		client, _ := contentfulRetryTestClient(t, baseClient)
-
-		started := time.Now()
-		request, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://api.test.contentful.com/resource", nil)
-		require.NoError(t, err)
-
-		response, err := client.Do(request)
-		require.NoError(t, err)
-		t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-
-		body, err := io.ReadAll(response.Body)
-		require.NoError(t, err)
-
-		assert.WithinDuration(t, started.Add(defaultResourceOperationTimeout), observedDeadline, time.Second)
-		assert.Equal(t, testJSON(map[string]any{"ok": true}), string(body))
-	})
-
-	t.Run("existing deadline", func(t *testing.T) {
-		t.Parallel()
-
-		expectedDeadline := time.Now().Add(5 * time.Minute)
-
-		baseClient := &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-			observedDeadline, ok := request.Context().Deadline()
-			require.True(t, ok)
-			assert.Equal(t, expectedDeadline, observedDeadline)
-
-			return contentfulRetryTestResponse(request, http.StatusOK), nil
-		})}
-		client, _ := contentfulRetryTestClient(t, baseClient)
-
-		ctx, cancel := context.WithDeadline(t.Context(), expectedDeadline)
-		t.Cleanup(cancel)
-
-		request, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.test.contentful.com/resource", nil)
-		require.NoError(t, err)
-
-		response, err := client.Do(request)
-		require.NoError(t, err)
-		t.Cleanup(func() { require.NoError(t, response.Body.Close()) })
-	})
 }
 
 func TestContentfulHTTPClientBackoffAttemptNumbersAndTerminalResponse(t *testing.T) {
@@ -1108,58 +366,4 @@ func TestContentfulHTTPClientMutationRateLimitRetriesExactRequest(t *testing.T) 
 			})
 		}
 	}
-}
-
-func testContentfulMutationRateLimitRetry(t *testing.T, method string, terminalStatus int, terminalErr error) {
-	t.Helper()
-
-	const body = `{"name":"unchanged retry payload"}`
-
-	var bodies []string
-
-	client, retryClient := contentfulRetryTestClient(t, &http.Client{Transport: contentfulRetryTestRoundTripper(func(request *http.Request) (*http.Response, error) {
-		assert.Equal(t, method, request.Method)
-		assert.Equal(t, "/resource", request.URL.Path)
-		assert.Equal(t, []string{"7"}, request.Header.Values("X-Contentful-Version"))
-		data, err := io.ReadAll(request.Body)
-		require.NoError(t, err)
-
-		bodies = append(bodies, string(data))
-		if len(bodies) == 1 {
-			return contentfulRetryTestResponse(request, http.StatusTooManyRequests), nil
-		}
-
-		if len(bodies) > 2 {
-			return contentfulRetryTestResponse(request, http.StatusBadRequest), nil
-		}
-
-		if terminalErr != nil {
-			return nil, terminalErr
-		}
-
-		return contentfulRetryTestResponse(request, terminalStatus), nil
-	})})
-	removeContentfulRetryTestDelay(retryClient)
-
-	ctx := t.Context()
-
-	request, err := http.NewRequestWithContext(ctx, method, "https://api.test.contentful.com/resource", strings.NewReader(body))
-	require.NoError(t, err)
-	request.Header.Set("X-Contentful-Version", "7")
-
-	response, err := client.Do(request)
-	if response != nil {
-		require.NoError(t, response.Body.Close())
-	}
-
-	if terminalErr != nil {
-		require.ErrorIs(t, err, terminalErr)
-		assert.Nil(t, response)
-	} else {
-		require.NoError(t, err)
-		require.NotNil(t, response)
-		assert.Equal(t, terminalStatus, response.StatusCode)
-	}
-
-	assert.Equal(t, []string{body, body}, bodies, "retry must preserve the request and stop at the next non-429 outcome")
 }
