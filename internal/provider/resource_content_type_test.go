@@ -264,7 +264,7 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.StaticDirectory("testdata/content_type_draft"),
 				ConfigVariables: configVariables,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(

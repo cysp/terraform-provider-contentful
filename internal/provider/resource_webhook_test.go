@@ -14,11 +14,14 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -347,7 +350,7 @@ func TestAccWebhookResourceImportNotFound(t *testing.T) {
 	})
 }
 
-func TestAccWebhookResourceCreate(t *testing.T) {
+func TestAccWebhookResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -362,36 +365,16 @@ func TestAccWebhookResourceCreate(t *testing.T) {
 		"webhook_id": config.StringVariable(webhookID),
 	}
 
-	testAccMockableResource(t, server, resource.TestCase{
-		Steps: []resource.TestStep{
-			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-			},
-		},
-	})
-}
-
-func TestAccWebhookResourceUpdate(t *testing.T) {
-	t.Parallel()
-
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
-
-	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
-
-	webhookID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
-
-	configVariables := config.Variables{
-		"space_id":   config.StringVariable("0p38pssr0fi3"),
-		"webhook_id": config.StringVariable(webhookID),
-	}
+	identity := statecheck.CompareValue(compare.ValuesSame())
 
 	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_webhook.test", tfjsonpath.New("id")),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionCreate),
@@ -401,6 +384,9 @@ func TestAccWebhookResourceUpdate(t *testing.T) {
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_webhook.test", tfjsonpath.New("id")),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),
@@ -408,8 +394,11 @@ func TestAccWebhookResourceUpdate(t *testing.T) {
 				},
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.StaticDirectory("testdata/TestAccWebhookResourceLifecycle/2"),
 				ConfigVariables: configVariables,
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_webhook.test", tfjsonpath.New("id")),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop),
@@ -419,6 +408,9 @@ func TestAccWebhookResourceUpdate(t *testing.T) {
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_webhook.test", tfjsonpath.New("id")),
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),

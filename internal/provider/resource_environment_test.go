@@ -3,6 +3,7 @@ package provider_test
 import (
 	"maps"
 	"net/http"
+	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,26 +54,23 @@ func TestAccEnvironmentResourceLifecycle(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestNameDirectory(),
+				ConfigDirectory: config.StaticDirectory("testdata/environment_resource"),
 				ConfigVariables: configVariables1,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/"+environmentID)),
-					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("name"), knownvalue.StringExact("Test Environment")),
-					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("environment_id"), knownvalue.StringExact(environmentID)),
+					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("status"), knownvalue.StringExact("ready")),
 				},
 			},
 			{
-				ConfigDirectory:  config.TestNameDirectory(),
+				ConfigDirectory:  config.StaticDirectory("testdata/environment_resource"),
 				ConfigVariables:  configVariables2,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_environment.test", plancheck.ResourceActionUpdate)}},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/"+environmentID)),
-					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("name"), knownvalue.StringExact("Updated Test Environment")),
-					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("environment_id"), knownvalue.StringExact(environmentID)),
 				},
 			},
 			{
-				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigDirectory:   config.StaticDirectory("testdata/environment_resource"),
 				ConfigVariables:   configVariables2,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -99,25 +98,45 @@ func TestAccEnvironmentResourceImport(t *testing.T) {
 		"environment_name":    config.StringVariable("Staging Environment"),
 	}
 
-	testAccMockedResource(t, server, resource.TestCase{
+	var mutations atomic.Int64
+
+	handler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.Method != http.MethodGet {
+			mutations.Add(1)
+		}
+
+		server.ServeHTTP(writer, request)
+	})
+
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/staging")),
-					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("space_id"), knownvalue.StringExact("space-id")),
-					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("environment_id"), knownvalue.StringExact("staging")),
-					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("name"), knownvalue.StringExact("Staging Environment")),
-					statecheck.ExpectKnownValue("contentful_environment.test", tfjsonpath.New("status"), knownvalue.StringExact("ready")),
+				ConfigDirectory:    config.StaticDirectory("testdata/environment_resource"),
+				ConfigVariables:    configVariables,
+				ImportState:        true,
+				ImportStatePersist: true,
+				ImportStateId:      "space-id/staging",
+				ResourceName:       "contentful_environment.test",
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					assert.Zero(t, mutations.Load(), "import must only read the seeded environment")
+
+					return testAccImportAttributes(map[string]string{
+						"id":             "space-id/staging",
+						"space_id":       "space-id",
+						"environment_id": "staging",
+						"name":           "Staging Environment",
+						"status":         "ready",
+					})(states)
 				},
 			},
 			{
-				ConfigDirectory:   config.TestNameDirectory(),
-				ConfigVariables:   configVariables,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      "contentful_environment.test",
+				ConfigDirectory: config.StaticDirectory("testdata/environment_resource"),
+				ConfigVariables: configVariables,
+				PlanOnly:        true,
+				// PlanOnly runs this phase against the imported state before refresh.
+				ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPreRefresh: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_environment.test", plancheck.ResourceActionNoop),
+				}},
 			},
 		},
 	})

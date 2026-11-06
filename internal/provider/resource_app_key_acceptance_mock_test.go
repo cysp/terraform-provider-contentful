@@ -184,6 +184,9 @@ func TestAccAppKeyResourceMockImport(t *testing.T) {
 				ImportState:     true,
 				ImportStateKind: resource.ImportBlockWithResourceIdentity,
 				ResourceName:    testAccAppKeyResourceAddress,
+				ImportPlanChecks: resource.ImportPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectKnownValue(testAccAppKeyResourceAddress, tfjsonpath.New("id"), knownvalue.StringExact(testAccAppKeyOrganizationID+"/"+testAccAppKeyAppDefinitionID+"/"+jwk.kid)),
+				}},
 			},
 		},
 	})

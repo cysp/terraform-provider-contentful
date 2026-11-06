@@ -93,7 +93,16 @@ func TestAccLivePreviewVariablesResource(t *testing.T) {
 		livePreviewVariablesStep(initial),
 		// Import has no configured timeouts; lifecycle state checks verify their preservation separately.
 		{ConfigDirectory: config.StaticDirectory("testdata/TestAccLivePreviewVariablesResource"), ConfigVariables: config.Variables{"variables": config.StringVariable(initial)}, ResourceName: livePreviewVariablesAddress, ImportState: true, ImportStateVerify: true, ImportStateVerifyIgnore: []string{"timeouts"}},
-		{ConfigDirectory: config.StaticDirectory("testdata/TestAccLivePreviewVariablesResourceImport"), ConfigVariables: config.Variables{"variables": config.StringVariable(initial)}, ResourceName: livePreviewVariablesAddress, ImportState: true, ImportStateKind: resource.ImportBlockWithResourceIdentity},
+		{
+			ConfigDirectory: config.StaticDirectory("testdata/TestAccLivePreviewVariablesResourceImport"),
+			ConfigVariables: config.Variables{"variables": config.StringVariable(initial)},
+			ResourceName:    livePreviewVariablesAddress,
+			ImportState:     true,
+			ImportStateKind: resource.ImportBlockWithResourceIdentity,
+			ImportPlanChecks: resource.ImportPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectKnownValue(livePreviewVariablesAddress, tfjsonpath.New("id"), knownvalue.StringExact("space/environment")),
+			}},
+		},
 		livePreviewVariablesStep(removed),
 		drift,
 		disappeared,
