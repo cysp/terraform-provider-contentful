@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (v EditorInterfaceGroupControlValue) ToEditorInterfaceDataGroupControlsItem(valuePath path.Path) (cm.EditorInterfaceDataGroupControlsItem, diag.Diagnostics) {
+func (v EditorInterfaceGroupControlValue) ToEditorInterfaceGroupControlsItem(valuePath path.Path) (cm.EditorInterfaceGroupControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	groupID, groupIDDiags := requestRequiredString(v.GroupID, valuePath.AtName("group_id"))
@@ -28,10 +28,10 @@ func (v EditorInterfaceGroupControlValue) ToEditorInterfaceDataGroupControlsItem
 	diags.Append(settingsDiags...)
 
 	if diags.HasError() {
-		return cm.EditorInterfaceDataGroupControlsItem{}, diags
+		return cm.EditorInterfaceGroupControlsItem{}, diags
 	}
 
-	return cm.EditorInterfaceDataGroupControlsItem{
+	return cm.EditorInterfaceGroupControlsItem{
 		GroupId:         groupID,
 		WidgetNamespace: widgetNamespace,
 		WidgetId:        widgetID,

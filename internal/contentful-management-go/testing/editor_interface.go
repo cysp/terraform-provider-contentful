@@ -1,6 +1,8 @@
 package cmtesting
 
 import (
+	"slices"
+
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
@@ -17,27 +19,31 @@ func NewEditorInterfaceFromFields(spaceID, environmentID, contentTypeID string, 
 func UpdateEditorInterfaceFromFields(editorInterface *cm.EditorInterface, editorInterfaceFields cm.EditorInterfaceData) {
 	editorInterface.Sys.Version++
 
-	convertOptNil(&editorInterface.EditorLayout, &editorInterfaceFields.EditorLayout, func(editorLayout []cm.EditorInterfaceEditorLayoutItem) []cm.EditorInterfaceEditorLayoutItem {
-		return editorLayout
-	})
+	// Both omitted and null collections clear the stored value. Present arrays,
+	// including empty arrays, retain their request representation.
+	if editorLayout, ok := editorInterfaceFields.EditorLayout.Get(); ok {
+		editorInterface.EditorLayout.SetTo(editorLayout)
+	} else {
+		editorInterface.EditorLayout.Reset()
+	}
 
-	convertOptNil(&editorInterface.Controls, &editorInterfaceFields.Controls, func(controls []cm.EditorInterfaceDataControlsItem) []cm.EditorInterfaceControlsItem {
-		return convertSlice(controls, func(control cm.EditorInterfaceDataControlsItem) cm.EditorInterfaceControlsItem {
-			return cm.EditorInterfaceControlsItem(control)
-		})
-	})
+	if controls, ok := editorInterfaceFields.Controls.Get(); ok {
+		editorInterface.Controls.SetTo(slices.Clone(controls))
+	} else {
+		editorInterface.Controls.Reset()
+	}
 
-	convertOptNil(&editorInterface.GroupControls, &editorInterfaceFields.GroupControls, func(groupControl []cm.EditorInterfaceDataGroupControlsItem) []cm.EditorInterfaceGroupControlsItem {
-		return convertSlice(groupControl, func(groupControlItem cm.EditorInterfaceDataGroupControlsItem) cm.EditorInterfaceGroupControlsItem {
-			return cm.EditorInterfaceGroupControlsItem(groupControlItem)
-		})
-	})
+	if groupControls, ok := editorInterfaceFields.GroupControls.Get(); ok {
+		editorInterface.GroupControls.SetTo(slices.Clone(groupControls))
+	} else {
+		editorInterface.GroupControls.Reset()
+	}
 
-	convertOptNil(&editorInterface.Sidebar, &editorInterfaceFields.Sidebar, func(sidebar []cm.EditorInterfaceDataSidebarItem) []cm.EditorInterfaceSidebarItem {
-		return convertSlice(sidebar, func(sidebarItem cm.EditorInterfaceDataSidebarItem) cm.EditorInterfaceSidebarItem {
-			return cm.EditorInterfaceSidebarItem(sidebarItem)
-		})
-	})
+	if sidebar, ok := editorInterfaceFields.Sidebar.Get(); ok {
+		editorInterface.Sidebar.SetTo(slices.Clone(sidebar))
+	} else {
+		editorInterface.Sidebar.Reset()
+	}
 }
 
 func NewDefaultEditorInterface(spaceID, environmentID, contentTypeID string, fields []cm.ContentTypeFieldsItem) cm.EditorInterface {

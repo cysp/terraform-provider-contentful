@@ -1,0 +1,13 @@
+EditorInterfaceSidebarItem:
+  type: object
+  properties:
+    widgetNamespace:
+      type: string
+    widgetId:
+      type: string
+    settings: {}
+    disabled:
+      type: boolean
+  required:
+    - widgetNamespace
+    - widgetId

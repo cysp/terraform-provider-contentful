@@ -25,13 +25,13 @@ func TestAccMarketplaceAppDefinitionDataSourceRead(t *testing.T) {
 
 	server.SetMarketplaceAppDefinition("5EJGHo8tYJcjnEhYWDxivp", "5KySdUzG7OWuCE2V3fgtIa", cm.AppDefinitionData{
 		Name: "Bynder",
-		Locations: []cm.AppDefinitionDataLocationsItem{
+		Locations: []cm.AppDefinitionLocationsItem{
 			{
 				Location: "app-config",
 			},
 			{
 				Location: "entry-field",
-				FieldTypes: []cm.AppDefinitionDataLocationsItemFieldTypesItem{
+				FieldTypes: []cm.AppDefinitionLocationsItemFieldTypesItem{
 					{
 						Type: "Object",
 					},

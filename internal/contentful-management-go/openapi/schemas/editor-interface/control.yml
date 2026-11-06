@@ -1,0 +1,12 @@
+EditorInterfaceControlsItem:
+  type: object
+  properties:
+    fieldId:
+      type: string
+    widgetNamespace:
+      type: string
+    widgetId:
+      type: string
+    settings: {}
+  required:
+    - fieldId

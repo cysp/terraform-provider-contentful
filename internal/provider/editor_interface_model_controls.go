@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (v EditorInterfaceControlValue) ToEditorInterfaceDataControlsItem(valuePath path.Path) (cm.EditorInterfaceDataControlsItem, diag.Diagnostics) {
+func (v EditorInterfaceControlValue) ToEditorInterfaceControlsItem(valuePath path.Path) (cm.EditorInterfaceControlsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	fieldID, fieldIDDiags := requestRequiredString(v.FieldID, valuePath.AtName("field_id"))
@@ -28,10 +28,10 @@ func (v EditorInterfaceControlValue) ToEditorInterfaceDataControlsItem(valuePath
 	diags.Append(settingsDiags...)
 
 	if diags.HasError() {
-		return cm.EditorInterfaceDataControlsItem{}, diags
+		return cm.EditorInterfaceControlsItem{}, diags
 	}
 
-	return cm.EditorInterfaceDataControlsItem{
+	return cm.EditorInterfaceControlsItem{
 		FieldId:         fieldID,
 		WidgetNamespace: widgetNamespace,
 		WidgetId:        widgetID,

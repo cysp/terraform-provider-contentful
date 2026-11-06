@@ -154,6 +154,12 @@ go generate .
 go generate ./internal/contentful-management-go
 ```
 
+Use named, referenced OpenAPI schemas for nested request and response values
+with the same contract. Inline objects reused through `allOf` produce separate
+Go types for each parent, requiring redundant conversions. Keep separate schemas
+where requiredness, nullability, or writable fields differ, and retain conversions
+that model response normalization.
+
 Generated files include `internal/contentful-management-go/oas_*_gen.go` and
 the managed Registry documentation described in
 [Documentation authoring](#documentation-authoring). Edit their sources rather

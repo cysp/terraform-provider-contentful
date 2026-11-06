@@ -1001,11 +1001,11 @@ func (*AppDefinition) getAppDefinitionRes() {}
 
 // Ref: #/AppDefinitionData
 type AppDefinitionData struct {
-	Name       string                           `json:"name"`
-	Src        OptString                        `json:"src"`
-	Bundle     OptAppBundleLink                 `json:"bundle"`
-	Locations  []AppDefinitionDataLocationsItem `json:"locations"`
-	Parameters OptAppDefinitionParameters       `json:"parameters"`
+	Name       string                       `json:"name"`
+	Src        OptString                    `json:"src"`
+	Bundle     OptAppBundleLink             `json:"bundle"`
+	Locations  []AppDefinitionLocationsItem `json:"locations"`
+	Parameters OptAppDefinitionParameters   `json:"parameters"`
 }
 
 // GetName returns the value of Name.
@@ -1024,7 +1024,7 @@ func (s *AppDefinitionData) GetBundle() OptAppBundleLink {
 }
 
 // GetLocations returns the value of Locations.
-func (s *AppDefinitionData) GetLocations() []AppDefinitionDataLocationsItem {
+func (s *AppDefinitionData) GetLocations() []AppDefinitionLocationsItem {
 	return s.Locations
 }
 
@@ -1049,135 +1049,13 @@ func (s *AppDefinitionData) SetBundle(val OptAppBundleLink) {
 }
 
 // SetLocations sets the value of Locations.
-func (s *AppDefinitionData) SetLocations(val []AppDefinitionDataLocationsItem) {
+func (s *AppDefinitionData) SetLocations(val []AppDefinitionLocationsItem) {
 	s.Locations = val
 }
 
 // SetParameters sets the value of Parameters.
 func (s *AppDefinitionData) SetParameters(val OptAppDefinitionParameters) {
 	s.Parameters = val
-}
-
-type AppDefinitionDataLocationsItem struct {
-	Location       string                                          `json:"location"`
-	FieldTypes     []AppDefinitionDataLocationsItemFieldTypesItem  `json:"fieldTypes"`
-	NavigationItem OptAppDefinitionDataLocationsItemNavigationItem `json:"navigationItem"`
-}
-
-// GetLocation returns the value of Location.
-func (s *AppDefinitionDataLocationsItem) GetLocation() string {
-	return s.Location
-}
-
-// GetFieldTypes returns the value of FieldTypes.
-func (s *AppDefinitionDataLocationsItem) GetFieldTypes() []AppDefinitionDataLocationsItemFieldTypesItem {
-	return s.FieldTypes
-}
-
-// GetNavigationItem returns the value of NavigationItem.
-func (s *AppDefinitionDataLocationsItem) GetNavigationItem() OptAppDefinitionDataLocationsItemNavigationItem {
-	return s.NavigationItem
-}
-
-// SetLocation sets the value of Location.
-func (s *AppDefinitionDataLocationsItem) SetLocation(val string) {
-	s.Location = val
-}
-
-// SetFieldTypes sets the value of FieldTypes.
-func (s *AppDefinitionDataLocationsItem) SetFieldTypes(val []AppDefinitionDataLocationsItemFieldTypesItem) {
-	s.FieldTypes = val
-}
-
-// SetNavigationItem sets the value of NavigationItem.
-func (s *AppDefinitionDataLocationsItem) SetNavigationItem(val OptAppDefinitionDataLocationsItemNavigationItem) {
-	s.NavigationItem = val
-}
-
-type AppDefinitionDataLocationsItemFieldTypesItem struct {
-	Type     string                                               `json:"type"`
-	LinkType OptString                                            `json:"linkType"`
-	Items    OptAppDefinitionDataLocationsItemFieldTypesItemItems `json:"items"`
-}
-
-// GetType returns the value of Type.
-func (s *AppDefinitionDataLocationsItemFieldTypesItem) GetType() string {
-	return s.Type
-}
-
-// GetLinkType returns the value of LinkType.
-func (s *AppDefinitionDataLocationsItemFieldTypesItem) GetLinkType() OptString {
-	return s.LinkType
-}
-
-// GetItems returns the value of Items.
-func (s *AppDefinitionDataLocationsItemFieldTypesItem) GetItems() OptAppDefinitionDataLocationsItemFieldTypesItemItems {
-	return s.Items
-}
-
-// SetType sets the value of Type.
-func (s *AppDefinitionDataLocationsItemFieldTypesItem) SetType(val string) {
-	s.Type = val
-}
-
-// SetLinkType sets the value of LinkType.
-func (s *AppDefinitionDataLocationsItemFieldTypesItem) SetLinkType(val OptString) {
-	s.LinkType = val
-}
-
-// SetItems sets the value of Items.
-func (s *AppDefinitionDataLocationsItemFieldTypesItem) SetItems(val OptAppDefinitionDataLocationsItemFieldTypesItemItems) {
-	s.Items = val
-}
-
-type AppDefinitionDataLocationsItemFieldTypesItemItems struct {
-	Type     string    `json:"type"`
-	LinkType OptString `json:"linkType"`
-}
-
-// GetType returns the value of Type.
-func (s *AppDefinitionDataLocationsItemFieldTypesItemItems) GetType() string {
-	return s.Type
-}
-
-// GetLinkType returns the value of LinkType.
-func (s *AppDefinitionDataLocationsItemFieldTypesItemItems) GetLinkType() OptString {
-	return s.LinkType
-}
-
-// SetType sets the value of Type.
-func (s *AppDefinitionDataLocationsItemFieldTypesItemItems) SetType(val string) {
-	s.Type = val
-}
-
-// SetLinkType sets the value of LinkType.
-func (s *AppDefinitionDataLocationsItemFieldTypesItemItems) SetLinkType(val OptString) {
-	s.LinkType = val
-}
-
-type AppDefinitionDataLocationsItemNavigationItem struct {
-	Name string `json:"name"`
-	Path string `json:"path"`
-}
-
-// GetName returns the value of Name.
-func (s *AppDefinitionDataLocationsItemNavigationItem) GetName() string {
-	return s.Name
-}
-
-// GetPath returns the value of Path.
-func (s *AppDefinitionDataLocationsItemNavigationItem) GetPath() string {
-	return s.Path
-}
-
-// SetName sets the value of Name.
-func (s *AppDefinitionDataLocationsItemNavigationItem) SetName(val string) {
-	s.Name = val
-}
-
-// SetPath sets the value of Path.
-func (s *AppDefinitionDataLocationsItemNavigationItem) SetPath(val string) {
-	s.Path = val
 }
 
 // Ref: #/AppDefinitionLink
@@ -1304,6 +1182,7 @@ func (s *AppDefinitionLinkSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/AppDefinitionLocationsItem
 type AppDefinitionLocationsItem struct {
 	Location       string                                      `json:"location"`
 	FieldTypes     []AppDefinitionLocationsItemFieldTypesItem  `json:"fieldTypes"`
@@ -3890,6 +3769,7 @@ func (s *EditorInterface) SetSidebar(val OptNilEditorInterfaceSidebarItemArray) 
 
 func (*EditorInterface) getEditorInterfaceRes() {}
 
+// Ref: #/EditorInterfaceControlsItem
 type EditorInterfaceControlsItem struct {
 	FieldId         string    `json:"fieldId"`
 	WidgetNamespace OptString `json:"widgetNamespace"`
@@ -3939,10 +3819,10 @@ func (s *EditorInterfaceControlsItem) SetSettings(val jx.Raw) {
 
 // Ref: #/EditorInterfaceData
 type EditorInterfaceData struct {
-	EditorLayout  OptNilEditorInterfaceEditorLayoutItemArray      `json:"editorLayout"`
-	Controls      OptNilEditorInterfaceDataControlsItemArray      `json:"controls"`
-	GroupControls OptNilEditorInterfaceDataGroupControlsItemArray `json:"groupControls"`
-	Sidebar       OptNilEditorInterfaceDataSidebarItemArray       `json:"sidebar"`
+	EditorLayout  OptNilEditorInterfaceEditorLayoutItemArray  `json:"editorLayout"`
+	Controls      OptNilEditorInterfaceControlsItemArray      `json:"controls"`
+	GroupControls OptNilEditorInterfaceGroupControlsItemArray `json:"groupControls"`
+	Sidebar       OptNilEditorInterfaceSidebarItemArray       `json:"sidebar"`
 }
 
 // GetEditorLayout returns the value of EditorLayout.
@@ -3951,17 +3831,17 @@ func (s *EditorInterfaceData) GetEditorLayout() OptNilEditorInterfaceEditorLayou
 }
 
 // GetControls returns the value of Controls.
-func (s *EditorInterfaceData) GetControls() OptNilEditorInterfaceDataControlsItemArray {
+func (s *EditorInterfaceData) GetControls() OptNilEditorInterfaceControlsItemArray {
 	return s.Controls
 }
 
 // GetGroupControls returns the value of GroupControls.
-func (s *EditorInterfaceData) GetGroupControls() OptNilEditorInterfaceDataGroupControlsItemArray {
+func (s *EditorInterfaceData) GetGroupControls() OptNilEditorInterfaceGroupControlsItemArray {
 	return s.GroupControls
 }
 
 // GetSidebar returns the value of Sidebar.
-func (s *EditorInterfaceData) GetSidebar() OptNilEditorInterfaceDataSidebarItemArray {
+func (s *EditorInterfaceData) GetSidebar() OptNilEditorInterfaceSidebarItemArray {
 	return s.Sidebar
 }
 
@@ -3971,159 +3851,18 @@ func (s *EditorInterfaceData) SetEditorLayout(val OptNilEditorInterfaceEditorLay
 }
 
 // SetControls sets the value of Controls.
-func (s *EditorInterfaceData) SetControls(val OptNilEditorInterfaceDataControlsItemArray) {
+func (s *EditorInterfaceData) SetControls(val OptNilEditorInterfaceControlsItemArray) {
 	s.Controls = val
 }
 
 // SetGroupControls sets the value of GroupControls.
-func (s *EditorInterfaceData) SetGroupControls(val OptNilEditorInterfaceDataGroupControlsItemArray) {
+func (s *EditorInterfaceData) SetGroupControls(val OptNilEditorInterfaceGroupControlsItemArray) {
 	s.GroupControls = val
 }
 
 // SetSidebar sets the value of Sidebar.
-func (s *EditorInterfaceData) SetSidebar(val OptNilEditorInterfaceDataSidebarItemArray) {
+func (s *EditorInterfaceData) SetSidebar(val OptNilEditorInterfaceSidebarItemArray) {
 	s.Sidebar = val
-}
-
-type EditorInterfaceDataControlsItem struct {
-	FieldId         string    `json:"fieldId"`
-	WidgetNamespace OptString `json:"widgetNamespace"`
-	WidgetId        OptString `json:"widgetId"`
-	Settings        jx.Raw    `json:"settings"`
-}
-
-// GetFieldId returns the value of FieldId.
-func (s *EditorInterfaceDataControlsItem) GetFieldId() string {
-	return s.FieldId
-}
-
-// GetWidgetNamespace returns the value of WidgetNamespace.
-func (s *EditorInterfaceDataControlsItem) GetWidgetNamespace() OptString {
-	return s.WidgetNamespace
-}
-
-// GetWidgetId returns the value of WidgetId.
-func (s *EditorInterfaceDataControlsItem) GetWidgetId() OptString {
-	return s.WidgetId
-}
-
-// GetSettings returns the value of Settings.
-func (s *EditorInterfaceDataControlsItem) GetSettings() jx.Raw {
-	return s.Settings
-}
-
-// SetFieldId sets the value of FieldId.
-func (s *EditorInterfaceDataControlsItem) SetFieldId(val string) {
-	s.FieldId = val
-}
-
-// SetWidgetNamespace sets the value of WidgetNamespace.
-func (s *EditorInterfaceDataControlsItem) SetWidgetNamespace(val OptString) {
-	s.WidgetNamespace = val
-}
-
-// SetWidgetId sets the value of WidgetId.
-func (s *EditorInterfaceDataControlsItem) SetWidgetId(val OptString) {
-	s.WidgetId = val
-}
-
-// SetSettings sets the value of Settings.
-func (s *EditorInterfaceDataControlsItem) SetSettings(val jx.Raw) {
-	s.Settings = val
-}
-
-type EditorInterfaceDataGroupControlsItem struct {
-	GroupId         string    `json:"groupId"`
-	WidgetNamespace OptString `json:"widgetNamespace"`
-	WidgetId        OptString `json:"widgetId"`
-	Settings        jx.Raw    `json:"settings"`
-}
-
-// GetGroupId returns the value of GroupId.
-func (s *EditorInterfaceDataGroupControlsItem) GetGroupId() string {
-	return s.GroupId
-}
-
-// GetWidgetNamespace returns the value of WidgetNamespace.
-func (s *EditorInterfaceDataGroupControlsItem) GetWidgetNamespace() OptString {
-	return s.WidgetNamespace
-}
-
-// GetWidgetId returns the value of WidgetId.
-func (s *EditorInterfaceDataGroupControlsItem) GetWidgetId() OptString {
-	return s.WidgetId
-}
-
-// GetSettings returns the value of Settings.
-func (s *EditorInterfaceDataGroupControlsItem) GetSettings() jx.Raw {
-	return s.Settings
-}
-
-// SetGroupId sets the value of GroupId.
-func (s *EditorInterfaceDataGroupControlsItem) SetGroupId(val string) {
-	s.GroupId = val
-}
-
-// SetWidgetNamespace sets the value of WidgetNamespace.
-func (s *EditorInterfaceDataGroupControlsItem) SetWidgetNamespace(val OptString) {
-	s.WidgetNamespace = val
-}
-
-// SetWidgetId sets the value of WidgetId.
-func (s *EditorInterfaceDataGroupControlsItem) SetWidgetId(val OptString) {
-	s.WidgetId = val
-}
-
-// SetSettings sets the value of Settings.
-func (s *EditorInterfaceDataGroupControlsItem) SetSettings(val jx.Raw) {
-	s.Settings = val
-}
-
-type EditorInterfaceDataSidebarItem struct {
-	WidgetNamespace string  `json:"widgetNamespace"`
-	WidgetId        string  `json:"widgetId"`
-	Settings        jx.Raw  `json:"settings"`
-	Disabled        OptBool `json:"disabled"`
-}
-
-// GetWidgetNamespace returns the value of WidgetNamespace.
-func (s *EditorInterfaceDataSidebarItem) GetWidgetNamespace() string {
-	return s.WidgetNamespace
-}
-
-// GetWidgetId returns the value of WidgetId.
-func (s *EditorInterfaceDataSidebarItem) GetWidgetId() string {
-	return s.WidgetId
-}
-
-// GetSettings returns the value of Settings.
-func (s *EditorInterfaceDataSidebarItem) GetSettings() jx.Raw {
-	return s.Settings
-}
-
-// GetDisabled returns the value of Disabled.
-func (s *EditorInterfaceDataSidebarItem) GetDisabled() OptBool {
-	return s.Disabled
-}
-
-// SetWidgetNamespace sets the value of WidgetNamespace.
-func (s *EditorInterfaceDataSidebarItem) SetWidgetNamespace(val string) {
-	s.WidgetNamespace = val
-}
-
-// SetWidgetId sets the value of WidgetId.
-func (s *EditorInterfaceDataSidebarItem) SetWidgetId(val string) {
-	s.WidgetId = val
-}
-
-// SetSettings sets the value of Settings.
-func (s *EditorInterfaceDataSidebarItem) SetSettings(val jx.Raw) {
-	s.Settings = val
-}
-
-// SetDisabled sets the value of Disabled.
-func (s *EditorInterfaceDataSidebarItem) SetDisabled(val OptBool) {
-	s.Disabled = val
 }
 
 // Ref: #/EditorInterfaceEditorLayoutFieldItem
@@ -4248,6 +3987,7 @@ func NewEditorInterfaceEditorLayoutFieldItemEditorInterfaceEditorLayoutItem(v Ed
 	return s
 }
 
+// Ref: #/EditorInterfaceGroupControlsItem
 type EditorInterfaceGroupControlsItem struct {
 	GroupId         string    `json:"groupId"`
 	WidgetNamespace OptString `json:"widgetNamespace"`
@@ -4295,6 +4035,7 @@ func (s *EditorInterfaceGroupControlsItem) SetSettings(val jx.Raw) {
 	s.Settings = val
 }
 
+// Ref: #/EditorInterfaceSidebarItem
 type EditorInterfaceSidebarItem struct {
 	WidgetNamespace string  `json:"widgetNamespace"`
 	WidgetId        string  `json:"widgetId"`
@@ -5812,12 +5553,12 @@ func (*Extension) getExtensionRes() {}
 
 // Ref: #/ExtensionData
 type ExtensionData struct {
-	Extension  ExtensionDataExtension `json:"extension"`
-	Parameters jx.Raw                 `json:"parameters"`
+	Extension  ExtensionExtension `json:"extension"`
+	Parameters jx.Raw             `json:"parameters"`
 }
 
 // GetExtension returns the value of Extension.
-func (s *ExtensionData) GetExtension() ExtensionDataExtension {
+func (s *ExtensionData) GetExtension() ExtensionExtension {
 	return s.Extension
 }
 
@@ -5827,7 +5568,7 @@ func (s *ExtensionData) GetParameters() jx.Raw {
 }
 
 // SetExtension sets the value of Extension.
-func (s *ExtensionData) SetExtension(val ExtensionDataExtension) {
+func (s *ExtensionData) SetExtension(val ExtensionExtension) {
 	s.Extension = val
 }
 
@@ -5836,136 +5577,7 @@ func (s *ExtensionData) SetParameters(val jx.Raw) {
 	s.Parameters = val
 }
 
-type ExtensionDataExtension struct {
-	Name       string                                 `json:"name"`
-	Src        OptString                              `json:"src"`
-	Srcdoc     OptString                              `json:"srcdoc"`
-	FieldTypes []ExtensionDataExtensionFieldTypesItem `json:"fieldTypes"`
-	Sidebar    OptBool                                `json:"sidebar"`
-	Parameters OptAppDefinitionParameters             `json:"parameters"`
-}
-
-// GetName returns the value of Name.
-func (s *ExtensionDataExtension) GetName() string {
-	return s.Name
-}
-
-// GetSrc returns the value of Src.
-func (s *ExtensionDataExtension) GetSrc() OptString {
-	return s.Src
-}
-
-// GetSrcdoc returns the value of Srcdoc.
-func (s *ExtensionDataExtension) GetSrcdoc() OptString {
-	return s.Srcdoc
-}
-
-// GetFieldTypes returns the value of FieldTypes.
-func (s *ExtensionDataExtension) GetFieldTypes() []ExtensionDataExtensionFieldTypesItem {
-	return s.FieldTypes
-}
-
-// GetSidebar returns the value of Sidebar.
-func (s *ExtensionDataExtension) GetSidebar() OptBool {
-	return s.Sidebar
-}
-
-// GetParameters returns the value of Parameters.
-func (s *ExtensionDataExtension) GetParameters() OptAppDefinitionParameters {
-	return s.Parameters
-}
-
-// SetName sets the value of Name.
-func (s *ExtensionDataExtension) SetName(val string) {
-	s.Name = val
-}
-
-// SetSrc sets the value of Src.
-func (s *ExtensionDataExtension) SetSrc(val OptString) {
-	s.Src = val
-}
-
-// SetSrcdoc sets the value of Srcdoc.
-func (s *ExtensionDataExtension) SetSrcdoc(val OptString) {
-	s.Srcdoc = val
-}
-
-// SetFieldTypes sets the value of FieldTypes.
-func (s *ExtensionDataExtension) SetFieldTypes(val []ExtensionDataExtensionFieldTypesItem) {
-	s.FieldTypes = val
-}
-
-// SetSidebar sets the value of Sidebar.
-func (s *ExtensionDataExtension) SetSidebar(val OptBool) {
-	s.Sidebar = val
-}
-
-// SetParameters sets the value of Parameters.
-func (s *ExtensionDataExtension) SetParameters(val OptAppDefinitionParameters) {
-	s.Parameters = val
-}
-
-type ExtensionDataExtensionFieldTypesItem struct {
-	Type     string                                       `json:"type"`
-	LinkType OptString                                    `json:"linkType"`
-	Items    OptExtensionDataExtensionFieldTypesItemItems `json:"items"`
-}
-
-// GetType returns the value of Type.
-func (s *ExtensionDataExtensionFieldTypesItem) GetType() string {
-	return s.Type
-}
-
-// GetLinkType returns the value of LinkType.
-func (s *ExtensionDataExtensionFieldTypesItem) GetLinkType() OptString {
-	return s.LinkType
-}
-
-// GetItems returns the value of Items.
-func (s *ExtensionDataExtensionFieldTypesItem) GetItems() OptExtensionDataExtensionFieldTypesItemItems {
-	return s.Items
-}
-
-// SetType sets the value of Type.
-func (s *ExtensionDataExtensionFieldTypesItem) SetType(val string) {
-	s.Type = val
-}
-
-// SetLinkType sets the value of LinkType.
-func (s *ExtensionDataExtensionFieldTypesItem) SetLinkType(val OptString) {
-	s.LinkType = val
-}
-
-// SetItems sets the value of Items.
-func (s *ExtensionDataExtensionFieldTypesItem) SetItems(val OptExtensionDataExtensionFieldTypesItemItems) {
-	s.Items = val
-}
-
-type ExtensionDataExtensionFieldTypesItemItems struct {
-	Type     string    `json:"type"`
-	LinkType OptString `json:"linkType"`
-}
-
-// GetType returns the value of Type.
-func (s *ExtensionDataExtensionFieldTypesItemItems) GetType() string {
-	return s.Type
-}
-
-// GetLinkType returns the value of LinkType.
-func (s *ExtensionDataExtensionFieldTypesItemItems) GetLinkType() OptString {
-	return s.LinkType
-}
-
-// SetType sets the value of Type.
-func (s *ExtensionDataExtensionFieldTypesItemItems) SetType(val string) {
-	s.Type = val
-}
-
-// SetLinkType sets the value of LinkType.
-func (s *ExtensionDataExtensionFieldTypesItemItems) SetLinkType(val OptString) {
-	s.LinkType = val
-}
-
+// Ref: #/ExtensionExtension
 type ExtensionExtension struct {
 	Name       string                             `json:"name"`
 	Src        OptString                          `json:"src"`
@@ -7204,98 +6816,6 @@ func (o OptAppBundleLink) Or(d AppBundleLink) AppBundleLink {
 	return d
 }
 
-// NewOptAppDefinitionDataLocationsItemFieldTypesItemItems returns new OptAppDefinitionDataLocationsItemFieldTypesItemItems with value set to v.
-func NewOptAppDefinitionDataLocationsItemFieldTypesItemItems(v AppDefinitionDataLocationsItemFieldTypesItemItems) OptAppDefinitionDataLocationsItemFieldTypesItemItems {
-	return OptAppDefinitionDataLocationsItemFieldTypesItemItems{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptAppDefinitionDataLocationsItemFieldTypesItemItems is optional AppDefinitionDataLocationsItemFieldTypesItemItems.
-type OptAppDefinitionDataLocationsItemFieldTypesItemItems struct {
-	Value AppDefinitionDataLocationsItemFieldTypesItemItems
-	Set   bool
-}
-
-// IsSet returns true if OptAppDefinitionDataLocationsItemFieldTypesItemItems was set.
-func (o OptAppDefinitionDataLocationsItemFieldTypesItemItems) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptAppDefinitionDataLocationsItemFieldTypesItemItems) Reset() {
-	var v AppDefinitionDataLocationsItemFieldTypesItemItems
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptAppDefinitionDataLocationsItemFieldTypesItemItems) SetTo(v AppDefinitionDataLocationsItemFieldTypesItemItems) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptAppDefinitionDataLocationsItemFieldTypesItemItems) Get() (v AppDefinitionDataLocationsItemFieldTypesItemItems, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptAppDefinitionDataLocationsItemFieldTypesItemItems) Or(d AppDefinitionDataLocationsItemFieldTypesItemItems) AppDefinitionDataLocationsItemFieldTypesItemItems {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptAppDefinitionDataLocationsItemNavigationItem returns new OptAppDefinitionDataLocationsItemNavigationItem with value set to v.
-func NewOptAppDefinitionDataLocationsItemNavigationItem(v AppDefinitionDataLocationsItemNavigationItem) OptAppDefinitionDataLocationsItemNavigationItem {
-	return OptAppDefinitionDataLocationsItemNavigationItem{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptAppDefinitionDataLocationsItemNavigationItem is optional AppDefinitionDataLocationsItemNavigationItem.
-type OptAppDefinitionDataLocationsItemNavigationItem struct {
-	Value AppDefinitionDataLocationsItemNavigationItem
-	Set   bool
-}
-
-// IsSet returns true if OptAppDefinitionDataLocationsItemNavigationItem was set.
-func (o OptAppDefinitionDataLocationsItemNavigationItem) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptAppDefinitionDataLocationsItemNavigationItem) Reset() {
-	var v AppDefinitionDataLocationsItemNavigationItem
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptAppDefinitionDataLocationsItemNavigationItem) SetTo(v AppDefinitionDataLocationsItemNavigationItem) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptAppDefinitionDataLocationsItemNavigationItem) Get() (v AppDefinitionDataLocationsItemNavigationItem, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptAppDefinitionDataLocationsItemNavigationItem) Or(d AppDefinitionDataLocationsItemNavigationItem) AppDefinitionDataLocationsItemNavigationItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptAppDefinitionLocationsItemFieldTypesItemItems returns new OptAppDefinitionLocationsItemFieldTypesItemItems with value set to v.
 func NewOptAppDefinitionLocationsItemFieldTypesItemItems(v AppDefinitionLocationsItemFieldTypesItemItems) OptAppDefinitionLocationsItemFieldTypesItemItems {
 	return OptAppDefinitionLocationsItemFieldTypesItemItems{
@@ -7894,52 +7414,6 @@ func (o OptEnvironmentLink) Or(d EnvironmentLink) EnvironmentLink {
 	return d
 }
 
-// NewOptExtensionDataExtensionFieldTypesItemItems returns new OptExtensionDataExtensionFieldTypesItemItems with value set to v.
-func NewOptExtensionDataExtensionFieldTypesItemItems(v ExtensionDataExtensionFieldTypesItemItems) OptExtensionDataExtensionFieldTypesItemItems {
-	return OptExtensionDataExtensionFieldTypesItemItems{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptExtensionDataExtensionFieldTypesItemItems is optional ExtensionDataExtensionFieldTypesItemItems.
-type OptExtensionDataExtensionFieldTypesItemItems struct {
-	Value ExtensionDataExtensionFieldTypesItemItems
-	Set   bool
-}
-
-// IsSet returns true if OptExtensionDataExtensionFieldTypesItemItems was set.
-func (o OptExtensionDataExtensionFieldTypesItemItems) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptExtensionDataExtensionFieldTypesItemItems) Reset() {
-	var v ExtensionDataExtensionFieldTypesItemItems
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptExtensionDataExtensionFieldTypesItemItems) SetTo(v ExtensionDataExtensionFieldTypesItemItems) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptExtensionDataExtensionFieldTypesItemItems) Get() (v ExtensionDataExtensionFieldTypesItemItems, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptExtensionDataExtensionFieldTypesItemItems) Or(d ExtensionDataExtensionFieldTypesItemItems) ExtensionDataExtensionFieldTypesItemItems {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptExtensionExtensionFieldTypesItemItems returns new OptExtensionExtensionFieldTypesItemItems with value set to v.
 func NewOptExtensionExtensionFieldTypesItemItems(v ExtensionExtensionFieldTypesItemItems) OptExtensionExtensionFieldTypesItemItems {
 	return OptExtensionExtensionFieldTypesItemItems{
@@ -8300,210 +7774,6 @@ func (o OptNilEditorInterfaceControlsItemArray) Get() (v []EditorInterfaceContro
 
 // Or returns value if set, or given parameter if does not.
 func (o OptNilEditorInterfaceControlsItemArray) Or(d []EditorInterfaceControlsItem) []EditorInterfaceControlsItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilEditorInterfaceDataControlsItemArray returns new OptNilEditorInterfaceDataControlsItemArray with value set to v.
-func NewOptNilEditorInterfaceDataControlsItemArray(v []EditorInterfaceDataControlsItem) OptNilEditorInterfaceDataControlsItemArray {
-	return OptNilEditorInterfaceDataControlsItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilEditorInterfaceDataControlsItemArray is optional nullable []EditorInterfaceDataControlsItem.
-type OptNilEditorInterfaceDataControlsItemArray struct {
-	Value []EditorInterfaceDataControlsItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilEditorInterfaceDataControlsItemArray was set.
-func (o OptNilEditorInterfaceDataControlsItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilEditorInterfaceDataControlsItemArray) Reset() {
-	var v []EditorInterfaceDataControlsItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilEditorInterfaceDataControlsItemArray) SetTo(v []EditorInterfaceDataControlsItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsNull returns true if value is Null.
-func (o OptNilEditorInterfaceDataControlsItemArray) IsNull() bool { return o.Null }
-
-// SetToNull sets value to null.
-func (o *OptNilEditorInterfaceDataControlsItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []EditorInterfaceDataControlsItem
-	o.Value = v
-}
-
-// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
-func (o OptNilEditorInterfaceDataControlsItemArray) IsEmpty() bool {
-	return !o.Set && !o.Null
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilEditorInterfaceDataControlsItemArray) Get() (v []EditorInterfaceDataControlsItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilEditorInterfaceDataControlsItemArray) Or(d []EditorInterfaceDataControlsItem) []EditorInterfaceDataControlsItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilEditorInterfaceDataGroupControlsItemArray returns new OptNilEditorInterfaceDataGroupControlsItemArray with value set to v.
-func NewOptNilEditorInterfaceDataGroupControlsItemArray(v []EditorInterfaceDataGroupControlsItem) OptNilEditorInterfaceDataGroupControlsItemArray {
-	return OptNilEditorInterfaceDataGroupControlsItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilEditorInterfaceDataGroupControlsItemArray is optional nullable []EditorInterfaceDataGroupControlsItem.
-type OptNilEditorInterfaceDataGroupControlsItemArray struct {
-	Value []EditorInterfaceDataGroupControlsItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilEditorInterfaceDataGroupControlsItemArray was set.
-func (o OptNilEditorInterfaceDataGroupControlsItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilEditorInterfaceDataGroupControlsItemArray) Reset() {
-	var v []EditorInterfaceDataGroupControlsItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilEditorInterfaceDataGroupControlsItemArray) SetTo(v []EditorInterfaceDataGroupControlsItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsNull returns true if value is Null.
-func (o OptNilEditorInterfaceDataGroupControlsItemArray) IsNull() bool { return o.Null }
-
-// SetToNull sets value to null.
-func (o *OptNilEditorInterfaceDataGroupControlsItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []EditorInterfaceDataGroupControlsItem
-	o.Value = v
-}
-
-// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
-func (o OptNilEditorInterfaceDataGroupControlsItemArray) IsEmpty() bool {
-	return !o.Set && !o.Null
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilEditorInterfaceDataGroupControlsItemArray) Get() (v []EditorInterfaceDataGroupControlsItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilEditorInterfaceDataGroupControlsItemArray) Or(d []EditorInterfaceDataGroupControlsItem) []EditorInterfaceDataGroupControlsItem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilEditorInterfaceDataSidebarItemArray returns new OptNilEditorInterfaceDataSidebarItemArray with value set to v.
-func NewOptNilEditorInterfaceDataSidebarItemArray(v []EditorInterfaceDataSidebarItem) OptNilEditorInterfaceDataSidebarItemArray {
-	return OptNilEditorInterfaceDataSidebarItemArray{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilEditorInterfaceDataSidebarItemArray is optional nullable []EditorInterfaceDataSidebarItem.
-type OptNilEditorInterfaceDataSidebarItemArray struct {
-	Value []EditorInterfaceDataSidebarItem
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilEditorInterfaceDataSidebarItemArray was set.
-func (o OptNilEditorInterfaceDataSidebarItemArray) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilEditorInterfaceDataSidebarItemArray) Reset() {
-	var v []EditorInterfaceDataSidebarItem
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilEditorInterfaceDataSidebarItemArray) SetTo(v []EditorInterfaceDataSidebarItem) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsNull returns true if value is Null.
-func (o OptNilEditorInterfaceDataSidebarItemArray) IsNull() bool { return o.Null }
-
-// SetToNull sets value to null.
-func (o *OptNilEditorInterfaceDataSidebarItemArray) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v []EditorInterfaceDataSidebarItem
-	o.Value = v
-}
-
-// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
-func (o OptNilEditorInterfaceDataSidebarItemArray) IsEmpty() bool {
-	return !o.Set && !o.Null
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilEditorInterfaceDataSidebarItemArray) Get() (v []EditorInterfaceDataSidebarItem, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilEditorInterfaceDataSidebarItemArray) Or(d []EditorInterfaceDataSidebarItem) []EditorInterfaceDataSidebarItem {
 	if v, ok := o.Get(); ok {
 		return v
 	}

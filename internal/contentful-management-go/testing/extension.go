@@ -1,6 +1,8 @@
 package cmtesting
 
 import (
+	"slices"
+
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
@@ -17,36 +19,8 @@ func NewExtensionFromFields(spaceID, environmentID, extensionID string, fields c
 func UpdateExtensionFromFields(extension *cm.Extension, fields cm.ExtensionData) {
 	extension.Sys.Version++
 
-	extensionExtension := cm.ExtensionExtension{
-		Name:       fields.Extension.Name,
-		Src:        fields.Extension.Src,
-		Srcdoc:     fields.Extension.Srcdoc,
-		Sidebar:    fields.Extension.Sidebar,
-		Parameters: fields.Extension.Parameters,
-	}
+	extension.Extension = fields.Extension
+	extension.Extension.FieldTypes = slices.Clone(fields.Extension.FieldTypes)
 
-	if fields.Extension.FieldTypes != nil {
-		fieldTypes := make([]cm.ExtensionExtensionFieldTypesItem, 0, len(fields.Extension.FieldTypes))
-
-		for _, fieldType := range fields.Extension.FieldTypes {
-			fieldTypesItem := cm.ExtensionExtensionFieldTypesItem{
-				Type:     fieldType.Type,
-				LinkType: cm.NewOptPointerString(fieldType.LinkType.ValueStringPointer()),
-			}
-
-			if fieldTypeItems, ok := fieldType.Items.Get(); ok {
-				fieldTypesItem.Items = cm.NewOptExtensionExtensionFieldTypesItemItems(cm.ExtensionExtensionFieldTypesItemItems{
-					Type:     fieldTypeItems.Type,
-					LinkType: cm.NewOptPointerString(fieldTypeItems.LinkType.ValueStringPointer()),
-				})
-			}
-
-			fieldTypes = append(fieldTypes, fieldTypesItem)
-		}
-
-		extensionExtension.FieldTypes = fieldTypes
-	}
-
-	extension.Extension = extensionExtension
 	extension.Parameters = fields.Parameters
 }

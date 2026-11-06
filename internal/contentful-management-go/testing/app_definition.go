@@ -1,6 +1,8 @@
 package cmtesting
 
 import (
+	"slices"
+
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
@@ -23,28 +25,10 @@ func UpdateAppDefinitionFromFields(appDefinition *cm.AppDefinition, organization
 	appDefinition.Src = fields.Src
 	appDefinition.Bundle = fields.Bundle
 
-	appDefinition.Locations = convertSlice(fields.Locations, func(item cm.AppDefinitionDataLocationsItem) cm.AppDefinitionLocationsItem {
-		locationsItem := cm.AppDefinitionLocationsItem{
-			Location: item.Location,
-			FieldTypes: convertSlice(item.FieldTypes, func(fieldType cm.AppDefinitionDataLocationsItemFieldTypesItem) cm.AppDefinitionLocationsItemFieldTypesItem {
-				fieldTypesItem := cm.AppDefinitionLocationsItemFieldTypesItem{
-					Type:     fieldType.Type,
-					LinkType: fieldType.LinkType,
-				}
-				convertOptNil(&fieldTypesItem.Items, &fieldType.Items, func(items cm.AppDefinitionDataLocationsItemFieldTypesItemItems) cm.AppDefinitionLocationsItemFieldTypesItemItems {
-					return cm.AppDefinitionLocationsItemFieldTypesItemItems(items)
-				})
-
-				return fieldTypesItem
-			}),
-		}
-
-		convertOptNil(&locationsItem.NavigationItem, &item.NavigationItem, func(navigationItem cm.AppDefinitionDataLocationsItemNavigationItem) cm.AppDefinitionLocationsItemNavigationItem {
-			return cm.AppDefinitionLocationsItemNavigationItem(navigationItem)
-		})
-
-		return locationsItem
-	})
+	appDefinition.Locations = slices.Clone(fields.Locations)
+	for index := range appDefinition.Locations {
+		appDefinition.Locations[index].FieldTypes = slices.Clone(fields.Locations[index].FieldTypes)
+	}
 
 	appDefinition.Parameters = fields.Parameters
 }

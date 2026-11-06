@@ -67,7 +67,7 @@ func (model *ExtensionModel) ToExtensionData(config ExtensionModel, path path.Pa
 		)
 	}
 
-	extensionData, extensionDataDiags := model.Extension.ToExtensionDataExtension(path.AtName("extension"))
+	extensionData, extensionDataDiags := model.Extension.ToExtensionExtension(path.AtName("extension"))
 	diags.Append(extensionDataDiags...)
 
 	fields.Extension = extensionData
@@ -85,9 +85,9 @@ func (model *ExtensionModel) ToExtensionData(config ExtensionModel, path path.Pa
 	return fields, diags
 }
 
-func (model *ExtensionConfiguration) ToExtensionDataExtension(
+func (model *ExtensionConfiguration) ToExtensionExtension(
 	path path.Path,
-) (cm.ExtensionDataExtension, diag.Diagnostics) {
+) (cm.ExtensionExtension, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	name, nameDiags := requestRequiredString(model.Name, path.AtName("name"))
@@ -107,7 +107,7 @@ func (model *ExtensionConfiguration) ToExtensionDataExtension(
 		sidebar = model.Sidebar.ValueBoolPointer()
 	}
 
-	fields := cm.ExtensionDataExtension{
+	fields := cm.ExtensionExtension{
 		Name:    name,
 		Sidebar: cm.NewOptPointerBool(sidebar),
 	}
@@ -121,10 +121,10 @@ func (model *ExtensionConfiguration) ToExtensionDataExtension(
 	}
 
 	if model.FieldTypes != nil {
-		fieldTypes := make([]cm.ExtensionDataExtensionFieldTypesItem, 0, len(model.FieldTypes))
+		fieldTypes := make([]cm.ExtensionExtensionFieldTypesItem, 0, len(model.FieldTypes))
 
 		for index, fieldType := range model.FieldTypes {
-			requestFieldType, fieldTypeDiags := appDefinitionLocationFieldTypeToExtensionDataExtensionFieldTypesItem(
+			requestFieldType, fieldTypeDiags := appDefinitionLocationFieldTypeToExtensionExtensionFieldTypesItem(
 				fieldType,
 				path.AtName("field_types").AtListIndex(index),
 			)
@@ -148,29 +148,29 @@ func (model *ExtensionConfiguration) ToExtensionDataExtension(
 	}
 
 	if diags.HasError() {
-		return cm.ExtensionDataExtension{}, diags
+		return cm.ExtensionExtension{}, diags
 	}
 
 	return fields, diags
 }
 
-func appDefinitionLocationFieldTypeToExtensionDataExtensionFieldTypesItem(
+func appDefinitionLocationFieldTypeToExtensionExtensionFieldTypesItem(
 	fieldType AppDefinitionLocationFieldTypesItem,
 	path path.Path,
-) (cm.ExtensionDataExtensionFieldTypesItem, diag.Diagnostics) {
+) (cm.ExtensionExtensionFieldTypesItem, diag.Diagnostics) {
 	requestFieldType, diags := appDefinitionLocationFieldTypeToRequest(fieldType, path)
 
 	if diags.HasError() {
-		return cm.ExtensionDataExtensionFieldTypesItem{}, diags
+		return cm.ExtensionExtensionFieldTypesItem{}, diags
 	}
 
-	fieldTypesItem := cm.ExtensionDataExtensionFieldTypesItem{
+	fieldTypesItem := cm.ExtensionExtensionFieldTypesItem{
 		Type:     requestFieldType.Type,
 		LinkType: requestFieldType.LinkType,
 	}
 
 	if requestFieldType.Items != nil {
-		fieldTypesItem.Items.SetTo(cm.ExtensionDataExtensionFieldTypesItemItems{
+		fieldTypesItem.Items.SetTo(cm.ExtensionExtensionFieldTypesItemItems{
 			Type:     requestFieldType.Items.Type,
 			LinkType: requestFieldType.Items.LinkType,
 		})

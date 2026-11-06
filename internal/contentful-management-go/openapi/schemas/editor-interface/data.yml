@@ -10,45 +10,14 @@ EditorInterfaceData:
       type: array
       nullable: true
       items:
-        type: object
-        properties:
-          fieldId:
-            type: string
-          widgetNamespace:
-            type: string
-          widgetId:
-            type: string
-          settings: {}
-        required:
-          - fieldId
+        $ref: "./control.yml#/EditorInterfaceControlsItem"
     groupControls:
       type: array
       nullable: true
       items:
-        type: object
-        properties:
-          groupId:
-            type: string
-          widgetNamespace:
-            type: string
-          widgetId:
-            type: string
-          settings: {}
-        required:
-          - groupId
+        $ref: "./group-control.yml#/EditorInterfaceGroupControlsItem"
     sidebar:
       type: array
       nullable: true
       items:
-        type: object
-        properties:
-          widgetNamespace:
-            type: string
-          widgetId:
-            type: string
-          settings: {}
-          disabled:
-            type: boolean
-        required:
-          - widgetNamespace
-          - widgetId
+        $ref: "./sidebar-item.yml#/EditorInterfaceSidebarItem"

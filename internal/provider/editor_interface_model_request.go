@@ -31,8 +31,8 @@ func (model *EditorInterfaceModel) ToEditorInterfaceData(ctx context.Context) (c
 		ctx,
 		path.Root("controls"),
 		model.Controls,
-		func(_ context.Context, valuePath path.Path, value EditorInterfaceControlValue) (cm.EditorInterfaceDataControlsItem, diag.Diagnostics) {
-			return value.ToEditorInterfaceDataControlsItem(valuePath)
+		func(_ context.Context, valuePath path.Path, value EditorInterfaceControlValue) (cm.EditorInterfaceControlsItem, diag.Diagnostics) {
+			return value.ToEditorInterfaceControlsItem(valuePath)
 		},
 	)
 	diags.Append(controlsDiags...)
@@ -45,8 +45,8 @@ func (model *EditorInterfaceModel) ToEditorInterfaceData(ctx context.Context) (c
 		ctx,
 		path.Root("group_controls"),
 		model.GroupControls,
-		func(_ context.Context, valuePath path.Path, value EditorInterfaceGroupControlValue) (cm.EditorInterfaceDataGroupControlsItem, diag.Diagnostics) {
-			return value.ToEditorInterfaceDataGroupControlsItem(valuePath)
+		func(_ context.Context, valuePath path.Path, value EditorInterfaceGroupControlValue) (cm.EditorInterfaceGroupControlsItem, diag.Diagnostics) {
+			return value.ToEditorInterfaceGroupControlsItem(valuePath)
 		},
 	)
 	diags.Append(groupControlsDiags...)
@@ -59,8 +59,8 @@ func (model *EditorInterfaceModel) ToEditorInterfaceData(ctx context.Context) (c
 		ctx,
 		path.Root("sidebar"),
 		model.Sidebar,
-		func(_ context.Context, valuePath path.Path, value EditorInterfaceSidebarValue) (cm.EditorInterfaceDataSidebarItem, diag.Diagnostics) {
-			return value.ToEditorInterfaceDataSidebarItem(valuePath)
+		func(_ context.Context, valuePath path.Path, value EditorInterfaceSidebarValue) (cm.EditorInterfaceSidebarItem, diag.Diagnostics) {
+			return value.ToEditorInterfaceSidebarItem(valuePath)
 		},
 	)
 	diags.Append(sidebarDiags...)

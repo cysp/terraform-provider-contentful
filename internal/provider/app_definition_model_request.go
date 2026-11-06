@@ -32,9 +32,9 @@ func (model *AppDefinitionBaseModel) ToAppDefinitionData(config AppDefinitionBas
 	if model.Locations != nil {
 		path := path.AtName("locations")
 
-		locations := make([]cm.AppDefinitionDataLocationsItem, 0, len(model.Locations))
+		locations := make([]cm.AppDefinitionLocationsItem, 0, len(model.Locations))
 		for index, location := range model.Locations {
-			requestLocation, locationDiags := location.ToAppDefinitionDataLocationsItem(path.AtListIndex(index))
+			requestLocation, locationDiags := location.ToAppDefinitionLocationsItem(path.AtListIndex(index))
 			diags.Append(locationDiags...)
 
 			if !locationDiags.HasError() {
@@ -61,18 +61,18 @@ func (model *AppDefinitionBaseModel) ToAppDefinitionData(config AppDefinitionBas
 	return fields, diags
 }
 
-func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(path path.Path) (cm.AppDefinitionDataLocationsItem, diag.Diagnostics) {
+func (model AppDefinitionLocationsItem) ToAppDefinitionLocationsItem(path path.Path) (cm.AppDefinitionLocationsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	location, locationDiags := requestRequiredString(model.Location, path.AtName("location"))
 	diags.Append(locationDiags...)
 
-	item := cm.AppDefinitionDataLocationsItem{
+	item := cm.AppDefinitionLocationsItem{
 		Location: location,
 	}
 
 	if model.FieldTypes != nil {
-		fieldTypes := make([]cm.AppDefinitionDataLocationsItemFieldTypesItem, 0, len(model.FieldTypes))
+		fieldTypes := make([]cm.AppDefinitionLocationsItemFieldTypesItem, 0, len(model.FieldTypes))
 
 		for index, fieldType := range model.FieldTypes {
 			fieldType, fieldTypeDiags := appDefinitionLocationFieldTypeToRequest(
@@ -85,13 +85,13 @@ func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(path pa
 				continue
 			}
 
-			fieldTypesItem := cm.AppDefinitionDataLocationsItemFieldTypesItem{
+			fieldTypesItem := cm.AppDefinitionLocationsItemFieldTypesItem{
 				Type:     fieldType.Type,
 				LinkType: fieldType.LinkType,
 			}
 
 			if fieldType.Items != nil {
-				fieldTypesItem.Items.SetTo(cm.AppDefinitionDataLocationsItemFieldTypesItemItems{
+				fieldTypesItem.Items.SetTo(cm.AppDefinitionLocationsItemFieldTypesItemItems{
 					Type:     fieldType.Items.Type,
 					LinkType: fieldType.Items.LinkType,
 				})
@@ -110,14 +110,14 @@ func (model AppDefinitionLocationsItem) ToAppDefinitionDataLocationsItem(path pa
 		diags.Append(nameDiags...)
 		diags.Append(pathDiags...)
 
-		item.NavigationItem.SetTo(cm.AppDefinitionDataLocationsItemNavigationItem{
+		item.NavigationItem.SetTo(cm.AppDefinitionLocationsItemNavigationItem{
 			Name: name,
 			Path: pathValue,
 		})
 	}
 
 	if diags.HasError() {
-		return cm.AppDefinitionDataLocationsItem{}, diags
+		return cm.AppDefinitionLocationsItem{}, diags
 	}
 
 	return item, diags
