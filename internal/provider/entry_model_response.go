@@ -8,7 +8,6 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -37,10 +36,7 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 
 	model.Fields = fields
 
-	metadata, metadataDiags := NewEntryMetadataFromResponse(ctx, path.Root("metadata"), entry.Metadata)
-	diags.Append(metadataDiags...)
-
-	model.Metadata = metadata
+	model.Metadata = NewEntryMetadataFromResponse(entry.Metadata)
 	model.Timeouts = TimeoutsNull()
 
 	return model, diags
@@ -286,11 +282,9 @@ func entryResponseFieldsConsistent(
 	return entryFieldsEquivalent(ctx, plan, NewTypedMap(responsePlanFields))
 }
 
-func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.OptEntryMetadata) (TypedObject[EntryMetadataValue], diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewEntryMetadataFromResponse(metadata cm.OptEntryMetadata) TypedObject[EntryMetadataValue] {
 	if !metadata.IsSet() {
-		return NewTypedObjectNull[EntryMetadataValue](), diags
+		return NewTypedObjectNull[EntryMetadataValue]()
 	}
 
 	conceptsValue := NewTypedListNull[types.String]()
@@ -317,11 +311,8 @@ func NewEntryMetadataFromResponse(ctx context.Context, _ path.Path, metadata cm.
 		tagsValue = NewTypedList(tags)
 	}
 
-	obj, objDiags := NewTypedObjectFromAttributes[EntryMetadataValue](ctx, map[string]attr.Value{
-		"concepts": conceptsValue,
-		"tags":     tagsValue,
+	return NewTypedObject(EntryMetadataValue{
+		Concepts: conceptsValue,
+		Tags:     tagsValue,
 	})
-	diags.Append(objDiags...)
-
-	return obj, diags
 }

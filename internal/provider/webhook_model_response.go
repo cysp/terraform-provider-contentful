@@ -47,10 +47,7 @@ func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 
 	model.Headers = headersList
 
-	transformationValue, transformationValueDiags := ReadWebhookTransformationValueFromResponse(ctx, path.Root("transformation"), webhookDefinition.Transformation)
-	diags.Append(transformationValueDiags...)
-
-	model.Transformation = transformationValue
+	model.Transformation = ReadWebhookTransformationValueFromResponse(webhookDefinition.Transformation)
 
 	model.Active = util.OptBoolToBoolValue(webhookDefinition.Active)
 

@@ -1,22 +1,17 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewContentTypeMetadataFromResponse(ctx context.Context, path path.Path, optMetadata cm.OptContentTypeMetadata) (TypedObject[ContentTypeMetadataValue], diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewContentTypeMetadataFromResponse(path path.Path, optMetadata cm.OptContentTypeMetadata) (TypedObject[ContentTypeMetadataValue], diag.Diagnostics) {
 	metadata, metadataOk := optMetadata.Get()
 	if !metadataOk {
-		return NewTypedObjectNull[ContentTypeMetadataValue](), diags
+		return NewTypedObjectNull[ContentTypeMetadataValue](), nil
 	}
 
 	annotations := jsontypes.NewNormalizedNull()
@@ -24,28 +19,15 @@ func NewContentTypeMetadataFromResponse(ctx context.Context, path path.Path, opt
 		annotations = NewNormalizedJSONValue(metadata.Annotations)
 	}
 
-	taxonomy, taxonomyDiags := NewContentTypeMetadataTaxonomyItemsFromResponse(ctx, path.AtName("taxonomy"), metadata.Taxonomy)
-	diags.Append(taxonomyDiags...)
+	taxonomy, diags := NewContentTypeMetadataTaxonomyItemsFromResponse(path.AtName("taxonomy"), metadata.Taxonomy)
 
-	if diags.HasError() {
-		return NewTypedObjectNull[ContentTypeMetadataValue](), diags
-	}
-
-	model, modelDiags := NewTypedObjectFromAttributes[ContentTypeMetadataValue](ctx, map[string]attr.Value{
-		"annotations": annotations,
-		"taxonomy":    taxonomy,
-	})
-	diags.Append(modelDiags...)
-
-	if diags.HasError() {
-		return NewTypedObjectNull[ContentTypeMetadataValue](), diags
-	}
-
-	return model, diags
+	return NewTypedObject(ContentTypeMetadataValue{
+		Annotations: annotations,
+		Taxonomy:    taxonomy,
+	}), diags
 }
 
 func NewContentTypeMetadataTaxonomyItemsFromResponse(
-	ctx context.Context,
 	path path.Path,
 	taxonomy []cm.ContentTypeMetadataTaxonomyItem,
 ) (TypedList[TypedObject[ContentTypeMetadataTaxonomyItemValue]], diag.Diagnostics) {
@@ -58,67 +40,45 @@ func NewContentTypeMetadataTaxonomyItemsFromResponse(
 	items := make([]TypedObject[ContentTypeMetadataTaxonomyItemValue], 0, len(taxonomy))
 
 	for index, item := range taxonomy {
-		itemValue, itemValueDiags := NewContentTypeMetadataTaxonomyItemFromResponse(ctx, path.AtListIndex(index), item)
+		itemValue, itemValueDiags := NewContentTypeMetadataTaxonomyItemFromResponse(path.AtListIndex(index), item)
 		diags.Append(itemValueDiags...)
 
 		items = append(items, itemValue)
 	}
 
-	if diags.HasError() {
-		return NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](), diags
-	}
-
-	list := NewTypedList(items)
-
-	return list, diags
+	return NewTypedList(items), diags
 }
 
 func NewContentTypeMetadataTaxonomyItemFromResponse(
-	ctx context.Context,
 	itemPath path.Path,
 	item cm.ContentTypeMetadataTaxonomyItem,
 ) (TypedObject[ContentTypeMetadataTaxonomyItemValue], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	attributes := make(map[string]attr.Value, 1)
+	value := ContentTypeMetadataTaxonomyItemValue{
+		TaxonomyConcept:       NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue](),
+		TaxonomyConceptScheme: NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
+	}
 
 	switch item.Sys.LinkType {
 	case cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConceptScheme:
-		value, valueDiags := NewTypedObjectFromAttributes[ContentTypeMetadataTaxonomyItemConceptSchemeValue](ctx, map[string]attr.Value{
-			"id":       types.StringValue(item.Sys.ID),
-			"required": types.BoolPointerValue(item.Required.ValueBoolPointer()),
+		value.TaxonomyConceptScheme = NewTypedObject(ContentTypeMetadataTaxonomyItemConceptSchemeValue{
+			ID:       types.StringValue(item.Sys.ID),
+			Required: types.BoolPointerValue(item.Required.ValueBoolPointer()),
 		})
-		diags.Append(valueDiags...)
-
-		attributes["taxonomy_concept_scheme"] = value
-		attributes["taxonomy_concept"] = NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue]()
 
 	case cm.ContentTypeMetadataTaxonomyItemSysLinkTypeTaxonomyConcept:
-		value, valueDiags := NewTypedObjectFromAttributes[ContentTypeMetadataTaxonomyItemConceptValue](ctx, map[string]attr.Value{
-			"id":       types.StringValue(item.Sys.ID),
-			"required": types.BoolPointerValue(item.Required.ValueBoolPointer()),
+		value.TaxonomyConcept = NewTypedObject(ContentTypeMetadataTaxonomyItemConceptValue{
+			ID:       types.StringValue(item.Sys.ID),
+			Required: types.BoolPointerValue(item.Required.ValueBoolPointer()),
 		})
-		diags.Append(valueDiags...)
-
-		attributes["taxonomy_concept_scheme"] = NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue]()
-		attributes["taxonomy_concept"] = value
 	default:
 		// Preserve an unsupported response discriminator as a known empty-union
 		// sentinel so the list position and surrounding metadata remain visible.
 		// Request conversion remains strict and rejects this sentinel before an
 		// update.
 		diags.AddAttributeWarning(itemPath, "Unsupported taxonomy metadata item", "Contentful returned an unknown taxonomy link type. Terraform state retains the item as an empty known union; a later request conversion will reject it until configured as a supported alternative.")
-
-		attributes["taxonomy_concept_scheme"] = NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue]()
-		attributes["taxonomy_concept"] = NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue]()
 	}
 
-	result, resultDiags := NewTypedObjectFromAttributes[ContentTypeMetadataTaxonomyItemValue](ctx, attributes)
-	diags.Append(resultDiags...)
-
-	if diags.HasError() {
-		return NewTypedObjectNull[ContentTypeMetadataTaxonomyItemValue](), diags
-	}
-
-	return result, diags
+	return NewTypedObject(value), diags
 }

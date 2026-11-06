@@ -44,7 +44,7 @@ func newContentTypeResourceModelFromResponseAt(ctx context.Context, root path.Pa
 
 	model.Fields = fieldsList
 
-	metadata, metadataDiags := NewContentTypeMetadataFromResponse(ctx, root.AtName("metadata"), contentType.Metadata)
+	metadata, metadataDiags := NewContentTypeMetadataFromResponse(root.AtName("metadata"), contentType.Metadata)
 	diags.Append(metadataDiags...)
 
 	model.Metadata = metadata

@@ -7,7 +7,6 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -65,10 +64,7 @@ func NewFieldsValueFromResponse(ctx context.Context, path path.Path, item cm.Con
 	value.Validations = validationsList
 
 	if allowedResources, ok := item.GetAllowedResources().Get(); ok {
-		allowedResourcesList, allowedResourcesListDiags := NewContentTypeFieldAllowedResourcesListFromResponse(ctx, path.AtName("allowed_resources"), allowedResources)
-		diags.Append(allowedResourcesListDiags...)
-
-		value.AllowedResources = allowedResourcesList
+		value.AllowedResources = NewContentTypeFieldAllowedResourcesListFromResponse(allowedResources)
 	}
 
 	return NewTypedObject(value), diags
@@ -112,45 +108,29 @@ func NewValidationsListFromResponse(_ context.Context, _ path.Path, validations 
 	return list, diags
 }
 
-func NewContentTypeFieldAllowedResourcesListFromResponse(ctx context.Context, _ path.Path, resourceLinks []cm.ResourceLink) (TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]], diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
+func NewContentTypeFieldAllowedResourcesListFromResponse(resourceLinks []cm.ResourceLink) TypedList[TypedObject[ContentTypeFieldAllowedResourceItemValue]] {
 	allowedResourceElements := make([]TypedObject[ContentTypeFieldAllowedResourceItemValue], len(resourceLinks))
 
 	for i, resourceLink := range resourceLinks {
 		switch resourceLink.Type {
 		case contentfulEntryAllowedResourceType:
-			contentfulEntryResourceItem, contentfulEntryResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemContentfulEntryValue](ctx, map[string]attr.Value{
-				"source":        types.StringPointerValue(resourceLink.Source.ValueStringPointer()),
-				"content_types": NewTypedListFromStringSlice(resourceLink.ContentTypes),
+			allowedResourceElements[i] = NewTypedObject(ContentTypeFieldAllowedResourceItemValue{
+				ContentfulEntry: NewTypedObject(ContentTypeFieldAllowedResourceItemContentfulEntryValue{
+					Source:       types.StringPointerValue(resourceLink.Source.ValueStringPointer()),
+					ContentTypes: NewTypedListFromStringSlice(resourceLink.ContentTypes),
+				}),
+				External: NewTypedObjectNull[ContentTypeFieldAllowedResourceItemExternalValue](),
 			})
-			diags.Append(contentfulEntryResourceItemDiags...)
-
-			allowedResourceItem, allowedResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemValue](ctx, map[string]attr.Value{
-				"contentful_entry": contentfulEntryResourceItem,
-				"external":         NewTypedObjectNull[ContentTypeFieldAllowedResourceItemExternalValue](),
-			})
-			diags.Append(allowedResourceItemDiags...)
-
-			allowedResourceElements[i] = allowedResourceItem
 
 		default:
-			externalResourceItem, externalResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemExternalValue](ctx, map[string]attr.Value{
-				"type": types.StringValue(resourceLink.Type),
+			allowedResourceElements[i] = NewTypedObject(ContentTypeFieldAllowedResourceItemValue{
+				ContentfulEntry: NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue](),
+				External: NewTypedObject(ContentTypeFieldAllowedResourceItemExternalValue{
+					TypeID: types.StringValue(resourceLink.Type),
+				}),
 			})
-			diags.Append(externalResourceItemDiags...)
-
-			allowedResourceItem, allowedResourceItemDiags := NewTypedObjectFromAttributes[ContentTypeFieldAllowedResourceItemValue](ctx, map[string]attr.Value{
-				"contentful_entry": NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue](),
-				"external":         externalResourceItem,
-			})
-			diags.Append(allowedResourceItemDiags...)
-
-			allowedResourceElements[i] = allowedResourceItem
 		}
 	}
 
-	list := NewTypedList(allowedResourceElements)
-
-	return list, diags
+	return NewTypedList(allowedResourceElements)
 }
