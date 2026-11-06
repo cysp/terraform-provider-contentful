@@ -88,6 +88,7 @@ func (ts *Handler) UpdateRole(_ context.Context, req *cm.RoleData, params cm.Upd
 	}
 
 	UpdateRoleFromFields(role, *req)
+	role.Sys.Version++
 
 	return snapshotResponse(&cm.RoleStatusCode{
 		StatusCode: http.StatusOK,

@@ -45,9 +45,18 @@ The [CMA Role update reference](https://www.contentful.com/developers/docs/refer
 states that `PUT /spaces/{space_id}/roles/{role_id}` updates an existing Role and
 cannot create a Role with a specified ID. Role creation uses the collection's
 `POST` endpoint. An update must therefore not recreate a Role deleted since an
-earlier read. This published contract does not establish version progression or
-the exact error envelope for a missing Role; no live mutation observation is
-recorded here.
+earlier read. The same reference includes `description` in the update request
+and response. The [pinned Role adapter][role-adapter] removes `sys` from the
+request body and forwards `sys.version`, defaulting to zero, in
+`X-Contentful-Version`.
+
+The [CMA version-locking contract](https://www.contentful.com/developers/docs/references/content-management-api/overview/#updating-and-version-locking)
+requires an update to use the current version and rejects a stale version after
+another update. These sources support checking that a successful update
+invalidates its previous version; they do not establish a Role-specific initial
+version or exact increment. The update reference's example returns version zero
+without a preceding version sequence. No live Role mutation observation or
+exact missing-Role error envelope is recorded here.
 
 [role]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/role.ts
 [membership]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/team-space-membership.ts

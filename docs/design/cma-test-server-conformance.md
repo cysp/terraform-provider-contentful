@@ -320,16 +320,21 @@ deterministic fake convention, not a claim about CMA's undocumented default orde
 
 **Evidence:** The [Role update addressing contract](../research/space-access.md#role-update-addressing)
 requires an existing Role; the update endpoint cannot create one with a specified ID.
+The update example retains `description`, the pinned SDK forwards the current
+version, and the shared CMA locking contract rejects stale updates.
 
 **Default fake behavior:** Updating a missing or deleted Role returns 404
-`NotFound` without adding it to the store. The exact status and error envelope
-are fixture conventions consistent with the fake's missing-Role reads, not a
-recorded live observation.
+`NotFound` without adding it to the store. Create and Update preserve submitted
+description values, including null, empty, and absent representations. Create
+starts at version zero and each accepted Update advances the version by one;
+reusing an earlier version returns 409 `VersionMismatch` without changing the
+record. These exact versions, omission behavior, and error envelopes are fixture
+conventions, not separately observed Role mutation behavior.
 
 **Coverage:** Independent HTTP tests cover absent and deleted Roles, verify that
-failed updates leave them absent, and check that an existing Role can still be
-updated and read. Provider Role lifecycle tests exercise creation separately
-through `POST`.
+failed updates leave them absent, and check description projection, version
+progression, and stale-write nonmutation through POST, PUT, and GET. Provider
+Role lifecycle tests exercise successive versioned updates after creation and import.
 
 ### Organization teams
 

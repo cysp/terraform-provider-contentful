@@ -16,6 +16,7 @@ func NewRoleFromFields(spaceID, roleID string, roleFields cm.RoleData) cm.Role {
 
 func UpdateRoleFromFields(role *cm.Role, roleFields cm.RoleData) {
 	role.Name = roleFields.Name
+	role.Description = roleFields.Description
 	role.Permissions = convertMap(roleFields.Permissions, func(permission cm.RoleDataPermissionsItem) cm.RolePermissionsItem {
 		return cm.RolePermissionsItem{
 			Type:        cm.RolePermissionsItemType(permission.Type),
