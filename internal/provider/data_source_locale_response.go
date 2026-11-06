@@ -51,7 +51,7 @@ func readLocales(ctx context.Context, client *cm.Client, spaceID, environmentID 
 				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, contentfulListNonCollectionResponseDetail(response))}
 			}
 		},
-		func(entity cm.Locale) (LocaleDataSourceItemModel, diag.Diagnostics) {
+		func(_ int, entity cm.Locale) (LocaleDataSourceItemModel, diag.Diagnostics) {
 			return newLocaleDataSourceItem(entity, spaceID, environmentID)
 		},
 	)
@@ -63,5 +63,5 @@ func readLocales(ctx context.Context, client *cm.Client, spaceID, environmentID 
 		return cmp.Compare(a.LocaleID.ValueString(), b.LocaleID.ValueString())
 	})
 
-	return items, nil
+	return items, diagnostics
 }

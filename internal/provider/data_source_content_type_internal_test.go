@@ -8,6 +8,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -302,7 +303,18 @@ func TestContentTypesDataSourceWarningPathUsesResponseOrder(t *testing.T) {
 	alpha := cm.ContentType{Sys: cm.NewContentTypeSys("space", "master", "alpha"), Name: "Alpha", DisplayField: cm.NewNilString(""), Fields: []cm.ContentTypeFieldsItem{}}
 	alpha.Metadata.SetTo(cm.ContentTypeMetadata{Taxonomy: []cm.ContentTypeMetadataTaxonomyItem{{Sys: cm.ContentTypeMetadataTaxonomyItemSys{Type: cm.ContentTypeMetadataTaxonomyItemSysTypeLink, ID: "future", LinkType: cm.ContentTypeMetadataTaxonomyItemSysLinkType("Future")}}}})
 	zeta := cm.ContentType{Sys: cm.NewContentTypeSys("space", "master", "zeta"), Name: "Zeta", DisplayField: cm.NewNilString(""), Fields: []cm.ContentTypeFieldsItem{}}
-	items, diagnostics := projectContentTypeDataSourceItems(t.Context(), []cm.ContentType{zeta, alpha}, "space", "master")
+	items, diagnostics := readContentfulCollection(t.Context(), "Failed to read content types",
+		func(_ context.Context, skip int64) (contentfulCollection[cm.ContentType], diag.Diagnostics) {
+			if skip == 0 {
+				return &cm.ContentTypeCollection{Total: cm.NewOptInt(2), Items: []cm.ContentType{zeta}}, nil
+			}
+
+			return &cm.ContentTypeCollection{Total: cm.NewOptInt(2), Items: []cm.ContentType{alpha}}, nil
+		},
+		func(index int, entity cm.ContentType) (ContentTypeDataSourceItemModel, diag.Diagnostics) {
+			return newContentTypeDataSourceItem(t.Context(), path.Root("content_types").AtListIndex(index), entity, "space", "master")
+		},
+	)
 	assert.False(t, diagnostics.HasError())
 	require.Len(t, diagnostics.Warnings(), 1)
 	withPath, ok := diagnostics.Warnings()[0].(diag.DiagnosticWithPath)

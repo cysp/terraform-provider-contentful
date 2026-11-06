@@ -38,7 +38,7 @@ func readSpaces(ctx context.Context, client *cm.Client, organizationID types.Str
 				return nil, diag.Diagnostics{diag.NewErrorDiagnostic(errorTitle, contentfulListNonCollectionResponseDetail(response))}
 			}
 		},
-		func(entity cm.Space) (SpaceDataSourceItemModel, diag.Diagnostics) {
+		func(_ int, entity cm.Space) (SpaceDataSourceItemModel, diag.Diagnostics) {
 			if !organizationID.IsNull() && entity.Sys.Organization.Sys.ID != organizationID.ValueString() {
 				return SpaceDataSourceItemModel{}, discoveryResponseIdentityError("The returned organization ID differs from the requested scope.")
 			}
@@ -54,5 +54,5 @@ func readSpaces(ctx context.Context, client *cm.Client, organizationID types.Str
 		return cmp.Compare(a.SpaceID.ValueString(), b.SpaceID.ValueString())
 	})
 
-	return items, nil
+	return items, diagnostics
 }

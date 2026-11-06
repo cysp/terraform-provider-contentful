@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -22,7 +23,18 @@ func TestRoleDataSourceResponseOrderWarningPaths(t *testing.T) {
 	require.Len(t, singularDiagnostics.Warnings(), 1)
 	assertDiagnosticPath(t, singularDiagnostics.Warnings()[0], path.Root("policies").AtListIndex(0).AtName("effect"))
 
-	items, diagnostics := projectRoles(t.Context(), []cm.Role{warningRole, firstRole})
+	items, diagnostics := readContentfulCollection(t.Context(), "Failed to read roles",
+		func(_ context.Context, skip int64) (contentfulCollection[cm.Role], diag.Diagnostics) {
+			if skip == 0 {
+				return &cm.RoleCollection{Total: cm.NewOptInt(2), Items: []cm.Role{warningRole}}, nil
+			}
+
+			return &cm.RoleCollection{Total: cm.NewOptInt(2), Items: []cm.Role{firstRole}}, nil
+		},
+		func(index int, entity cm.Role) (RoleDataSourceItemModel, diag.Diagnostics) {
+			return newRoleDataSourceItem(t.Context(), entity, path.Root("roles").AtListIndex(index))
+		},
+	)
 	require.False(t, diagnostics.HasError(), diagnostics)
 	require.Len(t, diagnostics.Warnings(), 1)
 	assertDiagnosticPath(t, diagnostics.Warnings()[0], path.Root("roles").AtListIndex(0).AtName("policies").AtListIndex(0).AtName("effect"))

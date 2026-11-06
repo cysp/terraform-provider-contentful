@@ -85,6 +85,10 @@ IDs are accepted, and duplicates are retained in the result.
 Empty successful collections produce empty lists. Request, decoding, and
 projection errors abort the lookup without publishing partial state; not-found
 and permission errors are not reclassified as empty inventories.
+The reader projects each item at its global response-order index and retains
+page and projection diagnostics across the traversal, including warnings before
+a later error. Role and Content Type diagnostic paths therefore refer directly
+to the returned list positions without an additional projection pass.
 
 All pages share the data source's operation timeout and the existing
 [read retry policy](contentful-http-retry-policy.md). No cursor or continuation
