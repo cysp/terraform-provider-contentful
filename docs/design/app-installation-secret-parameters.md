@@ -103,10 +103,13 @@ collections, and nested structures. A response with no qualifying substitution
 is retained unchanged.
 
 The [resource lifecycle](../../internal/provider/resource_app_installation.go)
-selects Plan or State as the reference and reconciles after response projection,
-before publishing identity and state. Only successful mutations reach
-reconciliation. Invalid JSON, unknown request values, and failed state encoding
-remain errors. Reconciliation diagnostics must not include parameter values.
+selects Plan or State as the reference. The
+[response projector](../../internal/provider/app_installation_model_response.go)
+preserves its Marketplace acknowledgments and timeouts and reconciles parameters
+before returning the model for identity and state publication. Only successful
+mutations reach reconciliation. Invalid JSON, unknown request values, and failed
+state encoding remain errors. Reconciliation diagnostics must not include
+parameter values.
 
 ## Verification
 

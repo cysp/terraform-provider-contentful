@@ -98,7 +98,7 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 
 	switch response := response.(type) {
 	case *cm.AppInstallationStatusCode:
-		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(response.Response, plan.Marketplace)
+		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(response.Response, plan)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -106,17 +106,6 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 	default:
 		resp.Diagnostics.AddError("Failed to create app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	data.Timeouts = plan.Timeouts
-
-	parameters, parameterDiags := reconcileAppInstallationParameters(data.Parameters, plan.Parameters)
-	resp.Diagnostics.Append(parameterDiags...)
-
-	data.Parameters = parameters
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -161,7 +150,7 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 
 	switch response := response.(type) {
 	case *cm.AppInstallation:
-		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(*response, state.Marketplace)
+		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(*response, state)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -176,17 +165,6 @@ func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadReq
 
 		resp.Diagnostics.AddError("Failed to read app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	data.Timeouts = state.Timeouts
-
-	parameters, parameterDiags := reconcileAppInstallationParameters(data.Parameters, state.Parameters)
-	resp.Diagnostics.Append(parameterDiags...)
-
-	data.Parameters = parameters
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -264,7 +242,7 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 
 	switch response := response.(type) {
 	case *cm.AppInstallationStatusCode:
-		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(response.Response, plan.Marketplace)
+		responseModel, responseModelDiags := NewAppInstallationResourceModelFromResponse(response.Response, plan)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -272,17 +250,6 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	default:
 		resp.Diagnostics.AddError("Failed to update app installation", util.ErrorDetailFromContentfulManagementResponse(response, err))
 	}
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	data.Timeouts = plan.Timeouts
-
-	parameters, parameterDiags := reconcileAppInstallationParameters(data.Parameters, plan.Parameters)
-	resp.Diagnostics.Append(parameterDiags...)
-
-	data.Parameters = parameters
 
 	if resp.Diagnostics.HasError() {
 		return
