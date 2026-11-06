@@ -93,9 +93,20 @@ func (t TypedObjectType[T]) ApplyTerraform5AttributePathStep(step tftypes.Attrib
 	return t.attributeTypes[string(key)], nil
 }
 
+// WithAttributeTypes retains the typed value when the replacement equals the
+// descriptor derived from T. Other replacements use the standard Framework type
+// so their values can preserve the requested descriptor.
+//
 //nolint:ireturn
 func (t TypedObjectType[T]) WithAttributeTypes(attributeTypes map[string]attr.Type) attr.TypeWithAttributeTypes {
-	return TypedObjectType[struct{}]{attributeTypes: attributeTypes}
+	replacement := TypedObjectType[T]{attributeTypes: attributeTypes}
+	canonical := TypedObjectType[T]{attributeTypes: tpfr.AttributeTypesFor[T](context.Background())}
+
+	if replacement.Equal(canonical) {
+		return replacement
+	}
+
+	return basetypes.ObjectType{AttrTypes: attributeTypes}
 }
 
 func (t TypedObjectType[T]) AttributeTypes() map[string]attr.Type {
