@@ -13,10 +13,10 @@ func (ts *Handler) GetAppEventSubscription(_ context.Context, params cm.GetAppEv
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	parent := ts.appDefinitions[params.AppDefinitionID]
+	parent := ts.appDefinition(params.OrganizationID, params.AppDefinitionID)
 
 	value := ts.appEventSubscriptions[[2]string{params.OrganizationID, params.AppDefinitionID}]
-	if parent == nil || parent.Sys.Organization.Sys.ID != params.OrganizationID || value == nil {
+	if parent == nil || value == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppEventSubscription not found"), nil)), nil
 	}
 
@@ -32,8 +32,8 @@ func (ts *Handler) PutAppEventSubscription(_ context.Context, req *cm.AppEventSu
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	parent := ts.appDefinitions[params.AppDefinitionID]
-	if parent == nil || parent.Sys.Organization.Sys.ID != params.OrganizationID {
+	parent := ts.appDefinition(params.OrganizationID, params.AppDefinitionID)
+	if parent == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
 
@@ -84,8 +84,8 @@ func (ts *Handler) DeleteAppEventSubscription(_ context.Context, params cm.Delet
 
 	key := [2]string{params.OrganizationID, params.AppDefinitionID}
 
-	parent := ts.appDefinitions[params.AppDefinitionID]
-	if parent == nil || parent.Sys.Organization.Sys.ID != params.OrganizationID || ts.appEventSubscriptions[key] == nil {
+	parent := ts.appDefinition(params.OrganizationID, params.AppDefinitionID)
+	if parent == nil || ts.appEventSubscriptions[key] == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppEventSubscription not found"), nil)), nil
 	}
 

@@ -1,4 +1,3 @@
-//nolint:dupl
 package cmtesting
 
 import (
@@ -8,12 +7,20 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
+func (ts *Handler) resourceProvider(organizationID, appDefinitionID string) *cm.ResourceProvider {
+	if ts.appDefinition(organizationID, appDefinitionID) == nil {
+		return nil
+	}
+
+	return ts.appDefinitionResourceProviders[appDefinitionID]
+}
+
 //nolint:ireturn
 func (ts *Handler) GetResourceProvider(_ context.Context, params cm.GetResourceProviderParams) (cm.GetResourceProviderRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
+	appDefinitionResourceProvider := ts.resourceProvider(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil)), nil
 	}
@@ -26,12 +33,12 @@ func (ts *Handler) PutResourceProvider(_ context.Context, req *cm.ResourceProvid
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	appDefinition := ts.appDefinitions[params.AppDefinitionID]
+	appDefinition := ts.appDefinition(params.OrganizationID, params.AppDefinitionID)
 	if appDefinition == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
 
-	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
+	appDefinitionResourceProvider := ts.resourceProvider(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
 		appDefinitionResourceProvider := NewResourceProviderFromRequest(params.OrganizationID, params.AppDefinitionID, *req)
 		ts.appDefinitionResourceProviders[params.AppDefinitionID] = &appDefinitionResourceProvider
@@ -55,7 +62,7 @@ func (ts *Handler) DeleteResourceProvider(_ context.Context, params cm.DeleteRes
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	appDefinitionResourceProvider := ts.appDefinitionResourceProviders[params.AppDefinitionID]
+	appDefinitionResourceProvider := ts.resourceProvider(params.OrganizationID, params.AppDefinitionID)
 	if appDefinitionResourceProvider == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ResourceProvider not found"), nil)), nil
 	}

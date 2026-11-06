@@ -44,6 +44,23 @@ requirements. They are not an inventory of every implemented endpoint. A
 coverage statement describes what the tests exercise; it does not independently
 establish CMA conformance or report a fresh live test result.
 
+### App Definition parent scope
+
+The [App Framework endpoint map](../research/app-framework/README.md#api-inventory)
+and [native external reference representations](../research/app-framework/native-external-references.md)
+identify organization and App Definition as the parent scope for app-owned
+configuration. The fake uses one organization-aware App Definition lookup for
+the definition and its children. Resource Type storage includes the complete
+organization, App Definition, and Resource Type identity, so addressing a type
+through another app cannot read, replace, or delete the original record.
+
+Wrong-organization requests and children whose App Definition is absent return
+404 without changing stored data. The exact missing-parent error message and
+the fake's rejection precedence remain fixture conventions, not live observations.
+HTTP tests use distinct Resource Provider IDs and valid mappings to verify
+cross-parent reads/deletes, wrong-organization reads/writes/deletes, and unchanged
+state after rejected requests.
+
 ### Locales
 
 [Locale research](../research/locales.md) separates published constraints from
