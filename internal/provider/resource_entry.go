@@ -147,17 +147,11 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	responseModel, consistencyDiags := projectEntryMutationResponse(ctx, plan, responseModel, entryResponseFieldsCreationDefaults)
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, entryIdentityAttributeNames(), &responseModel, version)...)
-
-	resp.Diagnostics.Append(validateEntryDraftResponse(version, responseModel.PublishedVersion)...)
-	resp.Diagnostics.Append(consistencyDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, entryPendingPublicationVersionPrivateKey, version)...)
+	responseModel, checkpointDiags := checkpointEntryDraft(
+		ctx, plan, responseModel, version, entryResponseFieldsCreationDefaults,
+		resp.Identity, &resp.State, resp.Private,
+	)
+	resp.Diagnostics.Append(checkpointDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -361,17 +355,11 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	responseModel, consistencyDiags := projectEntryMutationResponse(ctx, plan, responseModel, entryResponseFieldsExact)
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, entryIdentityAttributeNames(), &responseModel, version)...)
-
-	resp.Diagnostics.Append(validateEntryDraftResponse(version, responseModel.PublishedVersion)...)
-	resp.Diagnostics.Append(consistencyDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, entryPendingPublicationVersionPrivateKey, version)...)
+	responseModel, checkpointDiags := checkpointEntryDraft(
+		ctx, plan, responseModel, version, entryResponseFieldsExact,
+		resp.Identity, &resp.State, resp.Private,
+	)
+	resp.Diagnostics.Append(checkpointDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
