@@ -79,11 +79,11 @@ func testAccRegistryV0062ExtensionSourceUpgrade(t *testing.T, source registryV00
 	extensionID := "registry-v0062-" + strings.ReplaceAll(source.name, " ", "-")
 	name := "Registry v0.0.62 " + source.name
 	_, err = server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
-		Extension: cm.ExtensionDataExtension{
+		Extension: cm.ExtensionExtension{
 			Name:       name,
 			Src:        source.src,
 			Srcdoc:     source.srcdoc,
-			FieldTypes: []cm.ExtensionDataExtensionFieldTypesItem{},
+			FieldTypes: []cm.ExtensionExtensionFieldTypesItem{},
 			Sidebar:    cm.NewOptBool(false),
 		},
 	}, cm.PutExtensionParams{SpaceID: "space", EnvironmentID: "environment", ExtensionID: extensionID})

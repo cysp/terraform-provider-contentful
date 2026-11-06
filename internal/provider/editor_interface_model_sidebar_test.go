@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSidebarValueToEditorInterfaceDataSidebarItem(t *testing.T) {
+func TestSidebarValueToEditorInterfaceSidebarItem(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -24,7 +24,7 @@ func TestSidebarValueToEditorInterfaceDataSidebarItem(t *testing.T) {
 		"settings":         NewNormalizedJSONValue([]byte(testJSON(map[string]any{"foo": "bar"}))),
 	}))
 
-	item, diags := model.Value().ToEditorInterfaceDataSidebarItem(path)
+	item, diags := model.Value().ToEditorInterfaceSidebarItem(path)
 
 	assert.Equal(t, "widget_namespace", item.WidgetNamespace)
 	assert.Equal(t, "widget_id", item.WidgetId)
@@ -34,7 +34,7 @@ func TestSidebarValueToEditorInterfaceDataSidebarItem(t *testing.T) {
 	assert.Empty(t, diags)
 }
 
-func TestSidebarValueToEditorInterfaceDataSidebarItemPreservesOpaqueSettings(t *testing.T) {
+func TestSidebarValueToEditorInterfaceSidebarItemPreservesOpaqueSettings(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -47,7 +47,7 @@ func TestSidebarValueToEditorInterfaceDataSidebarItemPreservesOpaqueSettings(t *
 		"settings":         NewNormalizedJSONValue([]byte(`invalid json`)),
 	}))
 
-	sidebarItem, diags := model.Value().ToEditorInterfaceDataSidebarItem(path)
+	sidebarItem, diags := model.Value().ToEditorInterfaceSidebarItem(path)
 
 	assert.Equal(t, "invalid json", string(sidebarItem.Settings))
 	assert.Empty(t, diags)

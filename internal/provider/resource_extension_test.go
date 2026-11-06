@@ -361,11 +361,11 @@ func TestAccExtensionResourcePreservesImportedSourceOnUpdate(t *testing.T) {
 			extensionID := "imported-" + strings.ReplaceAll(name, " ", "-")
 			params := cm.PutExtensionParams{SpaceID: "space", EnvironmentID: "environment", ExtensionID: extensionID}
 			_, err = server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
-				Extension: cm.ExtensionDataExtension{
+				Extension: cm.ExtensionExtension{
 					Name:       "Imported",
 					Src:        test.initialSrc,
 					Srcdoc:     test.initialSrcdoc,
-					FieldTypes: []cm.ExtensionDataExtensionFieldTypesItem{},
+					FieldTypes: []cm.ExtensionExtensionFieldTypesItem{},
 				},
 			}, params)
 			require.NoError(t, err)
@@ -406,11 +406,11 @@ resource "contentful_extension" "test" {
 						PreConfig: func() {
 							params.XContentfulVersion = 2
 							response, putErr := server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
-								Extension: cm.ExtensionDataExtension{
+								Extension: cm.ExtensionExtension{
 									Name:       "Updated",
 									Src:        test.driftSrc,
 									Srcdoc:     test.driftSrcdoc,
-									FieldTypes: []cm.ExtensionDataExtensionFieldTypesItem{},
+									FieldTypes: []cm.ExtensionExtensionFieldTypesItem{},
 								},
 							}, params)
 							require.NoError(t, putErr)

@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func (v EditorInterfaceSidebarValue) ToEditorInterfaceDataSidebarItem(valuePath path.Path) (cm.EditorInterfaceDataSidebarItem, diag.Diagnostics) {
+func (v EditorInterfaceSidebarValue) ToEditorInterfaceSidebarItem(valuePath path.Path) (cm.EditorInterfaceSidebarItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	widgetNamespace, widgetNamespaceDiags := requestRequiredString(v.WidgetNamespace, valuePath.AtName("widget_namespace"))
@@ -26,10 +26,10 @@ func (v EditorInterfaceSidebarValue) ToEditorInterfaceDataSidebarItem(valuePath 
 	diags.Append(settingsDiags...)
 
 	if diags.HasError() {
-		return cm.EditorInterfaceDataSidebarItem{}, diags
+		return cm.EditorInterfaceSidebarItem{}, diags
 	}
 
-	return cm.EditorInterfaceDataSidebarItem{
+	return cm.EditorInterfaceSidebarItem{
 		WidgetNamespace: widgetNamespace,
 		WidgetId:        widgetID,
 		Disabled:        disabled,

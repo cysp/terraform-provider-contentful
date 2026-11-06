@@ -64,7 +64,7 @@ provider "contentful" {
 	output, err = runtime.run(t.Context(), "plan", "-out=update.tfplan", "-input=false", "-no-color")
 	require.NoError(t, err, output)
 	response, err := server.Handler().PutEditorInterface(t.Context(), &cm.EditorInterfaceData{
-		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{{
+		Controls: cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{{
 			FieldId: "name", WidgetNamespace: cm.NewOptString("builtin"), WidgetId: cm.NewOptString("singleLine"),
 			Settings: []byte(testJSON(map[string]any{"helpText": "external"})),
 		}}),

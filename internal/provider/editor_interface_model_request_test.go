@@ -73,7 +73,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 
 	assert.True(t, req.Controls.Set)
 	require.Len(t, req.Controls.Value, 1)
-	assert.Equal(t, cm.EditorInterfaceDataControlsItem{
+	assert.Equal(t, cm.EditorInterfaceControlsItem{
 		FieldId:         "field_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
 		WidgetId:        cm.NewOptString("widget_id"),
@@ -82,7 +82,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 
 	assert.True(t, req.GroupControls.Set)
 	require.Len(t, req.GroupControls.Value, 1)
-	assert.Equal(t, cm.EditorInterfaceDataGroupControlsItem{
+	assert.Equal(t, cm.EditorInterfaceGroupControlsItem{
 		GroupId:         "group_id",
 		WidgetNamespace: cm.NewOptString("widget_namespace"),
 		WidgetId:        cm.NewOptString("widget_id"),
@@ -91,7 +91,7 @@ func TestRoundTripToEditorInterfaceData(t *testing.T) {
 
 	assert.True(t, req.Sidebar.Set)
 	require.Len(t, req.Sidebar.Value, 1)
-	assert.Equal(t, cm.EditorInterfaceDataSidebarItem{
+	assert.Equal(t, cm.EditorInterfaceSidebarItem{
 		WidgetNamespace: "widget_namespace",
 		WidgetId:        "widget_id",
 		Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
@@ -367,7 +367,7 @@ func TestToEditorInterfaceData(t *testing.T) {
 	assert.Empty(t, diags)
 
 	assert.Equal(t, cm.EditorInterfaceData{
-		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{
+		Controls: cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{
 			{
 				FieldId:         "field_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
@@ -375,7 +375,7 @@ func TestToEditorInterfaceData(t *testing.T) {
 				Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 			},
 		}),
-		Sidebar: cm.NewOptNilEditorInterfaceDataSidebarItemArray([]cm.EditorInterfaceDataSidebarItem{
+		Sidebar: cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
@@ -456,7 +456,7 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 	req, diags := model.ToEditorInterfaceData(ctx)
 
 	assert.Equal(t, cm.EditorInterfaceData{
-		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{
+		Controls: cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{
 			{
 				FieldId:         "field_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
@@ -475,7 +475,7 @@ func TestToEditorInterfaceDataErrorHandling(t *testing.T) {
 				Settings:        []byte(testJSON(map[string]any{"foo": "bar"})),
 			},
 		}),
-		Sidebar: cm.NewOptNilEditorInterfaceDataSidebarItemArray([]cm.EditorInterfaceDataSidebarItem{
+		Sidebar: cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
@@ -625,9 +625,9 @@ func TestEditorInterfaceControlRequestValues(t *testing.T) {
 			value := validEditorInterfaceControlValue()
 			test.mutate(&value)
 
-			item, diags := value.ToEditorInterfaceDataControlsItem(path.Root("controls").AtListIndex(2))
+			item, diags := value.ToEditorInterfaceControlsItem(path.Root("controls").AtListIndex(2))
 
-			assert.Equal(t, cm.EditorInterfaceDataControlsItem{}, item)
+			assert.Equal(t, cm.EditorInterfaceControlsItem{}, item)
 			require.True(t, diags.HasError())
 			assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, diags))
 		})
@@ -638,10 +638,10 @@ func TestEditorInterfaceControlRequestValues(t *testing.T) {
 	value.WidgetID = types.StringNull()
 	value.Settings = jsontypes.NewNormalizedNull()
 
-	item, diags := value.ToEditorInterfaceDataControlsItem(path.Root("controls").AtListIndex(0))
+	item, diags := value.ToEditorInterfaceControlsItem(path.Root("controls").AtListIndex(0))
 
 	require.False(t, diags.HasError(), diags.Errors())
-	assert.Equal(t, cm.EditorInterfaceDataControlsItem{FieldId: "field"}, item)
+	assert.Equal(t, cm.EditorInterfaceControlsItem{FieldId: "field"}, item)
 }
 
 //nolint:dupl // Parallel table tests intentionally exercise matching request model shapes.
@@ -663,9 +663,9 @@ func TestEditorInterfaceGroupControlRequestValues(t *testing.T) {
 			value := validEditorInterfaceGroupControlValue()
 			test.mutate(&value)
 
-			item, diags := value.ToEditorInterfaceDataGroupControlsItem(path.Root("group_controls").AtListIndex(1))
+			item, diags := value.ToEditorInterfaceGroupControlsItem(path.Root("group_controls").AtListIndex(1))
 
-			assert.Equal(t, cm.EditorInterfaceDataGroupControlsItem{}, item)
+			assert.Equal(t, cm.EditorInterfaceGroupControlsItem{}, item)
 			require.True(t, diags.HasError())
 			assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, diags))
 		})
@@ -676,10 +676,10 @@ func TestEditorInterfaceGroupControlRequestValues(t *testing.T) {
 	value.WidgetID = types.StringNull()
 	value.Settings = jsontypes.NewNormalizedNull()
 
-	item, diags := value.ToEditorInterfaceDataGroupControlsItem(path.Root("group_controls").AtListIndex(0))
+	item, diags := value.ToEditorInterfaceGroupControlsItem(path.Root("group_controls").AtListIndex(0))
 
 	require.False(t, diags.HasError(), diags.Errors())
-	assert.Equal(t, cm.EditorInterfaceDataGroupControlsItem{GroupId: "group"}, item)
+	assert.Equal(t, cm.EditorInterfaceGroupControlsItem{GroupId: "group"}, item)
 }
 
 //nolint:dupl // Parallel table tests intentionally exercise matching request model shapes.
@@ -701,9 +701,9 @@ func TestEditorInterfaceSidebarRequestValues(t *testing.T) {
 			value := validEditorInterfaceSidebarValue()
 			test.mutate(&value)
 
-			item, diags := value.ToEditorInterfaceDataSidebarItem(path.Root("sidebar").AtListIndex(3))
+			item, diags := value.ToEditorInterfaceSidebarItem(path.Root("sidebar").AtListIndex(3))
 
-			assert.Equal(t, cm.EditorInterfaceDataSidebarItem{}, item)
+			assert.Equal(t, cm.EditorInterfaceSidebarItem{}, item)
 			require.True(t, diags.HasError())
 			assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, diags))
 		})
@@ -713,10 +713,10 @@ func TestEditorInterfaceSidebarRequestValues(t *testing.T) {
 	value.Settings = jsontypes.NewNormalizedNull()
 	value.Disabled = types.BoolNull()
 
-	item, diags := value.ToEditorInterfaceDataSidebarItem(path.Root("sidebar").AtListIndex(0))
+	item, diags := value.ToEditorInterfaceSidebarItem(path.Root("sidebar").AtListIndex(0))
 
 	require.False(t, diags.HasError(), diags.Errors())
-	assert.Equal(t, cm.EditorInterfaceDataSidebarItem{WidgetNamespace: "builtin", WidgetId: "widget"}, item)
+	assert.Equal(t, cm.EditorInterfaceSidebarItem{WidgetNamespace: "builtin", WidgetId: "widget"}, item)
 }
 
 func TestEditorInterfaceEditorLayoutRejectsUnresolvedNestedValues(t *testing.T) {

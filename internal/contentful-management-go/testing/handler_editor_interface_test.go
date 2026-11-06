@@ -1,6 +1,7 @@
 package cmtesting_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -39,7 +40,7 @@ func TestPutEditorInterfaceUsesContentfulVersioning(t *testing.T) {
 	activateContentType(t, handler, created.Sys.Version)
 
 	editorInterfaceRequest := cm.EditorInterfaceData{
-		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{{
+		Controls: cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{{
 			FieldId: "title", WidgetNamespace: cm.NewOptString("builtin"), WidgetId: cm.NewOptString("singleLine"),
 		}}),
 	}
@@ -123,7 +124,7 @@ func TestActivateContentTypeAddsControlsOnlyForNewFields(t *testing.T) {
 	activated := activateContentType(t, handler, created.Sys.Version)
 
 	editorInterfaceRequest := cm.EditorInterfaceData{
-		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{}),
+		Controls: cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{}),
 	}
 	response, err := handler.PutEditorInterface(t.Context(), &editorInterfaceRequest, cm.PutEditorInterfaceParams{
 		SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,
@@ -154,7 +155,7 @@ func TestDeactivateContentTypeRemovesEditorInterface(t *testing.T) {
 	activateContentType(t, handler, 1)
 
 	response, err := handler.PutEditorInterface(t.Context(), &cm.EditorInterfaceData{
-		Controls: cm.NewOptNilEditorInterfaceDataControlsItemArray([]cm.EditorInterfaceDataControlsItem{{
+		Controls: cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{{
 			FieldId: "title", WidgetNamespace: cm.NewOptString("builtin"), WidgetId: cm.NewOptString("singleLine"),
 			Settings: []byte(testJSON(map[string]any{"helpText": "custom help"})),
 		}}),
@@ -215,4 +216,52 @@ func editorInterfaceControlFieldIDs(t *testing.T, editorInterface *cm.EditorInte
 	}
 
 	return fieldIDs
+}
+
+func TestPutEditorInterfacePreservesCollectionPresence(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		request map[string]any
+		want    map[string]any
+	}{
+		"omitted clears": {request: map[string]any{}, want: map[string]any{}},
+		"null clears": {
+			request: map[string]any{"editorLayout": nil, "controls": nil, "groupControls": nil, "sidebar": nil},
+			want:    map[string]any{},
+		},
+		"empty arrays remain present": {
+			request: map[string]any{"editorLayout": []any{}, "controls": []any{}, "groupControls": []any{}, "sidebar": []any{}},
+			want:    map[string]any{"editorLayout": []any{}, "controls": []any{}, "groupControls": []any{}, "sidebar": []any{}},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			handler := newContentTypeTestHandler()
+			contentTypeRequest := newContentTypeRequest()
+			created := createContentType(t, handler, &contentTypeRequest)
+			activateContentType(t, handler, created.Sys.Version)
+
+			var request cm.EditorInterfaceData
+			require.NoError(t, json.Unmarshal([]byte(testJSON(test.request)), &request))
+
+			response, err := handler.PutEditorInterface(t.Context(), &request, cm.PutEditorInterfaceParams{
+				SpaceID: "space", EnvironmentID: "environment", ContentTypeID: "content-type", XContentfulVersion: 1,
+			})
+			require.NoError(t, err)
+
+			statusCode, statusCodeOK := response.(*cm.EditorInterfaceStatusCode)
+			require.True(t, statusCodeOK)
+			assert.Equal(t, 2, statusCode.Response.Sys.Version)
+
+			encoded, err := statusCode.Response.MarshalJSON()
+			require.NoError(t, err)
+
+			var fields map[string]any
+			require.NoError(t, json.Unmarshal(encoded, &fields))
+			delete(fields, "sys")
+			assert.Equal(t, test.want, fields)
+		})
+	}
 }

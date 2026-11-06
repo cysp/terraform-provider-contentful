@@ -22,22 +22,22 @@ func TestAccAppDefinitionDataSourceArrayItems(t *testing.T) {
 		Name:   "Nested field app",
 		Src:    cm.NewOptString("https://example.invalid/app.js"),
 		Bundle: cm.NewOptAppBundleLink(cm.NewAppBundleLink("bundle-id")),
-		Locations: []cm.AppDefinitionDataLocationsItem{
+		Locations: []cm.AppDefinitionLocationsItem{
 			{
 				Location: "entry-field",
-				FieldTypes: []cm.AppDefinitionDataLocationsItemFieldTypesItem{
-					{Type: "Array", Items: cm.NewOptAppDefinitionDataLocationsItemFieldTypesItemItems(cm.AppDefinitionDataLocationsItemFieldTypesItemItems{Type: "Symbol"})},
-					{Type: "Array", Items: cm.NewOptAppDefinitionDataLocationsItemFieldTypesItemItems(cm.AppDefinitionDataLocationsItemFieldTypesItemItems{Type: "Link", LinkType: cm.NewOptString("Asset")})},
+				FieldTypes: []cm.AppDefinitionLocationsItemFieldTypesItem{
+					{Type: "Array", Items: cm.NewOptAppDefinitionLocationsItemFieldTypesItemItems(cm.AppDefinitionLocationsItemFieldTypesItemItems{Type: "Symbol"})},
+					{Type: "Array", Items: cm.NewOptAppDefinitionLocationsItemFieldTypesItemItems(cm.AppDefinitionLocationsItemFieldTypesItemItems{Type: "Link", LinkType: cm.NewOptString("Asset")})},
 					{Type: "Link", LinkType: cm.NewOptString("Entry")},
 				},
 			},
 			{
 				Location: "page",
-				NavigationItem: cm.NewOptAppDefinitionDataLocationsItemNavigationItem(cm.AppDefinitionDataLocationsItemNavigationItem{
+				NavigationItem: cm.NewOptAppDefinitionLocationsItemNavigationItem(cm.AppDefinitionLocationsItemNavigationItem{
 					Name: "App page", Path: "/app-page",
 				}),
 			},
-			{Location: "dialog", FieldTypes: []cm.AppDefinitionDataLocationsItemFieldTypesItem{}},
+			{Location: "dialog", FieldTypes: []cm.AppDefinitionLocationsItemFieldTypesItem{}},
 		},
 		Parameters: cm.NewOptAppDefinitionParameters(cm.AppDefinitionParameters{
 			Installation: []cm.AppDefinitionParameter{{ID: "client-id", Type: "Symbol", Name: "Client ID", Required: cm.NewOptBool(true)}},
@@ -116,10 +116,10 @@ func TestAccMarketplaceAppDefinitionDataSourceArrayItems(t *testing.T) {
 
 	server.SetMarketplaceAppDefinition("marketplace-organization", "marketplace-app", cm.AppDefinitionData{
 		Name: "Marketplace nested fields",
-		Locations: []cm.AppDefinitionDataLocationsItem{{
+		Locations: []cm.AppDefinitionLocationsItem{{
 			Location: "entry-field",
-			FieldTypes: []cm.AppDefinitionDataLocationsItemFieldTypesItem{
-				{Type: "Array", Items: cm.NewOptAppDefinitionDataLocationsItemFieldTypesItemItems(cm.AppDefinitionDataLocationsItemFieldTypesItemItems{Type: "Link", LinkType: cm.NewOptString("Asset")})},
+			FieldTypes: []cm.AppDefinitionLocationsItemFieldTypesItem{
+				{Type: "Array", Items: cm.NewOptAppDefinitionLocationsItemFieldTypesItemItems(cm.AppDefinitionLocationsItemFieldTypesItemItems{Type: "Link", LinkType: cm.NewOptString("Asset")})},
 				{Type: "Symbol"},
 			},
 		}},

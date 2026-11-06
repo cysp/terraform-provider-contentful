@@ -1,0 +1,12 @@
+EditorInterfaceGroupControlsItem:
+  type: object
+  properties:
+    groupId:
+      type: string
+    widgetNamespace:
+      type: string
+    widgetId:
+      type: string
+    settings: {}
+  required:
+    - groupId
