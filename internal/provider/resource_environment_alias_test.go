@@ -3,6 +3,7 @@ package provider_test
 import (
 	"maps"
 	"net/http"
+	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -53,24 +55,22 @@ func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestNameDirectory(),
+				ConfigDirectory: config.StaticDirectory("testdata/environment_alias_resource"),
 				ConfigVariables: configVariables1,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/"+environmentAliasID)),
-					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("target_environment_id"), knownvalue.StringExact("staging")),
 				},
 			},
 			{
-				ConfigDirectory:  config.TestNameDirectory(),
+				ConfigDirectory:  config.StaticDirectory("testdata/environment_alias_resource"),
 				ConfigVariables:  configVariables2,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_environment_alias.test", plancheck.ResourceActionUpdate)}},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/"+environmentAliasID)),
-					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("target_environment_id"), knownvalue.StringExact("master")),
 				},
 			},
 			{
-				ConfigDirectory:   config.TestNameDirectory(),
+				ConfigDirectory:   config.StaticDirectory("testdata/environment_alias_resource"),
 				ConfigVariables:   configVariables2,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -87,6 +87,9 @@ func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 	require.NoError(t, err)
 
 	server.RegisterSpaceEnvironment("space-id", "master-1970-01-01")
+	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData("space-id", "master", cm.EnvironmentAliasData{
+		Environment: cm.NewEnvironmentLink("master-1970-01-01"),
+	}))
 
 	configVariables := config.Variables{
 		"space_id":                  config.StringVariable("space-id"),
@@ -94,24 +97,44 @@ func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 		"target_environment_id":     config.StringVariable("master-1970-01-01"),
 	}
 
-	testAccMockedResource(t, server, resource.TestCase{
+	var mutations atomic.Int64
+
+	handler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.Method != http.MethodGet {
+			mutations.Add(1)
+		}
+
+		server.ServeHTTP(writer, request)
+	})
+
+	testAccMockedResource(t, handler, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestNameDirectory(),
-				ConfigVariables: configVariables,
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("id"), knownvalue.StringExact("space-id/master")),
-					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("space_id"), knownvalue.StringExact("space-id")),
-					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("environment_alias_id"), knownvalue.StringExact("master")),
-					statecheck.ExpectKnownValue("contentful_environment_alias.test", tfjsonpath.New("target_environment_id"), knownvalue.StringExact("master-1970-01-01")),
+				ConfigDirectory:    config.StaticDirectory("testdata/environment_alias_resource"),
+				ConfigVariables:    configVariables,
+				ImportState:        true,
+				ImportStatePersist: true,
+				ImportStateId:      "space-id/master",
+				ResourceName:       "contentful_environment_alias.test",
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					assert.Zero(t, mutations.Load(), "import must only read the seeded environment alias")
+
+					return testAccImportAttributes(map[string]string{
+						"id":                    "space-id/master",
+						"space_id":              "space-id",
+						"environment_alias_id":  "master",
+						"target_environment_id": "master-1970-01-01",
+					})(states)
 				},
 			},
 			{
-				ConfigDirectory:   config.TestNameDirectory(),
-				ConfigVariables:   configVariables,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      "contentful_environment_alias.test",
+				ConfigDirectory: config.StaticDirectory("testdata/environment_alias_resource"),
+				ConfigVariables: configVariables,
+				PlanOnly:        true,
+				// PlanOnly runs this phase against the imported state before refresh.
+				ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPreRefresh: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_environment_alias.test", plancheck.ResourceActionNoop),
+				}},
 			},
 		},
 	})
