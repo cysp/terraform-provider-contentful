@@ -470,3 +470,35 @@ func TestContentTypeDataSourcesRejectUnresolvedInputsAndMissingEntities(t *testi
 		})
 	}
 }
+
+//nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
+func TestContentTypesDataSourceProjectionFailureStopsNextFetch(t *testing.T) {
+	t.Parallel()
+	first := mutateTestJSON(discoveryFixture(t, "content_type"), func(document map[string]any) {
+		document["sys"].(map[string]any)["environment"].(map[string]any)["sys"].(map[string]any)["id"] = "different-environment"
+	})
+
+	var skips []string
+
+	response := discoveryReadTest(t.Context(), t, NewContentTypesDataSource, map[string]any{"space_id": "space", "environment_id": "master"}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		assert.Equal(t, http.MethodGet, request.Method)
+		assert.Equal(t, "/base/spaces/space/environments/master/content_types", request.URL.Path)
+
+		skips = append(skips, request.URL.Query().Get("skip"))
+		if len(skips) == 1 {
+			return discoveryHTTPResponse(request, http.StatusOK, discoveryPage(0, 1, 2, first)), nil
+		}
+
+		return discoveryHTTPResponse(request, http.StatusForbidden, testJSON(map[string]any{"sys": map[string]any{"type": "Error", "id": "AccessDenied"}, "message": "later page must not be fetched"})), nil
+	}))
+	assert.Equal(t, []string{"0"}, skips)
+	require.Len(t, response.Diagnostics, 1)
+	assert.Equal(t, "Unsupported Content Type response identity", response.Diagnostics[0].Summary())
+
+	withPath, ok := response.Diagnostics[0].(diag.DiagnosticWithPath)
+	if assert.True(t, ok, "projection error retains its item path") {
+		assert.Equal(t, "content_types[0].content_type_id", withPath.Path().String())
+	}
+
+	assert.True(t, response.State.Raw.IsNull())
+}
