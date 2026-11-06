@@ -12,7 +12,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestModelType(t *testing.T) {
+// The registry exercises reflection metadata for each production model. Generic
+// type equality and value conversion behavior have focused tests in typed_*.
+func TestModelTypesPreserveNullAndUnknown(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -49,218 +51,49 @@ func TestModelType(t *testing.T) {
 		NewTypedObjectNull[WebhookTransformationValue]().Type(ctx),
 	}
 
-	type differentType struct {
-		attr.Type
-	}
-
-	for index, typ := range modelTypes {
+	for _, typ := range modelTypes {
 		t.Run(typ.String(), func(t *testing.T) {
 			t.Parallel()
-
-			t.Run("Equal/different Go type", func(t *testing.T) {
-				t.Parallel()
-
-				assert.False(t, typ.Equal(differentType{typ}))
-			})
-
-			for otherIndex, otherType := range modelTypes {
-				t.Run("Equal/"+otherType.String(), func(t *testing.T) {
-					t.Parallel()
-
-					assert.Equal(t, index == otherIndex, typ.Equal(otherType))
-				})
-			}
 
 			for name, test := range map[string]struct {
 				value   tftypes.Value
 				unknown bool
 				null    bool
 			}{
-				"unknown": {
-					value:   tftypes.NewValue(typ.TerraformType(t.Context()), tftypes.UnknownValue),
-					unknown: true,
-				},
-				"null type": {
-					value: tftypes.NewValue(nil, nil),
-					null:  true,
-				},
-				"null": {
-					value: tftypes.NewValue(typ.TerraformType(t.Context()), nil),
-					null:  true,
-				},
+				"unknown":   {value: tftypes.NewValue(typ.TerraformType(t.Context()), tftypes.UnknownValue), unknown: true},
+				"null type": {value: tftypes.NewValue(nil, nil), null: true},
+				"null":      {value: tftypes.NewValue(typ.TerraformType(t.Context()), nil), null: true},
 			} {
-				t.Run("ValueFromTerraform/"+name, func(t *testing.T) {
+				t.Run(name, func(t *testing.T) {
 					t.Parallel()
 
 					value, err := typ.ValueFromTerraform(t.Context(), test.value)
 					require.NoError(t, err)
-
+					assert.IsType(t, typ.ValueType(t.Context()), value)
 					assert.Equal(t, test.unknown, value.IsUnknown())
 					assert.Equal(t, test.null, value.IsNull())
+
+					switch typ.(type) {
+					case TypedListType[types.String], TypedMapType[types.String]:
+						return
+					default:
+					}
+
+					objectType, ok := typ.(basetypes.ObjectTypable)
+					require.True(t, ok, "registered object models must support ObjectTypable")
+
+					object, ok := value.(basetypes.ObjectValuable)
+					require.True(t, ok)
+					objectValue, diags := object.ToObjectValue(t.Context())
+					require.Empty(t, diags)
+					assert.Equal(t, test.unknown, objectValue.IsUnknown())
+					assert.Equal(t, test.null, objectValue.IsNull())
+
+					roundTrip, diags := objectType.ValueFromObject(t.Context(), objectValue)
+					require.Empty(t, diags)
+					assert.Equal(t, value, roundTrip)
 				})
 			}
-		})
-	}
-}
-
-func TestModelTypeValueFromObject(t *testing.T) {
-	t.Parallel()
-
-	testcases := map[string]struct {
-		nullValue    attr.Value
-		unknownValue attr.Value
-	}{
-		"ContentTypeField": {
-			nullValue:    NewTypedObjectNull[ContentTypeFieldValue](),
-			unknownValue: NewTypedObjectUnknown[ContentTypeFieldValue](),
-		},
-		"ContentTypeFieldItems": {
-			nullValue:    NewTypedObjectNull[ContentTypeFieldItemsValue](),
-			unknownValue: NewTypedObjectUnknown[ContentTypeFieldItemsValue](),
-		},
-		"ContentTypeFieldAllowedResourceItem": {
-			nullValue:    NewTypedObjectNull[ContentTypeFieldAllowedResourceItemValue](),
-			unknownValue: NewTypedObjectUnknown[ContentTypeFieldAllowedResourceItemValue](),
-		},
-		"ContentTypeFieldAllowedResourceItemContentfulEntry": {
-			nullValue:    NewTypedObjectNull[ContentTypeFieldAllowedResourceItemContentfulEntryValue](),
-			unknownValue: NewTypedObjectUnknown[ContentTypeFieldAllowedResourceItemContentfulEntryValue](),
-		},
-		"ContentTypeFieldAllowedResourceItemExternal": {
-			nullValue:    NewTypedObjectNull[ContentTypeFieldAllowedResourceItemExternalValue](),
-			unknownValue: NewTypedObjectUnknown[ContentTypeFieldAllowedResourceItemExternalValue](),
-		},
-		"ContentTypeMetadataTaxonomyItem": {
-			nullValue:    NewTypedObjectNull[ContentTypeMetadataTaxonomyItemValue](),
-			unknownValue: NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemValue](),
-		},
-		"ContentTypeMetadataTaxonomyItemConceptScheme": {
-			nullValue:    NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
-			unknownValue: NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemConceptSchemeValue](),
-		},
-		"ContentTypeMetadataTaxonomyItemConcept": {
-			nullValue:    NewTypedObjectNull[ContentTypeMetadataTaxonomyItemConceptValue](),
-			unknownValue: NewTypedObjectUnknown[ContentTypeMetadataTaxonomyItemConceptValue](),
-		},
-		"ContentTypeMetadata": {
-			nullValue:    NewTypedObjectNull[ContentTypeMetadataValue](),
-			unknownValue: NewTypedObjectUnknown[ContentTypeMetadataValue](),
-		},
-		"EditorInterfaceControl": {
-			nullValue:    NewTypedObjectNull[EditorInterfaceControlValue](),
-			unknownValue: NewTypedObjectUnknown[EditorInterfaceControlValue](),
-		},
-		"EditorInterfaceEditorLayoutItem": {
-			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemValue](),
-			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemValue](),
-		},
-		"EditorInterfaceEditorLayoutItemGroup": {
-			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupValue](),
-			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupValue](),
-		},
-		"EditorInterfaceEditorLayoutItemGroupItem": {
-			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemValue](),
-			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemValue](),
-		},
-		"EditorInterfaceEditorLayoutItemGroupItemField": {
-			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
-			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemFieldValue](),
-		},
-		"EditorInterfaceEditorLayoutItemGroupItemGroup": {
-			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
-			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemGroupValue](),
-		},
-		"EditorInterfaceEditorLayoutItemGroupItemGroupItem": {
-			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue](),
-			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemGroupItemValue](),
-		},
-		"EditorInterfaceEditorLayoutItemGroupItemGroupItemField": {
-			nullValue:    NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](),
-			unknownValue: NewTypedObjectUnknown[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue](),
-		},
-		"EditorInterfaceGroupControl": {
-			nullValue:    NewTypedObjectNull[EditorInterfaceGroupControlValue](),
-			unknownValue: NewTypedObjectUnknown[EditorInterfaceGroupControlValue](),
-		},
-		"EditorInterfaceSidebar": {
-			nullValue:    NewTypedObjectNull[EditorInterfaceSidebarValue](),
-			unknownValue: NewTypedObjectUnknown[EditorInterfaceSidebarValue](),
-		},
-		"RolePolicy": {
-			nullValue:    NewTypedObjectNull[RolePolicyValue](),
-			unknownValue: NewTypedObjectUnknown[RolePolicyValue](),
-		},
-		"WebhookFilterEquals": {
-			nullValue:    NewTypedObjectNull[WebhookFilterEqualsValue](),
-			unknownValue: NewTypedObjectUnknown[WebhookFilterEqualsValue](),
-		},
-		"WebhookFilterIn": {
-			nullValue:    NewTypedObjectNull[WebhookFilterInValue](),
-			unknownValue: NewTypedObjectUnknown[WebhookFilterInValue](),
-		},
-		"WebhookFilterNot": {
-			nullValue:    NewTypedObjectNull[WebhookFilterNotValue](),
-			unknownValue: NewTypedObjectUnknown[WebhookFilterNotValue](),
-		},
-		"WebhookFilterRegexp": {
-			nullValue:    NewTypedObjectNull[WebhookFilterRegexpValue](),
-			unknownValue: NewTypedObjectUnknown[WebhookFilterRegexpValue](),
-		},
-		"WebhookFilter": {
-			nullValue:    NewTypedObjectNull[WebhookFilterValue](),
-			unknownValue: NewTypedObjectUnknown[WebhookFilterValue](),
-		},
-		"WebhookHeader": {
-			nullValue:    NewTypedObjectNull[WebhookHeaderValue](),
-			unknownValue: NewTypedObjectUnknown[WebhookHeaderValue](),
-		},
-		"WebhookTransformation": {
-			nullValue:    NewTypedObjectNull[WebhookTransformationValue](),
-			unknownValue: NewTypedObjectUnknown[WebhookTransformationValue](),
-		},
-	}
-
-	for name, testcase := range testcases {
-		t.Run(name+"/unknown", func(t *testing.T) {
-			t.Parallel()
-
-			ctx := t.Context()
-
-			val, valOk := testcase.unknownValue.(basetypes.ObjectValuable)
-			require.True(t, valOk)
-
-			typ, typOk := testcase.unknownValue.Type(ctx).(basetypes.ObjectTypable)
-			require.True(t, typOk)
-
-			objval, objvalDiags := val.ToObjectValue(ctx)
-			require.Empty(t, objvalDiags)
-
-			actual, actualDiags := typ.ValueFromObject(ctx, objval)
-			require.Empty(t, actualDiags)
-
-			assert.True(t, actual.IsUnknown())
-			assert.False(t, actual.IsNull())
-		})
-
-		t.Run(name+"/null", func(t *testing.T) {
-			t.Parallel()
-
-			ctx := t.Context()
-
-			val, valOk := testcase.nullValue.(basetypes.ObjectValuable)
-			require.True(t, valOk)
-
-			typ, typOk := testcase.nullValue.Type(ctx).(basetypes.ObjectTypable)
-			require.True(t, typOk)
-
-			objval, objvalDiags := val.ToObjectValue(ctx)
-			require.Empty(t, objvalDiags)
-
-			actual, actualDiags := typ.ValueFromObject(ctx, objval)
-			require.Empty(t, actualDiags)
-
-			assert.False(t, actual.IsUnknown())
-			assert.True(t, actual.IsNull())
 		})
 	}
 }

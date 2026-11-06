@@ -33,6 +33,10 @@ func TestTypedObjectTypeEqual(t *testing.T) {
 		Name types.String `tfsdk:"name"`
 	}
 
+	type otherTypedObjectTypeTestModel struct {
+		Name types.String `tfsdk:"name"`
+	}
+
 	objectType := TypedObject[typedObjectTypeTestModel]{}.CustomType(t.Context())
 	nameType := objectType.WithAttributeTypes(map[string]attr.Type{
 		"name": types.StringType,
@@ -68,18 +72,22 @@ func TestTypedObjectTypeEqual(t *testing.T) {
 			left:  nameType,
 			right: differentNameType,
 		},
+		"different model with identical attributes": {
+			left:  objectType,
+			right: TypedObject[otherTypedObjectTypeTestModel]{}.CustomType(t.Context()),
+		},
+		"different Go type with identical attributes": {
+			left:  objectType,
+			right: types.ObjectType{AttrTypes: map[string]attr.Type{"name": types.StringType}},
+		},
 	}
 
 	for name, testcase := range testcases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.NotPanics(t, func() {
-				assert.False(t, testcase.left.Equal(testcase.right))
-			})
-			assert.NotPanics(t, func() {
-				assert.False(t, testcase.right.Equal(testcase.left))
-			})
+			assert.False(t, testcase.left.Equal(testcase.right))
+			assert.False(t, testcase.right.Equal(testcase.left))
 		})
 	}
 }

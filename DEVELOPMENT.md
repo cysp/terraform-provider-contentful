@@ -192,7 +192,7 @@ go test -race -shuffle=on -count=1 -timeout=10m ./...
 Run a focused package or test while iterating:
 
 ```sh
-go test ./internal/provider -run '^TestModelType$' -count=1 -timeout=5m
+go test ./internal/provider -run '^TestModelTypesPreserveNullAndUnknown$' -count=1 -timeout=5m
 ```
 
 Use the current test name from the source. A successful command with
