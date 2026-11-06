@@ -181,11 +181,13 @@ number tokens with `UseNumber` so large integers, decimal precision, exponent
 notation, and negative zero are not rounded through floating-point conversion.
 
 Invalid UTF-8 and unpaired UTF-16 surrogates become the Unicode replacement
-character. Object keys that become equal after decoding follow the same
-last-value rule as duplicate keys. In particular, a malformed key and an
-explicit replacement-character key can collide; the last value in document
-order wins. This standard-library policy can choose a different collision
-value from the former JX normalization pass.
+character. A valid surrogate pair following an unpaired surrogate is preserved:
+`"\ud800\ud800\udc00"` normalizes to `"�𐀀"`. Object keys that become equal after
+decoding follow the same last-value rule as duplicate keys. A malformed key
+and an explicit replacement-character key can collide; the last value in
+document order wins. This standard-library policy can change both malformed
+string values and collision winners compared with the former JX normalization
+pass.
 
 App Installation and Extension parameters, Role policy constraints, and Editor
 Interface settings use the checked normalization operation and report failures
