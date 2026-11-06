@@ -124,13 +124,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, editorInterfaceIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, editorInterfaceIdentityAttributeNames(), &data, version)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -215,6 +209,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 
 	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
 
+	// A published Read supersedes the offset even if the private version write fails.
 	r.providerData.editorInterfaceVersionOffset.Reset(data.SpaceID.ValueString(), data.EnvironmentID.ValueString(), data.ContentTypeID.ValueString())
 }
 
@@ -297,13 +292,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, editorInterfaceIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, editorInterfaceIdentityAttributeNames(), &data, version)...)
 
 	if resp.Diagnostics.HasError() {
 		return

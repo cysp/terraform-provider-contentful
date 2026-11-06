@@ -109,13 +109,7 @@ func (r *spaceEnablementsResource) Create(ctx context.Context, req resource.Crea
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, spaceEnablementsIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, spaceEnablementsIdentityAttributeNames(), &data, version)...)
 }
 
 func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -180,13 +174,7 @@ func (r *spaceEnablementsResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, spaceEnablementsIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, spaceEnablementsIdentityAttributeNames(), &data, version)...)
 }
 
 func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -256,13 +244,7 @@ func (r *spaceEnablementsResource) Update(ctx context.Context, req resource.Upda
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, spaceEnablementsIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, spaceEnablementsIdentityAttributeNames(), &data, version)...)
 }
 
 func (r *spaceEnablementsResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {

@@ -106,13 +106,7 @@ func (r *livePreviewVariablesResource) Create(ctx context.Context, req resource.
 	}
 
 	data.Timeouts = plan.Timeouts
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, livePreviewVariablesIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", variables.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, livePreviewVariablesIdentityAttributeNames(), &data, variables.Sys.Version)...)
 	resp.Diagnostics.Append(consistencyDiagnostics...)
 }
 
@@ -165,13 +159,7 @@ func (r *livePreviewVariablesResource) Read(ctx context.Context, req resource.Re
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, livePreviewVariablesIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", variables.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, livePreviewVariablesIdentityAttributeNames(), &data, variables.Sys.Version)...)
 }
 
 func (r *livePreviewVariablesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -226,13 +214,7 @@ func (r *livePreviewVariablesResource) Update(ctx context.Context, req resource.
 	}
 
 	data.Timeouts = plan.Timeouts
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, livePreviewVariablesIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", variables.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, livePreviewVariablesIdentityAttributeNames(), &data, variables.Sys.Version)...)
 	resp.Diagnostics.Append(consistencyDiagnostics...)
 }
 

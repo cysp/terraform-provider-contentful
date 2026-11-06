@@ -865,6 +865,12 @@ values are encoded into staged copies, and both are assigned only after both
 encodings succeed. This is local publication only; it does not make remote API
 operations or private provider data transactional.
 
+For versioned responses, the provider records the private `version` only after
+publishing the matching state and identity. An encoding error leaves the prior
+private version unchanged. A later private-data write error is reported without
+rolling back the published state and identity. Pending lifecycle authority and
+resource-specific missing-version handling remain separate operations.
+
 An error diagnostic does not universally prohibit returning state. Terraform
 can persist state returned with an error so that a provider can record remote
 effects completed before a later failure. Any such intermediate state must be

@@ -149,19 +149,7 @@ func (r *previewEnvironmentResource) Create(ctx context.Context, req resource.Cr
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(
-		ctx,
-		resp.Identity,
-		&resp.State,
-		previewEnvironmentIdentityAttributeNames(),
-		&data,
-	)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", previewEnvironment.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, previewEnvironmentIdentityAttributeNames(), &data, previewEnvironment.Sys.Version)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -227,19 +215,7 @@ func (r *previewEnvironmentResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(
-		ctx,
-		resp.Identity,
-		&resp.State,
-		previewEnvironmentIdentityAttributeNames(),
-		&data,
-	)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", previewEnvironment.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, previewEnvironmentIdentityAttributeNames(), &data, previewEnvironment.Sys.Version)...)
 }
 
 func (r *previewEnvironmentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -319,19 +295,7 @@ func (r *previewEnvironmentResource) Update(ctx context.Context, req resource.Up
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(
-		ctx,
-		resp.Identity,
-		&resp.State,
-		previewEnvironmentIdentityAttributeNames(),
-		&data,
-	)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", previewEnvironment.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, previewEnvironmentIdentityAttributeNames(), &data, previewEnvironment.Sys.Version)...)
 
 	if resp.Diagnostics.HasError() {
 		return
