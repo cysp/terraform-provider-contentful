@@ -862,6 +862,73 @@ func TestAccEntryResourceChangedDraftVersionMismatchRevokesPendingAuthority(t *t
 	})
 }
 
+func TestAccEntryResourceContradictoryDraftRevokesPendingPublication(t *testing.T) {
+	t.Parallel()
+
+	fixture := newEntryAcceptanceFixture(t)
+	rejected := &entryRejectedPublishAdapter{delegate: fixture.server}
+	contradictory := &mutationJSONResponseAdapter{delegate: rejected}
+	fixture.recorder.delegate = contradictory
+	recorder := fixture.recorder
+
+	testAccMockedResource(t, recorder, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{
+				PreConfig:          rejected.shot.arm,
+				Config:             managedEntryConfig("one"),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				PreConfig: func() {
+					requests := recorder.snapshot()
+					require.Len(t, requests, 2)
+					requireEntryPublish(t, requests[1], entryTestPublishPath)
+					require.Equal(t, []string{"1"}, requests[1].versionValues)
+					recorder.reset()
+
+					// Deliberately contradictory success: the returned draft reuses
+					// the marked version but is not the draft accepted from the plan.
+					contradictory.mutateNext(http.MethodPut, func(response map[string]any) {
+						sys, ok := response["sys"].(map[string]any)
+						if !ok {
+							return
+						}
+
+						sys["version"] = 1
+						response["fields"] = map[string]any{"managed": map[string]any{"en-US": "contradictory"}}
+					})
+				},
+				Config:      managedEntryConfig("two"),
+				ExpectError: regexp.MustCompile(`Unexpected entry fields`),
+			},
+			{
+				PreConfig: func() {
+					require.NoError(t, recorder.handlerError())
+					requests := recorder.snapshot()
+					require.Len(t, requests, 1, "the contradictory draft must not be published")
+					requireEntryUpdate(t, requests[0])
+					require.Equal(t, []string{"1"}, requests[0].versionValues)
+					recorder.reset()
+				},
+				Config: managedEntryConfig("contradictory"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					expectResponseStateInPlan{
+						address:   "contentful_entry.test",
+						valuePath: tfjsonpath.New("fields").AtMapKey("managed"),
+						value:     `{"en-US":"contradictory"}`,
+					},
+				}},
+				Check: func(*terraform.State) error {
+					requireNoEntryMutations(t, recorder, "the new checkpoint must not inherit the previous draft's publication authority")
+
+					return nil
+				},
+			},
+		},
+	})
+}
+
 func TestAccEntryResourceMarkedReadRevokesEqualPublicationTupleAuthority(t *testing.T) {
 	t.Parallel()
 

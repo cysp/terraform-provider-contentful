@@ -560,6 +560,10 @@ are observations only and never grant publication authority. A previously
 recorded private pending-version marker can retain authority under the recovery
 rules below.
 
+A returned draft supersedes earlier publication authority, even when its version
+matches the pending marker. A contradictory response retains its representable
+state but cannot inherit the previous draft's authority.
+
 After the complete truthful draft state and optimistic-lock version are
 checkpointed and the response identity, positive version, draft tuple, and
 plan consistency are validated, private state records only that exact version

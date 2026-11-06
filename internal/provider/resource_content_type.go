@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -212,16 +213,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &draft.state, draft.version)...)
-	// Checkpoint a successful draft response before reporting a response
-	// consistency or activation error so the recorded state remains truthful.
-	resp.Diagnostics.Append(draft.consistencyDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, contentTypePendingActivationVersionPrivateKey, draft.version)...)
+	resp.Diagnostics.Append(checkpointContentTypeDraft(ctx, resp.Identity, &resp.State, resp.Private, draft)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -575,17 +567,7 @@ func (r *contentTypeResource) updateAndActivateContentType(
 		return
 	}
 
-	// A returned draft supersedes earlier activation authority, even if its
-	// version is unchanged. Grant authority again only after validating it.
-	resp.Diagnostics.Append(resp.Private.SetKey(ctx, contentTypePendingActivationVersionPrivateKey, nil)...)
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &draft.state, draft.version)...)
-	resp.Diagnostics.Append(draft.consistencyDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, contentTypePendingActivationVersionPrivateKey, draft.version)...)
+	resp.Diagnostics.Append(checkpointContentTypeDraft(ctx, resp.Identity, &resp.State, resp.Private, draft)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -834,4 +816,24 @@ func validateContentTypeActivationResponse(expectedVersion int, response cm.Cont
 	}
 
 	return diagnostics
+}
+
+// checkpointContentTypeDraft replaces prior activation authority with the exact
+// returned draft version only after its state is checkpointed and validated.
+func checkpointContentTypeDraft(
+	ctx context.Context,
+	identity *tfsdk.ResourceIdentity,
+	state *tfsdk.State,
+	private PrivateProviderData,
+	draft contentTypeMutationResult,
+) diag.Diagnostics {
+	diags := private.SetKey(ctx, contentTypePendingActivationVersionPrivateKey, nil)
+	diags.Append(setResourceIdentityStateAndVersion(ctx, identity, state, private, contentTypeIdentityAttributeNames(), &draft.state, draft.version)...)
+	diags.Append(draft.consistencyDiags...)
+
+	if !diags.HasError() {
+		diags.Append(SetPrivateProviderData(ctx, private, contentTypePendingActivationVersionPrivateKey, draft.version)...)
+	}
+
+	return diags
 }
