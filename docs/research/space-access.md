@@ -52,11 +52,12 @@ request body and forwards `sys.version`, defaulting to zero, in
 
 The [CMA version-locking contract](https://www.contentful.com/developers/docs/references/content-management-api/overview/#updating-and-version-locking)
 requires an update to use the current version and rejects a stale version after
-another update. These sources support checking that a successful update
-invalidates its previous version; they do not establish a Role-specific initial
-version or exact increment. The update reference's example returns version zero
-without a preceding version sequence. No live Role mutation observation or
-exact missing-Role error envelope is recorded here.
+another update. These sources support checking that an update which changes the
+resource invalidates its previous version; they do not establish a Role-specific
+initial version, exact increment, or behavior for identical PUTs. The update
+reference's example returns version zero without a preceding version sequence.
+No live Role mutation observation or exact missing-Role error envelope is
+recorded here.
 
 [role]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/role.ts
 [membership]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/team-space-membership.ts
