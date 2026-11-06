@@ -63,30 +63,17 @@ func (v TypedObject[T]) CustomType(ctx context.Context) TypedObjectType[T] {
 }
 
 func (v TypedObject[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := v.Type(ctx).TerraformType(ctx)
-
-	if v.IsNull() {
-		return tftypes.NewValue(tft, nil), nil
+	value, diags := v.ToObjectValue(ctx)
+	if diags.HasError() {
+		return tftypes.NewValue(v.Type(ctx).TerraformType(ctx), tftypes.UnknownValue), ErrorFromDiags(diags)
 	}
 
-	if v.IsUnknown() {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
+	result, err := value.ToTerraformValue(ctx)
+	if err != nil {
+		return result, fmt.Errorf("converting typed object to Terraform: %w", err)
 	}
 
-	attributeValues := tpfr.AttributeValuesOf(v.Value())
-
-	tfval := make(map[string]tftypes.Value, len(attributeValues))
-
-	for key, element := range attributeValues {
-		tfvalelem, err := element.ToTerraformValue(ctx)
-		if err != nil {
-			return tftypes.NewValue(tft, tftypes.UnknownValue), err
-		}
-
-		tfval[key] = tfvalelem
-	}
-
-	return tftypes.NewValue(tft, tfval), nil
+	return result, nil
 }
 
 func (v TypedObject[T]) Equal(o attr.Value) bool {

@@ -3,9 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
-	"reflect"
 
-	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -28,67 +26,21 @@ func (t TypedObjectType[T]) TerraformType(ctx context.Context) tftypes.Type {
 
 //nolint:ireturn
 func (t TypedObjectType[T]) ValueFromTerraform(ctx context.Context, tfval tftypes.Value) (attr.Value, error) {
-	var v T
-
-	if tfval.Type() == nil {
-		return NewTypedObjectNull[T](), nil
+	value, err := (basetypes.ObjectType{AttrTypes: t.attributeTypes}).ValueFromTerraform(ctx, tfval)
+	if err != nil {
+		return nil, fmt.Errorf("converting Terraform to typed object: %w", err)
 	}
 
-	attributeTypes := t.AttributeTypes()
-
-	if !tfval.Type().Equal(t.TerraformType(ctx)) {
+	// The Framework base type always returns its corresponding value type.
+	base, ok := value.(basetypes.ObjectValue)
+	if !ok {
 		//nolint:err113
-		return nil, fmt.Errorf("can't use %s as value of TypedObject[%T]", tfval.String(), v)
+		return nil, fmt.Errorf("unexpected Framework object value %T", value)
 	}
 
-	if !tfval.IsKnown() {
-		return NewTypedObjectUnknown[T](), nil
-	}
+	typed, diags := t.ValueFromObject(ctx, base)
 
-	if tfval.IsNull() {
-		return NewTypedObjectNull[T](), nil
-	}
-
-	tfelems := map[string]tftypes.Value{}
-
-	tfelemsErr := tfval.As(&tfelems)
-	if tfelemsErr != nil {
-		return nil, fmt.Errorf("error extracting elements from terraform value: %w", tfelemsErr)
-	}
-
-	attributeValues := make(map[string]attr.Value, len(tfelems))
-
-	for key, elem := range tfelems {
-		attrtyp, attrtypFound := attributeTypes[key]
-		if !attrtypFound {
-			//nolint:err113
-			return nil, fmt.Errorf("unknown attribute %q for TypedObject[%T]", key, v)
-		}
-
-		attrval, attrvalErr := attrtyp.ValueFromTerraform(ctx, elem)
-		if attrvalErr != nil {
-			return nil, fmt.Errorf("error converting element from terraform value: %w", attrvalErr)
-		}
-
-		attributeValues[key] = attrval
-	}
-
-	typ := reflect.TypeFor[T]()
-
-	val, valOk := reflect.TypeAssert[T](reflect.New(typ).Elem())
-	if !valOk {
-		//nolint:err113
-		return nil, fmt.Errorf("error converting value to type %T", val)
-	}
-
-	diags := diag.Diagnostics{}
-
-	setAttributesDiags := tpfr.SetAttributeValues(ctx, &val, attributeValues)
-	diags.Append(setAttributesDiags...)
-
-	list := NewTypedObject(val)
-
-	return list, ErrorFromDiags(diags)
+	return typed, ErrorFromDiags(diags)
 }
 
 //nolint:ireturn

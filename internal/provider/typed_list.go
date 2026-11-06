@@ -51,28 +51,34 @@ func (v TypedList[T]) CustomType(ctx context.Context) TypedListType[T] {
 }
 
 func (v TypedList[T]) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	tft := v.Type(ctx).TerraformType(ctx)
+	typ := v.CustomType(ctx)
+	terraformType := typ.TerraformType(ctx)
 
 	if v.IsNull() {
-		return tftypes.NewValue(tft, nil), nil
+		return tftypes.NewValue(terraformType, nil), nil
 	}
 
 	if v.IsUnknown() {
-		return tftypes.NewValue(tft, tftypes.UnknownValue), nil
+		return tftypes.NewValue(terraformType, tftypes.UnknownValue), nil
 	}
 
-	tfval := make([]tftypes.Value, len(v.elements))
-
-	for idx, element := range v.elements {
-		tfvalelem, err := element.ToTerraformValue(ctx)
-		if err != nil {
-			return tftypes.NewValue(tft, tftypes.UnknownValue), err
-		}
-
-		tfval[idx] = tfvalelem
+	// Raw encoding must not invoke the custom-value validation in ToListValue.
+	elements := make([]attr.Value, len(v.elements))
+	for key, element := range v.elements {
+		elements[key] = element
 	}
 
-	return tftypes.NewValue(tft, tfval), nil
+	value, diags := types.ListValue(typ.ElementTypeWithContext(ctx), elements)
+	if diags.HasError() {
+		return tftypes.NewValue(terraformType, tftypes.UnknownValue), ErrorFromDiags(diags)
+	}
+
+	result, err := value.ToTerraformValue(ctx)
+	if err != nil {
+		return result, fmt.Errorf("converting typed list to Terraform: %w", err)
+	}
+
+	return result, nil
 }
 
 func (v TypedList[T]) Equal(o attr.Value) bool {
@@ -131,7 +137,14 @@ func (v TypedList[T]) ToListValue(ctx context.Context) (basetypes.ListValue, dia
 		return types.ListUnknown(elementType), nil
 	}
 
-	return types.ListValueFrom(ctx, elementType, v.elements)
+	elements := make([]attr.Value, len(v.elements))
+	for key, element := range v.elements {
+		elements[key] = element
+	}
+
+	// Framework configuration validation relies on this reflection adapter to
+	// validate custom elements. The non-nil slice preserves known empty values.
+	return types.ListValueFrom(ctx, elementType, elements)
 }
 
 // ---
