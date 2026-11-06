@@ -4,7 +4,6 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -52,12 +51,12 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 	value.Actions = actionsListValue
 
 	if item.Constraint != nil {
-		constraint, err := util.JxNormalizeOpaqueBytes(item.Constraint, util.JxEncodeOpaqueOptions{EscapeStrings: true})
+		constraint, err := parseNormalizedJSONValue(item.Constraint)
 		if err != nil {
 			diags.AddAttributeError(path.AtName("constraint"), "Failed to read policy constraint", err.Error())
 		}
 
-		value.Constraint = NewNormalizedJSONValue(constraint)
+		value.Constraint = constraint
 	} else {
 		value.Constraint = jsontypes.NewNormalizedNull()
 	}

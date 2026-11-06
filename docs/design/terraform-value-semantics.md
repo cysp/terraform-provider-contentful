@@ -172,6 +172,29 @@ before provider response conversion runs. Provider lenience applies only after
 the generated client has produced a typed value that the Terraform schema can
 represent, wholly or partially.
 
+### JSON normalization
+
+Opaque JSON normalization uses Go's `encoding/json` behavior throughout the
+provider. It validates one complete document, orders object keys, retains array
+order, escapes HTML and control characters in keys and values, and preserves
+number tokens with `UseNumber` so large integers, decimal precision, exponent
+notation, and negative zero are not rounded through floating-point conversion.
+
+Invalid UTF-8 and unpaired UTF-16 surrogates become the Unicode replacement
+character. Object keys that become equal after decoding follow the same
+last-value rule as duplicate keys. In particular, a malformed key and an
+explicit replacement-character key can collide; the last value in document
+order wins. This standard-library policy can choose a different collision
+value from the former JX normalization pass.
+
+App Installation and Extension parameters, Role policy constraints, and Editor
+Interface settings use the checked normalization operation and report failures
+at their attribute paths. Missing response members remain Terraform null; an
+explicit JSON `null` remains a known JSON string. The existing fallback
+normalizers retain the original input on failure for callers that own their
+validation or preserve opaque values. Neither fallback performs an additional
+decode after successful normalization.
+
 ### Taxonomy response canonicalization
 
 For concept `alt_labels` and `hidden_labels`, Contentful may currently add

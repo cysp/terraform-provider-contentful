@@ -2,7 +2,6 @@ package provider
 
 import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -29,12 +28,12 @@ func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallat
 	}
 
 	if appInstallation.Parameters != nil {
-		constraint, err := util.JxNormalizeOpaqueBytes(appInstallation.Parameters, util.JxEncodeOpaqueOptions{EscapeStrings: true})
+		parameters, err := parseNormalizedJSONValue(appInstallation.Parameters)
 		if err != nil {
 			diags.AddAttributeError(path.Root("parameters"), "Failed to read parameters", err.Error())
 		}
 
-		model.Parameters = NewNormalizedJSONValue(constraint)
+		model.Parameters = parameters
 	} else {
 		model.Parameters = jsontypes.NewNormalizedNull()
 	}
