@@ -7,6 +7,11 @@ dates are UTC publication dates.
 
 ## [0.0.71](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.70...v0.0.71) (2026-11-06)
 
+**Compatibility:** The provider now rejects HTTP redirects for mutation requests.
+If you use a custom API endpoint or reverse proxy, configure it to handle writes
+directly, without redirecting them. Set the provider's `url` to the final API
+endpoint where appropriate.
+
 
 ### Features
 
