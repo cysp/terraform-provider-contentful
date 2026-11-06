@@ -92,15 +92,8 @@ func (r *taxonomyConceptResource) Create(ctx context.Context, req resource.Creat
 	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *concept)
 	resp.Diagnostics.Append(responseDiags...)
 
-	statePublished := false
-
 	if !resp.Diagnostics.HasError() {
-		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, taxonomyConceptIdentityAttributeNames(), &data)...)
-		statePublished = !resp.Diagnostics.HasError()
-	}
-
-	if statePublished {
-		resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", concept.Sys.Version)...)
+		resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptIdentityAttributeNames(), &data, concept.Sys.Version)...)
 	}
 
 	// A successful remote mutation can disagree with the plan. Publish its
@@ -155,13 +148,7 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, taxonomyConceptIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", concept.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptIdentityAttributeNames(), &data, concept.Sys.Version)...)
 }
 
 func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -226,15 +213,8 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *concept)
 	resp.Diagnostics.Append(responseDiags...)
 
-	statePublished := false
-
 	if !resp.Diagnostics.HasError() {
-		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, taxonomyConceptIdentityAttributeNames(), &data)...)
-		statePublished = !resp.Diagnostics.HasError()
-	}
-
-	if statePublished {
-		resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", concept.Sys.Version)...)
+		resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptIdentityAttributeNames(), &data, concept.Sys.Version)...)
 	}
 
 	// A successful remote mutation can disagree with the plan. Publish its

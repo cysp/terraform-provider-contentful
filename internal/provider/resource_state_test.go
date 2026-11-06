@@ -2,8 +2,10 @@
 package provider
 
 import (
+	"context"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -32,6 +34,121 @@ type publicationTwoStringStateModel struct {
 
 type invalidPublicationModel struct {
 	Missing types.String `tfsdk:"missing"`
+}
+
+type publicationPrivateData struct {
+	data  map[string][]byte
+	write func(string, []byte) diag.Diagnostics
+}
+
+func (p *publicationPrivateData) GetKey(_ context.Context, key string) ([]byte, diag.Diagnostics) {
+	return p.data[key], nil
+}
+
+func (p *publicationPrivateData) SetKey(_ context.Context, key string, value []byte) diag.Diagnostics {
+	if p.write != nil {
+		if diags := p.write(key, value); diags.HasError() {
+			return diags
+		}
+	}
+
+	p.data[key] = value
+
+	return nil
+}
+
+func TestSetResourceIdentityStateAndVersionStopsBeforePrivateWriteOnEncodingError(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		attributeNames []string
+		model          any
+	}{
+		"state encoding": {
+			attributeNames: []string{"id"},
+			model:          &invalidPublicationModel{Missing: types.StringValue("invalid")},
+		},
+		"identity extraction": {
+			attributeNames: []string{"missing"},
+			model:          &publicationStateModel{ID: types.StringValue("new")},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			identity, state := emptyPublicationTargets()
+			private := &publicationPrivateData{data: map[string][]byte{"version": []byte("17")}}
+			diags := setResourceIdentityStateAndVersion(t.Context(), identity, state, private, test.attributeNames, test.model, 42)
+
+			require.True(t, diags.HasError())
+			assertPublicationTargetsNull(t, identity, state)
+			assert.Equal(t, map[string][]byte{"version": []byte("17")}, private.data)
+		})
+	}
+}
+
+func TestSetResourceIdentityStateAndVersionPublishesBeforePrivateWrite(t *testing.T) {
+	t.Parallel()
+
+	for _, privateWriteFails := range []bool{false, true} {
+		name := "successful private write"
+		if privateWriteFails {
+			name = "failed private write retains published state"
+		}
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			identity, state := emptyPublicationTargets()
+			privateWrites := 0
+			private := &publicationPrivateData{
+				data: map[string][]byte{"version": []byte("17"), "pending_publication_version": []byte("17")},
+				write: func(key string, value []byte) diag.Diagnostics {
+					privateWrites++
+
+					var identityModel publicationIdentityModel
+
+					var stateModel publicationStateModel
+
+					require.Empty(t, identity.Get(t.Context(), &identityModel))
+					require.Empty(t, state.Get(t.Context(), &stateModel))
+					assert.Equal(t, types.StringValue("new"), identityModel.ID)
+					assert.Equal(t, types.StringValue("new"), stateModel.ID)
+					assert.Equal(t, "version", key)
+					assert.Equal(t, []byte("42"), value)
+
+					if privateWriteFails {
+						return diag.Diagnostics{diag.NewErrorDiagnostic("Private write failed", "The version could not be stored.")}
+					}
+
+					return nil
+				},
+			}
+
+			diags := setResourceIdentityStateAndVersion(t.Context(), identity, state, private, []string{"id"}, &publicationStateModel{ID: types.StringValue("new")}, 42)
+
+			assert.Equal(t, 1, privateWrites)
+
+			var identityModel publicationIdentityModel
+
+			var stateModel publicationStateModel
+
+			require.Empty(t, identity.Get(t.Context(), &identityModel))
+			require.Empty(t, state.Get(t.Context(), &stateModel))
+			assert.Equal(t, types.StringValue("new"), identityModel.ID)
+			assert.Equal(t, types.StringValue("new"), stateModel.ID)
+			assert.Equal(t, []byte("17"), private.data["pending_publication_version"])
+
+			if privateWriteFails {
+				require.Len(t, diags, 1)
+				assert.Equal(t, "Private write failed", diags[0].Summary())
+				assert.Equal(t, []byte("17"), private.data["version"])
+			} else {
+				require.Empty(t, diags)
+				assert.Equal(t, []byte("42"), private.data["version"])
+			}
+		})
+	}
 }
 
 func TestSetResourceIdentityAndStateLeavesBothTargetsUnchangedAfterIdentityExtractionError(t *testing.T) {

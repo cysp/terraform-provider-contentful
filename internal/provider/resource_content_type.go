@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -213,7 +212,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, draft)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &draft.state, draft.version)...)
 	// Checkpoint a successful draft response before reporting a response
 	// consistency or activation error so the recorded state remains truthful.
 	resp.Diagnostics.Append(draft.consistencyDiags...)
@@ -242,7 +241,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, activated)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &activated.state, activated.version)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -360,13 +359,7 @@ func (r *contentTypeResource) Read(ctx context.Context, req resource.ReadRequest
 		resp.Diagnostics.Append(resp.Private.SetKey(ctx, contentTypePendingActivationVersionPrivateKey, nil)...)
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, contentTypeIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &data, version)...)
 }
 
 func (r *contentTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -585,7 +578,7 @@ func (r *contentTypeResource) updateAndActivateContentType(
 	// A returned draft supersedes earlier activation authority, even if its
 	// version is unchanged. Grant authority again only after validating it.
 	resp.Diagnostics.Append(resp.Private.SetKey(ctx, contentTypePendingActivationVersionPrivateKey, nil)...)
-	resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, draft)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &draft.state, draft.version)...)
 	resp.Diagnostics.Append(draft.consistencyDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -623,7 +616,7 @@ func (r *contentTypeResource) applyContentTypeActivationTransition(
 		return
 	}
 
-	resp.Diagnostics.Append(setContentTypeIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, activated)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &activated.state, activated.version)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -841,25 +834,4 @@ func validateContentTypeActivationResponse(expectedVersion int, response cm.Cont
 	}
 
 	return diagnostics
-}
-
-// setContentTypeIdentityStateAndVersion derives and sets the identity and
-// state, then records the private version. Each phase stops on errors; private
-// data is not transactional with identity and state.
-func setContentTypeIdentityStateAndVersion(
-	ctx context.Context,
-	identity *tfsdk.ResourceIdentity,
-	state *tfsdk.State,
-	private PrivateProviderData,
-	result contentTypeMutationResult,
-) diag.Diagnostics {
-	diags := setResourceIdentityAndState(ctx, identity, state, contentTypeIdentityAttributeNames(), &result.state)
-
-	if diags.HasError() {
-		return diags
-	}
-
-	diags.Append(SetPrivateProviderData(ctx, private, "version", result.version)...)
-
-	return diags
 }

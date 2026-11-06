@@ -106,13 +106,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, teamIdentityAttributeNames(), &data, version)...)
 }
 
 //nolint:dupl
@@ -177,13 +171,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, teamIdentityAttributeNames(), &data, version)...)
 }
 
 //nolint:dupl
@@ -251,13 +239,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, teamIdentityAttributeNames(), &data, version)...)
 }
 
 //nolint:dupl

@@ -108,13 +108,7 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, environmentAliasIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, environmentAliasIdentityAttributeNames(), &data, version)...)
 }
 
 func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -180,13 +174,7 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, environmentAliasIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, environmentAliasIdentityAttributeNames(), &data, version)...)
 }
 
 func (r *environmentAliasResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -253,13 +241,7 @@ func (r *environmentAliasResource) Update(ctx context.Context, req resource.Upda
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, environmentAliasIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, environmentAliasIdentityAttributeNames(), &data, version)...)
 }
 
 //nolint:dupl

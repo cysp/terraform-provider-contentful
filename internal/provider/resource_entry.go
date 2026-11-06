@@ -148,7 +148,7 @@ func (r *entryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	responseModel, consistencyDiags := projectEntryMutationResponse(ctx, plan, responseModel, entryResponseFieldsCreationDefaults)
-	resp.Diagnostics.Append(setEntryIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, responseModel, version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, entryIdentityAttributeNames(), &responseModel, version)...)
 
 	resp.Diagnostics.Append(validateEntryDraftResponse(version, responseModel.PublishedVersion)...)
 	resp.Diagnostics.Append(consistencyDiags...)
@@ -274,13 +274,7 @@ func (r *entryResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		data.Metadata = state.Metadata
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, entryIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, entryIdentityAttributeNames(), &data, version)...)
 }
 
 func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -368,7 +362,7 @@ func (r *entryResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	responseModel, consistencyDiags := projectEntryMutationResponse(ctx, plan, responseModel, entryResponseFieldsExact)
-	resp.Diagnostics.Append(setEntryIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, responseModel, version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, entryIdentityAttributeNames(), &responseModel, version)...)
 
 	resp.Diagnostics.Append(validateEntryDraftResponse(version, responseModel.PublishedVersion)...)
 	resp.Diagnostics.Append(consistencyDiags...)
@@ -594,7 +588,7 @@ func (r *entryResource) publishAndCheckpointEntry(
 	responseVersion := response.Response.Sys.Version
 
 	responseModel, consistencyDiags := projectEntryMutationResponse(ctx, entry, responseModel, fieldPolicy)
-	checkpointDiags := setEntryIdentityStateAndVersion(ctx, identity, state, private, responseModel, responseVersion)
+	checkpointDiags := setResourceIdentityStateAndVersion(ctx, identity, state, private, entryIdentityAttributeNames(), &responseModel, responseVersion)
 	publicationDiags := validateEntryPublicationResponse(version, response.Response.Sys.Version, response.Response.Sys.PublishedVersion)
 
 	diags.Append(checkpointDiags...)

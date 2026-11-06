@@ -60,3 +60,27 @@ func setResourceIdentityAndState(
 
 	return diags
 }
+
+// setResourceIdentityStateAndVersion publishes the state/identity pair before
+// recording its Contentful version. Encoding errors leave all three unchanged;
+// a private-data error leaves the published state/identity pair intact. Callers
+// decide when response-derived recovery state is publishable and report any
+// consistency diagnostics after this checkpoint.
+func setResourceIdentityStateAndVersion(
+	ctx context.Context,
+	identity *tfsdk.ResourceIdentity,
+	state *tfsdk.State,
+	private PrivateProviderData,
+	identityAttributeNames []string,
+	stateModel any,
+	version int,
+) diag.Diagnostics {
+	diags := setResourceIdentityAndState(ctx, identity, state, identityAttributeNames, stateModel)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(SetPrivateProviderData(ctx, private, "version", version)...)
+
+	return diags
+}

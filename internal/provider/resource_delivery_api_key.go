@@ -109,13 +109,7 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, deliveryAPIKeyIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, deliveryAPIKeyIdentityAttributeNames(), &data, version)...)
 }
 
 //nolint:dupl
@@ -182,13 +176,7 @@ func (r *deliveryAPIKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, deliveryAPIKeyIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, deliveryAPIKeyIdentityAttributeNames(), &data, version)...)
 }
 
 func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -259,13 +247,7 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, deliveryAPIKeyIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, deliveryAPIKeyIdentityAttributeNames(), &data, version)...)
 }
 
 //nolint:dupl

@@ -114,13 +114,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, roleIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, roleIdentityAttributeNames(), &data, version)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -196,13 +190,7 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, roleIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, roleIdentityAttributeNames(), &data, version)...)
 }
 
 func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -277,13 +265,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, roleIdentityAttributeNames(), &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(SetPrivateProviderData(ctx, resp.Private, "version", version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, roleIdentityAttributeNames(), &data, version)...)
 
 	if resp.Diagnostics.HasError() {
 		return

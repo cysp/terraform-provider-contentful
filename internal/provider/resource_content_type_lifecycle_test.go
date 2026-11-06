@@ -2,62 +2,15 @@
 package provider
 
 import (
-	"context"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
-
-type contentTypeCheckpointPrivateData struct{ data map[string][]byte }
-
-func (data *contentTypeCheckpointPrivateData) GetKey(_ context.Context, key string) ([]byte, diag.Diagnostics) {
-	return data.data[key], nil
-}
-
-func (data *contentTypeCheckpointPrivateData) SetKey(_ context.Context, key string, value []byte) diag.Diagnostics {
-	data.data[key] = value
-
-	return nil
-}
-
-func TestContentTypeMutationCheckpointUsesOnlyVersionPrivateKey(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-	resourceSchema := ContentTypeResourceSchema(ctx)
-	identitySchema := identityschema.Schema{Attributes: map[string]identityschema.Attribute{
-		"space_id":        identityschema.StringAttribute{RequiredForImport: true},
-		"environment_id":  identityschema.StringAttribute{RequiredForImport: true},
-		"content_type_id": identityschema.StringAttribute{RequiredForImport: true},
-	}}
-	state := &tfsdk.State{
-		Schema: resourceSchema,
-		Raw:    tftypes.NewValue(resourceSchema.Type().TerraformType(ctx), nil),
-	}
-	identity := &tfsdk.ResourceIdentity{
-		Schema: identitySchema,
-		Raw:    tftypes.NewValue(identitySchema.Type().TerraformType(ctx), nil),
-	}
-	private := &contentTypeCheckpointPrivateData{data: map[string][]byte{}}
-
-	diags := setContentTypeIdentityStateAndVersion(ctx, identity, state, private, contentTypeMutationResult{
-		state:   contentTypeLifecycleTestModel(),
-		version: 42,
-	})
-
-	require.False(t, diags.HasError(), diags.Errors())
-	assert.Equal(t, map[string][]byte{"version": []byte("42")}, private.data)
-}
 
 func TestContentTypeDraftMutationRequired(t *testing.T) {
 	t.Parallel()
