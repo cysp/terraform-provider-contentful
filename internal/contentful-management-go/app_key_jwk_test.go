@@ -57,25 +57,3 @@ func TestAppKeyJWKFingerprintFromX5CRejectsInvalidStandardBase64(t *testing.T) {
 		})
 	}
 }
-
-func TestNewAppKeyRequestDataEncodesJWK(t *testing.T) {
-	t.Parallel()
-
-	request := cm.NewAppKeyRequestData(cm.AppKeyJWK{
-		Alg: cm.AppKeyJWKAlgRS256,
-		Kty: cm.AppKeyJWKKtyRSA,
-		Use: cm.AppKeyJWKUseSig,
-		X5c: []string{"cHVibGljLWtleQ=="},
-		Kid: "kid",
-		X5t: "x5t",
-	})
-
-	assert.Equal(t, cm.AppKeyJWK{
-		Alg: cm.AppKeyJWKAlgRS256,
-		Kty: cm.AppKeyJWKKtyRSA,
-		Use: cm.AppKeyJWKUseSig,
-		X5c: []string{"cHVibGljLWtleQ=="},
-		Kid: "kid",
-		X5t: "x5t",
-	}, request.Jwk)
-}

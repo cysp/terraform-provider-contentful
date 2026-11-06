@@ -58,14 +58,14 @@ func appKeyRequestFromDER(publicKeyDER []byte) *cm.AppKeyRequestData {
 	fingerprint := sha256.Sum256(publicKeyDER)
 	keyID := base64.RawURLEncoding.EncodeToString(fingerprint[:])
 
-	request := cm.NewAppKeyRequestData(cm.AppKeyJWK{
+	request := cm.AppKeyRequestData{Jwk: cm.AppKeyJWK{
 		Alg: cm.AppKeyJWKAlgRS256,
 		Kty: cm.AppKeyJWKKtyRSA,
 		Use: cm.AppKeyJWKUseSig,
 		Kid: keyID,
 		X5c: []string{base64.StdEncoding.EncodeToString(publicKeyDER)},
 		X5t: keyID,
-	})
+	}}
 
 	return &request
 }

@@ -17,7 +17,7 @@ func (m *AppKeyModel) ToAppKeyRequestData(ctx context.Context) (cm.AppKeyRequest
 		return cm.AppKeyRequestData{}, diags
 	}
 
-	return cm.NewAppKeyRequestData(jwk), diags
+	return cm.AppKeyRequestData{Jwk: jwk}, diags
 }
 
 func (m AppKeyJWKModel) ToAppKeyJWK(_ context.Context, attrPath path.Path) (cm.AppKeyJWK, diag.Diagnostics) {

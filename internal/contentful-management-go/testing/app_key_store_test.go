@@ -36,10 +36,10 @@ func TestAppKeyStoreSetReplacesOnlyMatchingIdentity(t *testing.T) {
 }
 
 func testAppKeyStoreRequest(x5c string) cm.AppKeyRequestData {
-	return cm.NewAppKeyRequestData(cm.AppKeyJWK{
+	return cm.AppKeyRequestData{Jwk: cm.AppKeyJWK{
 		Kid: "key",
 		X5c: []string{x5c},
-	})
+	}}
 }
 
 func getStoredAppKey(t *testing.T, server *cmt.Server, organizationID, appDefinitionID string) *cm.AppKey {

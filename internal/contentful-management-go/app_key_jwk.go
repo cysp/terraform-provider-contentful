@@ -28,9 +28,3 @@ func AppKeyJWKFingerprint(publicKeyBytes []byte) string {
 
 	return base64.RawURLEncoding.EncodeToString(fingerprint[:])
 }
-
-func NewAppKeyRequestData(jwk AppKeyJWK) AppKeyRequestData {
-	return AppKeyRequestData{
-		Jwk: jwk,
-	}
-}
