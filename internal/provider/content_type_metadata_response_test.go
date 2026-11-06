@@ -21,7 +21,6 @@ func TestContentTypeMetadataTaxonomyResponsePreservesUnknownLinkTypeAsKnownSenti
 
 	itemPath := path.Root("metadata").AtName("taxonomy").AtListIndex(0)
 	actual, diags := NewContentTypeMetadataTaxonomyItemFromResponse(
-		t.Context(),
 		itemPath,
 		cm.ContentTypeMetadataTaxonomyItem{
 			Sys: cm.ContentTypeMetadataTaxonomyItemSys{
