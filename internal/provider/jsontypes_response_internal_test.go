@@ -92,6 +92,7 @@ func TestResponseJSONNormalization(t *testing.T) {
 				{name: "empty object", raw: []byte("{}"), expected: "{}"},
 				{name: "number precision and escaping", raw: []byte(`{"z":[9007199254740993,0.123456789012345678901,-0,1.2300e+100],"a<b":"<&>"}`), expected: `{"a\u003cb":"\u003c\u0026\u003e","z":[9007199254740993,0.123456789012345678901,-0,1.2300e+100]}`},
 				{name: "invalid UTF-8 key collision", raw: []byte("{\"\xff\":\"invalid\",\"�\":\"replacement\"}"), expected: `{"�":"replacement"}`},
+				{name: "unpaired surrogate before valid pair", raw: []byte(`{"value":"\ud800\ud800\udc00"}`), expected: `{"value":"�𐀀"}`},
 				{name: "empty input", raw: []byte{}, hasError: true},
 				{name: "invalid JSON", raw: []byte(`{"key":`), hasError: true},
 				{name: "trailing JSON", raw: []byte(`true false`), hasError: true},
@@ -105,6 +106,8 @@ func TestResponseJSONNormalization(t *testing.T) {
 						require.Len(t, diags, 1)
 						require.True(t, diags.HasError(), diags)
 						assertDiagnosticPath(t, diags[0], projector.path)
+						assert.True(t, value.IsNull())
+						assert.False(t, value.IsUnknown())
 
 						return
 					}
