@@ -2,6 +2,7 @@ package integration_tests_test
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,78 +13,94 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateTeamAcceptsJSONContentTypes(t *testing.T) {
+func TestTeamClientWireContract(t *testing.T) {
 	t.Parallel()
 
-	for _, contentType := range []string{"application/json", "application/vnd.contentful.management.v1+json"} {
-		t.Run(contentType, func(t *testing.T) {
+	responseBody := testJSON(map[string]any{
+		"sys": map[string]any{
+			"type": "Team", "id": "team-id", "version": 8,
+			"organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "organization-id"}},
+		},
+		"name": "Test Team", "description": "",
+	})
+
+	for name, test := range map[string]struct {
+		method  string
+		path    string
+		status  int
+		version string
+	}{
+		"create": {method: http.MethodPost, path: "/organizations/organization-id/teams", status: http.StatusCreated},
+		"read":   {method: http.MethodGet, path: "/organizations/organization-id/teams/team-id", status: http.StatusOK},
+		"update": {method: http.MethodPut, path: "/organizations/organization-id/teams/team-id", status: http.StatusOK, version: "7"},
+	} {
+		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			team := cmt.NewTeamFromFields("organization-id", "team-id", cm.TeamData{
-				Name:        "Test Team",
-				Description: cm.NewNilString(""),
-			})
+			for _, contentType := range []string{"application/json", "application/vnd.contentful.management.v1+json"} {
+				t.Run(contentType, func(t *testing.T) {
+					t.Parallel()
 
-			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, http.MethodPost, r.Method)
-				assert.Equal(t, "/organizations/organization-id/teams", r.URL.Path)
+					testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						assert.Equal(t, test.method, r.Method)
+						assert.Equal(t, test.path, r.URL.Path)
+						assert.Equal(t, test.version, r.Header.Get("X-Contentful-Version"))
 
-				w.Header().Set("Content-Type", contentType)
-				w.WriteHeader(http.StatusCreated)
-				assert.NoError(t, json.NewEncoder(w).Encode(team))
-			}))
-			t.Cleanup(testServer.Close)
+						body, err := io.ReadAll(r.Body)
+						assert.NoError(t, err)
 
-			client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
+						if test.method == http.MethodGet {
+							assert.Empty(t, body)
+						} else {
+							assert.JSONEq(t, testJSON(map[string]any{"name": "Test Team", "description": ""}), string(body))
+						}
 
-			response, err := client.CreateTeam(t.Context(), &cm.TeamData{
-				Name:        "Test Team",
-				Description: cm.NewNilString(""),
-			}, cm.CreateTeamParams{
-				OrganizationID: "organization-id",
-			})
-			require.NoError(t, err)
+						w.Header().Set("Content-Type", contentType)
+						w.WriteHeader(test.status)
+						_, err = io.WriteString(w, responseBody)
+						assert.NoError(t, err)
+					}))
+					t.Cleanup(testServer.Close)
 
-			teamResponse, ok := response.(*cm.TeamStatusCode)
-			require.True(t, ok)
-			require.Equal(t, http.StatusCreated, teamResponse.StatusCode)
-			require.Equal(t, "team-id", teamResponse.Response.Sys.ID)
-		})
-	}
-}
+					client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
 
-func TestGetTeamAcceptsJSONContentTypes(t *testing.T) {
-	t.Parallel()
+					var (
+						response any
+						err      error
+					)
 
-	for _, contentType := range []string{"application/json", "application/vnd.contentful.management.v1+json"} {
-		t.Run(contentType, func(t *testing.T) {
-			t.Parallel()
+					switch test.method {
+					case http.MethodPost:
+						response, err = client.CreateTeam(t.Context(), &cm.TeamData{Name: "Test Team", Description: cm.NewNilString("")}, cm.CreateTeamParams{OrganizationID: "organization-id"})
+					case http.MethodGet:
+						response, err = client.GetTeam(t.Context(), cm.GetTeamParams{OrganizationID: "organization-id", TeamID: "team-id"})
+					case http.MethodPut:
+						response, err = client.PutTeam(t.Context(), &cm.TeamData{Name: "Test Team", Description: cm.NewNilString("")}, cm.PutTeamParams{OrganizationID: "organization-id", TeamID: "team-id", XContentfulVersion: 7})
+					}
 
-			team := cmt.NewTeamFromFields("organization-id", "team-id", cm.TeamData{
-				Name:        "Test Team",
-				Description: cm.NewNilString(""),
-			})
+					require.NoError(t, err)
 
-			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, http.MethodGet, r.Method)
-				assert.Equal(t, "/organizations/organization-id/teams/team-id", r.URL.Path)
+					var team cm.Team
 
-				w.Header().Set("Content-Type", contentType)
-				assert.NoError(t, json.NewEncoder(w).Encode(team))
-			}))
-			t.Cleanup(testServer.Close)
+					if test.method == http.MethodGet {
+						got, ok := response.(*cm.Team)
+						require.True(t, ok, "expected a Team, got %T", response)
+						require.NotNil(t, got)
+						team = *got
+					} else {
+						got, ok := response.(*cm.TeamStatusCode)
+						require.True(t, ok, "expected a TeamStatusCode, got %T", response)
+						require.NotNil(t, got)
+						assert.Equal(t, test.status, got.StatusCode)
+						team = got.Response
+					}
 
-			client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
-
-			response, err := client.GetTeam(t.Context(), cm.GetTeamParams{
-				OrganizationID: "organization-id",
-				TeamID:         "team-id",
-			})
-			require.NoError(t, err)
-
-			teamResponse, ok := response.(*cm.Team)
-			require.True(t, ok)
-			require.Equal(t, "team-id", teamResponse.Sys.ID)
+					assert.Equal(t, "team-id", team.Sys.ID)
+					assert.Equal(t, 8, team.Sys.Version)
+					assert.Equal(t, "Test Team", team.Name)
+					assert.Equal(t, cm.NilString{Value: ""}, team.Description)
+				})
+			}
 		})
 	}
 }
@@ -139,8 +156,8 @@ func TestGetTeamsAcceptsListItemsWithoutVersion(t *testing.T) {
 	teams, ok := response.(*cm.TeamCollection)
 	require.True(t, ok)
 	require.Len(t, teams.Items, 1)
-	require.Equal(t, "team-id", teams.Items[0].Sys.ID)
-	require.Equal(t, "Test Team", teams.Items[0].Name)
+	assert.Equal(t, "team-id", teams.Items[0].Sys.ID)
+	assert.Equal(t, "Test Team", teams.Items[0].Name)
 }
 
 func TestGetTeamsAcceptsCollectionWithoutPaginationMetadata(t *testing.T) {
@@ -168,46 +185,4 @@ func TestGetTeamsAcceptsCollectionWithoutPaginationMetadata(t *testing.T) {
 	assert.False(t, teams.Total.IsSet())
 	assert.False(t, teams.Skip.IsSet())
 	assert.False(t, teams.Limit.IsSet())
-}
-
-func TestPutTeamAcceptsJSONContentTypes(t *testing.T) {
-	t.Parallel()
-
-	for _, contentType := range []string{"application/json", "application/vnd.contentful.management.v1+json"} {
-		t.Run(contentType, func(t *testing.T) {
-			t.Parallel()
-
-			team := cmt.NewTeamFromFields("organization-id", "team-id", cm.TeamData{
-				Name:        "Test Team",
-				Description: cm.NewNilString(""),
-			})
-
-			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, http.MethodPut, r.Method)
-				assert.Equal(t, "/organizations/organization-id/teams/team-id", r.URL.Path)
-				assert.Equal(t, "7", r.Header.Get("X-Contentful-Version"))
-
-				w.Header().Set("Content-Type", contentType)
-				assert.NoError(t, json.NewEncoder(w).Encode(team))
-			}))
-			t.Cleanup(testServer.Close)
-
-			client := testContentfulManagementClient(t, testServer.URL, cmt.ValidAccessToken)
-
-			response, err := client.PutTeam(t.Context(), &cm.TeamData{
-				Name:        "Test Team",
-				Description: cm.NewNilString(""),
-			}, cm.PutTeamParams{
-				OrganizationID:     "organization-id",
-				TeamID:             "team-id",
-				XContentfulVersion: 7,
-			})
-			require.NoError(t, err)
-
-			teamResponse, ok := response.(*cm.TeamStatusCode)
-			require.True(t, ok)
-			require.Equal(t, http.StatusOK, teamResponse.StatusCode)
-			require.Equal(t, "team-id", teamResponse.Response.Sys.ID)
-		})
-	}
 }

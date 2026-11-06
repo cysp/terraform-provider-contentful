@@ -1,19 +1,12 @@
 package cmtesting_test
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
-	"encoding/base64"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/stretchr/testify/require"
 )
-
-const testAppKeyRSABits = 4096
 
 func requireAppDefinitionDoesNotExistDetails(t *testing.T, response any) {
 	t.Helper()
@@ -40,34 +33,6 @@ func appKeyCreateParams() cm.CreateAppKeyParams {
 		OrganizationID:  "organization",
 		AppDefinitionID: "app-definition",
 	}
-}
-
-func appKeyRequest(t *testing.T) *cm.AppKeyRequestData {
-	t.Helper()
-
-	privateKey, err := rsa.GenerateKey(rand.Reader, testAppKeyRSABits)
-	require.NoError(t, err)
-
-	publicKeyDER, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
-	require.NoError(t, err)
-
-	return appKeyRequestFromDER(publicKeyDER)
-}
-
-func appKeyRequestFromDER(publicKeyDER []byte) *cm.AppKeyRequestData {
-	fingerprint := sha256.Sum256(publicKeyDER)
-	keyID := base64.RawURLEncoding.EncodeToString(fingerprint[:])
-
-	request := cm.AppKeyRequestData{Jwk: cm.AppKeyJWK{
-		Alg: cm.AppKeyJWKAlgRS256,
-		Kty: cm.AppKeyJWKKtyRSA,
-		Use: cm.AppKeyJWKUseSig,
-		Kid: keyID,
-		X5c: []string{base64.StdEncoding.EncodeToString(publicKeyDER)},
-		X5t: keyID,
-	}}
-
-	return &request
 }
 
 func createAppKey(t *testing.T, handler *cmt.Handler, request *cm.AppKeyRequestData) cm.AppKey {

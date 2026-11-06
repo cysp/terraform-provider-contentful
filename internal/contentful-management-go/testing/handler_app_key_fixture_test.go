@@ -1,0 +1,44 @@
+package cmtesting_test
+
+import (
+	"crypto/sha256"
+	"encoding/base64"
+	"testing"
+
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/stretchr/testify/require"
+)
+
+// Fixed PKIX encodings of distinct, valid 4096-bit RSA public keys. Tests use
+// stable identities without generating private keys or exercising RSA operations.
+var appKeyPublicKeys = [...]string{
+	"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",
+}
+
+func appKeyRequest(t *testing.T, keyIndex int) *cm.AppKeyRequestData {
+	t.Helper()
+
+	publicKeyDER, err := base64.StdEncoding.DecodeString(appKeyPublicKeys[keyIndex])
+	require.NoError(t, err)
+
+	return appKeyRequestFromDER(publicKeyDER)
+}
+
+func appKeyRequestFromDER(publicKeyDER []byte) *cm.AppKeyRequestData {
+	fingerprint := sha256.Sum256(publicKeyDER)
+	keyID := base64.RawURLEncoding.EncodeToString(fingerprint[:])
+
+	request := cm.AppKeyRequestData{Jwk: cm.AppKeyJWK{
+		Alg: cm.AppKeyJWKAlgRS256,
+		Kty: cm.AppKeyJWKKtyRSA,
+		Use: cm.AppKeyJWKUseSig,
+		Kid: keyID,
+		X5c: []string{base64.StdEncoding.EncodeToString(publicKeyDER)},
+		X5t: keyID,
+	}}
+
+	return &request
+}
