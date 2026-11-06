@@ -148,6 +148,7 @@ func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 					role, ok := response.(*cm.Role)
 					require.True(t, ok, "unexpected role response: %T", response)
 					require.Equal(t, "Test", role.Name)
+					require.Equal(t, cm.NewOptNilString("Initial description"), role.Description)
 
 					return nil
 				},
@@ -175,6 +176,15 @@ func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 					})),
 				},
 			},
+			{
+				ConfigDirectory:  config.StaticDirectory("testdata/TestAccRoleResourceCreateUpdateDelete/1"),
+				ConfigVariables:  configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_role.test", plancheck.ResourceActionUpdate)}},
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.AddStateValue("contentful_role.test", tfjsonpath.New("id")),
+					statecheck.ExpectKnownValue("contentful_role.test", tfjsonpath.New("description"), knownvalue.StringExact("Initial description")),
+				},
+			},
 		},
 	})
 
@@ -184,6 +194,7 @@ func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 	require.Equal(t, []string{
 		"POST /spaces/0p38pssr0fi3/roles version=",
 		"PUT /spaces/0p38pssr0fi3/roles/" + roleID + " version=0",
+		"PUT /spaces/0p38pssr0fi3/roles/" + roleID + " version=1",
 		"DELETE /spaces/0p38pssr0fi3/roles/" + roleID + " version=",
 	}, mutations)
 }
