@@ -69,12 +69,12 @@ func NewEditorInterfaceControlValueFromResponse(path path.Path, item cm.EditorIn
 	}
 
 	if item.Settings != nil {
-		settings, settingsErr := util.JxNormalizeOpaqueBytes(item.Settings, util.JxEncodeOpaqueOptions{EscapeStrings: true})
+		settings, settingsErr := parseNormalizedJSONValue(item.Settings)
 		if settingsErr != nil {
 			diags.AddAttributeError(path.AtName("settings"), "Failed to read settings", settingsErr.Error())
 		}
 
-		value.Settings = NewNormalizedJSONValue(settings)
+		value.Settings = settings
 	}
 
 	return NewTypedObject(value), diags

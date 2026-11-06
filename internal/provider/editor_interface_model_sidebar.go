@@ -4,7 +4,6 @@ import (
 	"context"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -53,12 +52,12 @@ func NewEditorInterfaceSidebarValueFromResponse(path path.Path, item cm.EditorIn
 	}
 
 	if item.Settings != nil {
-		settings, settingsErr := util.JxNormalizeOpaqueBytes(item.Settings, util.JxEncodeOpaqueOptions{EscapeStrings: true})
+		settings, settingsErr := parseNormalizedJSONValue(item.Settings)
 		if settingsErr != nil {
 			diags.AddAttributeError(path.AtName("settings"), "Failed to read settings", settingsErr.Error())
 		}
 
-		value.Settings = NewNormalizedJSONValue(settings)
+		value.Settings = settings
 	}
 
 	return NewTypedObject(value), diags
