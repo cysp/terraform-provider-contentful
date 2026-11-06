@@ -11,8 +11,60 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// These tests exercise the internal traversal interface with typed pages so
-// projection diagnostics can be checked independently of generated decoding.
+// These tests exercise shared traversal policy and projection diagnostics with
+// typed pages. Data-source tests retain generated decoding and Read boundaries.
+func TestReadContentfulCollectionUsesCurrentPageTotal(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		pages    []cm.SpaceCollection
+		offsets  []int64
+		expected []string
+	}{
+		"increasing total": {
+			pages: []cm.SpaceCollection{
+				{Total: cm.NewOptInt(3), Items: []cm.Space{{Name: "first"}, {Name: "second"}}},
+				{Total: cm.NewOptInt(4), Items: []cm.Space{{Name: "third"}}},
+				{Total: cm.NewOptInt(4), Items: []cm.Space{{Name: "third"}}},
+			},
+			offsets:  []int64{0, 2, 3},
+			expected: []string{"first", "second", "third", "third"},
+		},
+		"decreasing total": {
+			pages: []cm.SpaceCollection{
+				{Total: cm.NewOptInt(5), Items: []cm.Space{{Name: "first"}, {Name: "second"}}},
+				{Total: cm.NewOptInt(3), Items: []cm.Space{{Name: "second"}}},
+			},
+			offsets:  []int64{0, 2},
+			expected: []string{"first", "second", "second"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			var offsets []int64
+
+			items, diags := readContentfulCollection(t.Context(), "Failed to read test collection",
+				func(_ context.Context, skip int64) (contentfulCollection[cm.Space], diag.Diagnostics) {
+					index := len(offsets)
+					if index >= len(test.pages) {
+						return nil, diag.Diagnostics{diag.NewErrorDiagnostic("Unexpected page", "The collection should have ended.")}
+					}
+
+					offsets = append(offsets, skip)
+
+					return &test.pages[index], nil
+				},
+				func(_ int, item cm.Space) (string, diag.Diagnostics) { return item.Name, nil },
+			)
+
+			require.Empty(t, diags)
+			assert.Equal(t, test.offsets, offsets)
+			assert.Equal(t, test.expected, items)
+		})
+	}
+}
+
 func TestReadContentfulCollectionPreservesDiagnostics(t *testing.T) {
 	t.Parallel()
 
