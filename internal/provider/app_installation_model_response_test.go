@@ -80,7 +80,7 @@ func TestAppInstallationModelReadFromResponse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			model, diags := NewAppInstallationResourceModelFromResponse(test.appInstallation, types.SetNull(types.StringType))
+			model, diags := NewAppInstallationResourceModelFromResponse(test.appInstallation, AppInstallationModel{Marketplace: types.SetNull(types.StringType)})
 
 			assert.Equal(t, test.expectedModel, model)
 

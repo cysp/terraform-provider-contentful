@@ -9,7 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallation, marketplace types.Set) (AppInstallationModel, diag.Diagnostics) {
+// NewAppInstallationResourceModelFromResponse uses the effective Plan after a
+// successful mutation, or prior State during Read, as the reference for values
+// that Contentful does not return in full.
+func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallation, reference AppInstallationModel) (AppInstallationModel, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := appInstallation.Sys.Space.Sys.ID
@@ -21,6 +24,8 @@ func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallat
 		SpaceID:         types.StringValue(spaceID),
 		EnvironmentID:   types.StringValue(environmentID),
 		AppDefinitionID: types.StringValue(appDefinitionID),
+		Marketplace:     reference.Marketplace,
+		Timeouts:        reference.Timeouts,
 	}
 
 	if appInstallation.Parameters != nil {
@@ -34,7 +39,14 @@ func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallat
 		model.Parameters = jsontypes.NewNormalizedNull()
 	}
 
-	model.Marketplace = marketplace
+	if diags.HasError() {
+		return model, diags
+	}
+
+	parameters, parameterDiags := reconcileAppInstallationParameters(model.Parameters, reference.Parameters)
+	diags.Append(parameterDiags...)
+
+	model.Parameters = parameters
 
 	return model, diags
 }
