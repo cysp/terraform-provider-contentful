@@ -20,8 +20,8 @@ func TestAppKeyCollectionPagination(t *testing.T) {
 
 	keyIDs := make([]string, 0, 3)
 
-	for range 3 {
-		request := appKeyRequest(t)
+	for keyIndex := range 3 {
+		request := appKeyRequest(t, keyIndex)
 		createAppKey(t, handler, request)
 		keyIDs = append(keyIDs, request.Jwk.Kid)
 	}
@@ -199,17 +199,17 @@ func TestAppKeyDuplicateAndLimitSemantics(t *testing.T) {
 	t.Parallel()
 
 	handler := newAppKeyTestHandler(t)
-	duplicateRequest := appKeyRequest(t)
+	duplicateRequest := appKeyRequest(t, 0)
 	createAppKey(t, handler, duplicateRequest)
 
 	duplicateResponse, err := handler.CreateAppKey(t.Context(), duplicateRequest, appKeyCreateParams())
 	require.NoError(t, err)
 	requireContentfulError(t, duplicateResponse, http.StatusBadRequest, "BadRequest", "The key is already in use")
 
-	createAppKey(t, handler, appKeyRequest(t))
-	createAppKey(t, handler, appKeyRequest(t))
+	createAppKey(t, handler, appKeyRequest(t, 1))
+	createAppKey(t, handler, appKeyRequest(t, 2))
 
-	limitResponse, err := handler.CreateAppKey(t.Context(), appKeyRequest(t), appKeyCreateParams())
+	limitResponse, err := handler.CreateAppKey(t.Context(), appKeyRequest(t, 3), appKeyCreateParams())
 	require.NoError(t, err)
 	requireContentfulError(t, limitResponse, http.StatusForbidden, "AccessDenied", "Forbidden")
 }
@@ -224,7 +224,7 @@ func TestAppKeyFingerprintIsGloballyUniqueAndReusableAfterDeletion(t *testing.T)
 	server.SetAppDefinition("other-organization", "third-app", cm.AppDefinitionData{Name: "Third App"})
 
 	handler := server.Handler()
-	request := appKeyRequest(t)
+	request := appKeyRequest(t, 0)
 	firstParams := cm.CreateAppKeyParams{
 		OrganizationID:  "organization",
 		AppDefinitionID: "first-app",
@@ -275,7 +275,7 @@ func TestAppKeyDeleteIsNotIdempotentAtTheAPI(t *testing.T) {
 	t.Parallel()
 
 	handler := newAppKeyTestHandler(t)
-	created := createAppKey(t, handler, appKeyRequest(t))
+	created := createAppKey(t, handler, appKeyRequest(t, 0))
 
 	deleteResponse, err := handler.DeleteAppKey(t.Context(), cm.DeleteAppKeyParams{
 		OrganizationID:  "organization",
@@ -327,7 +327,7 @@ func TestAppKeyOperationsRejectCrossOrganizationParent(t *testing.T) {
 	requireContentfulError(t, listResponse, http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")
 	requireAppDefinitionDoesNotExistDetails(t, listResponse)
 
-	createResponse, err := handler.CreateAppKey(t.Context(), appKeyRequest(t), cm.CreateAppKeyParams{
+	createResponse, err := handler.CreateAppKey(t.Context(), appKeyRequest(t, 0), cm.CreateAppKeyParams{
 		OrganizationID:  "other-organization",
 		AppDefinitionID: "app-definition",
 	})
