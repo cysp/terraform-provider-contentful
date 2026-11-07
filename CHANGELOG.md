@@ -7,12 +7,18 @@ dates are UTC publication dates.
 
 ## [0.0.72](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.71...v0.0.72) (2026-11-07)
 
+**Compatibility:** Opaque JSON returned in App Installation and Extension
+parameters, Role policy constraints, and Editor Interface settings now follows
+Go's `encoding/json` normalization. Malformed Unicode is replaced with the Unicode
+replacement character, and object keys that decode to the same name retain the
+last value. These cases can produce different state values than v0.0.71. See the
+[JSON normalization rules](https://github.com/cysp/terraform-provider-contentful/blob/v0.0.72/docs/design/terraform-value-semantics.md#json-normalization).
+
 
 ### Bug fixes
 
-* **contentful-management-go:** enforce app parent scope in mock handlers ([1207ac4](https://github.com/cysp/terraform-provider-contentful/commit/1207ac432fb571ce7a05a4b5d302d58e8d287742))
-* **contentful-management-go:** retain Role descriptions and advance mock versions ([9134bf4](https://github.com/cysp/terraform-provider-contentful/commit/9134bf4a7c4f79b8903ffd6c566d6faba18747d7))
-* **provider:** checkpoint draft authority as one lifecycle operation ([2552df9](https://github.com/cysp/terraform-provider-contentful/commit/2552df927d78a7878ed17ec134c484ea267266ab))
+* **provider:** revoke stale Entry publication authority after a contradictory draft response, including when the response repeats the pending version ([2552df9](https://github.com/cysp/terraform-provider-contentful/commit/2552df927d78a7878ed17ec134c484ea267266ab))
+* **provider:** retain collection warnings and stop pagination when response projection fails ([5baea3d](https://github.com/cysp/terraform-provider-contentful/commit/5baea3d570bec15062a15e6b3136750401476255))
 
 
 ### Documentation
@@ -23,6 +29,8 @@ dates are UTC publication dates.
 
 ### Tests
 
+* **contentful-management-go:** enforce app parent scope in mock handlers ([1207ac4](https://github.com/cysp/terraform-provider-contentful/commit/1207ac432fb571ce7a05a4b5d302d58e8d287742))
+* **contentful-management-go:** retain Role descriptions and advance mock versions ([9134bf4](https://github.com/cysp/terraform-provider-contentful/commit/9134bf4a7c4f79b8903ffd6c566d6faba18747d7))
 * **contentful-management-go:** consolidate client protocol coverage ([d8d9e6b](https://github.com/cysp/terraform-provider-contentful/commit/d8d9e6b3c11babc24961331cb4b006e9c754abbd))
 * **provider:** consolidate HTTP retry coverage ([12aa723](https://github.com/cysp/terraform-provider-contentful/commit/12aa7233a590c5d2aa8cac766abe9b10b11c556b))
 * **provider:** consolidate model and discovery coverage ([cd48a58](https://github.com/cysp/terraform-provider-contentful/commit/cd48a5816eda05fd3fce2a06354fe8c4b67d4c26))
@@ -40,7 +48,6 @@ dates are UTC publication dates.
 * **provider:** consolidate opaque JSON normalization ([5f6ef50](https://github.com/cysp/terraform-provider-contentful/commit/5f6ef504c419cd8dabbd1e1d45ac3db808f6e672))
 * **provider:** construct typed response models directly ([6465f0a](https://github.com/cysp/terraform-provider-contentful/commit/6465f0a8acee4642184beaac089beeac1013288a))
 * **provider:** delegate typed value codecs to framework types ([9c28cdb](https://github.com/cysp/terraform-provider-contentful/commit/9c28cdb5aa84c11bd2518a6e908ac47ce9f247b1))
-* **provider:** project collection responses during pagination ([5baea3d](https://github.com/cysp/terraform-provider-contentful/commit/5baea3d570bec15062a15e6b3136750401476255))
 
 
 ### Maintenance
