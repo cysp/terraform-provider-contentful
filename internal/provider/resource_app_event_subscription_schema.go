@@ -36,7 +36,7 @@ func AppEventSubscriptionResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"topics": schema.SetAttribute{
-				Description: "Nonempty set of event topics, such as `Entry.publish`. Updates replace the complete set. Contentful validates the supported topics.",
+				Description: "Nonempty set of event topics, such as `Entry.publish`. Updates replace the complete set.",
 				Required:    true,
 				ElementType: types.StringType,
 				Validators:  []validator.Set{setvalidator.SizeAtLeast(1), setvalidator.NoNullValues(), setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1))},

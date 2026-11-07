@@ -47,7 +47,7 @@ func localizedStringAttribute(description string, required bool) schema.MapAttri
 	}
 }
 
-const taxonomyOptionalComputedCollectionDescription = "Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful."
+const taxonomyOptionalComputedCollectionDescription = "Omission uses the Contentful value; an explicit empty collection clears it."
 
 func optionalComputedStringList(description string) schema.ListAttribute {
 	return schema.ListAttribute{

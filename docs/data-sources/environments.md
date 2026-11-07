@@ -57,4 +57,4 @@ Read-Only:
 - `aliased_environment_id` (String) ID of the target environment when looking up an alias, or null when Contentful omits it.
 - `environment_id` (String) ID of the environment or environment alias.
 - `name` (String) Name returned by Contentful, which can be the alias name when looking up an alias.
-- `status` (String) Latest environment status returned by Contentful.
+- `status` (String) Latest environment status.

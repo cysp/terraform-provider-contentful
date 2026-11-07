@@ -59,7 +59,7 @@ resource "contentful_environment_alias" "staging" {
 ### Read-Only
 
 - `id` (String) Composite Terraform resource identifier in `space_id/environment_id` form.
-- `status` (String) Latest environment status returned by Contentful. It may not be `ready` when creation finishes.
+- `status` (String) Latest environment status. It may not be `ready` when creation finishes.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

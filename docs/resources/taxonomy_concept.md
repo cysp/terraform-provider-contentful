@@ -40,17 +40,17 @@ resource "contentful_taxonomy_concept" "furniture" {
 
 ### Optional
 
-- `alt_labels` (Map of List of String) Alternative labels keyed by locale code, with a list of labels for each locale. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
-- `broader_concept_ids` (List of String) Ordered IDs of broader concepts. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
+- `alt_labels` (Map of List of String) Alternative labels keyed by locale code, with a list of labels for each locale. Omission uses the Contentful value; an explicit empty collection clears it.
+- `broader_concept_ids` (List of String) Ordered IDs of broader concepts. Omission uses the Contentful value; an explicit empty collection clears it.
 - `change_note` (Map of String) Change notes keyed by locale code.
 - `definition` (Map of String) Definitions keyed by locale code.
 - `editorial_note` (Map of String) Editorial notes keyed by locale code.
 - `example` (Map of String) Examples keyed by locale code.
-- `hidden_labels` (Map of List of String) Hidden labels keyed by locale code, with a list of labels for each locale. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
+- `hidden_labels` (Map of List of String) Hidden labels keyed by locale code, with a list of labels for each locale. Omission uses the Contentful value; an explicit empty collection clears it.
 - `history_note` (Map of String) History notes keyed by locale code.
-- `notations` (List of String) Ordered notation values. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
+- `notations` (List of String) Ordered notation values. Omission uses the Contentful value; an explicit empty collection clears it.
 - `note` (Map of String) Notes keyed by locale code.
-- `related_concept_ids` (List of String) Ordered IDs of related concepts. Terraform manages configured values, including an explicit empty collection. When omitted, Terraform records the value returned by Contentful.
+- `related_concept_ids` (List of String) Ordered IDs of related concepts. Omission uses the Contentful value; an explicit empty collection clears it.
 - `scope_note` (Map of String) Scope notes keyed by locale code.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `uri` (String) Optional URI identifying the concept. Empty strings are rejected by Contentful.

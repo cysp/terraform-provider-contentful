@@ -39,7 +39,7 @@ func EnvironmentResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"status": schema.StringAttribute{
-				Description: "Latest environment status returned by Contentful. It may not be `ready` when creation finishes.",
+				Description: "Latest environment status. It may not be `ready` when creation finishes.",
 				Computed:    true,
 			},
 			"source_environment_id": schema.StringAttribute{
