@@ -98,7 +98,7 @@ func AppDefinitionParameterDataSourceSchemaAttributes(ctx context.Context) map[s
 			Computed:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "Allowed options for an Enum parameter, each encoded as JSON. An option may be a string or an object with string values.",
+			Description: "Parameter options returned by Contentful, each encoded as JSON.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Computed:    true,

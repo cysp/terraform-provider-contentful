@@ -50,6 +50,10 @@ func TestAppDefinitionLocationValidation(t *testing.T) {
 	t.Parallel()
 
 	for _, test := range []struct{ name, locations, path, detail string }{
+		{"relative navigation", testJSON([]any{map[string]any{"location": "page", "navigation_item": map[string]any{"name": "Page", "path": "relative"}}}), "locations[0].navigation_item.path", "Navigation item path must begin with /, for example /dashboard."},
+		{"empty Link target", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Link", "link_type": ""}}}}), "locations[0].field_types[0].link_type", "Field type Link requires a nonempty link_type."},
+		{"Array Integer", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Array", "items": map[string]any{"type": "Integer"}}}}}), "locations[0].field_types[0].items.type", "This field type is not supported for Array items. Use Symbol or Link."},
+		{"repeated app-config", testJSON([]any{map[string]any{"location": "app-config"}, map[string]any{"location": "app-config"}}), "locations[1]", "This app-config location duplicates locations[0]. Remove the duplicate location."},
 		{"dialog fields", testJSON([]any{map[string]any{"location": "dialog", "field_types": []any{}}}), "locations[0].field_types", `field_types cannot be configured for location "dialog". Omit this attribute.`},
 		{"dialog navigation", testJSON([]any{
 			map[string]any{"location": "dialog", "navigation_item": map[string]any{"name": "Name", "path": "/path"}},
@@ -129,7 +133,7 @@ func TestAppDefinitionLocationsOpenVocabulary(t *testing.T) {
 			map[string]any{
 				"location": "entry-field",
 				"field_types": []any{
-					map[string]any{"type": "Array", "items": map[string]any{"type": "Integer"}},
+					map[string]any{"type": "Array", "items": map[string]any{"type": "FutureItem"}},
 					map[string]any{"type": "Link", "link_type": "FutureTarget"},
 					map[string]any{"type": "ResourceLink", "link_type": ""},
 					map[string]any{
@@ -457,6 +461,48 @@ func TestAppDefinitionLocationsPartialKnowledge(t *testing.T) {
 			} else {
 				require.Len(t, diags, 1)
 				assert.Equal(t, test.detail, diags[0].Detail())
+			}
+		})
+	}
+}
+
+func TestAppDefinitionRepeatedFields(t *testing.T) {
+	t.Parallel()
+
+	for _, test := range []struct {
+		name, fields, attribute string
+		unknown                 bool
+	}{
+		{"Symbol", testJSON([]any{map[string]any{"type": "Symbol"}, map[string]any{"type": "Symbol"}}), "locations[0].field_types[1]", false},
+		{"Array Symbol", testJSON([]any{map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}}, map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}}}), "locations[0].field_types[1]", false},
+		{"different Symbol shapes", testJSON([]any{map[string]any{"type": "Symbol"}, map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}}}), "", false},
+		{"distinct links", testJSON([]any{map[string]any{"type": "Link", "link_type": "Entry"}, map[string]any{"type": "Link", "link_type": "Asset"}}), "", false},
+		{"future forms", testJSON([]any{map[string]any{"type": "FutureType"}, map[string]any{"type": "FutureType"}}), "", false},
+		{"unknown type", testJSON([]any{map[string]any{"type": "Symbol"}, map[string]any{"type": "Symbol"}}), "", true},
+		{"independent known duplicates", testJSON([]any{map[string]any{"type": "Symbol"}, map[string]any{"type": "Symbol"}, map[string]any{"type": "Symbol"}}), "locations[0].field_types[2]", true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			plan := appDefinitionLocationsTestPlan(t, `[{"location":"entry-field","field_types":`+test.fields+`}]`)
+			if test.unknown {
+				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("locations").AtListIndex(0).AtName("field_types").AtListIndex(0).AtName("type"), types.StringUnknown()))
+			}
+
+			diags := validateAppDefinitionLocations(appDefinitionLocationsTestValue(t, plan), path.Root("locations"))
+			if test.attribute == "" {
+				require.Empty(t, diags)
+
+				return
+			}
+
+			require.Len(t, diags, 1)
+			require.Equal(t, diag.SeverityError, diags[0].Severity())
+			require.Equal(t, test.attribute, appDefinitionParameterDiagnosticPath(t, diags[0]).String())
+
+			if !test.unknown {
+				require.Equal(t, "This field definition duplicates locations[0].field_types[0]. Remove the duplicate definition.", diags[0].Detail())
+				require.Equal(t, diags, validateAppDefinitionPlannedLocations(t.Context(), plan))
 			}
 		})
 	}

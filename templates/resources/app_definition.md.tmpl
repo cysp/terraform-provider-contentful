@@ -30,17 +30,51 @@ array items. The provider accepts `ResourceLink` definitions with `link_type`
 following the Contentful SDK's structure, but successful App Definition API
 support for these forms has not been established.
 
+Exact repeated simple `app-config` locations and repeated complete Symbol or
+Array-of-Symbol field definitions are rejected before writing. Distinct Link targets
+remain distinct; these checks do not impose a general location/type uniqueness rule.
+
+## Parameter values
+
+Use `jsonencode` to distinguish JSON types: `jsonencode(42)` is a number,
+`jsonencode("42")` is a string, and `jsonencode(false)` is a Boolean. Contentful
+preserves these primitive defaults independently of the declaration's `type`.
+The provider does not coerce them or require an Enum default to match its options.
+Omitting a default is different from configuring `jsonencode(null)`, which CMA
+rejects for the tested known parameter types.
+
+Options may be omitted, including for Enum, or configured on other parameter types.
+A configured options list must be nonempty. Each option must be a nonempty JSON
+string or a single-member JSON object, such as `jsonencode({light = "Light"})`.
+Contentful preserves the object member's value, including non-string JSON values.
+Mixed string/object options and repeated values are preserved. Duplicate JSON object
+keys have no provider-enforced interpretation and remain subject to CMA behavior.
+
+CMA accepts Secret declarations in both installation and instance scope. Acceptance
+of a declaration does not establish secrecy or redaction guarantees for installed
+instance values. Do not put real secrets in declaration defaults or examples.
+Unknown future parameter types remain service-validated.
+
+## Validation limits
+
+Validation catches known invalid shapes when their values are available. Values derived
+from other resources may remain unknown until apply. Use the documented snake_case
+attribute names: Terraform can discard misspelled keys inside nested objects before
+the provider receives them, so validation cannot detect every typo.
+
 ## Updating existing definitions
 
-Reads and imports preserve existing location values, including values that would
-be invalid in a new request. Updates validate the complete planned locations,
+Reads and imports preserve existing location and parameter values, including values that would
+be invalid in a new request. Updates validate the complete planned locations and parameters,
 including values retained by `ignore_changes`. An unrelated update can therefore
 plan successfully and fail during apply before this definition is written to
 Contentful. Other resources in the apply may already have changed.
 
-Correct invalid locations before updating the definition. If locations are
+Correct invalid values before updating the definition. If those attributes are
 ignored, remove the relevant `ignore_changes` rule to apply the correction.
-Configuration must still be valid, including when destroying the resource.
+Configuration must still be valid, including when destroying the resource. If a
+configuration error blocks destroy, correct the configuration and retry destroy;
+that correction does not first need to be applied to Contentful.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}

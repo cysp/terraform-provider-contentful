@@ -25,6 +25,25 @@ resource "contentful_app_definition" "this" {
   parameters = {
     installation = [
       {
+        id      = "refreshInterval"
+        name    = "Refresh interval"
+        type    = "Number"
+        default = jsonencode(42)
+      },
+      {
+        id      = "enabled"
+        name    = "Enabled"
+        type    = "Boolean"
+        default = jsonencode(false)
+      },
+      {
+        id      = "theme"
+        name    = "Theme"
+        type    = "Enum"
+        options = [jsonencode({ light = "Light" }), jsonencode("dark")]
+        default = jsonencode("light")
+      },
+      {
         id   = "accessToken"
         name = "Access Token"
         type = "Secret"
