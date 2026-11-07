@@ -132,10 +132,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode("text")` for Symbol. An Enum default must match an allowed option.
+- `default` (String) Default parameter value encoded as JSON. Use `jsonencode` to preserve the intended JSON type, for example `jsonencode("text")`.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--extension--parameters--installation--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode("light"), jsonencode("dark")]`. An option may be a string or an object with string values.
+- `options` (List of String) Parameter options, each encoded as JSON; for example `[jsonencode("light"), jsonencode({dark = "Dark"})]`.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--installation--labels"></a>
@@ -160,10 +160,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode("text")` for Symbol. An Enum default must match an allowed option.
+- `default` (String) Default parameter value encoded as JSON. Use `jsonencode` to preserve the intended JSON type, for example `jsonencode("text")`.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--extension--parameters--instance--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode("light"), jsonencode("dark")]`. An option may be a string or an object with string values.
+- `options` (List of String) Parameter options, each encoded as JSON; for example `[jsonencode("light"), jsonencode({dark = "Dark"})]`.
 - `required` (Boolean) Whether the parameter is required.
 
 <a id="nestedatt--extension--parameters--instance--labels"></a>

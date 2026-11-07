@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -33,6 +34,8 @@ func (appDefinitionLocationsValidator) ValidateList(_ context.Context, req valid
 func validateAppDefinitionLocations(locations types.List, valuePath path.Path) diag.Diagnostics {
 	var diags diag.Diagnostics
 
+	firstAppConfig := -1
+
 	for index, value := range locations.Elements() {
 		location, ok := value.(types.Object)
 		if !ok || location.IsNull() || location.IsUnknown() {
@@ -43,21 +46,123 @@ func validateAppDefinitionLocations(locations types.List, valuePath path.Path) d
 		attributes := location.Attributes()
 		diags.Append(validateAppDefinitionLocation(attributes, locationPath)...)
 
+		if attributes["location"].Equal(types.StringValue("app-config")) && attributes["field_types"].IsNull() && attributes["navigation_item"].IsNull() {
+			if firstAppConfig >= 0 {
+				diags.AddAttributeError(locationPath, "Invalid App Definition location configuration", fmt.Sprintf("This app-config location duplicates locations[%d]. Remove the duplicate location.", firstAppConfig))
+			} else {
+				firstAppConfig = index
+			}
+		}
+
 		if fieldTypes, ok := attributes["field_types"].(types.List); ok {
+			if attributes["location"].Equal(types.StringValue("entry-field")) {
+				diags.Append(validateAppDefinitionRepeatedFields(fieldTypes, locationPath.AtName("field_types"))...)
+			}
+
 			for fieldIndex, field := range fieldTypes.Elements() {
 				if object, ok := field.(types.Object); ok {
 					diags.Append(validateAppDefinitionFieldType(object, locationPath.AtName("field_types").AtListIndex(fieldIndex))...)
+
+					if attributes["location"].Equal(types.StringValue("entry-field")) {
+						diags.Append(validateAppDefinitionArrayItem(object, locationPath.AtName("field_types").AtListIndex(fieldIndex))...)
+					}
 				}
 			}
 		}
 
-		if navigation, ok := attributes["navigation_item"].(types.Object); ok && !navigation.IsNull() && !navigation.IsUnknown() {
-			for _, name := range []string{"name", "path"} {
-				if navigation.Attributes()[name].Equal(types.StringValue("")) {
-					diags.AddAttributeError(locationPath.AtName("navigation_item").AtName(name), "Invalid App Definition location configuration", "Navigation item "+name+" must not be empty.")
-				}
+		diags.Append(validateAppDefinitionNavigation(attributes, locationPath)...)
+	}
+
+	return diags
+}
+
+// Only the two complete shapes with isolated CMA uniqueness evidence are checked.
+// Null/unknown children cannot accidentally compare equal as field identities.
+func validateAppDefinitionRepeatedFields(fields types.List, valuePath path.Path) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	first := map[string]int{}
+
+	for index, value := range fields.Elements() {
+		field, ok := value.(types.Object)
+		if !ok || field.IsNull() || field.IsUnknown() {
+			continue
+		}
+
+		attributes := field.Attributes()
+		if !attributes["link_type"].IsNull() {
+			continue
+		}
+
+		kind := ""
+		if attributes["type"].Equal(types.StringValue("Symbol")) && attributes["items"].IsNull() {
+			kind = "Symbol"
+		} else if attributes["type"].Equal(types.StringValue("Array")) {
+			items, ok := attributes["items"].(types.Object)
+			if ok && !items.IsNull() && !items.IsUnknown() && items.Attributes()["type"].Equal(types.StringValue("Symbol")) && items.Attributes()["link_type"].IsNull() {
+				kind = "Array"
 			}
 		}
+
+		if kind == "" {
+			continue
+		}
+
+		if previous, exists := first[kind]; exists {
+			diags.AddAttributeError(valuePath.AtListIndex(index), "Invalid App Definition location configuration", fmt.Sprintf("This field definition duplicates %s. Remove the duplicate definition.", valuePath.AtListIndex(previous)))
+		} else {
+			first[kind] = index
+		}
+	}
+
+	return diags
+}
+
+func validateAppDefinitionNavigation(attributes map[string]attr.Value, locationPath path.Path) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if navigation, ok := attributes["navigation_item"].(types.Object); ok && !navigation.IsNull() && !navigation.IsUnknown() {
+		if attributes["location"].Equal(types.StringValue("page")) {
+			navPath, ok := navigation.Attributes()["path"].(types.String)
+			if ok && !navPath.IsNull() && !navPath.IsUnknown() && navPath.ValueString() != "" && !strings.HasPrefix(navPath.ValueString(), "/") {
+				diags.AddAttributeError(locationPath.AtName("navigation_item").AtName("path"), "Invalid App Definition location configuration", "Navigation item path must begin with /, for example /dashboard.")
+			}
+		}
+
+		for _, name := range []string{"name", "path"} {
+			if navigation.Attributes()[name].Equal(types.StringValue("")) {
+				diags.AddAttributeError(locationPath.AtName("navigation_item").AtName(name), "Invalid App Definition location configuration", "Navigation item "+name+" must not be empty.")
+			}
+		}
+	}
+
+	return diags
+}
+
+func validateAppDefinitionArrayItem(field types.Object, valuePath path.Path) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if field.IsNull() || field.IsUnknown() {
+		return diags
+	}
+
+	attributes := field.Attributes()
+	if !attributes["type"].Equal(types.StringValue("Array")) {
+		return diags
+	}
+
+	items, ok := attributes["items"].(types.Object)
+	if !ok || items.IsNull() || items.IsUnknown() {
+		return diags
+	}
+
+	itemType, ok := items.Attributes()["type"].(types.String)
+	if !ok || itemType.IsNull() || itemType.IsUnknown() {
+		return diags
+	}
+
+	switch itemType.ValueString() {
+	case "Text", "RichText", "Integer", "Number", "Boolean", "Date", "Location", "Object", "Array":
+		diags.AddAttributeError(valuePath.AtName("items").AtName("type"), "Invalid App Definition location configuration", "This field type is not supported for Array items. Use Symbol or Link.")
 	}
 
 	return diags
@@ -134,6 +239,10 @@ func validateAppDefinitionFieldAttributes(attributes map[string]attr.Value, valu
 
 		return diags
 	case "Link", "ResourceLink":
+		if fieldType.ValueString() == "Link" && linkType.Equal(types.StringValue("")) {
+			diags.AddAttributeError(valuePath.AtName("link_type"), "Invalid App Definition location configuration", "Field type Link requires a nonempty link_type.")
+		}
+
 		if linkType.IsNull() {
 			diags.AddAttributeError(valuePath.AtName("link_type"), "Invalid App Definition location configuration", fmt.Sprintf("Field type %q requires link_type.", fieldType.ValueString()))
 		}

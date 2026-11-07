@@ -125,7 +125,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"parameters": schema.SingleNestedAttribute{
-				Description: "Definitions of configuration parameters.",
+				Description: "Definitions of configuration parameters. At most eight instance declarations are supported. For known parameter types, defaults encode a JSON string, number, or Boolean independently of the declared type; configured options are nonempty lists of nonempty JSON strings or single-member JSON objects. Options may be omitted, and Enum default membership is not enforced. Unknown future parameter types remain service-validated.",
 				Attributes: map[string]schema.Attribute{
 					"installation": schema.ListNestedAttribute{
 						Description: "Parameter definitions for each app installation.",
@@ -148,7 +148,8 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 				},
-				Optional: true,
+				Optional:   true,
+				Validators: []validator.Object{appDefinitionParametersValidator{}},
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
 		},
@@ -178,12 +179,12 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			Optional:    true,
 		},
 		"default": schema.StringAttribute{
-			Description: "Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode(\"text\")` for Symbol. An Enum default must match an allowed option.",
+			Description: "Default parameter value encoded as JSON. Use `jsonencode` to preserve the intended JSON type, for example `jsonencode(\"text\")`.",
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode(\"light\"), jsonencode(\"dark\")]`. An option may be a string or an object with string values.",
+			Description: "Parameter options, each encoded as JSON; for example `[jsonencode(\"light\"), jsonencode({dark = \"Dark\"})]`.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,

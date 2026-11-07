@@ -14,6 +14,7 @@ feature list.
 ## Reading map
 
 - [App configuration and installation](configuration.md)
+- [App Definition validation observations](schema-validation-api-evidence.md)
 - [Secret installation parameters](secret-installation-parameters.md)
 - [App bundles and Function deployment](deployment.md)
 - [App Events: subscriptions, topics, and payloads](events.md)
