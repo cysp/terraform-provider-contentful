@@ -5,6 +5,48 @@ Entries through 0.0.70 preserve the existing
 [GitHub release notes](https://github.com/cysp/terraform-provider-contentful/releases);
 dates are UTC publication dates.
 
+## [0.0.72](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.71...v0.0.72) (2026-11-07)
+
+
+### Bug fixes
+
+* **contentful-management-go:** enforce app parent scope in mock handlers ([1207ac4](https://github.com/cysp/terraform-provider-contentful/commit/1207ac432fb571ce7a05a4b5d302d58e8d287742))
+* **contentful-management-go:** retain Role descriptions and advance mock versions ([9134bf4](https://github.com/cysp/terraform-provider-contentful/commit/9134bf4a7c4f79b8903ffd6c566d6faba18747d7))
+* **provider:** checkpoint draft authority as one lifecycle operation ([2552df9](https://github.com/cysp/terraform-provider-contentful/commit/2552df927d78a7878ed17ec134c484ea267266ab))
+
+
+### Documentation
+
+* **contentful-management-go:** clarify Role mock version evidence ([0db3a38](https://github.com/cysp/terraform-provider-contentful/commit/0db3a38e254103a0388b29501420158e244c9aee))
+* **research:** document settings and access behavior ([b0e5d6a](https://github.com/cysp/terraform-provider-contentful/commit/b0e5d6aca31642c1fbb7652bdc437a6e4ef88467))
+
+
+### Tests
+
+* **contentful-management-go:** consolidate client protocol coverage ([d8d9e6b](https://github.com/cysp/terraform-provider-contentful/commit/d8d9e6b3c11babc24961331cb4b006e9c754abbd))
+* **provider:** consolidate HTTP retry coverage ([12aa723](https://github.com/cysp/terraform-provider-contentful/commit/12aa7233a590c5d2aa8cac766abe9b10b11c556b))
+* **provider:** consolidate model and discovery coverage ([cd48a58](https://github.com/cysp/terraform-provider-contentful/commit/cd48a5816eda05fd3fce2a06354fe8c4b67d4c26))
+* **provider:** cover JSON normalization compatibility boundaries ([f080664](https://github.com/cysp/terraform-provider-contentful/commit/f080664d7066959388bf81358a4fe8f0a91b98ab))
+* **provider:** organize lifecycle coverage and shared fixtures ([8530024](https://github.com/cysp/terraform-provider-contentful/commit/85300248bc58bbd44c45855868bb6a79e3a96045))
+* **provider:** stop Content Type pagination after projection failure ([9f775d6](https://github.com/cysp/terraform-provider-contentful/commit/9f775d62b81c839d54fbb9cc65ffc938ba7783ab))
+
+
+### Refactoring
+
+* **contentful-management-go:** remove app key request wrapper ([19cc508](https://github.com/cysp/terraform-provider-contentful/commit/19cc508525e4011be31c9baecef637f516577476))
+* **contentful-management-go:** share nested request and response models ([80aa4f4](https://github.com/cysp/terraform-provider-contentful/commit/80aa4f4fdd720b3e2d9c24b3f979f808cddb4f89))
+* **provider:** centralize app installation response reconciliation ([d5d5089](https://github.com/cysp/terraform-provider-contentful/commit/d5d50894410f1b4518cc05add52a8f96ca6e865c))
+* **provider:** centralize versioned resource state publication ([5a414e3](https://github.com/cysp/terraform-provider-contentful/commit/5a414e30cadfd2e611a0612547e320fc49df6d02))
+* **provider:** consolidate opaque JSON normalization ([5f6ef50](https://github.com/cysp/terraform-provider-contentful/commit/5f6ef504c419cd8dabbd1e1d45ac3db808f6e672))
+* **provider:** construct typed response models directly ([6465f0a](https://github.com/cysp/terraform-provider-contentful/commit/6465f0a8acee4642184beaac089beeac1013288a))
+* **provider:** delegate typed value codecs to framework types ([9c28cdb](https://github.com/cysp/terraform-provider-contentful/commit/9c28cdb5aa84c11bd2518a6e908ac47ce9f247b1))
+* **provider:** project collection responses during pagination ([5baea3d](https://github.com/cysp/terraform-provider-contentful/commit/5baea3d570bec15062a15e6b3136750401476255))
+
+
+### Maintenance
+
+* **deps:** bump indirect dependencies ([bd0af43](https://github.com/cysp/terraform-provider-contentful/commit/bd0af434562219e87c9a30a7110df37f503ff876))
+
 ## [0.0.71](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.70...v0.0.71) (2026-11-06)
 
 **Compatibility:** The provider now rejects HTTP redirects for mutation requests.
