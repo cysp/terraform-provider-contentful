@@ -52,10 +52,10 @@ Read-Only:
 - `app_action_id` (String) System ID of the App Action.
 - `category` (String) Category of the App Action.
 - `description` (String) Description of the App Action.
-- `function_id` (String) Linked Function ID returned by Contentful, or `null` when absent.
+- `function_id` (String) Linked Function ID, or `null` when absent.
 - `name` (String) Name of the App Action.
 - `parameters` (String) Legacy or built-in category parameter definitions encoded as a JSON array, or `null` when absent.
 - `parameters_schema` (String) Input JSON Schema encoded as JSON, or `null` when absent.
 - `result_schema` (String) Result JSON Schema encoded as JSON, or `null` when absent.
 - `type` (String) Action type, such as `endpoint` or `function-invocation`.
-- `url` (String) Endpoint URL returned by Contentful, or `null` when absent.
+- `url` (String) Endpoint URL, or `null` when absent.

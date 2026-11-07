@@ -90,7 +90,7 @@ or target, the provider records the returned values and reports an error.
 
 - `app_definition_id` (String) ID of the App Definition. Changing this value replaces the resource.
 - `organization_id` (String) ID of the organization that owns the app. Changing this value replaces the resource.
-- `topics` (Set of String) Nonempty set of event topics, such as `Entry.publish`. Updates replace the complete set. Contentful validates the supported topics.
+- `topics` (Set of String) Nonempty set of event topics, such as `Entry.publish`. Updates replace the complete set.
 
 ### Optional
 

@@ -32,11 +32,11 @@ func appActionDataSourceAttributes() map[string]schema.Attribute {
 			Computed:    true,
 		},
 		"url": schema.StringAttribute{
-			Description: "Endpoint URL returned by Contentful, or `null` when absent.",
+			Description: "Endpoint URL, or `null` when absent.",
 			Computed:    true,
 		},
 		"function_id": schema.StringAttribute{
-			Description: "Linked Function ID returned by Contentful, or `null` when absent.",
+			Description: "Linked Function ID, or `null` when absent.",
 			Computed:    true,
 		},
 		"parameters": schema.StringAttribute{
