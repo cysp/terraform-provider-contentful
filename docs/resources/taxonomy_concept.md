@@ -53,7 +53,7 @@ resource "contentful_taxonomy_concept" "furniture" {
 - `related_concept_ids` (List of String) Ordered IDs of related concepts. Omission uses the Contentful value; an explicit empty collection clears it.
 - `scope_note` (Map of String) Scope notes keyed by locale code.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `uri` (String) Optional URI identifying the concept. Empty strings are rejected by Contentful.
+- `uri` (String) Nonempty URI identifying the concept.
 
 ### Read-Only
 

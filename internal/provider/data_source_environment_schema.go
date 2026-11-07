@@ -11,7 +11,7 @@ import (
 func environmentDataSourceItemAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"environment_id":         schema.StringAttribute{Description: "ID of the environment or environment alias.", Computed: true},
-		"name":                   schema.StringAttribute{Description: "Name returned by Contentful, which can be the alias name when looking up an alias.", Computed: true},
+		"name":                   schema.StringAttribute{Description: "Environment name, or the alias name when looking up an alias.", Computed: true},
 		"status":                 schema.StringAttribute{Description: "Latest environment status.", Computed: true},
 		"aliased_environment_id": schema.StringAttribute{Description: "ID of the target environment when looking up an alias, or null when Contentful omits it.", Computed: true},
 	}

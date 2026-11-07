@@ -97,10 +97,10 @@ The provider retries Content Type creation, updates, or activation after explici
 - `content_type_id` (String) ID to assign to the content type. An existing Content Type with the same ID must be imported before management. Changing this value replaces the resource.
 - `description` (String) Description of the content type.
 - `display_field` (String) Field ID to use as the display field for entries of this content type.
-- `environment_id` (String) The ID of the environment this content type belongs to. Changing this value replaces the resource.
+- `environment_id` (String) ID of the environment containing the Content Type. Changing this value replaces the resource.
 - `fields` (Attributes List) List of fields that belong to this content type. (see [below for nested schema](#nestedatt--fields))
 - `name` (String) Name of the content type.
-- `space_id` (String) The ID of the space this content type belongs to. Changing this value replaces the resource.
+- `space_id` (String) ID of the space containing the Content Type. Changing this value replaces the resource.
 
 ### Optional
 

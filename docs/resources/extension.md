@@ -132,11 +132,11 @@ Required:
 
 Optional:
 
-- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode("text")` for Symbol. An Enum default must match an allowed option.
+- `default` (String) Default value encoded as JSON.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--extension--parameters--installation--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode("light"), jsonencode("dark")]`. An option may be a string or an object with string values.
-- `required` (Boolean) Whether the parameter is required.
+- `options` (List of String) Options, each encoded as JSON.
+- `required` (Boolean) Whether a parameter value must be provided.
 
 <a id="nestedatt--extension--parameters--installation--labels"></a>
 ### Nested Schema for `extension.parameters.installation.labels`
@@ -160,11 +160,11 @@ Required:
 
 Optional:
 
-- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode("text")` for Symbol. An Enum default must match an allowed option.
+- `default` (String) Default value encoded as JSON.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--extension--parameters--instance--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode("light"), jsonencode("dark")]`. An option may be a string or an object with string values.
-- `required` (Boolean) Whether the parameter is required.
+- `options` (List of String) Options, each encoded as JSON.
+- `required` (Boolean) Whether a parameter value must be provided.
 
 <a id="nestedatt--extension--parameters--instance--labels"></a>
 ### Nested Schema for `extension.parameters.instance.labels`

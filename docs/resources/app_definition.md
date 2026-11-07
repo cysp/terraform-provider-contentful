@@ -83,9 +83,9 @@ Configuration must still be valid, including when destroying the resource.
 
 ### Optional
 
-- `bundle_id` (String) ID of the App Bundle when the app is hosted on Contentful.
-- `parameters` (Attributes) Definitions of configuration parameters. (see [below for nested schema](#nestedatt--parameters))
-- `src` (String) Public URL of the app. Must be non-empty and use HTTPS, except that Contentful accepts HTTP on localhost for development. During in-place updates, omitting this argument retains the URL recorded in Terraform state; removing it does not clear that URL. To retain the same URL when replacing the definition, configure `src` explicitly.
+- `bundle_id` (String) ID of the App Bundle.
+- `parameters` (Attributes) App configuration parameter definitions. (see [below for nested schema](#nestedatt--parameters))
+- `src` (String) Nonempty frontend URL using HTTPS, or HTTP on localhost. Omission retains the existing URL during in-place updates. Configure explicitly to retain it during replacement.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -102,8 +102,8 @@ Required:
 
 Optional:
 
-- `field_types` (Attributes List) Field types for which this app can be used as an `entry-field` editor. At least one definition is required. Omit for other locations. Contentful validates the configured field types and link targets. (see [below for nested schema](#nestedatt--locations--field_types))
-- `navigation_item` (Attributes) Navigation item configuration for `page` locations. Omit for other locations. When configured, both `name` and `path` must be nonempty. Omitting this object removes existing navigation item configuration. (see [below for nested schema](#nestedatt--locations--navigation_item))
+- `field_types` (Attributes List) Field definitions for `entry-field` locations. At least one is required; omit for other locations. (see [below for nested schema](#nestedatt--locations--field_types))
+- `navigation_item` (Attributes) Navigation item for `page` locations; omit for other locations. Omission removes existing navigation configuration. (see [below for nested schema](#nestedatt--locations--navigation_item))
 
 <a id="nestedatt--locations--field_types"></a>
 ### Nested Schema for `locations.field_types`
@@ -122,7 +122,7 @@ Optional:
 
 Required:
 
-- `type` (String) Type of array items, such as `Symbol` or `Link`. Contentful validates which item types are supported.
+- `type` (String) Array item type, such as `Symbol` or `Link`.
 
 Optional:
 
@@ -135,8 +135,8 @@ Optional:
 
 Required:
 
-- `name` (String) Display name for the navigation item.
-- `path` (String) Path for the navigation item, beginning with `/`, for example `/dashboard`.
+- `name` (String) Nonempty display name for the navigation item.
+- `path` (String) Nonempty navigation path beginning with `/`, for example `/dashboard`.
 
 
 
@@ -146,7 +146,7 @@ Required:
 Optional:
 
 - `installation` (Attributes List) Parameter definitions for each app installation. (see [below for nested schema](#nestedatt--parameters--installation))
-- `instance` (Attributes List) Parameter definitions for each use of the app, such as a field editor. (see [below for nested schema](#nestedatt--parameters--instance))
+- `instance` (Attributes List) Parameter definitions for each use of the app, such as a field editor. Maximum eight definitions. (see [below for nested schema](#nestedatt--parameters--instance))
 
 <a id="nestedatt--parameters--installation"></a>
 ### Nested Schema for `parameters.installation`
@@ -159,11 +159,11 @@ Required:
 
 Optional:
 
-- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode("text")` for Symbol. An Enum default must match an allowed option.
+- `default` (String) Default value encoded as JSON.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--installation--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode("light"), jsonencode("dark")]`. An option may be a string or an object with string values.
-- `required` (Boolean) Whether the parameter is required.
+- `options` (List of String) Options, each encoded as JSON.
+- `required` (Boolean) Whether a parameter value must be provided.
 
 <a id="nestedatt--parameters--installation--labels"></a>
 ### Nested Schema for `parameters.installation.labels`
@@ -187,11 +187,11 @@ Required:
 
 Optional:
 
-- `default` (String) Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode("text")` for Symbol. An Enum default must match an allowed option.
+- `default` (String) Default value encoded as JSON.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--instance--labels))
-- `options` (List of String) Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode("light"), jsonencode("dark")]`. An option may be a string or an object with string values.
-- `required` (Boolean) Whether the parameter is required.
+- `options` (List of String) Options, each encoded as JSON.
+- `required` (Boolean) Whether a parameter value must be provided.
 
 <a id="nestedatt--parameters--instance--labels"></a>
 ### Nested Schema for `parameters.instance.labels`

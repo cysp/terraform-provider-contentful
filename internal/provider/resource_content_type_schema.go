@@ -31,14 +31,14 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "The ID of the space this content type belongs to. Changing this value replaces the resource.",
+				Description: "ID of the space containing the Content Type. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Description: "The ID of the environment this content type belongs to. Changing this value replaces the resource.",
+				Description: "ID of the environment containing the Content Type. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

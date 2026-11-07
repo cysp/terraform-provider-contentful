@@ -43,7 +43,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"src": schema.StringAttribute{
-				Description: "Public URL of the app. Must be non-empty and use HTTPS, except that Contentful accepts HTTP on localhost for development. During in-place updates, omitting this argument retains the URL recorded in Terraform state; removing it does not clear that URL. To retain the same URL when replacing the definition, configure `src` explicitly.",
+				Description: "Nonempty frontend URL using HTTPS, or HTTP on localhost. Omission retains the existing URL during in-place updates. Configure explicitly to retain it during replacement.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
@@ -54,7 +54,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"bundle_id": schema.StringAttribute{
-				Description: "ID of the App Bundle when the app is hosted on Contentful.",
+				Description: "ID of the App Bundle.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -70,7 +70,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 							Required:    true,
 						},
 						"field_types": schema.ListNestedAttribute{
-							Description: "Field types for which this app can be used as an `entry-field` editor. At least one definition is required. Omit for other locations. Contentful validates the configured field types and link targets.",
+							Description: "Field definitions for `entry-field` locations. At least one is required; omit for other locations.",
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"type": schema.StringAttribute{
@@ -85,7 +85,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 										Description: "Required item type definition for `Array` fields. Omit for other field types.",
 										Attributes: map[string]schema.Attribute{
 											"type": schema.StringAttribute{
-												Description: "Type of array items, such as `Symbol` or `Link`. Contentful validates which item types are supported.",
+												Description: "Array item type, such as `Symbol` or `Link`.",
 												Required:    true,
 											},
 											"link_type": schema.StringAttribute{
@@ -103,14 +103,14 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						"navigation_item": schema.SingleNestedAttribute{
-							Description: "Navigation item configuration for `page` locations. Omit for other locations. When configured, both `name` and `path` must be nonempty. Omitting this object removes existing navigation item configuration.",
+							Description: "Navigation item for `page` locations; omit for other locations. Omission removes existing navigation configuration.",
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
-									Description: "Display name for the navigation item.",
+									Description: "Nonempty display name for the navigation item.",
 									Required:    true,
 								},
 								"path": schema.StringAttribute{
-									Description: "Path for the navigation item, beginning with `/`, for example `/dashboard`.",
+									Description: "Nonempty navigation path beginning with `/`, for example `/dashboard`.",
 									Required:    true,
 								},
 							},
@@ -125,7 +125,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"parameters": schema.SingleNestedAttribute{
-				Description: "Definitions of configuration parameters.",
+				Description: "App configuration parameter definitions.",
 				Attributes: map[string]schema.Attribute{
 					"installation": schema.ListNestedAttribute{
 						Description: "Parameter definitions for each app installation.",
@@ -138,7 +138,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"instance": schema.ListNestedAttribute{
-						Description: "Parameter definitions for each use of the app, such as a field editor.",
+						Description: "Parameter definitions for each use of the app, such as a field editor. Maximum eight definitions.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: AppDefinitionParameterSchemaAttributes(ctx),
 						},
@@ -174,16 +174,16 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			Optional:    true,
 		},
 		"required": schema.BoolAttribute{
-			Description: "Whether the parameter is required.",
+			Description: "Whether a parameter value must be provided.",
 			Optional:    true,
 		},
 		"default": schema.StringAttribute{
-			Description: "Default parameter value encoded as JSON, matching the parameter type; for example, `jsonencode(\"text\")` for Symbol. An Enum default must match an allowed option.",
+			Description: "Default value encoded as JSON.",
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "Allowed options for Enum parameters. Encode each option as JSON, for example `[jsonencode(\"light\"), jsonencode(\"dark\")]`. An option may be a string or an object with string values.",
+			Description: "Options, each encoded as JSON.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,
