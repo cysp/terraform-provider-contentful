@@ -86,23 +86,21 @@ remain distinct; these checks do not impose a general location/type uniqueness r
 ## Parameter values
 
 Use `jsonencode` to distinguish JSON types: `jsonencode(42)` is a number,
-`jsonencode("42")` is a string, and `jsonencode(false)` is a Boolean. Contentful
-preserves these primitive defaults independently of the declaration's `type`.
-The provider does not coerce them or require an Enum default to match its options.
-Omitting a default is different from configuring `jsonencode(null)`, which CMA
-rejects for the tested known parameter types.
+`jsonencode("42")` is a string, and `jsonencode(false)` is a Boolean. For Symbol,
+Number, Boolean, Enum, and Secret declarations, defaults must encode one of these
+primitive types. The provider preserves that type without requiring it to match the
+declaration's `type` or an Enum option. Omit `default` to leave it unspecified;
+`jsonencode(null)` is rejected.
 
 Options may be omitted, including for Enum, or configured on other parameter types.
-A configured options list must be nonempty. Each option must be a nonempty JSON
-string or a single-member JSON object, such as `jsonencode({light = "Light"})`.
-Contentful preserves the object member's value, including non-string JSON values.
-Mixed string/object options and repeated values are preserved. Duplicate JSON object
-keys have no provider-enforced interpretation and remain subject to CMA behavior.
-
-CMA accepts Secret declarations in both installation and instance scope. Acceptance
-of a declaration does not establish secrecy or redaction guarantees for installed
-instance values. Do not put real secrets in declaration defaults or examples.
+For these known types, a configured list must be nonempty, and each option must be a
+nonempty JSON string or a single-member object, such as `jsonencode({light = "Light"})`.
+Mixed string/object options, repeated values, and non-string object values are permitted.
 Unknown future parameter types remain service-validated.
+
+Secret declarations are permitted in both installation and instance scope. This does
+not establish secrecy or redaction guarantees for installed instance values. Do not
+put real secrets in declaration defaults.
 
 ## Validation limits
 

@@ -108,18 +108,44 @@ scheme collections are `top_concept_ids` and `concept_ids`.
 
 ### App Definition configuration
 
-[App Definition validation](app-definition-validation.md) owns the location/parameter
-rules, their API evidence, and resource-specific lifecycle limits. Configuration checks
-preserve unknowns; Create/Update validate effective values before model decoding and
-mutation, including values retained by ignore_changes. Read/import preserve representable
-responses without imposing write restrictions. Shared UI Extension conversion does not
-acquire App Definition validation policy.
+App Definition retains ordered nested attributes, open location/field/parameter
+names, and JSON-normalized default/option strings. This preserves configuration
+and state compatibility while allowing targeted semantic validation. Nested blocks
+could reject more misspelled keys, but require HCL authoring changes; typed object
+conversion can discard extra keys before the provider receives them. See
+[Terraform object conversion](https://developer.hashicorp.com/terraform/language/expressions/type-constraints#conversion-of-complex-types).
 
-Effective-value rejection does not run in ModifyPlan because it can prevent Terraform's
-replacement replanning. Invalid Config can also block ordinary destroy; correcting only
-Config permits deletion of representable irregular State. The
-[Framework evidence](app-definition-validation-framework-evidence.md) records the
-independent lifecycle experiments behind those boundaries.
+[Location validation](../../internal/provider/resource_app_definition_locations.go)
+and [parameter validation](../../internal/provider/resource_app_definition_parameters.go)
+check configuration when the relevant values are known. Create/Update reuse those
+rules against the final Plan before native model decoding or mutation, including
+values retained by `ignore_changes`. They additionally require resolved request
+values, non-null required children, and complete JSON values. Read/import preserve
+representable responses without imposing write restrictions. Shared UI Extension
+parameter representation and conversion do not acquire App Definition semantics.
+The [CMA observations](../research/app-framework/schema-validation-api-evidence.md)
+explain the narrow rules and the supported forms that must remain accepted.
+
+Do not reject effective values in ModifyPlan. Terraform can first propose an update
+using ignored prior state, then select replacement and replan creation from Config.
+Rejecting that intermediate proposal blocks valid replacement. See
+[Terraform replacement planning](https://github.com/hashicorp/terraform/blob/v1.17.1/internal/terraform/node_resource_abstract_instance.go#L953-L1157)
+and the [replacement tests](../../internal/provider/resource_app_definition_locations_lifecycle_test.go).
+An unrelated update retaining invalid state can therefore plan successfully and fail
+at apply before its own write; independent resources may already have changed.
+
+Configuration validation also runs during ordinary destroy, even with
+`ignore_changes`. Correcting Config permits deletion of representable irregular
+State without first applying the correction remotely. The
+[destroy recovery tests](../../internal/provider/resource_app_definition_parameters_lifecycle_test.go)
+cover this distinction. Practitioner recovery steps belong on the
+[resource page](../resources/app_definition.md#updating-existing-definitions).
+
+New semantic and preflight errors use complete attribute paths and do not echo
+parameter values. Existing shared JSON syntax diagnostics may echo malformed input
+or report relative custom-list paths; those limitations are separate from the
+App Definition checks. [Protocol and preflight tests](../../internal/provider/resource_app_definition_parameters_internal_test.go)
+verify the diagnostics at their respective boundaries.
 
 ### App Action category parameters
 
