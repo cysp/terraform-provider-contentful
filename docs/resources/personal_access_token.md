@@ -30,7 +30,7 @@ resource "contentful_personal_access_token" "this" {
 
 ### Optional
 
-- `expires_in` (Number) Time-to-live (TTL) of the token expressed in seconds. If not provided, the token will not auto-expire. Changing this value replaces the resource.
+- `expires_in` (Number) Token lifetime in seconds. Omission disables automatic expiry. Changing this value replaces the resource.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

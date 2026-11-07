@@ -3,12 +3,12 @@
 page_title: "contentful_app_definition Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration. See array item access and migration ../guides/app-definition-items for items expressions.
+  Reads a Contentful App Definition.
 ---
 
 # contentful_app_definition (Data Source)
 
-Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration. See [array item access and migration](../guides/app-definition-items) for `items` expressions.
+Reads a Contentful App Definition.
 
 ## Example Usage
 
@@ -72,7 +72,7 @@ Read-Only:
 
 Read-Only:
 
-- `items` (Attributes) Array item definition, or null when absent. Check for null before accessing `items.type` or `items.link_type`. (see [below for nested schema](#nestedatt--locations--field_types--items))
+- `items` (Attributes) Array item definition, or null when absent. Check for null before accessing its attributes; see [array item access and migration](../guides/app-definition-items). (see [below for nested schema](#nestedatt--locations--field_types--items))
 - `link_type` (String) Type of linked resource for `Link` or `ResourceLink` fields, or null when absent.
 - `type` (String) The field type.
 
@@ -109,13 +109,13 @@ Read-Only:
 
 Read-Only:
 
-- `default` (String) Default value for this parameter in JSON format.
+- `default` (String) Default value encoded as JSON.
 - `description` (String) Description of this parameter.
 - `id` (String) Unique identifier for the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--installation--labels))
 - `name` (String) The name of this parameter.
-- `options` (List of String) Allowed options for an Enum parameter, each encoded as JSON. An option may be a string or an object with string values.
-- `required` (Boolean) Whether this parameter is required.
+- `options` (List of String) Options, each encoded as JSON.
+- `required` (Boolean) Whether a parameter value must be provided.
 - `type` (String) The type of this parameter.
 
 <a id="nestedatt--parameters--installation--labels"></a>
@@ -134,13 +134,13 @@ Read-Only:
 
 Read-Only:
 
-- `default` (String) Default value for this parameter in JSON format.
+- `default` (String) Default value encoded as JSON.
 - `description` (String) Description of this parameter.
 - `id` (String) Unique identifier for the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--instance--labels))
 - `name` (String) The name of this parameter.
-- `options` (List of String) Allowed options for an Enum parameter, each encoded as JSON. An option may be a string or an object with string values.
-- `required` (Boolean) Whether this parameter is required.
+- `options` (List of String) Options, each encoded as JSON.
+- `required` (Boolean) Whether a parameter value must be provided.
 - `type` (String) The type of this parameter.
 
 <a id="nestedatt--parameters--instance--labels"></a>

@@ -34,7 +34,7 @@ func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"expires_in": schema.Int64Attribute{
-				Description: "Time-to-live (TTL) of the token expressed in seconds. If not provided, the token will not auto-expire. Changing this value replaces the resource.",
+				Description: "Token lifetime in seconds. Omission disables automatic expiry. Changing this value replaces the resource.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),

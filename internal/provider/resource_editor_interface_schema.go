@@ -28,21 +28,21 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"space_id": schema.StringAttribute{
-				Description: "The ID of the space this editor interface belongs to. Changing this value replaces the resource.",
+				Description: "ID of the space containing the Editor Interface. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"environment_id": schema.StringAttribute{
-				Description: "The ID of the environment this editor interface belongs to. Changing this value replaces the resource.",
+				Description: "ID of the environment containing the Editor Interface. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"content_type_id": schema.StringAttribute{
-				Description: "The ID of the content type this editor interface configures. Changing this value replaces the resource.",
+				Description: "ID of the Content Type to configure. Changing this value replaces the resource.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

@@ -41,7 +41,7 @@ data "contentful_environment_status_ready" "existing" {
 
 - `aliased_environment_id` (String) ID of the target environment when looking up an alias, or null when Contentful omits it.
 - `id` (String) Composite Terraform identifier in `space_id/environment_id` form.
-- `name` (String) Name returned by Contentful, which can be the alias name when looking up an alias.
+- `name` (String) Environment name, or the alias name when looking up an alias.
 - `status` (String) Latest environment status.
 
 <a id="nestedatt--timeouts"></a>

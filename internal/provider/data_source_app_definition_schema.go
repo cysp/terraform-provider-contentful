@@ -11,7 +11,7 @@ import (
 
 func AppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Reads an existing Contentful App Definition, including its hosting source, locations, and parameter definitions. Use this data source when the app definition is managed outside this Terraform configuration. See [array item access and migration](../guides/app-definition-items) for `items` expressions.",
+		Description: "Reads a Contentful App Definition.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform identifier in `organization_id/app_definition_id` form; not a Contentful system ID.",
@@ -89,16 +89,16 @@ func AppDefinitionParameterDataSourceSchemaAttributes(ctx context.Context) map[s
 			Computed:    true,
 		},
 		"required": schema.BoolAttribute{
-			Description: "Whether this parameter is required.",
+			Description: "Whether a parameter value must be provided.",
 			Computed:    true,
 		},
 		"default": schema.StringAttribute{
-			Description: "Default value for this parameter in JSON format.",
+			Description: "Default value encoded as JSON.",
 			CustomType:  jsontypes.NormalizedType{},
 			Computed:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "Allowed options for an Enum parameter, each encoded as JSON. An option may be a string or an object with string values.",
+			Description: "Options, each encoded as JSON.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Computed:    true,

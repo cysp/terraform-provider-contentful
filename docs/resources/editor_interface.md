@@ -88,9 +88,9 @@ interface.
 
 ### Required
 
-- `content_type_id` (String) The ID of the content type this editor interface configures. Changing this value replaces the resource.
-- `environment_id` (String) The ID of the environment this editor interface belongs to. Changing this value replaces the resource.
-- `space_id` (String) The ID of the space this editor interface belongs to. Changing this value replaces the resource.
+- `content_type_id` (String) ID of the Content Type to configure. Changing this value replaces the resource.
+- `environment_id` (String) ID of the environment containing the Editor Interface. Changing this value replaces the resource.
+- `space_id` (String) ID of the space containing the Editor Interface. Changing this value replaces the resource.
 
 ### Optional
 

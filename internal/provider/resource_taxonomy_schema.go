@@ -64,7 +64,7 @@ func optionalComputedStringList(description string) schema.ListAttribute {
 func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 	attributes := taxonomyIdentityAttributes("taxonomy concept", "Composite Terraform resource identifier in organization_id/concept_id form.")
 	attributes["concept_id"] = schema.StringAttribute{Description: "ID to assign to the taxonomy concept. Must contain 1–64 ASCII letters, digits, dots, hyphens, or underscores. Changing this value replaces the resource.", Required: true, Validators: taxonomyIDValidators(), PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}}
-	attributes["uri"] = schema.StringAttribute{Description: "Optional URI identifying the concept. Empty strings are rejected by Contentful.", Optional: true, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}}
+	attributes["uri"] = schema.StringAttribute{Description: "Nonempty URI identifying the concept.", Optional: true, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}}
 	attributes["pref_label"] = localizedStringAttribute("Preferred labels keyed by locale code, for example `{ \"en-US\" = \"Furniture\" }`.", true)
 	attributes["alt_labels"] = schema.MapAttribute{
 		Description: "Alternative labels keyed by locale code, with a list of labels for each locale. " + taxonomyOptionalComputedCollectionDescription,
@@ -106,7 +106,7 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 func TaxonomyConceptSchemeResourceSchema(ctx context.Context) schema.Schema {
 	attributes := taxonomyIdentityAttributes("taxonomy concept scheme", "Composite Terraform resource identifier in organization_id/concept_scheme_id form.")
 	attributes["concept_scheme_id"] = schema.StringAttribute{Description: "ID to assign to the taxonomy concept scheme. Must contain 1–64 ASCII letters, digits, dots, hyphens, or underscores. Changing this value replaces the resource.", Required: true, Validators: taxonomyIDValidators(), PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}}
-	attributes["uri"] = schema.StringAttribute{Description: "Optional URI identifying the concept scheme. Empty strings are rejected by Contentful.", Optional: true, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}}
+	attributes["uri"] = schema.StringAttribute{Description: "Nonempty URI identifying the concept scheme.", Optional: true, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}}
 	attributes["pref_label"] = localizedStringAttribute("Preferred labels keyed by locale code, for example `{ \"en-US\" = \"Furniture\" }`.", true)
 	attributes["definition"] = localizedStringAttribute("Definitions keyed by locale code.", false)
 	attributes["top_concept_ids"] = optionalComputedStringList("Ordered IDs of top concepts. Every top concept must also occur in `concept_ids`.")

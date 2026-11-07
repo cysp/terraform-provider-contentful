@@ -21,7 +21,7 @@ func appDefinitionDataSourceLocationAttributes() map[string]schema.Attribute {
 						Computed:    true,
 					},
 					"items": schema.SingleNestedAttribute{
-						Description: "Array item definition, or null when absent. Check for null before accessing `items.type` or `items.link_type`.",
+						Description: "Array item definition, or null when absent. Check for null before accessing its attributes; see [array item access and migration](../guides/app-definition-items).",
 						Attributes: map[string]schema.Attribute{
 							"type": schema.StringAttribute{
 								Description: "The type of array items.",

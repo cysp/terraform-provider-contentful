@@ -50,7 +50,7 @@ resource "contentful_taxonomy_concept_scheme" "products" {
 - `definition` (Map of String) Definitions keyed by locale code.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `top_concept_ids` (List of String) Ordered IDs of top concepts. Every top concept must also occur in `concept_ids`. Omission uses the Contentful value; an explicit empty collection clears it.
-- `uri` (String) Optional URI identifying the concept scheme. Empty strings are rejected by Contentful.
+- `uri` (String) Nonempty URI identifying the concept scheme.
 
 ### Read-Only
 
