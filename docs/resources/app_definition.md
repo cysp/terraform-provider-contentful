@@ -83,7 +83,7 @@ Configuration must still be valid, including when destroying the resource.
 
 ### Optional
 
-- `bundle_id` (String) ID of the App Bundle.
+- `bundle_id` (String) ID of an App Bundle belonging to this definition. Omission retains the selected bundle during in-place updates.
 - `parameters` (Attributes) App configuration parameter definitions. (see [below for nested schema](#nestedatt--parameters))
 - `src` (String) Nonempty frontend URL using HTTPS, or HTTP on localhost. Omission retains the existing URL during in-place updates. Configure explicitly to retain it during replacement.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
@@ -159,10 +159,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default value encoded as JSON.
+- `default` (String) Default value encoded as JSON; use `jsonencode`.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--installation--labels))
-- `options` (List of String) Options, each encoded as JSON.
+- `options` (List of String) Options, each encoded as JSON with `jsonencode`.
 - `required` (Boolean) Whether a parameter value must be provided.
 
 <a id="nestedatt--parameters--installation--labels"></a>
@@ -187,10 +187,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default value encoded as JSON.
+- `default` (String) Default value encoded as JSON; use `jsonencode`.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--instance--labels))
-- `options` (List of String) Options, each encoded as JSON.
+- `options` (List of String) Options, each encoded as JSON with `jsonencode`.
 - `required` (Boolean) Whether a parameter value must be provided.
 
 <a id="nestedatt--parameters--instance--labels"></a>
