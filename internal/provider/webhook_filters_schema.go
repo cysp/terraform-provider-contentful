@@ -168,10 +168,12 @@ func (v WebhookTransformationValue) SchemaAttributes(_ context.Context) map[stri
 		"method": schema.StringAttribute{
 			Description: "HTTP method for outgoing webhook requests. Contentful defaults to `POST` and supports `POST`, `GET`, `PUT`, `PATCH`, and `DELETE`. `GET` and `DELETE` webhook calls do not include a request body.",
 			Optional:    true,
+			Validators:  []validator.String{webhookTransformationMethodValidator()},
 		},
 		"content_type": schema.StringAttribute{
 			Description: "Content-Type for transformed webhook requests. Defaults to `application/vnd.contentful.management.v1+json`; `application/x-www-form-urlencoded` converts the JSON body to form data. See [Contentful transformations](https://www.contentful.com/developers/docs/extensibility/webhooks/transformations/) for supported media types and templates.",
 			Optional:    true,
+			Validators:  []validator.String{webhookTransformationContentTypeValidator()},
 		},
 		"include_content_length": schema.BoolAttribute{
 			Description: "Whether Contentful includes a `Content-Length` header computed from the transformed request body. Contentful omits the header by default.",

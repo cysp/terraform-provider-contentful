@@ -23,6 +23,9 @@ func ToOptNilWebhookDefinitionDataTransformation(valuePath path.Path, value Type
 	default:
 		value := value.Value()
 
+		diags.Append(webhookTransformationMethodValidator().validate(value.Method, valuePath.AtName("method"))...)
+		diags.Append(webhookTransformationContentTypeValidator().validate(value.ContentType, valuePath.AtName("content_type"))...)
+
 		method, methodDiags := requestOmittableString(value.Method, valuePath.AtName("method"))
 		diags.Append(methodDiags...)
 
