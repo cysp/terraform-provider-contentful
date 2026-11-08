@@ -1,7 +1,9 @@
 package testdata
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 
 	provider "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -55,10 +57,10 @@ func ContentTypeFieldValue(fieldId string) *rapid.Generator[provider.ContentType
 			Disabled:         rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "disabled"),
 			Omitted:          rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "omitted"),
 			Required:         rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "required"),
-			DefaultValue:     RandomZeroable(NormalizedJSONStringValue()).Draw(t, "defaultValue"),
+			DefaultValue:     RandomZeroable(contentTypeJSONObject("en-US")).Draw(t, "defaultValue"),
 			Items:            RandomZeroable(rapid.Map(ContentTypeFieldItemsValue(), provider.NewTypedObject)).Draw(t, "items"),
 			Localized:        rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "localized"),
-			Validations:      rapid.Map(rapid.SliceOfN(NormalizedJSONStringValue(), 0, 2), provider.NewTypedList).Draw(t, "validations"),
+			Validations:      rapid.Map(rapid.SliceOfN(contentTypeJSONObject("futureRule"), 0, 2), provider.NewTypedList).Draw(t, "validations"),
 			AllowedResources: RandomZeroable(rapid.Map(rapid.SliceOfN(rapid.Map(ContentTypeFieldAllowedResourceItemValue(), provider.NewTypedObject), 0, 2), provider.NewTypedList)).Draw(t, "allowedResources"),
 		}
 	})
@@ -69,7 +71,7 @@ func ContentTypeFieldItemsValue() *rapid.Generator[provider.ContentTypeFieldItem
 		return provider.ContentTypeFieldItemsValue{
 			ItemsType:   types.StringValue("Link"),
 			LinkType:    types.StringValue("Entry"),
-			Validations: rapid.Map(rapid.SliceOfN(NormalizedJSONStringValue(), 0, 2), provider.NewTypedList).Draw(t, "validations"),
+			Validations: rapid.Map(rapid.SliceOfN(contentTypeJSONObject("futureRule"), 0, 2), provider.NewTypedList).Draw(t, "validations"),
 		}
 	})
 }
@@ -172,5 +174,13 @@ func ContentTypeMetadataTaxonomyItemValueConceptScheme() *rapid.Generator[provid
 		return provider.ContentTypeMetadataTaxonomyItemValue{
 			TaxonomyConceptScheme: rapid.Map(ContentTypeMetadataTaxonomyItemConceptSchemeValue(), provider.NewTypedObject).Draw(t, "taxonomyConceptScheme"),
 		}
+	})
+}
+
+// Generate object-shaped wire values independently of production validation.
+func contentTypeJSONObject(key string) *rapid.Generator[jsontypes.Normalized] {
+	return rapid.Map(rapid.String(), func(value string) jsontypes.Normalized {
+		encoded, _ := json.Marshal(map[string]string{key: value})
+		return jsontypes.NewNormalizedValue(string(encoded))
 	})
 }

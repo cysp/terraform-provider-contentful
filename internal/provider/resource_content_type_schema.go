@@ -68,7 +68,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"fields": schema.ListNestedAttribute{
-				Description: "List of fields that belong to this content type.",
+				Description: "List of fields that belong to this content type. Field IDs must be unique.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: ContentTypeFieldValue{}.SchemaAttributes(ctx),
 					CustomType: NewTypedObjectNull[ContentTypeFieldValue]().CustomType(ctx),
@@ -167,6 +167,7 @@ func (v ContentTypeFieldItemsValue) SchemaAttributes(ctx context.Context) map[st
 			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
 			Validators: []validator.List{
 				listvalidator.NoNullValues(),
+				listvalidator.ValueStringsAre(contentTypeJSONObjectValidator()),
 			},
 		},
 	}
@@ -199,6 +200,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 		"default_value": schema.StringAttribute{
 			Description: "JSON-encoded object mapping locale codes to default field values, for example `jsonencode({ \"en-US\" = \"Untitled\" })` for a Symbol field. Contentful applies defaults to omitted values when an Entry is created; changing a default does not rewrite existing Entries. For a non-localized field, use the environment's default locale. Omission configures no default.",
 			CustomType:  jsontypes.NormalizedType{},
+			Validators:  []validator.String{contentTypeJSONObjectValidator()},
 			Optional:    true,
 		},
 		"localized": schema.BoolAttribute{
@@ -230,6 +232,7 @@ func (v ContentTypeFieldValue) SchemaAttributes(ctx context.Context) map[string]
 			Default:     listdefault.StaticValue(types.ListValueMust(jsontypes.NormalizedType{}, []attr.Value{})),
 			Validators: []validator.List{
 				listvalidator.NoNullValues(),
+				listvalidator.ValueStringsAre(contentTypeJSONObjectValidator()),
 			},
 		},
 		"allowed_resources": schema.ListNestedAttribute{
