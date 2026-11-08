@@ -114,7 +114,7 @@ resource "contentful_editor_interface" "test" {
   group_controls = [{
     group_id         = "main"
     widget_namespace = "builtin"
-    widget_id        = "fieldset"
+    widget_id        = "topLevelTab"
     settings         = jsonencode({ collapsed = false, help = "text" })
   }]
 
@@ -228,7 +228,7 @@ func completeEditorInterfaceMutationPlan() EditorInterfaceModel {
 			NewTypedObject(EditorInterfaceGroupControlValue{
 				GroupID:         types.StringValue("main"),
 				WidgetNamespace: types.StringValue("builtin"),
-				WidgetID:        types.StringValue("fieldset"),
+				WidgetID:        types.StringValue("topLevelTab"),
 				Settings:        jsontypes.NewNormalizedValue(`{"help":"text","collapsed":false}`),
 			}),
 		}),
@@ -259,7 +259,7 @@ func completeEditorInterfaceMutationResponse() cm.EditorInterface {
 		GroupControls: cm.NewOptNilEditorInterfaceGroupControlsItemArray([]cm.EditorInterfaceGroupControlsItem{{
 			GroupId:         "main",
 			WidgetNamespace: cm.NewOptString("builtin"),
-			WidgetId:        cm.NewOptString("fieldset"),
+			WidgetId:        cm.NewOptString("topLevelTab"),
 			Settings:        []byte(`{"collapsed":false,"help":"text"}`),
 		}}),
 		Sidebar: cm.NewOptNilEditorInterfaceSidebarItemArray([]cm.EditorInterfaceSidebarItem{{

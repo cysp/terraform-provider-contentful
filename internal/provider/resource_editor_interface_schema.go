@@ -49,7 +49,7 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"editor_layout": schema.ListNestedAttribute{
-				Description: "Ordered layout groups in the editor. Each top-level item is a group; each group may contain fields and one level of nested groups.",
+				Description: "Ordered layout groups in the editor. Each top-level item is a group; each group may contain fields and one level of nested groups. Group IDs must be unique throughout the layout.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: EditorInterfaceEditorLayoutItemValue{}.SchemaAttributes(ctx),
 					CustomType: NewTypedObjectNull[EditorInterfaceEditorLayoutItemValue]().CustomType(ctx),
@@ -117,6 +117,7 @@ func (v EditorInterfaceControlValue) SchemaAttributes(_ context.Context) map[str
 		},
 		"settings": schema.StringAttribute{
 			Description: "Widget settings encoded as a JSON object with `jsonencode(...)`. Supported settings depend on the widget.",
+			Validators:  []validator.String{editorInterfaceSettingsValidator()},
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
@@ -254,11 +255,12 @@ func (v EditorInterfaceGroupControlValue) SchemaAttributes(_ context.Context) ma
 			Optional:    true,
 		},
 		"widget_id": schema.StringAttribute{
-			Description: "ID of the widget to use for this group.",
+			Description: "ID of the widget to use for this group. Built-in top-level groups use `topLevelTab`; nested groups use `fieldset`.",
 			Optional:    true,
 		},
 		"settings": schema.StringAttribute{
 			Description: "Widget settings encoded as a JSON object with `jsonencode(...)`. Supported settings depend on the widget.",
+			Validators:  []validator.String{editorInterfaceSettingsValidator()},
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
@@ -277,6 +279,7 @@ func (v EditorInterfaceSidebarValue) SchemaAttributes(_ context.Context) map[str
 		},
 		"settings": schema.StringAttribute{
 			Description: "Widget settings encoded as a JSON object with `jsonencode(...)`. Supported settings depend on the widget.",
+			Validators:  []validator.String{editorInterfaceSettingsValidator()},
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},

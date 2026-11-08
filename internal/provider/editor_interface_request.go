@@ -77,8 +77,12 @@ func editorInterfaceOptionalSettings(value jsontypes.Normalized, valuePath path.
 		return nil, diags
 	}
 
-	if value.IsNull() || value.ValueString() == "" {
+	if value.IsNull() {
 		return nil, nil
+	}
+
+	if diags := editorInterfaceSettingsValidator().validate(value.ValueString(), valuePath); diags.HasError() {
+		return nil, diags
 	}
 
 	return []byte(value.ValueString()), nil

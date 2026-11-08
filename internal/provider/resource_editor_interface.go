@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*editorInterfaceResource)(nil)
-	_ resource.ResourceWithConfigure   = (*editorInterfaceResource)(nil)
-	_ resource.ResourceWithIdentity    = (*editorInterfaceResource)(nil)
-	_ resource.ResourceWithImportState = (*editorInterfaceResource)(nil)
+	_ resource.Resource                   = (*editorInterfaceResource)(nil)
+	_ resource.ResourceWithValidateConfig = (*editorInterfaceResource)(nil)
+	_ resource.ResourceWithConfigure      = (*editorInterfaceResource)(nil)
+	_ resource.ResourceWithIdentity       = (*editorInterfaceResource)(nil)
+	_ resource.ResourceWithImportState    = (*editorInterfaceResource)(nil)
 )
 
 //nolint:ireturn
@@ -38,6 +39,17 @@ func (r *editorInterfaceResource) Metadata(_ context.Context, req resource.Metad
 
 func (r *editorInterfaceResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = EditorInterfaceResourceSchema(ctx)
+}
+
+func (r *editorInterfaceResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config EditorInterfaceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(validateEditorInterfaceLayout(config)...)
 }
 
 func (r *editorInterfaceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

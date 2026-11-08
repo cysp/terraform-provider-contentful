@@ -34,6 +34,11 @@ After removing Terraform management, import the existing interface to manage it
 again. Deleting its parent Content Type or environment can still delete the
 interface.
 
+Invalid settings or layout values block writes, including values retained by
+`ignore_changes`. Read and import preserve representable values. To remove
+management with invalid configuration, correct the configuration and retry
+destroy; no intervening apply is required.
+
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
 
