@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -120,19 +121,51 @@ func appActionRequestJSON(value jsontypes.Normalized, valuePath path.Path, array
 }
 
 func validateAppActionJSON(raw string, valuePath path.Path, array bool) diag.Diagnostics {
-	root := "{"
-	shape := "object"
-
-	if array {
-		root = "["
-		shape = "array"
+	if !array {
+		return (jsonObjectValidator{
+			summary: "Invalid App Action JSON",
+			detail:  "Provide a JSON object. To omit this attribute, leave it out of the configuration instead of using the JSON string \"null\".",
+		}).validate(raw, valuePath)
 	}
 
-	if !json.Valid([]byte(raw)) || !strings.HasPrefix(strings.TrimSpace(raw), root) {
-		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Invalid App Action JSON", "Provide a JSON "+shape+". To omit this attribute, leave it out of the configuration instead of using the JSON string \"null\".")}
+	if !json.Valid([]byte(raw)) || !strings.HasPrefix(strings.TrimSpace(raw), "[") {
+		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Invalid App Action JSON", "Provide a JSON array. To omit this attribute, leave it out of the configuration instead of using the JSON string \"null\".")}
 	}
 
-	return nil
+	return validateAppActionParameters(raw, valuePath)
+}
+
+func validateAppActionParameters(raw string, valuePath path.Path) diag.Diagnostics {
+	var parameters []json.RawMessage
+
+	err := json.Unmarshal([]byte(raw), &parameters)
+	if err != nil {
+		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(valuePath, "Invalid App Action parameters", "Provide a JSON array of parameter definition objects.")}
+	}
+
+	var diags diag.Diagnostics
+
+	for index, parameter := range parameters {
+		var definition map[string]json.RawMessage
+
+		err := json.Unmarshal(parameter, &definition)
+		if err != nil || definition == nil {
+			diags.AddAttributeError(valuePath, "Invalid App Action parameters", fmt.Sprintf("JSON array element %d must be a parameter definition object.", index))
+
+			continue
+		}
+
+		for _, member := range []string{"id", "name", "type"} {
+			var value *string
+
+			err := json.Unmarshal(definition[member], &value)
+			if err != nil || value == nil {
+				diags.AddAttributeError(valuePath, "Invalid App Action parameters", fmt.Sprintf("JSON array element %d must contain a string %q member.", index, member))
+			}
+		}
+	}
+
+	return diags
 }
 
 type appActionJSONValidator struct{ array bool }

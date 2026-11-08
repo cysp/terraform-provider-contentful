@@ -159,6 +159,22 @@ it. Older overview wording restricts callers to app identities, while the curren
 describes manual user triggering; no caller-permission matrix was exercised here. [Call
 reference][calls], [CMA App Actions][action-reference].
 
+### Legacy parameter definition structure
+
+Direct CMA probes on 2026-11-08 created disposable Custom endpoint actions under
+one temporary App Definition. An object with string `id`, `name`, and `type`
+(`Symbol`) was accepted. Null or scalar array elements, missing `id`, `name`, or
+`type`, null `id`, and numeric `name` were rejected with HTTP 422. A `Number`
+parameter with a string default was accepted and preserved on immediate and
+subsequent GETs. Empty Enum options were rejected. Successful fixtures and their
+parent were deleted; cleanup reads returned HTTP 404.
+
+These observations support checking object elements and required string members
+without enforcing default/type matching. They do not establish a complete
+parameter-type vocabulary, Enum semantics, JSON Schema validity, or execution
+behavior. The [pinned parameter types][parameter-types] separately declare the
+required members. Unknown members remain opaque to the provider.
+
 ## Environment action discovery
 
 The pinned SDK annotates `GET E/actions` with the same `AppActionProps` used by the
