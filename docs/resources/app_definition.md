@@ -45,6 +45,15 @@ resource "contentful_app_definition" "this" {
         type = "Secret"
       },
     ]
+    instance = [
+      {
+        id      = "theme"
+        name    = "Theme"
+        type    = "Enum"
+        default = jsonencode("light")
+        options = [jsonencode({ light = "Light" }), jsonencode({ dark = "Dark" })]
+      },
+    ]
   }
 }
 ```
@@ -102,7 +111,7 @@ Required:
 
 Optional:
 
-- `field_types` (Attributes List) Field definitions for `entry-field` locations. At least one is required; omit for other locations. (see [below for nested schema](#nestedatt--locations--field_types))
+- `field_types` (Attributes List) Field types the app can edit at `entry-field` locations. At least one is required; omit for other locations. (see [below for nested schema](#nestedatt--locations--field_types))
 - `navigation_item` (Attributes) Navigation item for `page` locations; omit for other locations. Omission removes existing navigation configuration. (see [below for nested schema](#nestedatt--locations--navigation_item))
 
 <a id="nestedatt--locations--field_types"></a>
@@ -115,7 +124,7 @@ Required:
 Optional:
 
 - `items` (Attributes) Required item type definition for `Array` fields. Omit for other field types. (see [below for nested schema](#nestedatt--locations--field_types--items))
-- `link_type` (String) Type of linked resource. Required for `Link` and `ResourceLink` fields; omit for other field types. For `Link`, use `Entry` or `Asset`. For linked array items, configure `items.link_type`. See [Field types](#field-types) for the ResourceLink support limitation.
+- `link_type` (String) Type of linked resource. Required for `Link` and `ResourceLink` fields; omit for other field types. For `Link`, use `Entry` or `Asset`. For linked array items, configure `items.link_type`. Successful App Definition API support for `ResourceLink` has not been established.
 
 <a id="nestedatt--locations--field_types--items"></a>
 ### Nested Schema for `locations.field_types.items`
@@ -126,7 +135,7 @@ Required:
 
 Optional:
 
-- `link_type` (String) Type of linked resource. Required for `Link` and `ResourceLink` items; omit for other item types. For `Link`, use `Entry` or `Asset`. See [Field types](#field-types) for the ResourceLink support limitation.
+- `link_type` (String) Type of linked resource. Required for `Link` and `ResourceLink` items; omit for other item types. For `Link`, use `Entry` or `Asset`. Successful App Definition API support for `ResourceLink` has not been established.
 
 
 
@@ -162,7 +171,7 @@ Optional:
 - `default` (String) Default value encoded as JSON; use `jsonencode`.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--installation--labels))
-- `options` (List of String) Options, each encoded as JSON with `jsonencode`.
+- `options` (List of String) Choices for Enum parameters, each encoded as JSON with `jsonencode`.
 - `required` (Boolean) Whether a parameter value must be provided.
 
 <a id="nestedatt--parameters--installation--labels"></a>
@@ -190,7 +199,7 @@ Optional:
 - `default` (String) Default value encoded as JSON; use `jsonencode`.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--instance--labels))
-- `options` (List of String) Options, each encoded as JSON with `jsonencode`.
+- `options` (List of String) Choices for Enum parameters, each encoded as JSON with `jsonencode`.
 - `required` (Boolean) Whether a parameter value must be provided.
 
 <a id="nestedatt--parameters--instance--labels"></a>

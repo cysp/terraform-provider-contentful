@@ -112,7 +112,7 @@ Read-Only:
 - `id` (String) Unique identifier for the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--installation--labels))
 - `name` (String) The name of this parameter.
-- `options` (List of String) Options, each encoded as JSON.
+- `options` (List of String) Choices for Enum parameters, each encoded as JSON.
 - `required` (Boolean) Whether a parameter value must be provided.
 - `type` (String) The type of this parameter.
 
@@ -137,7 +137,7 @@ Read-Only:
 - `id` (String) Unique identifier for the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--parameters--instance--labels))
 - `name` (String) The name of this parameter.
-- `options` (List of String) Options, each encoded as JSON.
+- `options` (List of String) Choices for Enum parameters, each encoded as JSON.
 - `required` (Boolean) Whether a parameter value must be provided.
 - `type` (String) The type of this parameter.
 
