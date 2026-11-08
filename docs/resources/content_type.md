@@ -61,6 +61,8 @@ Creating a Content Type, or changing its managed draft through Terraform, activa
 
 Managed updates write the complete draft, including values retained by `ignore_changes`. An external draft whose changes are all ignored is left untouched. Deactivating outside Terraform is reflected in state; Terraform does not reactivate until a later managed change writes a draft eligible for activation.
 
+Configuration must pass validation even when destroying. If validation rejects an older configuration, correct it before destroying; no intermediate apply is needed. Imported values remain readable, but an update must satisfy validation for all fields it sends, including ignored values.
+
 ## Remove a field
 
 Remove a field from an activated Content Type in two applies:
@@ -98,7 +100,7 @@ The provider retries Content Type creation, updates, or activation after explici
 - `description` (String) Description of the content type.
 - `display_field` (String) Field ID to use as the display field for entries of this content type.
 - `environment_id` (String) ID of the environment containing the Content Type. Changing this value replaces the resource.
-- `fields` (Attributes List) List of fields that belong to this content type. (see [below for nested schema](#nestedatt--fields))
+- `fields` (Attributes List) List of fields that belong to this content type. Field IDs must be unique. (see [below for nested schema](#nestedatt--fields))
 - `name` (String) Name of the content type.
 - `space_id` (String) ID of the space containing the Content Type. Changing this value replaces the resource.
 

@@ -88,6 +88,12 @@ func FieldsListToContentTypeRequestDataFields(
 		return nil, diags
 	}
 
+	diags.Append(validateContentTypeFieldIDs(fieldsList, valuePath)...)
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
 	return convertKnownObjectListElements(ctx, valuePath, fieldsList.Elements(), ToContentTypeRequestDataFieldsItem)
 }
 
@@ -137,6 +143,7 @@ func ToContentTypeRequestDataFieldsItem(
 			"The content type field default value must be known before it can be sent to Contentful.",
 		)
 	} else if !v.DefaultValue.IsNull() {
+		diags.Append(contentTypeJSONObjectValidator().validate(v.DefaultValue.ValueString(), valuePath.AtName("default_value"))...)
 		defaultValue = jx.Raw(v.DefaultValue.ValueString())
 	}
 
@@ -275,6 +282,7 @@ func ValidationsListToContentTypeRequestDataFieldValidations(
 				"Null validations cannot be sent to Contentful.",
 			)
 		default:
+			diags.Append(contentTypeJSONObjectValidator().validate(validation.ValueString(), validationPath)...)
 			validations = append(validations, jx.Raw(validation.ValueString()))
 		}
 	}

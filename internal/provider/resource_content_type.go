@@ -15,11 +15,12 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*contentTypeResource)(nil)
-	_ resource.ResourceWithConfigure   = (*contentTypeResource)(nil)
-	_ resource.ResourceWithIdentity    = (*contentTypeResource)(nil)
-	_ resource.ResourceWithImportState = (*contentTypeResource)(nil)
-	_ resource.ResourceWithModifyPlan  = (*contentTypeResource)(nil)
+	_ resource.Resource                   = (*contentTypeResource)(nil)
+	_ resource.ResourceWithValidateConfig = (*contentTypeResource)(nil)
+	_ resource.ResourceWithConfigure      = (*contentTypeResource)(nil)
+	_ resource.ResourceWithIdentity       = (*contentTypeResource)(nil)
+	_ resource.ResourceWithImportState    = (*contentTypeResource)(nil)
+	_ resource.ResourceWithModifyPlan     = (*contentTypeResource)(nil)
 )
 
 //nolint:ireturn
@@ -86,6 +87,17 @@ func (r *contentTypeResource) Metadata(_ context.Context, req resource.MetadataR
 
 func (r *contentTypeResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = ContentTypeResourceSchema(ctx)
+}
+
+func (r *contentTypeResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var fields TypedList[TypedObject[ContentTypeFieldValue]]
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("fields"), &fields)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(validateContentTypeFieldIDs(fields, path.Root("fields"))...)
 }
 
 func (r *contentTypeResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
