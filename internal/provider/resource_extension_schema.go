@@ -51,6 +51,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 			"extension": schema.SingleNestedAttribute{
 				Description: "Extension configuration.",
 				Attributes:  ExtensionResourceExtensionSchemaAttributes(ctx),
+				Validators:  []validator.Object{extensionConfigurationValidator{}},
 				Required:    true,
 			},
 			"parameters": schema.StringAttribute{
@@ -90,7 +91,7 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			Computed:    true,
 		},
 		"field_types": schema.ListNestedAttribute{
-			Description: "Field types where an extension can be used.",
+			Description: "Field types where an extension can be used. Array fields require `items`; Link fields require `link_type`.",
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
@@ -134,7 +135,7 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 				"installation": schema.ListNestedAttribute{
 					Description: "Parameter definitions for each extension installation.",
 					NestedObject: schema.NestedAttributeObject{
-						Attributes: AppDefinitionParameterSchemaAttributes(ctx),
+						Attributes: extensionParameterSchemaAttributes(ctx),
 					},
 					Optional: true,
 					Validators: []validator.List{
@@ -144,7 +145,7 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 				"instance": schema.ListNestedAttribute{
 					Description: "Parameter definitions for each use of the extension as a field editor.",
 					NestedObject: schema.NestedAttributeObject{
-						Attributes: AppDefinitionParameterSchemaAttributes(ctx),
+						Attributes: extensionParameterSchemaAttributes(ctx),
 					},
 					Optional: true,
 					Validators: []validator.List{
@@ -155,4 +156,17 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			Optional: true,
 		},
 	}
+}
+
+//nolint:forcetypeassert // The shared schema builder declares these concrete attribute types.
+func extensionParameterSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+	attributes := AppDefinitionParameterSchemaAttributes(ctx)
+	defaultValue := attributes["default"].(schema.StringAttribute)
+	defaultValue.Description = "Default parameter value encoded as JSON. For Symbol, Enum, and Secret, use a JSON string; for Number, a JSON number; for Boolean, a JSON boolean. An Enum default must match an option value. Omit this attribute to leave the default unspecified."
+	attributes["default"] = defaultValue
+	options := attributes["options"].(schema.ListAttribute)
+	options.Description = "Required nonempty choices for Enum parameters; omit for other recognized parameter types. Each option is encoded as JSON. Use all nonempty JSON strings, or all single-member JSON objects mapping option values to string labels."
+	attributes["options"] = options
+
+	return attributes
 }

@@ -829,7 +829,16 @@ in that case. An empty `src` is invalid, while an explicitly empty `srcdoc` is
 accepted and round-trips. The provider does not silently rewrite either
 explicit value to omission. The first-party contract and live CMA observations
 are recorded in the
-[Extension source values note](../research/ui-extensions.md).
+[Extension configuration note](../research/ui-extensions.md).
+
+Extension field-type and parameter-definition validation is scoped to
+`extension.field_types` and `extension.parameters`; it does not validate the
+resource-level installation values. Configuration validation defers unknowns.
+Create and Update validate the effective Plan before decoding the native model
+and sending a mutation, including definitions retained by `ignore_changes`.
+Read/import preserve representable definitions without imposing request rules.
+Validation is not performed during plan modification, so replacement planning
+can select configuration values after an intermediate plan retaining old state.
 
 Extension state version zero is decoded with its own historical schema and
 models, including nested field types, parameter definitions, and timeouts. The
