@@ -26,21 +26,43 @@ not create content fields or select the app as their editor.
 
 Contentful validates field types and link targets. Array item types are not
 interchangeable with outer field types; for example, use `Symbol` or `Link` for
-array items. The provider accepts `ResourceLink` definitions with `link_type`
-following the Contentful SDK's structure, but successful App Definition API
-support for these forms has not been established.
+array items. ResourceLink and unfamiliar field types are left to Contentful to
+validate, including their nested attributes. The provider can represent these
+forms, but successful App Definition API support has not been established.
+
+## Parameter values
+
+Defaults are encoded as JSON. For Symbol, Number, Boolean, Enum, and Secret,
+provide a JSON string, number, or boolean appropriate for the parameter type.
+Omit `default` to leave it unspecified; JSON `null` is rejected.
+
+Options may be omitted. For these types, a configured options list must be
+nonempty. Each option must encode a nonempty JSON string or an object with exactly
+one member, for example `{"light":"Light"}`.
+The provider leaves identifier syntax and uniqueness, unfamiliar
+parameter types, and instance Secret restrictions to Contentful.
+
+Do not put real secrets in declaration defaults. A Secret declaration does not
+establish secrecy or redaction guarantees for installed instance values.
+
+## Validation limits
+
+Values unknown during planning are checked before writing. Terraform can discard
+misspelled nested keys before the provider receives them, so validation cannot detect
+every typo. Use the documented snake_case attribute names.
 
 ## Updating existing definitions
 
-Reads and imports preserve existing location values, including values that would
-be invalid in a new request. Updates validate the complete planned locations,
+Reads and imports preserve existing location and parameter values, including values that would
+be invalid in a new request. Updates validate the complete planned locations and parameters,
 including values retained by `ignore_changes`. An unrelated update can therefore
 plan successfully and fail during apply before this definition is written to
 Contentful. Other resources in the apply may already have changed.
 
-Correct invalid locations before updating the definition. If locations are
-ignored, remove the relevant `ignore_changes` rule to apply the correction.
-Configuration must still be valid, including when destroying the resource.
+Correct invalid values before updating the definition.
+Configuration must still be valid, including when destroying the resource. If a
+configuration error blocks destroy, correct the configuration and retry destroy;
+that correction does not first need to be applied to Contentful.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}

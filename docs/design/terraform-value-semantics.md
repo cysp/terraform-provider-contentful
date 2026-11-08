@@ -16,7 +16,7 @@ implementation uses the Framework version pinned in [`go.mod`](../../go.mod).
 | App Installation parameters | [Redacted responses, complete-object ownership, and import](app-installation-secret-parameters.md#response-contract) |
 | Locking and retries | [Editor Interface preconditions](#editor-interface-version-preconditions), [private optimistic-lock barrier](#provider-private-optimistic-lock-barrier), [taxonomy locking](#taxonomy-optimistic-version-locking), and [HTTP retry policy](contentful-http-retry-policy.md) |
 | Taxonomy values | [Collection ownership](#taxonomy-optionalcomputed-collection-ownership) and [response canonicalization](#taxonomy-response-canonicalization) |
-| Other resource contracts | [App Definition locations](#app-definition-locations), [App Action identity](#app-action-identity), [Webhook signing secret](webhook-signing-secret.md), [Webhook password](#webhook-basic-password), [Delivery API key environments](#delivery-api-key-environments), [Extension sources](#extension-sources), [Space Enablements](#space-enablements), and [Live Preview variables](#live-preview-variables) |
+| Other resource contracts | [App Definition configuration](#app-definition-configuration), [App Action identity](#app-action-identity), [Webhook signing secret](webhook-signing-secret.md), [Webhook password](#webhook-basic-password), [Delivery API key environments](#delivery-api-key-environments), [Extension sources](#extension-sources), [Space Enablements](#space-enablements), and [Live Preview variables](#live-preview-variables) |
 
 `Config`, `Plan`, and `State` in the tables refer to Terraform configuration, the
 effective plan after lifecycle processing, and prior state. A known planned value is
@@ -106,25 +106,34 @@ The affected concept collections are `alt_labels`, `hidden_labels`,
 `notations`, `broader_concept_ids`, and `related_concept_ids`. The affected
 scheme collections are `top_concept_ids` and `concept_ids`.
 
-### App Definition locations
+### App Definition configuration
 
-Configuration validation checks established location and field-type relationships
-while deferring unknown values. Create and Update validate the complete final
-plan, including values retained by `ignore_changes`, and require known values
-and valid required children before mutation. Read and import preserve
-representable values without applying request validation.
+Configuration validation checks known location and parameter values. Create/Update
+validate the final Plan before model decoding or mutation, including values retained
+by `ignore_changes`. Read/import preserve representable responses without imposing
+write restrictions. Shared UI Extension conversion does not acquire App Definition
+validation rules. Location and field-type collection uniqueness is left to CMA;
+the provider preserves duplicate entries in requests. Recognized field relationships
+share validation with Extensions, descending only into known Array definitions.
+Unrecognized field types, including ResourceLink, remain semantically opaque;
+request knownness and representability checks still apply. App Definition option
+cardinality follows the [shared JSON interpretation](#json-normalization), without
+an exception for duplicate keys. The original request JSON is not rewritten.
 
-Effective location values are not rejected during plan modification. Terraform
-can first propose an update with ignored prior values, then determine that
-replacement is required and plan creation from the original configuration.
-Rejecting the intermediate proposal would block a valid replacement. See
-[Terraform's replacement planning](https://github.com/hashicorp/terraform/blob/v1.16.0/internal/terraform/node_resource_abstract_instance.go#L1195-L1244).
-An unrelated update retaining invalid locations can therefore plan successfully
-and fail before its Contentful write; other resources may already have changed.
+Validation must preserve valid replacement replanning. Terraform can first propose
+an update using ignored prior state, then select replacement and replan creation from
+Config. Rejecting that intermediate proposal would block a valid replacement, so
+checks of effective values run before Create/Update writes. See
+[Terraform replacement planning](https://github.com/hashicorp/terraform/blob/v1.17.1/internal/terraform/node_resource_abstract_instance.go#L953-L1157)
+and the [replacement tests](../../internal/provider/resource_app_definition_locations_lifecycle_test.go).
+An unrelated update retaining invalid state can consequently fail at apply before its
+own write, after independent resources may have changed.
 
-Location and field-type strings remain open. Structural validation does not
-establish service support for a type or target. See the [App Definition API
-evidence](../research/app-framework/configuration.md#app-definition-nested-location-configuration).
+Configuration validation also runs during ordinary destroy, even with
+`ignore_changes`. Correcting Config permits deletion of representable irregular
+State without first applying the correction remotely. See the
+[destroy recovery tests](../../internal/provider/resource_app_definition_parameters_lifecycle_test.go)
+and [practitioner recovery steps](../resources/app_definition.md#updating-existing-definitions).
 
 ### App Action category parameters
 

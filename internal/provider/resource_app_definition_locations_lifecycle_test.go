@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -213,23 +214,26 @@ resource "contentful_app_definition" "test" {
 	}
 }
 
-func TestAccAppDefinitionResourceReplacesImportedLocations(t *testing.T) {
+func TestAccAppDefinitionResourceReplacesImportedValues(t *testing.T) {
 	t.Parallel()
 
 	for _, test := range []struct {
-		name, organization           string
-		createBeforeDestroy, tainted bool
+		name, organization, attribute string
+		createBeforeDestroy, tainted  bool
 	}{
-		{name: "organization delete before create", organization: "new-org"},
-		{name: "organization create before destroy", organization: "new-org", createBeforeDestroy: true},
-		{name: "tainted", organization: "org", tainted: true},
+		{name: "locations delete before create", attribute: "locations", organization: "new-org"},
+		{name: "locations create before destroy", attribute: "locations", organization: "new-org", createBeforeDestroy: true},
+		{name: "locations tainted", attribute: "locations", organization: "org", tainted: true},
+		{name: "parameters delete before create", attribute: "parameters", organization: "new-org"},
+		{name: "parameters create before destroy", attribute: "parameters", organization: "new-org", createBeforeDestroy: true},
+		{name: "parameters tainted", attribute: "parameters", organization: "org", tainted: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
 			var (
 				originalPath = "/organizations/org/app_definitions/app"
-				originalBody = testJSON(map[string]any{
+				originalBody = map[string]any{
 					"sys": map[string]any{
 						"type":         "AppDefinition",
 						"id":           "app",
@@ -238,12 +242,12 @@ func TestAccAppDefinitionResourceReplacesImportedLocations(t *testing.T) {
 					"name":      "App",
 					"src":       "https://example.invalid/app",
 					"locations": []any{map[string]any{"location": "app-config"}, map[string]any{"location": "dialog", "fieldTypes": []any{}}},
-				})
+				}
 			)
 
 			collectionPath := "/organizations/" + test.organization + "/app_definitions"
 			replacementPath := collectionPath + "/replacement"
-			replacementBody := testJSON(map[string]any{
+			replacementBody := map[string]any{
 				"sys": map[string]any{
 					"type":         "AppDefinition",
 					"id":           "replacement",
@@ -252,14 +256,27 @@ func TestAccAppDefinitionResourceReplacesImportedLocations(t *testing.T) {
 				"name":      "App",
 				"src":       "https://example.invalid/app",
 				"locations": []any{map[string]any{"location": "app-config"}},
-			})
+			}
 
 			var (
 				mutex     sync.Mutex
 				mutations []string
 			)
 
-			bodies := map[string]string{originalPath: originalBody}
+			expectedRequest := map[string]any{
+				"name": "App", "src": "https://example.invalid/app", "locations": []any{map[string]any{"location": "app-config"}},
+			}
+			parametersConfig := ""
+
+			if test.attribute == "parameters" {
+				originalBody["locations"] = []any{map[string]any{"location": "app-config"}}
+				originalBody["parameters"] = map[string]any{"instance": []any{map[string]any{"id": "setting", "name": "Setting", "type": "Enum", "options": []any{}}}}
+				replacementBody["parameters"] = map[string]any{"instance": []any{map[string]any{"id": "setting", "name": "Setting", "type": "Enum", "options": []any{"light"}}}}
+				expectedRequest["parameters"] = map[string]any{"instance": []any{map[string]any{"id": "setting", "name": "Setting", "type": "Enum", "options": []any{"light"}}}}
+				parametersConfig = `parameters = { instance = [{id = "setting", name = "Setting", type = "Enum", options = [jsonencode("light")]}] }`
+			}
+
+			bodies := map[string]string{originalPath: testJSON(originalBody)}
 
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				mutex.Lock()
@@ -290,16 +307,12 @@ func TestAccAppDefinitionResourceReplacesImportedLocations(t *testing.T) {
 						return
 					}
 
-					assert.JSONEq(t, testJSON(map[string]any{
-						"name":      "App",
-						"src":       "https://example.invalid/app",
-						"locations": []any{map[string]any{"location": "app-config"}},
-					}), string(request))
+					assert.JSONEq(t, testJSON(expectedRequest), string(request))
 
-					bodies[replacementPath] = replacementBody
+					bodies[replacementPath] = testJSON(replacementBody)
 
 					w.WriteHeader(http.StatusCreated)
-					fmt.Fprint(w, replacementBody)
+					fmt.Fprint(w, testJSON(replacementBody))
 				case http.MethodDelete:
 					assert.Contains(t, bodies, r.URL.Path)
 					mutations = append(mutations, r.Method+" "+r.URL.Path)
@@ -312,26 +325,36 @@ func TestAccAppDefinitionResourceReplacesImportedLocations(t *testing.T) {
 			})
 
 			const configTemplate = `resource "contentful_app_definition" "test" {
- organization_id = %q
+ organization_id = %[1]q
  name = "App"
  src = "https://example.invalid/app"
  locations = [{ location = "app-config" }]
+ %[2]s
  lifecycle {
-  ignore_changes = [locations]
-  create_before_destroy = %t
+  ignore_changes = [%[3]s]
+  create_before_destroy = %[4]t
  }
 }`
 
-			existing := fmt.Sprintf(configTemplate, "org", test.createBeforeDestroy)
-			replaced := fmt.Sprintf(configTemplate, test.organization, test.createBeforeDestroy)
+			existing := fmt.Sprintf(configTemplate, "org", parametersConfig, test.attribute, test.createBeforeDestroy)
+			replaced := fmt.Sprintf(configTemplate, test.organization, parametersConfig, test.attribute, test.createBeforeDestroy)
 
-			replacementPlan := resource.TestStep{Config: replaced, PlanOnly: true, ExpectNonEmptyPlan: true}
+			action := plancheck.ResourceActionDestroyBeforeCreate
+			if test.createBeforeDestroy {
+				action = plancheck.ResourceActionCreateBeforeDestroy
+			}
+
+			replacementPlan := resource.TestStep{
+				Config: replaced, PlanOnly: true, ExpectNonEmptyPlan: true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_app_definition.test", action)}},
+			}
 			if test.tainted {
 				replacementPlan.Taint = []string{"contentful_app_definition.test"}
 			}
 
 			testAccMockedResource(t, handler, resource.TestCase{Steps: []resource.TestStep{
 				{Config: existing, ResourceName: "contentful_app_definition.test", ImportState: true, ImportStateId: "org/app", ImportStatePersist: true},
+				{Config: existing, PlanOnly: true, ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_app_definition.test", plancheck.ResourceActionNoop)}}},
 				replacementPlan,
 				{Config: replaced, PreConfig: func() {
 					mutex.Lock()
@@ -350,6 +373,7 @@ func TestAccAppDefinitionResourceReplacesImportedLocations(t *testing.T) {
 			defer mutex.Unlock()
 
 			assert.Equal(t, expected, mutations)
+			assert.Empty(t, bodies)
 		})
 	}
 }

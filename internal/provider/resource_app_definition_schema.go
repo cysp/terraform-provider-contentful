@@ -78,18 +78,18 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 										Required:    true,
 									},
 									"link_type": schema.StringAttribute{
-										Description: "Type of linked resource. Required for `Link` and `ResourceLink` fields; omit for other field types. For `Link`, use `Entry` or `Asset`. For linked array items, configure `items.link_type`. Successful App Definition API support for `ResourceLink` has not been established.",
+										Description: "Type of linked resource. Required for `Link` fields; omit for scalar field types. For `Link`, use `Entry` or `Asset`. For linked array items, configure `items.link_type`. Contentful validates `ResourceLink` configuration; successful App Definition API support has not been established.",
 										Optional:    true,
 									},
 									"items": schema.SingleNestedAttribute{
-										Description: "Required item type definition for `Array` fields. Omit for other field types.",
+										Description: "Required item type definition for `Array` fields. Omit for scalar and `Link` fields.",
 										Attributes: map[string]schema.Attribute{
 											"type": schema.StringAttribute{
 												Description: "Array item type, such as `Symbol` or `Link`.",
 												Required:    true,
 											},
 											"link_type": schema.StringAttribute{
-												Description: "Type of linked resource. Required for `Link` and `ResourceLink` items; omit for other item types. For `Link`, use `Entry` or `Asset`. Successful App Definition API support for `ResourceLink` has not been established.",
+												Description: "Type of linked resource. Required for `Link` items; omit for scalar item types. For `Link`, use `Entry` or `Asset`. Contentful validates `ResourceLink` configuration; successful App Definition API support has not been established.",
 												Optional:    true,
 											},
 										},
@@ -130,7 +130,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 					"installation": schema.ListNestedAttribute{
 						Description: "Parameter definitions for each app installation.",
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: AppDefinitionParameterSchemaAttributes(ctx),
+							Attributes: appDefinitionParameterSchemaAttributes(ctx),
 						},
 						Optional: true,
 						Validators: []validator.List{
@@ -140,7 +140,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 					"instance": schema.ListNestedAttribute{
 						Description: "Parameter definitions for each use of the app, such as a field editor. Maximum eight definitions.",
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: AppDefinitionParameterSchemaAttributes(ctx),
+							Attributes: appDefinitionParameterSchemaAttributes(ctx),
 						},
 						Optional: true,
 						Validators: []validator.List{
@@ -148,7 +148,8 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 				},
-				Optional: true,
+				Optional:   true,
+				Validators: []validator.Object{appDefinitionParametersValidator{}},
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
 		},
@@ -210,4 +211,20 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			Optional: true,
 		},
 	}
+}
+
+// App Definition and Extension parameter JSON contracts differ, so keep the
+// resource-specific help separate from the shared schema shape.
+//
+//nolint:forcetypeassert // The shared builder declares these concrete attribute types.
+func appDefinitionParameterSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+	attributes := AppDefinitionParameterSchemaAttributes(ctx)
+	defaultValue := attributes["default"].(schema.StringAttribute)
+	defaultValue.Description = "Default parameter value encoded as JSON. For Symbol, Number, Boolean, Enum, and Secret, provide a JSON string, number, or boolean appropriate for the parameter type. Omit this attribute to leave the default unspecified."
+	attributes["default"] = defaultValue
+	options := attributes["options"].(schema.ListAttribute)
+	options.Description = "Optional parameter choices, each encoded as JSON. For Symbol, Number, Boolean, Enum, and Secret, a configured list must be nonempty. Each option must encode a nonempty JSON string or an object with exactly one member. Omit this attribute to leave options unspecified."
+	attributes["options"] = options
+
+	return attributes
 }

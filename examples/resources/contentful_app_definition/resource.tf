@@ -25,6 +25,12 @@ resource "contentful_app_definition" "this" {
   parameters = {
     installation = [
       {
+        id      = "refreshInterval"
+        name    = "Refresh interval"
+        type    = "Number"
+        default = jsonencode(42)
+      },
+      {
         id   = "accessToken"
         name = "Access Token"
         type = "Secret"

@@ -124,6 +124,34 @@ page location without `src` or a bundle failed a value dependency requiring a
 hosting source. The diagnostics also referred to frontend bundles; bundle-hosting
 behavior was not tested.
 
+### App Definition parameter declarations
+
+On 2026-11-07, disposable uninstalled definitions on `api.contentful.com` were
+updated from valid controls, with immediate and later GETs. Across the location
+and parameter experiments and repeat controls, 52 of 96 cases were accepted and
+preserved; 44 were rejected with the prior definition unchanged. Cleanup was
+confirmed by subsequent 404 reads. No bundle was attached; organization
+entitlements and Contentful UI behavior were not established.
+
+| Submitted parameter declaration | Observed result |
+| --- | --- |
+| Cross-type scalar defaults, including Number with a string or Boolean default | 200; preserved |
+| Object or JSON-null defaults for Symbol, Number, Boolean, Enum, or Secret; array default for Number | 422 |
+| Omitted Enum options, or nonempty options on non-Enum types | 200; preserved |
+| Empty options for Symbol, Number, Boolean, Enum, or Secret | 422 |
+| Mixed string/labeled options, repeated option values, and single-member objects with non-string labels | 200; preserved |
+| Empty string, scalar non-string, null, array, empty-object, or multi-member-object options | 422 |
+| Enum defaults outside the option values | 200; preserved |
+| Instance Secret declaration | 200; preserved |
+| Nine instance declarations | 422 |
+
+The [App Parameters guide][app-parameters] describes stricter type matching and
+Enum relationships. These observations establish management API persistence for
+the tested definitions, not rendering, installed parameter behavior, secret
+redaction, or support across every account. Duplicate JSON member names were not
+tested. UI Extension parameter declarations have a separate
+[observed contract](../ui-extensions.md).
+
 ### Observed installation reads
 
 The [supplied read-only study](README.md#source-metadata) covered environment-scoped
