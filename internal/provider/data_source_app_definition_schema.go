@@ -98,7 +98,7 @@ func AppDefinitionParameterDataSourceSchemaAttributes(ctx context.Context) map[s
 			Computed:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "Options, each encoded as JSON.",
+			Description: "Choices for Enum parameters, each encoded as JSON.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Computed:    true,

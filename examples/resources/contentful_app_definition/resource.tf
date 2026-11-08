@@ -30,5 +30,14 @@ resource "contentful_app_definition" "this" {
         type = "Secret"
       },
     ]
+    instance = [
+      {
+        id      = "theme"
+        name    = "Theme"
+        type    = "Enum"
+        default = jsonencode("light")
+        options = [jsonencode({ light = "Light" }), jsonencode({ dark = "Dark" })]
+      },
+    ]
   }
 }

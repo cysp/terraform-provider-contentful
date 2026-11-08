@@ -70,7 +70,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 							Required:    true,
 						},
 						"field_types": schema.ListNestedAttribute{
-							Description: "Field definitions for `entry-field` locations. At least one is required; omit for other locations.",
+							Description: "Field types the app can edit at `entry-field` locations. At least one is required; omit for other locations.",
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"type": schema.StringAttribute{
@@ -78,7 +78,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 										Required:    true,
 									},
 									"link_type": schema.StringAttribute{
-										Description: "Type of linked resource. Required for `Link` and `ResourceLink` fields; omit for other field types. For `Link`, use `Entry` or `Asset`. For linked array items, configure `items.link_type`. See [Field types](#field-types) for the ResourceLink support limitation.",
+										Description: "Type of linked resource. Required for `Link` and `ResourceLink` fields; omit for other field types. For `Link`, use `Entry` or `Asset`. For linked array items, configure `items.link_type`. Successful App Definition API support for `ResourceLink` has not been established.",
 										Optional:    true,
 									},
 									"items": schema.SingleNestedAttribute{
@@ -89,7 +89,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 												Required:    true,
 											},
 											"link_type": schema.StringAttribute{
-												Description: "Type of linked resource. Required for `Link` and `ResourceLink` items; omit for other item types. For `Link`, use `Entry` or `Asset`. See [Field types](#field-types) for the ResourceLink support limitation.",
+												Description: "Type of linked resource. Required for `Link` and `ResourceLink` items; omit for other item types. For `Link`, use `Entry` or `Asset`. Successful App Definition API support for `ResourceLink` has not been established.",
 												Optional:    true,
 											},
 										},
@@ -183,7 +183,7 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			Optional:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "Options, each encoded as JSON with `jsonencode`.",
+			Description: "Choices for Enum parameters, each encoded as JSON with `jsonencode`.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,
