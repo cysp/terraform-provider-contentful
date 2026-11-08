@@ -3,12 +3,12 @@
 page_title: "contentful_app_action Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately. See failure recovery before retrying a failed operation.
+  Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately.
 ---
 
 # contentful_app_action (Resource)
 
-Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately. See [failure recovery](#failure-recovery) before retrying a failed operation.
+Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately.
 
 ## Example Usage
 

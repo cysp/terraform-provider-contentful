@@ -10,7 +10,7 @@ import (
 
 func MarketplaceAppDefinitionDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Reads a Contentful Marketplace App Definition. Use its ID with `contentful_app_installation` to install the app.",
+		Description: "Reads a Contentful Marketplace App Definition. Use `app_definition_id` with `contentful_app_installation` to install the app.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform identifier in `organization_id/app_definition_id` form; not a Contentful system ID.",

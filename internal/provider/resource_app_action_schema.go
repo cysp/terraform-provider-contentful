@@ -14,7 +14,7 @@ import (
 
 func AppActionResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately. See [failure recovery](#failure-recovery) before retrying a failed operation.",
+		Description: "Manages a Contentful App Action in an existing App Definition. Function deployment and action invocation are handled separately.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description:   "Composite Terraform resource identifier in `organization_id/app_definition_id/app_action_id` form.",

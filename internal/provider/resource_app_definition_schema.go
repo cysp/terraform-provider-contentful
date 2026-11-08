@@ -54,7 +54,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"bundle_id": schema.StringAttribute{
-				Description: "ID of the App Bundle.",
+				Description: "ID of an App Bundle belonging to this definition. Omission retains the selected bundle during in-place updates.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -178,12 +178,12 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			Optional:    true,
 		},
 		"default": schema.StringAttribute{
-			Description: "Default value encoded as JSON.",
+			Description: "Default value encoded as JSON; use `jsonencode`.",
 			CustomType:  jsontypes.NormalizedType{},
 			Optional:    true,
 		},
 		"options": schema.ListAttribute{
-			Description: "Options, each encoded as JSON.",
+			Description: "Options, each encoded as JSON with `jsonencode`.",
 			ElementType: jsontypes.NormalizedType{},
 			CustomType:  NewTypedListNull[jsontypes.Normalized]().CustomType(ctx),
 			Optional:    true,

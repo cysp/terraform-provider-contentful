@@ -3,12 +3,12 @@
 page_title: "contentful_editor_interface Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Configures a Content Type's field controls, layout, and sidebar. Destroying this resource removes Terraform management without deleting or resetting the remote Editor Interface. See managing the interface for adoption and coordinated updates.
+  Configures a Content Type's field controls, layout, and sidebar. Import an existing modified interface before managing it. Destroying this resource removes Terraform management without deleting or resetting the remote Editor Interface.
 ---
 
 # contentful_editor_interface (Resource)
 
-Configures a Content Type's field controls, layout, and sidebar. Destroying this resource removes Terraform management without deleting or resetting the remote Editor Interface. See [managing the interface](#managing-the-interface) for adoption and coordinated updates.
+Configures a Content Type's field controls, layout, and sidebar. Import an existing modified interface before managing it. Destroying this resource removes Terraform management without deleting or resetting the remote Editor Interface.
 
 ## Example Usage
 
@@ -71,7 +71,7 @@ resource "contentful_editor_interface" "author" {
 ## Managing the interface
 
 Terraform can manage the initial interface created by Contentful on first
-activation without import. Import an existing modified interface to adopt it.
+activation without import.
 
 When changing a Content Type and its Editor Interface together, use the same
 provider configuration and reference the Content Type resource. This lets the

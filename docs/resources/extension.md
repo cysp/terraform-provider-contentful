@@ -132,10 +132,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default value encoded as JSON.
+- `default` (String) Default value encoded as JSON; use `jsonencode`.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--extension--parameters--installation--labels))
-- `options` (List of String) Options, each encoded as JSON.
+- `options` (List of String) Options, each encoded as JSON with `jsonencode`.
 - `required` (Boolean) Whether a parameter value must be provided.
 
 <a id="nestedatt--extension--parameters--installation--labels"></a>
@@ -160,10 +160,10 @@ Required:
 
 Optional:
 
-- `default` (String) Default value encoded as JSON.
+- `default` (String) Default value encoded as JSON; use `jsonencode`.
 - `description` (String) Help text describing the parameter.
 - `labels` (Attributes) Display labels for Boolean values and the empty Enum selection. (see [below for nested schema](#nestedatt--extension--parameters--instance--labels))
-- `options` (List of String) Options, each encoded as JSON.
+- `options` (List of String) Options, each encoded as JSON with `jsonencode`.
 - `required` (Boolean) Whether a parameter value must be provided.
 
 <a id="nestedatt--extension--parameters--instance--labels"></a>

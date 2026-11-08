@@ -18,7 +18,7 @@ import (
 func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Version:     1,
-		Description: "Configures a Content Type's field controls, layout, and sidebar. Destroying this resource removes Terraform management without deleting or resetting the remote Editor Interface. See [managing the interface](#managing-the-interface) for adoption and coordinated updates.",
+		Description: "Configures a Content Type's field controls, layout, and sidebar. Import an existing modified interface before managing it. Destroying this resource removes Terraform management without deleting or resetting the remote Editor Interface.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in `space_id/environment_id/content_type_id` form.",
