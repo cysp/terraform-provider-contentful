@@ -69,7 +69,7 @@ func AppActionResourceSchema(ctx context.Context) schema.Schema {
 				Validators:  []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 			"parameters": schema.StringAttribute{
-				Description: "Legacy parameter definitions for `Custom` actions, encoded as a JSON array. Each definition requires `id`, `name`, and `type` (`Boolean`, `Symbol`, `Number`, or `Enum`). `[]` defines no arguments. Built-in parameter definitions are available through the App Action data sources.",
+				Description: "Legacy parameter definitions for `Custom` actions, encoded as a JSON array. Each definition is an object with string `id`, `name`, and `type` members (`Boolean`, `Symbol`, `Number`, or `Enum`). `[]` defines no arguments. Built-in parameter definitions are available through the App Action data sources.",
 				Optional:    true,
 				CustomType:  jsontypes.NormalizedType{},
 				Validators:  []validator.String{appActionJSONValidator{array: true}},

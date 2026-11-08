@@ -29,6 +29,11 @@ After a failed create, check the App Definition for an action created without
 saved Terraform state and import it before applying again. After a failed update
 or delete, refresh state and review the plan before retrying.
 
+Read and import preserve existing Custom parameter definitions. Updates validate
+the complete planned `parameters`, including values retained by `ignore_changes`.
+Configuration must also be valid for `terraform destroy`; correct the
+configuration first, then destroy without applying the correction to Contentful.
+
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
 

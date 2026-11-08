@@ -56,7 +56,7 @@ func TestAppActionRequest(t *testing.T) {
 		{name: "unknown description", alter: func(plan *AppActionModel) { plan.Description = types.StringUnknown() }, wantError: true},
 		{name: "both executors", alter: func(plan *AppActionModel) { plan.FunctionID = types.StringValue("fn") }, wantError: true},
 		{name: "HTTP endpoint", alter: func(plan *AppActionModel) { plan.URL = types.StringValue("http://example.invalid") }, wantError: true},
-		{name: "service validates legacy members", alter: func(plan *AppActionModel) { plan.Parameters = jsontypes.NewNormalizedValue(testJSON([]any{nil})) }, want: testJSON([]any{nil})},
+		{name: "null legacy member rejected", alter: func(plan *AppActionModel) { plan.Parameters = jsontypes.NewNormalizedValue(testJSON([]any{nil})) }, wantError: true},
 		{name: "JSON null schema", alter: func(plan *AppActionModel) { plan.ResultSchema = jsontypes.NewNormalizedValue(testJSON(nil)) }, wantError: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
