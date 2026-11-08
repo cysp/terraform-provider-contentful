@@ -66,7 +66,7 @@ resource "contentful_webhook" "this" {
 - `http_basic_password` (String, Sensitive) HTTP Basic authentication password; configure it together with http_basic_username. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.
 - `http_basic_username` (String) HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `transformation` (Attributes) Customizes the outgoing webhook HTTP method, Content-Type, Content-Length header, and request body. When omitted, Contentful uses its standard webhook request behavior. (see [below for nested schema](#nestedatt--transformation))
+- `transformation` (Attributes) Customizes the outgoing webhook HTTP method, Content-Type, Content-Length header, and request body. When omitted, Contentful uses its standard webhook request behavior. Unsupported methods and content types prevent writes, including values retained by ignore_changes. Read and import preserve returned values. To destroy with unsupported configuration, correct the configuration and retry destroy; no intervening apply is required. (see [below for nested schema](#nestedatt--transformation))
 
 ### Read-Only
 

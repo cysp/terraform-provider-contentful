@@ -159,3 +159,15 @@ inferred from an App Event subscription or the local test server.
 [action-events]: https://www.contentful.com/developers/docs/extensibility/webhooks/action-events/
 [bulk-operations]: https://www.contentful.com/blog/bulk-content-operations/
 [live-events]: https://www.contentful.com/developers/changelog/monitor-your-events-in-the-live-events-dashboard/
+
+## Transformation request vocabulary
+
+The published [transformation contract](https://www.contentful.com/developers/docs/extensibility/webhooks/transformations/)
+limits methods to `POST`, `GET`, `PUT`, `PATCH`, and `DELETE`. It lists management
+JSON, JSON, and form URL-encoded content types, each with or without the exact
+`; charset=utf-8` suffix. Omission selects the service default. The body can be
+arbitrary JSON, and URLs may contain JSON-pointer templates.
+
+These are published constraints, not live observations of every spelling or
+server configuration. Future service additions require corresponding provider
+write-validation updates; readable responses remain unrestricted.
