@@ -60,3 +60,15 @@ explicit null, other widget properties, and concurrency were not part of these p
 [collection]: https://www.contentful.com/developers/docs/references/content-management-api/editor-interface/get-all-editor-interfaces-of-a-space/
 [detail]: https://www.contentful.com/developers/docs/references/content-management-api/editor-interface/get-the-editor-interface/
 [adapter]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/editor-interface.ts
+
+## Published settings and layout constraints
+
+The [Editor Interfaces guide](https://www.contentful.com/developers/docs/extensibility/app-framework/editor-interfaces/)
+describes settings as objects, group IDs as unique identifiers, and built-in
+`topLevelTab` controls for top-level groups rather than nested groups. The guide identifies `fieldset` as the other built-in group widget.
+
+These checks do not establish remote field existence, widget-specific settings,
+missing control defaults, or the complete accepted namespace/widget vocabulary.
+The layout constraints above are published
+evidence; the response and sidebar observations elsewhere in this note did not
+probe these constraints.

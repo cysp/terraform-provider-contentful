@@ -400,7 +400,7 @@ func TestEditorInterfaceRequestPreservesOpaqueSettings(t *testing.T) {
 		FieldID:         types.StringValue("field_id"),
 		WidgetNamespace: types.StringValue("widget_namespace"),
 		WidgetID:        types.StringValue("widget_id"),
-		Settings:        jsontypes.NewNormalizedValue("invalid json"),
+		Settings:        jsontypes.NewNormalizedValue(`{"futureSetting":{"value":9007199254740993,"enabled":false}}`),
 	})
 
 	controlValue3 := NewTypedObject(EditorInterfaceControlValue{
@@ -426,7 +426,7 @@ func TestEditorInterfaceRequestPreservesOpaqueSettings(t *testing.T) {
 	sidebarValue2 := NewTypedObject(EditorInterfaceSidebarValue{
 		WidgetNamespace: types.StringValue("widget_namespace"),
 		WidgetID:        types.StringValue("widget_id"),
-		Settings:        jsontypes.NewNormalizedValue("invalid json"),
+		Settings:        jsontypes.NewNormalizedValue(`{"futureSetting":{"value":9007199254740993,"enabled":false}}`),
 		Disabled:        types.BoolNull(),
 	})
 
@@ -465,7 +465,7 @@ func TestEditorInterfaceRequestPreservesOpaqueSettings(t *testing.T) {
 				FieldId:         "field_id",
 				WidgetNamespace: cm.NewOptString("widget_namespace"),
 				WidgetId:        cm.NewOptString("widget_id"),
-				Settings:        []byte("invalid json"),
+				Settings:        []byte(`{"futureSetting":{"value":9007199254740993,"enabled":false}}`),
 			},
 			{
 				FieldId:         "field_id",
@@ -482,7 +482,7 @@ func TestEditorInterfaceRequestPreservesOpaqueSettings(t *testing.T) {
 			{
 				WidgetNamespace: "widget_namespace",
 				WidgetId:        "widget_id",
-				Settings:        []byte("invalid json"),
+				Settings:        []byte(`{"futureSetting":{"value":9007199254740993,"enabled":false}}`),
 			},
 			{
 				WidgetNamespace: "widget_namespace",

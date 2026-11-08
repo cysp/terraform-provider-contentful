@@ -9,7 +9,7 @@ import (
 )
 
 func (model *EditorInterfaceModel) ToEditorInterfaceData(ctx context.Context) (cm.EditorInterfaceData, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+	diags := validateEditorInterfaceLayout(*model)
 
 	request := cm.EditorInterfaceData{}
 
