@@ -50,6 +50,9 @@ func TestAppDefinitionLocationValidation(t *testing.T) {
 	t.Parallel()
 
 	for _, test := range []struct{ name, locations, path, detail string }{
+		{"relative navigation", testJSON([]any{map[string]any{"location": "page", "navigation_item": map[string]any{"name": "Page", "path": "relative"}}}), "locations[0].navigation_item.path", "Navigation item path must begin with /, for example /dashboard."},
+		{"empty Link target", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Link", "link_type": ""}}}}), "locations[0].field_types[0].link_type", "Field type Link requires a nonempty link_type."},
+		{"Array Integer", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Array", "items": map[string]any{"type": "Integer"}}}}}), "locations[0].field_types[0].items.type", "This field type is not supported for Array items. Use Symbol or Link."},
 		{"dialog fields", testJSON([]any{map[string]any{"location": "dialog", "field_types": []any{}}}), "locations[0].field_types", `field_types cannot be configured for location "dialog". Omit this attribute.`},
 		{"dialog navigation", testJSON([]any{
 			map[string]any{"location": "dialog", "navigation_item": map[string]any{"name": "Name", "path": "/path"}},
@@ -71,20 +74,13 @@ func TestAppDefinitionLocationValidation(t *testing.T) {
 				"field_types": []any{map[string]any{"type": "Symbol", "items": map[string]any{"type": "Symbol"}}},
 			},
 		}), "locations[0].field_types[0].items", `Field type "Symbol" cannot have items. Omit this attribute.`},
-		{"Link missing target", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Link"}}}}), "locations[0].field_types[0].link_type", `Field type "Link" requires link_type.`},
-		{"ResourceLink missing target", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "ResourceLink"}}}}), "locations[0].field_types[0].link_type", `Field type "ResourceLink" requires link_type.`},
+		{"Link missing target", testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Link"}}}}), "locations[0].field_types[0].link_type", `Field type Link requires a nonempty link_type.`},
 		{"item Link missing target", testJSON([]any{
 			map[string]any{
 				"location":    "entry-field",
 				"field_types": []any{map[string]any{"type": "Array", "items": map[string]any{"type": "Link"}}},
 			},
-		}), "locations[0].field_types[0].items.link_type", `Field type "Link" requires link_type.`},
-		{"item ResourceLink missing target", testJSON([]any{
-			map[string]any{
-				"location":    "entry-field",
-				"field_types": []any{map[string]any{"type": "Array", "items": map[string]any{"type": "ResourceLink"}}},
-			},
-		}), "locations[0].field_types[0].items.link_type", `Field type "ResourceLink" requires link_type.`},
+		}), "locations[0].field_types[0].items.link_type", `Field type Link requires a nonempty link_type.`},
 		{"scalar link target", testJSON([]any{
 			map[string]any{
 				"location":    "entry-field",
@@ -129,7 +125,7 @@ func TestAppDefinitionLocationsOpenVocabulary(t *testing.T) {
 			map[string]any{
 				"location": "entry-field",
 				"field_types": []any{
-					map[string]any{"type": "Array", "items": map[string]any{"type": "Integer"}},
+					map[string]any{"type": "Array", "items": map[string]any{"type": "FutureItem"}},
 					map[string]any{"type": "Link", "link_type": "FutureTarget"},
 					map[string]any{"type": "ResourceLink", "link_type": ""},
 					map[string]any{
@@ -267,6 +263,37 @@ func TestAppDefinitionLocationsMutationUsesPlan(t *testing.T) {
 			{name: "null field type", locations: testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{}}}})},
 			{name: "unknown root", locations: testJSON([]any{}), unknown: true},
 			{name: "effective valid plan", locations: testJSON([]any{}), body: testJSON(map[string]any{"name": "App", "locations": []any{}}), response: testJSON(map[string]any{"sys": map[string]any{"type": "AppDefinition", "id": "app", "organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}}}, "name": "App", "locations": []any{}}), accepted: true},
+			{name: "duplicates forwarded", locations: testJSON([]any{
+				map[string]any{"location": "app-config"},
+				map[string]any{"location": "app-config"},
+				map[string]any{"location": "entry-field", "field_types": []any{
+					map[string]any{"type": "Symbol"},
+					map[string]any{"type": "Symbol"},
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}},
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}},
+				}},
+			}), body: testJSON(map[string]any{"name": "App", "locations": []any{
+				map[string]any{"location": "app-config"},
+				map[string]any{"location": "app-config"},
+				map[string]any{"location": "entry-field", "fieldTypes": []any{
+					map[string]any{"type": "Symbol"},
+					map[string]any{"type": "Symbol"},
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}},
+					map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}},
+				}},
+			}}), response: testJSON(map[string]any{
+				"sys":  map[string]any{"type": "AppDefinition", "id": "app", "organization": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "org"}}},
+				"name": "App", "locations": []any{
+					map[string]any{"location": "app-config"},
+					map[string]any{"location": "app-config"},
+					map[string]any{"location": "entry-field", "fieldTypes": []any{
+						map[string]any{"type": "Symbol"},
+						map[string]any{"type": "Symbol"},
+						map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}},
+						map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}},
+					}},
+				},
+			}), accepted: true},
 			{name: "open vocabulary", locations: testJSON([]any{
 				map[string]any{
 					"location": "FutureLocation",
@@ -274,12 +301,12 @@ func TestAppDefinitionLocationsMutationUsesPlan(t *testing.T) {
 						map[string]any{
 							"type":      "FutureType",
 							"link_type": "FutureTarget",
-							"items":     map[string]any{"type": "FutureItem", "link_type": "FutureItemTarget"},
+							"items":     map[string]any{"type": "Link"},
 						},
-						map[string]any{"type": "ResourceLink", "link_type": "Contentful:Entry"},
+						map[string]any{"type": "ResourceLink"},
 						map[string]any{
 							"type":  "Array",
-							"items": map[string]any{"type": "ResourceLink", "link_type": "Example:Record"},
+							"items": map[string]any{"type": "ResourceLink"},
 						},
 					},
 					"navigation_item": map[string]any{"name": "Page", "path": "/page"},
@@ -293,10 +320,10 @@ func TestAppDefinitionLocationsMutationUsesPlan(t *testing.T) {
 							map[string]any{
 								"type":     "FutureType",
 								"linkType": "FutureTarget",
-								"items":    map[string]any{"type": "FutureItem", "linkType": "FutureItemTarget"},
+								"items":    map[string]any{"type": "Link"},
 							},
-							map[string]any{"type": "ResourceLink", "linkType": "Contentful:Entry"},
-							map[string]any{"type": "Array", "items": map[string]any{"type": "ResourceLink", "linkType": "Example:Record"}},
+							map[string]any{"type": "ResourceLink"},
+							map[string]any{"type": "Array", "items": map[string]any{"type": "ResourceLink"}},
 						},
 						"navigationItem": map[string]any{"name": "Page", "path": "/page"},
 					},
@@ -311,10 +338,10 @@ func TestAppDefinitionLocationsMutationUsesPlan(t *testing.T) {
 							map[string]any{
 								"type":     "FutureType",
 								"linkType": "FutureTarget",
-								"items":    map[string]any{"type": "FutureItem", "linkType": "FutureItemTarget"},
+								"items":    map[string]any{"type": "Link"},
 							},
-							map[string]any{"type": "ResourceLink", "linkType": "Contentful:Entry"},
-							map[string]any{"type": "Array", "items": map[string]any{"type": "ResourceLink", "linkType": "Example:Record"}},
+							map[string]any{"type": "ResourceLink"},
+							map[string]any{"type": "Array", "items": map[string]any{"type": "ResourceLink"}},
 						},
 						"navigationItem": map[string]any{"name": "Page", "path": "/page"},
 					},
@@ -441,7 +468,7 @@ func TestAppDefinitionLocationsPartialKnowledge(t *testing.T) {
 				"location":    "FutureLocation",
 				"field_types": []any{map[string]any{"type": "FutureType", "items": map[string]any{"type": "Link"}}},
 			},
-		}), detail: `Field type "Link" requires link_type.`},
+		})},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
@@ -457,6 +484,67 @@ func TestAppDefinitionLocationsPartialKnowledge(t *testing.T) {
 			} else {
 				require.Len(t, diags, 1)
 				assert.Equal(t, test.detail, diags[0].Detail())
+			}
+		})
+	}
+}
+
+func TestAppDefinitionLocationDuplicatesDeferred(t *testing.T) {
+	t.Parallel()
+
+	for _, test := range []struct {
+		name      string
+		locations []any
+	}{
+		{"app-config", []any{map[string]any{"location": "app-config"}, map[string]any{"location": "app-config"}}},
+		{"Symbol", []any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Symbol"}, map[string]any{"type": "Symbol"}}}}},
+		{"Array Symbol", []any{map[string]any{"location": "entry-field", "field_types": []any{map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}}, map[string]any{"type": "Array", "items": map[string]any{"type": "Symbol"}}}}}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			plan := appDefinitionLocationsTestPlan(t, testJSON(test.locations))
+			response := validator.ListResponse{}
+			appDefinitionLocationsValidator{}.ValidateList(t.Context(), validator.ListRequest{Path: path.Root("locations"), ConfigValue: appDefinitionLocationsTestValue(t, plan)}, &response)
+			assert.Empty(t, response.Diagnostics)
+			assert.Empty(t, validateAppDefinitionPlannedLocations(t.Context(), plan))
+		})
+	}
+}
+
+func TestAppDefinitionOpaqueFieldTypes(t *testing.T) {
+	t.Parallel()
+
+	for _, test := range []struct {
+		name    string
+		field   map[string]any
+		unknown bool
+	}{
+		{"ResourceLink missing target", map[string]any{"type": "ResourceLink"}, false},
+		{"ResourceLink nested Link", map[string]any{"type": "ResourceLink", "items": map[string]any{"type": "Link"}}, false},
+		{"Array ResourceLink missing target", map[string]any{"type": "Array", "items": map[string]any{"type": "ResourceLink"}}, false},
+		{"future type nested Link", map[string]any{"type": "FutureType", "items": map[string]any{"type": "Link"}}, false},
+		{"unknown type nested Link", map[string]any{"type": "FutureType", "items": map[string]any{"type": "Link"}}, true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			plan := appDefinitionLocationsTestPlan(t, testJSON([]any{map[string]any{"location": "entry-field", "field_types": []any{test.field}}}))
+			if test.unknown {
+				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("locations").AtListIndex(0).AtName("field_types").AtListIndex(0).AtName("type"), types.StringUnknown()))
+			}
+
+			response := validator.ListResponse{}
+			appDefinitionLocationsValidator{}.ValidateList(t.Context(), validator.ListRequest{Path: path.Root("locations"), ConfigValue: appDefinitionLocationsTestValue(t, plan)}, &response)
+			assert.Empty(t, response.Diagnostics)
+
+			diags := validateAppDefinitionPlannedLocations(t.Context(), plan)
+			if test.unknown {
+				require.Len(t, diags, 1)
+				assert.Equal(t, "Unknown App Definition location value", diags[0].Summary())
+				assert.Equal(t, "locations[0].field_types[0].type", appDefinitionParameterDiagnosticPath(t, diags[0]).String())
+			} else {
+				assert.Empty(t, diags)
 			}
 		})
 	}

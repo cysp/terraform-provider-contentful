@@ -58,6 +58,7 @@ func (r *appDefinitionResource) Create(ctx context.Context, req resource.CreateR
 	)
 
 	resp.Diagnostics.Append(validateAppDefinitionPlannedLocations(ctx, req.Plan)...)
+	resp.Diagnostics.Append(validateAppDefinitionPlannedParameters(ctx, req.Plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -196,6 +197,7 @@ func (r *appDefinitionResource) Update(ctx context.Context, req resource.UpdateR
 	)
 
 	resp.Diagnostics.Append(validateAppDefinitionPlannedLocations(ctx, req.Plan)...)
+	resp.Diagnostics.Append(validateAppDefinitionPlannedParameters(ctx, req.Plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
