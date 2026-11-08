@@ -125,6 +125,12 @@ func (r *extensionResource) Create(ctx context.Context, req resource.CreateReque
 		config ExtensionModel
 	)
 
+	resp.Diagnostics.Append(validateExtensionPlannedConfiguration(ctx, req.Plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
@@ -263,6 +269,12 @@ func (r *extensionResource) Update(ctx context.Context, req resource.UpdateReque
 		plan   ExtensionModel
 		config ExtensionModel
 	)
+
+	resp.Diagnostics.Append(validateExtensionPlannedConfiguration(ctx, req.Plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)

@@ -24,7 +24,7 @@ func validExtensionRequestModel() ExtensionModel {
 					LinkType: types.StringNull(),
 					Items: &AppDefinitionLocationFieldTypeItemsItem{
 						Type:     types.StringValue("Link"),
-						LinkType: types.StringNull(),
+						LinkType: types.StringValue("Entry"),
 					},
 				},
 			},
