@@ -1,14 +1,13 @@
 package testdata
 
 import (
-	"encoding/json"
-
 	provider "github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"pgregory.net/rapid"
 )
 
+// EntryModel exercises representable field JSON, including values that would
+// need content-type and locale context to validate as a CMA Entry.
 func EntryModel(spaceID, environmentID, contentTypeID, entryID string) *rapid.Generator[provider.EntryModel] {
 	return rapid.Custom(func(t *rapid.T) provider.EntryModel {
 		return provider.EntryModel{
@@ -18,14 +17,7 @@ func EntryModel(spaceID, environmentID, contentTypeID, entryID string) *rapid.Ge
 			Fields: rapid.Map(
 				rapid.MapOfN(
 					AlphanumericStringOfN(1, 10),
-					rapid.Map(
-						rapid.Custom(func(t *rapid.T) string {
-							value := rapid.String().Draw(t, "value")
-							bytes, _ := json.Marshal(value)
-							return string(bytes)
-						}),
-						jsontypes.NewNormalizedValue,
-					),
+					NormalizedJSONValue(),
 					0,
 					5,
 				),
