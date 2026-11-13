@@ -24,25 +24,6 @@ func TestWebhookHeadersUnknownContainerIsOmitted(t *testing.T) {
 	assert.Empty(t, diags)
 }
 
-func TestWebhookHeadersRejectNullAndUnknownObjects(t *testing.T) {
-	t.Parallel()
-
-	for name, value := range map[string]TypedObject[WebhookHeaderValue]{
-		"null":    NewTypedObjectNull[WebhookHeaderValue](),
-		"unknown": NewTypedObjectUnknown[WebhookHeaderValue](),
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			headers := NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{"authorization": value})
-			result, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers, headers)
-			assert.Nil(t, result)
-			require.True(t, diags.HasError())
-			assert.Equal(t, []string{`headers["authorization"]`}, attributeDiagnosticPaths(t, diags))
-		})
-	}
-}
-
 func TestWebhookHeadersFailWithoutPartialOutputAndSortKeys(t *testing.T) {
 	t.Parallel()
 

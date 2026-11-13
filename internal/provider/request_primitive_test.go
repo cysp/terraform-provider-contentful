@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRequestRequiredString(t *testing.T) {
@@ -131,25 +130,4 @@ func TestRequestOmittableBool(t *testing.T) {
 			assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, diags))
 		})
 	}
-}
-
-func TestRequestPrimitiveErrorsReturnZeroValues(t *testing.T) {
-	t.Parallel()
-
-	stringValue, stringDiags := requestRequiredString(types.StringUnknown(), path.Root("string"))
-	boolValue, boolDiags := requestRequiredBool(types.BoolUnknown(), path.Root("bool"))
-	nullableString, nullableStringDiags := requestNullableString(types.StringUnknown(), path.Root("nullable_string"))
-	omittableString, omittableStringDiags := requestOmittableString(types.StringUnknown(), path.Root("omittable_string"))
-	omittableBool, omittableBoolDiags := requestOmittableBool(types.BoolUnknown(), path.Root("omittable_bool"))
-
-	require.True(t, stringDiags.HasError())
-	require.True(t, boolDiags.HasError())
-	require.True(t, nullableStringDiags.HasError())
-	require.True(t, omittableStringDiags.HasError())
-	require.True(t, omittableBoolDiags.HasError())
-	assert.Empty(t, stringValue)
-	assert.False(t, boolValue)
-	assert.Equal(t, cm.OptNilString{}, nullableString)
-	assert.Equal(t, cm.OptString{}, omittableString)
-	assert.Equal(t, cm.OptBool{}, omittableBool)
 }

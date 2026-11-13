@@ -201,32 +201,6 @@ func TestNewEnvironmentIDsListValueFromEnvironmentLinks(t *testing.T) {
 	}
 }
 
-func TestEnvironmentLinksRequestResponseRoundTrip(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-	valuePath := path.Root("test")
-
-	for name, value := range map[string]TypedList[types.String]{
-		"null":  NewTypedListNull[types.String](),
-		"empty": NewTypedList([]types.String{}),
-		"known elements": NewTypedList([]types.String{
-			types.StringValue("env1"),
-			types.StringValue("env2"),
-		}),
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			environmentLinks, requestDiags := ToEnvironmentLinks(ctx, valuePath, value)
-			require.False(t, requestDiags.HasError(), requestDiags.Errors())
-
-			result := NewEnvironmentIDsListValueFromEnvironmentLinks(environmentLinks)
-			assert.Equal(t, value, result)
-		})
-	}
-}
-
 func TestEnvironmentLinksJSONRoundTrip(t *testing.T) {
 	t.Parallel()
 

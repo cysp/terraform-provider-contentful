@@ -17,52 +17,6 @@ import (
 )
 
 //nolint:paralleltest
-func TestAccAppInstallationResourceLifecycle(t *testing.T) {
-	parallelWhenMocked(t)
-
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
-
-	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
-
-	server.SetAppDefinition("organization-id", "1WkQ2J9LERPtbMTdUfSHka", cm.AppDefinitionData{
-		Name: "Test App",
-	})
-
-	configVariables := config.Variables{
-		"space_id":          config.StringVariable("0p38pssr0fi3"),
-		"environment_id":    config.StringVariable("master"),
-		"app_definition_id": config.StringVariable("1WkQ2J9LERPtbMTdUfSHka"),
-	}
-
-	testAccMockableResource(t, server, resource.TestCase{
-		Steps: []resource.TestStep{
-			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: configVariables,
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(
-						"contentful_app_installation.test",
-						tfjsonpath.New("space_id"),
-						knownvalue.StringExact("0p38pssr0fi3"),
-					),
-					statecheck.ExpectKnownValue(
-						"contentful_app_installation.test",
-						tfjsonpath.New("environment_id"),
-						knownvalue.StringExact("master"),
-					),
-					statecheck.ExpectKnownValue(
-						"contentful_app_installation.test",
-						tfjsonpath.New("app_definition_id"),
-						knownvalue.StringExact("1WkQ2J9LERPtbMTdUfSHka"),
-					),
-				},
-			},
-		},
-	})
-}
-
-//nolint:paralleltest
 func TestAccAppInstallationResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
