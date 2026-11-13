@@ -227,7 +227,42 @@ mock conformance, property tests, and fuzz seeds without invoking Terraform.
 Table-driven acceptance parents can report PASS when all their subtests skip;
 inspect the subtest results when checking what actually executed.
 Fuzz seeds are regression examples; active fuzzing requires `-fuzz` and a bound,
-for example `go test ./internal/provider -run '^$' -fuzz '^FuzzExtensionModelRoundTrip$' -fuzztime 30s`.
+as shown under [Property and fuzz campaigns](#property-and-fuzz-campaigns).
+
+### Property and fuzz campaigns
+
+Rapid properties run with the ordinary tests. To increase their iteration budget
+locally, use `RAPID_CHECKS` so packages that do not import Rapid still accept the
+ordinary suite command:
+
+```sh
+RAPID_CHECKS=1000 go test -race -shuffle=on -count=1 -timeout=10m ./...
+```
+
+Use an anchored name to fuzz one target without repeating ordinary tests:
+
+```sh
+go test ./internal/provider -run '^$' -fuzz '^FuzzExtensionModelRoundTrip$' \
+  -fuzztime 30s -fuzzminimizetime 10s -parallel 2 -timeout 3m
+```
+
+The [ordinary test workflow](.github/workflows/test.yml) sets the PR property
+budget. The [campaign workflow](.github/workflows/fuzz.yml) owns the selected
+fuzz targets, time and worker limits, and the larger scheduled/manual budgets.
+CI calls it for short campaigns on PRs and main; its daily schedule and manual
+dispatch run longer fuzz campaigns and the provider ordinary suite with more
+Rapid checks. Campaigns do not enable acceptance tests or receive Contentful
+credentials.
+
+Failed jobs retain logs and generated reproductions as artifacts for the
+retention period configured in those workflows.
+Rapid prints a seed and writes `testdata/rapid/<test>/*.fail` relative to the
+tested package. Restore a failure file there and rerun the named test, or use
+`-rapid.seed=<seed>` with `go test ./internal/provider -run '^TestName$' -count=1`.
+Go fuzzing writes failures beneath `testdata/fuzz/<target>/`; restore the corpus
+entry beneath `internal/provider/` and use the `-run` command printed in the log.
+Review minimized failures and retain useful cases as regression tests or corpus
+entries. A campaign that passes establishes only the inputs it exercised.
 
 ### Terraform binary and test isolation
 

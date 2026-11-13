@@ -29,6 +29,9 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       CONTENTFUL_MANAGEMENT_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN }}
 
+  fuzz:
+    uses: ./.github/workflows/fuzz.yml
+
   goreleaser-check:
     uses: ./.github/workflows/goreleaser-check.yml
 
@@ -38,6 +41,7 @@ jobs:
       - lint
       - govulncheck
       - test
+      - fuzz
       - goreleaser-check
     if: github.ref == 'refs/heads/main'
     permissions:

@@ -36,8 +36,22 @@ jobs:
           go-version-file: "go.mod"
           cache: true
 
-      - run: go test -race -shuffle=on -count=1 -timeout=10m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
+      - run: go test -race -shuffle=on -count=1 -timeout=10m -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./... 2>&1 | tee "$RUNNER_TEMP/ordinary-tests.log"
+        shell: bash
+        env:
+          RAPID_CHECKS: "1000"
         timeout-minutes: 12
+
+      - name: Preserve ordinary test failures
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ordinary-test-failures
+          path: |
+            ${{ runner.temp }}/ordinary-tests.log
+            **/testdata/rapid/**/*.fail
+          retention-days: 7
+          if-no-files-found: ignore
 
       - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:

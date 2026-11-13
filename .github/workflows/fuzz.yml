@@ -1,0 +1,76 @@
+name: fuzz and property campaigns
+
+on:
+  workflow_call:
+  schedule:
+    - cron: "43 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      FUZZ_TIME: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '5m' || '30s' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Fuzz model conversions
+        shell: bash
+        run: |
+          status=0
+          for target in FuzzAppDefinitionResourceModelRoundTrip FuzzExtensionModelRoundTrip; do
+            go test ./internal/provider -run '^$' -fuzz "^${target}$" \
+              -fuzztime "$FUZZ_TIME" -fuzzminimizetime 10s -parallel 2 -timeout 8m \
+              2>&1 | tee "$RUNNER_TEMP/${target}.log" || status=1
+          done
+          exit "$status"
+
+      - name: Preserve fuzz failures
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fuzz-failures
+          path: |
+            ${{ runner.temp }}/Fuzz*.log
+            internal/provider/testdata/fuzz/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  properties:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Exercise provider properties
+        shell: bash
+        env:
+          RAPID_CHECKS: "10000"
+        run: go test -race -shuffle=on -count=1 -timeout=10m ./internal/provider 2>&1 | tee "$RUNNER_TEMP/provider-properties.log"
+        timeout-minutes: 12
+
+      - name: Preserve property failures
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: property-failures
+          path: |
+            ${{ runner.temp }}/provider-properties.log
+            internal/provider/testdata/rapid/**/*.fail
+          retention-days: 7
+          if-no-files-found: ignore
