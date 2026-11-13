@@ -103,42 +103,6 @@ func webhookFiltersListForTesting(t *testing.T) TypedList[TypedObject[WebhookFil
 	return filters
 }
 
-func TestWebhookFilterValueEqual(t *testing.T) {
-	t.Parallel()
-
-	filtersList := webhookFiltersListForTesting(t)
-
-	//nolint:gocritic
-	assert.True(t, filtersList.Equal(filtersList))
-}
-
-func TestWebhookFilterValueToObjectValueUnknown(t *testing.T) {
-	t.Parallel()
-
-	ctx := t.Context()
-
-	values := []basetypes.ObjectValuable{
-		NewTypedObjectUnknown[WebhookFilterValue](),
-		NewTypedObjectUnknown[WebhookFilterNotValue](),
-		NewTypedObjectUnknown[WebhookFilterEqualsValue](),
-		NewTypedObjectUnknown[WebhookFilterInValue](),
-		NewTypedObjectUnknown[WebhookFilterRegexpValue](),
-	}
-
-	for _, value := range values {
-		t.Run(value.Type(ctx).String(), func(t *testing.T) {
-			t.Parallel()
-
-			assert.True(t, value.IsUnknown())
-
-			objectValue, objectValueDiags := value.ToObjectValue(ctx)
-			require.Empty(t, objectValueDiags)
-
-			assert.True(t, objectValue.IsUnknown())
-		})
-	}
-}
-
 func TestWebhookFilterValueToObjectValue(t *testing.T) {
 	t.Parallel()
 

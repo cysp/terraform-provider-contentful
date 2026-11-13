@@ -498,6 +498,16 @@ func TestEditorInterfaceRequestPreservesOpaqueSettings(t *testing.T) {
 func TestEditorInterfaceRequestPreservesOptionalListStates(t *testing.T) {
 	t.Parallel()
 
+	t.Run("null lists are omitted", func(t *testing.T) {
+		t.Parallel()
+
+		model := newNullEditorInterfaceModel()
+		request, diags := model.ToEditorInterfaceData(t.Context())
+
+		require.False(t, diags.HasError(), diags.Errors())
+		assert.Equal(t, cm.EditorInterfaceData{}, request)
+	})
+
 	for name, test := range map[string]struct {
 		setValue     func(*EditorInterfaceModel, bool)
 		expectedPath string
@@ -568,16 +578,6 @@ func TestEditorInterfaceRequestPreservesOptionalListStates(t *testing.T) {
 			},
 		},
 	} {
-		t.Run(name+" null is omitted", func(t *testing.T) {
-			t.Parallel()
-
-			model := newNullEditorInterfaceModel()
-			request, diags := model.ToEditorInterfaceData(t.Context())
-
-			require.False(t, diags.HasError(), diags.Errors())
-			assert.Equal(t, cm.EditorInterfaceData{}, request)
-		})
-
 		t.Run(name+" known empty is preserved", func(t *testing.T) {
 			t.Parallel()
 

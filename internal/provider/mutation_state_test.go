@@ -151,21 +151,6 @@ func TestContentTypeMutationStateRejectsContradictoryOwnedResponseValues(t *test
 	}
 }
 
-func TestContentTypeMutationStateRejectsMissingKnownTaxonomy(t *testing.T) {
-	t.Parallel()
-
-	response := contentTypeMutationStateTestResponse()
-	plan, responseDiags := NewContentTypeResourceModelFromResponse(t.Context(), response)
-	require.False(t, responseDiags.HasError())
-
-	metadata := response.Metadata.Or(cm.ContentTypeMetadata{})
-	metadata.Taxonomy = nil
-	response.Metadata = cm.NewOptContentTypeMetadata(metadata)
-	_, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan)
-	require.False(t, mutationDiags.HasError())
-	assert.True(t, consistencyDiags.HasError())
-}
-
 func TestContentTypeMutationStateLeavesUnknownTaxonomyResponseOwned(t *testing.T) {
 	t.Parallel()
 

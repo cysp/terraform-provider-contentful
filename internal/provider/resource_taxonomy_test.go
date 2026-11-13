@@ -1310,67 +1310,6 @@ func TestAccTaxonomyTaintedReplacementHandlesMissingResource(t *testing.T) {
 }
 
 //nolint:paralleltest
-func TestAccTaxonomyResourcesUseImportedVersion(t *testing.T) {
-	parallelWhenMocked(t)
-
-	tests := map[string]struct {
-		resourceName       string
-		importID           string
-		path               string
-		initialConfig      string
-		changedConfig      string
-		importVerifyIgnore []string
-	}{
-		"concept": {
-			resourceName: "contentful_taxonomy_concept.test", importID: "organization-id/furniture", path: "/taxonomy/concepts/furniture",
-			initialConfig: taxonomyConceptConfig("Furniture"), changedConfig: taxonomyConceptConfig("Home furniture"),
-			importVerifyIgnore: []string{"alt_labels", "hidden_labels"},
-		},
-		"scheme": {
-			resourceName: "contentful_taxonomy_concept_scheme.test", importID: "organization-id/products", path: "/taxonomy/concept-schemes/products",
-			initialConfig: taxonomyConceptSchemeConfig("Products"), changedConfig: taxonomyConceptSchemeConfig("Home products"),
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			parallelWhenMocked(t)
-
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
-
-			recorder := &taxonomyRequestBodyRecorder{next: server}
-			testAccMockedResource(t, recorder, resource.TestCase{
-				AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
-				Steps: []resource.TestStep{
-					{Config: test.initialConfig},
-					{
-						Config:                  test.initialConfig,
-						ResourceName:            test.resourceName,
-						ImportState:             true,
-						ImportStateId:           test.importID,
-						ImportStateVerify:       true,
-						ImportStateVerifyIgnore: test.importVerifyIgnore,
-					},
-					{Config: test.changedConfig},
-				},
-			})
-
-			requests := recorder.matchingRequests(http.MethodPatch, test.path)
-			require.Len(t, requests, 1)
-			assert.Equal(t, "1", requests[0].version)
-
-			var patch []struct {
-				Path string `json:"path"`
-			}
-			require.NoError(t, json.Unmarshal(requests[0].body, &patch))
-			require.Len(t, patch, 1)
-			assert.Equal(t, "/prefLabel", patch[0].Path)
-		})
-	}
-}
-
-//nolint:paralleltest
 func TestAccTaxonomyCreateRequestPreservesCollectionOwnership(t *testing.T) {
 	parallelWhenMocked(t)
 

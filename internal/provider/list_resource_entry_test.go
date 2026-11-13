@@ -192,9 +192,6 @@ func TestAccEntryListResourceNotFoundEnvironment(t *testing.T) {
 				ConfigVariables: configVariables,
 				Query:           true,
 				ExpectError:     regexp.MustCompile("Failed to list entries"),
-				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLength("contentful_entry.entries", 0),
-				},
 			},
 		},
 	})

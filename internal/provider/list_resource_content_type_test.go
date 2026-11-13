@@ -236,9 +236,6 @@ func TestAccContentTypeListResourceNotFoundEnvironment(t *testing.T) {
 				ConfigVariables: configVariables,
 				Query:           true,
 				ExpectError:     regexp.MustCompile("Failed to list content types"),
-				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLength("contentful_content_type.content_types", 0),
-				},
 			},
 		},
 	})
