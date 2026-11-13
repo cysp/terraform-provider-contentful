@@ -3,9 +3,9 @@ package testdata
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 
 	provider "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"pgregory.net/rapid"
 )
@@ -47,30 +47,62 @@ func ContentTypeFields(fieldIds []string) *rapid.Generator[provider.TypedList[pr
 	})
 }
 
+// ContentTypeFieldValue generates representable converter inputs, including
+// irregular optional-field combinations. It does not enforce CMA validation.
 func ContentTypeFieldValue(fieldId string) *rapid.Generator[provider.ContentTypeFieldValue] {
 	return rapid.Custom(func(t *rapid.T) provider.ContentTypeFieldValue {
+		fieldType := rapid.SampledFrom([]string{
+			"Symbol", "Text", "Integer", "Number", "Boolean", "Date", "Location", "Object", "RichText", "Link", "Array", "ResourceLink",
+		}).Draw(t, "type")
+		linkType := types.StringNull()
+		items := provider.NewTypedObjectNull[provider.ContentTypeFieldItemsValue]()
+		allowedResources := provider.NewTypedListNull[provider.TypedObject[provider.ContentTypeFieldAllowedResourceItemValue]]()
+
+		switch fieldType {
+		case "Link":
+			linkType = types.StringValue(rapid.SampledFrom([]string{"Entry", "Asset"}).Draw(t, "linkType"))
+		case "Array":
+			items = rapid.Map(ContentTypeFieldItemsValue(), provider.NewTypedObject).Draw(t, "items")
+		case "ResourceLink":
+			allowedResources = rapid.Map(rapid.SliceOfN(rapid.Map(ContentTypeFieldAllowedResourceItemValue(), provider.NewTypedObject), 0, 2), provider.NewTypedList).Draw(t, "allowedResources")
+		}
+
+		// Keep raw representable combinations alongside ordinary typed shapes:
+		// conversion preserves optional members without imposing field rules.
+		if rapid.Bool().Draw(t, "rawOptionalFields") {
+			linkType = RandomZeroable(rapid.Map(AlphanumericStringOfN(1, 10), types.StringValue)).Draw(t, "linkType")
+			items = RandomZeroable(rapid.Map(ContentTypeFieldItemsValue(), provider.NewTypedObject)).Draw(t, "items")
+			allowedResources = RandomZeroable(rapid.Map(rapid.SliceOfN(rapid.Map(ContentTypeFieldAllowedResourceItemValue(), provider.NewTypedObject), 0, 2), provider.NewTypedList)).Draw(t, "allowedResources")
+		}
+
 		return provider.ContentTypeFieldValue{
 			ID:               types.StringValue(fieldId),
 			Name:             rapid.Map(AlphanumericStringOfN(1, 10), types.StringValue).Draw(t, "name"),
-			FieldType:        types.StringValue("Symbol"),
-			LinkType:         RandomZeroable(rapid.Map(AlphanumericStringOfN(1, 10), types.StringValue)).Draw(t, "linkType"),
+			FieldType:        types.StringValue(fieldType),
+			LinkType:         linkType,
 			Disabled:         rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "disabled"),
 			Omitted:          rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "omitted"),
 			Required:         rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "required"),
 			DefaultValue:     RandomZeroable(contentTypeJSONObject("en-US")).Draw(t, "defaultValue"),
-			Items:            RandomZeroable(rapid.Map(ContentTypeFieldItemsValue(), provider.NewTypedObject)).Draw(t, "items"),
+			Items:            items,
 			Localized:        rapid.Map(rapid.Bool(), types.BoolValue).Draw(t, "localized"),
 			Validations:      rapid.Map(rapid.SliceOfN(contentTypeJSONObject("futureRule"), 0, 2), provider.NewTypedList).Draw(t, "validations"),
-			AllowedResources: RandomZeroable(rapid.Map(rapid.SliceOfN(rapid.Map(ContentTypeFieldAllowedResourceItemValue(), provider.NewTypedObject), 0, 2), provider.NewTypedList)).Draw(t, "allowedResources"),
+			AllowedResources: allowedResources,
 		}
 	})
 }
 
 func ContentTypeFieldItemsValue() *rapid.Generator[provider.ContentTypeFieldItemsValue] {
 	return rapid.Custom(func(t *rapid.T) provider.ContentTypeFieldItemsValue {
+		itemsType := rapid.SampledFrom([]string{"Symbol", "Link"}).Draw(t, "type")
+		linkType := types.StringNull()
+		if itemsType == "Link" {
+			linkType = types.StringValue(rapid.SampledFrom([]string{"Entry", "Asset"}).Draw(t, "linkType"))
+		}
+
 		return provider.ContentTypeFieldItemsValue{
-			ItemsType:   types.StringValue("Link"),
-			LinkType:    types.StringValue("Entry"),
+			ItemsType:   types.StringValue(itemsType),
+			LinkType:    linkType,
 			Validations: rapid.Map(rapid.SliceOfN(contentTypeJSONObject("futureRule"), 0, 2), provider.NewTypedList).Draw(t, "validations"),
 		}
 	})
@@ -179,8 +211,8 @@ func ContentTypeMetadataTaxonomyItemValueConceptScheme() *rapid.Generator[provid
 
 // Generate object-shaped wire values independently of production validation.
 func contentTypeJSONObject(key string) *rapid.Generator[jsontypes.Normalized] {
-	return rapid.Map(rapid.String(), func(value string) jsontypes.Normalized {
-		encoded, _ := json.Marshal(map[string]string{key: value})
+	return rapid.Map(jsonValue(2), func(value any) jsontypes.Normalized {
+		encoded, _ := json.Marshal(map[string]any{key: value})
 		return jsontypes.NewNormalizedValue(string(encoded))
 	})
 }

@@ -3,12 +3,47 @@ package provider_test
 import (
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/testdata"
+	"github.com/go-faster/jx"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/stretchr/testify/assert"
 	"pgregory.net/rapid"
 )
+
+func TestEntryFieldRequestProperties(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+
+	rapid.Check(t, func(t *rapid.T) {
+		fields := rapid.MapOfN(
+			testdata.AlphanumericStringOfN(1, 10),
+			rapid.OneOf(testdata.NormalizedJSONValue(), rapid.Just(jsontypes.NewNormalizedNull())),
+			0, 5,
+		).Draw(t, "fields")
+		model := EntryModel{Fields: NewTypedMap(fields)}
+
+		request, diags := model.ToEntryRequest(ctx)
+		if diags.HasError() {
+			t.Fatalf("ToEntryRequest failed: %v", diags.Errors())
+		}
+
+		// A one-way wire oracle also detects faults that a matching response
+		// conversion could undo. Terraform null omits a field; JSON null stays.
+		expected := make(cm.EntryFields)
+
+		for name, value := range fields {
+			if !value.IsNull() {
+				expected[name] = jx.Raw(value.ValueString())
+			}
+		}
+
+		assert.Equal(t, cm.NewOptEntryFields(expected), request.Fields)
+	})
+}
 
 func TestEntryModelRoundTrip(t *testing.T) {
 	t.Parallel()
