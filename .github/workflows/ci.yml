@@ -47,10 +47,9 @@ jobs:
       - goreleaser-check
     if: ${{ always() }}
     steps:
-      - name: Require all CI jobs to pass
+      - run: jq --exit-status 'length > 0 and all(.[]; .result == "success")' <<< "$RESULTS"
         env:
           RESULTS: ${{ toJSON(needs) }}
-        run: jq --exit-status 'length > 0 and all(.[]; .result == "success")' <<< "$RESULTS"
 
   create-release:
     needs: ci
