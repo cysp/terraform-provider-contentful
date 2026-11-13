@@ -296,12 +296,18 @@ newest stable Terraform minors, and live acceptance on the newest stable minor.
 Main and manually dispatched CI require live acceptance credentials; PRs without
 the repository secret skip live tests. The explicit minor ranges
 select the latest patch in each minor; update them together through review when
-a new stable minor is released, and coordinate the corresponding GitHub required
-status check names before merging. This matrix defines CI coverage, not a minimum
+a new stable minor is released. This matrix defines CI coverage, not a minimum
 supported Terraform version. See the workflow for the ordinary, mocked, and live
 coverage flags.
 The ordinary suite includes the Contentful client; Codecov reports its coverage
 through the path-based component in `codecov.yml`.
+
+The `ci` gate in the [CI workflow](.github/workflows/ci.yml) requires every
+prerequisite workflow to succeed, including short fuzz campaigns. It runs even
+after a prerequisite fails and rejects failed, cancelled, or skipped prerequisite
+workflows. GitHub's Terraform-managed required check is `ci`, so changes to the
+test matrix do not require infrastructure changes. Codecov and CodeQL have
+separate merge requirements. Automated release creation uses the same `ci` gate.
 
 ### Diagnosing failures
 
