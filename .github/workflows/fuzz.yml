@@ -23,9 +23,7 @@ jobs:
           go-version-file: "go.mod"
           cache: true
 
-      - name: Fuzz model conversions
-        shell: bash
-        run: |
+      - run: |
           status=0
           for target in FuzzAppDefinitionResourceModelRoundTrip FuzzExtensionModelRoundTrip; do
             go test ./internal/provider -run '^$' -fuzz "^${target}$" \
@@ -33,10 +31,10 @@ jobs:
               2>&1 | tee "$RUNNER_TEMP/${target}.log" || status=1
           done
           exit "$status"
+        shell: bash
 
-      - name: Preserve fuzz failures
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: failure()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: fuzz-failures
           path: |
@@ -57,16 +55,14 @@ jobs:
           go-version-file: "go.mod"
           cache: true
 
-      - name: Exercise provider properties
+      - run: go test -race -shuffle=on -count=1 -timeout=10m ./internal/provider 2>&1 | tee "$RUNNER_TEMP/provider-properties.log"
         shell: bash
         env:
           RAPID_CHECKS: "10000"
-        run: go test -race -shuffle=on -count=1 -timeout=10m ./internal/provider 2>&1 | tee "$RUNNER_TEMP/provider-properties.log"
         timeout-minutes: 12
 
-      - name: Preserve property failures
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: failure()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: property-failures
           path: |
