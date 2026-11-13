@@ -31,11 +31,12 @@
 5. Before announcing the release, confirm its version and rendered documentation
    in the [Terraform Registry](https://registry.terraform.io/providers/cysp/contentful).
 
-CI job dependencies declared with `needs` require build/tests, lint, generation,
-govulncheck, and the GoReleaser configuration check to succeed before tag and draft
-creation. CodeQL and Codecov remain PR merge gates. A version tag is created only
-for a release PR merged at the checked commit, and its commit is verified before
-dispatching the publisher. Only `main` is supported, including hotfixes; later
+The `ci` gate requires every prerequisite workflow declared in
+[CI](../.github/workflows/ci.yml) to succeed before tag and draft creation,
+including the short fuzz campaigns. It is also the Terraform-managed required
+CI check for PRs; CodeQL and Codecov have separate merge requirements. A version
+tag is created only for a release PR merged at the checked commit, and its commit
+is verified before dispatching the publisher. Only `main` is supported, including hotfixes; later
 merges need not wait for GitHub publication.
 
 The publisher runs in tag context: the workflow is dispatched with the version
