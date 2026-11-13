@@ -118,17 +118,7 @@ func TestContentTypeMutationReconciliationProperties(t *testing.T) {
 		requireReconciliationPaths(t, consistencyDiags)
 		assert.Equal(t, expectedEquivalent, state, "equivalent JSON restores exact Plan while unknown taxonomy and publication remain response-owned")
 
-		expected := ContentTypeModel{
-			IDIdentityModel:          plan.IDIdentityModel,
-			ContentTypeIdentityModel: plan.ContentTypeIdentityModel,
-			Name:                     plan.Name,
-			Description:              plan.Description,
-			DisplayField:             plan.DisplayField,
-			PublishedVersion:         published,
-			Fields:                   NewTypedList(returnedFields),
-			Metadata:                 NewTypedObject(ContentTypeMetadataValue{Annotations: jsontypes.NewNormalizedValue(returnedJSON), Taxonomy: taxonomy}),
-			Timeouts:                 plan.Timeouts,
-		}
+		expectedMetadata := NewTypedObject(ContentTypeMetadataValue{Annotations: jsontypes.NewNormalizedValue(returnedJSON), Taxonomy: taxonomy})
 		index := rapid.IntRange(0, count-1).Draw(t, "changed field index")
 		field := returnedFields[index].Value()
 
@@ -165,14 +155,14 @@ func TestContentTypeMutationReconciliationProperties(t *testing.T) {
 			expectedPath = fmt.Sprintf("fields[%d].id", min(index, next))
 		case 5:
 			response.Metadata.Value.Annotations = []byte(reversedJSON)
-			expected.Metadata = NewTypedObject(ContentTypeMetadataValue{Annotations: jsontypes.NewNormalizedValue(reversedJSON), Taxonomy: taxonomy})
+			expectedMetadata = NewTypedObject(ContentTypeMetadataValue{Annotations: jsontypes.NewNormalizedValue(reversedJSON), Taxonomy: taxonomy})
 			expectedPath = "metadata.annotations"
 		case 6:
 			plan.Metadata = NewTypedObject(ContentTypeMetadataValue{Annotations: jsontypes.NewNormalizedValue(plannedJSON), Taxonomy: taxonomy})
 			response.Metadata.Value.Taxonomy[0].Required = cm.NewOptBool(!taxonomyRequired)
 			changed := taxonomy.Elements()[0].Value()
 			changed.TaxonomyConcept = NewTypedObject(ContentTypeMetadataTaxonomyItemConceptValue{ID: types.StringValue("concept"), Required: types.BoolValue(!taxonomyRequired)})
-			expected.Metadata = NewTypedObject(ContentTypeMetadataValue{
+			expectedMetadata = NewTypedObject(ContentTypeMetadataValue{
 				Annotations: jsontypes.NewNormalizedValue(returnedJSON), Taxonomy: NewTypedList([]TypedObject[ContentTypeMetadataTaxonomyItemValue]{NewTypedObject(changed)}),
 			})
 			expectedPath = "metadata.taxonomy"
@@ -184,19 +174,31 @@ func TestContentTypeMutationReconciliationProperties(t *testing.T) {
 				Annotations: jsontypes.NewNormalizedValue(plannedJSON), Taxonomy: NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 			})
 			response.Metadata.Value.Taxonomy = []cm.ContentTypeMetadataTaxonomyItem{}
-			expected.Metadata = NewTypedObject(ContentTypeMetadataValue{
+			expectedMetadata = NewTypedObject(ContentTypeMetadataValue{
 				Annotations: jsontypes.NewNormalizedValue(returnedJSON), Taxonomy: NewTypedList([]TypedObject[ContentTypeMetadataTaxonomyItemValue]{}),
 			})
 			expectedPath = "metadata.taxonomy"
 		case 9:
 			response.Fields = slices.Delete(slices.Clone(response.Fields), index, index+1)
 
-			expected.Fields = NewTypedList(slices.Delete(slices.Clone(returnedFields), index, index+1))
+			returnedFields = slices.Delete(slices.Clone(returnedFields), index, index+1)
 			if index == count-1 {
 				expectedPath = fmt.Sprintf("fields[%d]", index)
 			} else {
 				expectedPath = fmt.Sprintf("fields[%d].id", index)
 			}
+		}
+
+		expected := ContentTypeModel{
+			IDIdentityModel:          plan.IDIdentityModel,
+			ContentTypeIdentityModel: plan.ContentTypeIdentityModel,
+			Name:                     plan.Name,
+			Description:              plan.Description,
+			DisplayField:             plan.DisplayField,
+			PublishedVersion:         published,
+			Fields:                   NewTypedList(returnedFields),
+			Metadata:                 expectedMetadata,
+			Timeouts:                 plan.Timeouts,
 		}
 
 		state, responseDiags, consistencyDiags = ProjectContentTypeMutationResponse(ctx, response, plan)
