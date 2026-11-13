@@ -41,10 +41,10 @@ func ReconcileLocaleMutationResponse(locale cm.Locale, plan LocaleModel) (Locale
 	reconciler.compareExact(path.Root("name"), "Contentful returned a different locale name", plan.Name, data.Name)
 	reconciler.compareExact(path.Root("code"), "Contentful returned a different locale code", plan.Code, data.Code)
 	reconciler.compareExact(path.Root("fallback_code"), "Contentful returned a different locale fallback code", plan.FallbackCode, data.FallbackCode)
-	reconciler.compareExact(path.Root("content_delivery_api"), "Contentful returned a different locale content delivery api", plan.ContentDeliveryAPI, data.ContentDeliveryAPI)
-	reconciler.compareExact(path.Root("content_management_api"), "Contentful returned a different locale content management api", plan.ContentManagementAPI, data.ContentManagementAPI)
-	reconciler.compareExact(path.Root("optional"), "Contentful returned a different locale optional", plan.Optional, data.Optional)
-	reconciler.compareExact(path.Root("default"), "Contentful returned a different locale default", plan.Default, data.Default)
+	reconciler.compareExact(path.Root("content_delivery_api"), `Contentful returned a different value for locale attribute "content_delivery_api"`, plan.ContentDeliveryAPI, data.ContentDeliveryAPI)
+	reconciler.compareExact(path.Root("content_management_api"), `Contentful returned a different value for locale attribute "content_management_api"`, plan.ContentManagementAPI, data.ContentManagementAPI)
+	reconciler.compareExact(path.Root("optional"), `Contentful returned a different value for locale attribute "optional"`, plan.Optional, data.Optional)
+	reconciler.compareExact(path.Root("default"), `Contentful returned a different value for locale attribute "default"`, plan.Default, data.Default)
 
 	return data, reconciler.diagnostics
 }

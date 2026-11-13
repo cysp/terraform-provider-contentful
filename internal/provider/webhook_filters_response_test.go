@@ -104,6 +104,38 @@ func TestReadWebhookFilterValueFromResponsePreservesValidJSONShapeMismatch(t *te
 	}
 }
 
+func TestWebhookFilterMalformedAlternativePreservesConvertibleSibling(t *testing.T) {
+	t.Parallel()
+
+	var input cm.WebhookDefinitionFilter
+	require.NoError(t, input.UnmarshalJSON([]byte(testJSON(map[string]any{
+		"equals": []any{map[string]any{"doc": "sys.type"}},
+		"in":     []any{map[string]any{"doc": "sys.id"}, []string{"entry"}},
+	}))))
+
+	filterPath := path.Root("filters").AtListIndex(0)
+	actual, diags := ReadWebhookFilterValueFromResponse(t.Context(), filterPath, input)
+
+	assert.Equal(t, diag.Diagnostics{
+		diag.NewAttributeWarningDiagnostic(
+			filterPath.AtName("equals"),
+			"Unsupported webhook filter value",
+			"Contentful returned an array of length 1; this filter requires exactly two terms. Terraform set this attribute to null. Review the filter configuration before updating the webhook.",
+		),
+	}, diags)
+	require.False(t, actual.IsNull())
+	assert.True(t, actual.Value().Equals.IsNull())
+
+	request, requestDiags := ToWebhookDefinitionFilter(filterPath, actual.Value())
+	require.Empty(t, requestDiags)
+
+	encoded, err := request.MarshalJSON()
+	require.NoError(t, err)
+	assert.JSONEq(t, testJSON(map[string]any{
+		"in": []any{map[string]any{"doc": "sys.id"}, []string{"entry"}},
+	}), string(encoded))
+}
+
 func TestReadWebhookFiltersListValueFromResponsePreservesSiblingsAndPositions(t *testing.T) {
 	t.Parallel()
 

@@ -166,7 +166,7 @@ func readWebhookBinaryFilterValue[T any](
 	//nolint:mnd
 	if len(input) != 2 {
 		diags := diag.Diagnostics{}
-		diags.AddAttributeWarning(path, "Unsupported webhook filter value", fmt.Sprintf("Contentful returned an array of length %d; this filter requires exactly two terms. Terraform state retains a null alternative; a later request conversion will reject it until configured.", len(input)))
+		diags.AddAttributeWarning(path, "Unsupported webhook filter value", fmt.Sprintf("Contentful returned an array of length %d; this filter requires exactly two terms. Terraform set this attribute to null. Review the filter configuration before updating the webhook.", len(input)))
 
 		return NewTypedObjectNull[T](), diags
 	}
