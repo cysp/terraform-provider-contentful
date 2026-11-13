@@ -212,7 +212,7 @@ func (r *personalAccessTokenResource) Delete(ctx context.Context, req resource.D
 	switch response := response.(type) {
 	case *cm.PersonalAccessTokenStatusCode:
 		if !response.Response.RevokedAt.IsSet() || response.Response.RevokedAt.IsNull() {
-			resp.Diagnostics.AddError("Failed to revoke personal access token", "Personal access token was not revoked")
+			resp.Diagnostics.AddError("Failed to revoke personal access token", "Contentful returned a token without a revocation timestamp, so the provider could not confirm revocation.")
 		}
 
 	default:

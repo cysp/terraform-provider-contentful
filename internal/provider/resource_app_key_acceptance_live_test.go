@@ -23,7 +23,7 @@ func TestAccAppKeyResourceLiveLifecycle(t *testing.T) {
 	}
 
 	if os.Getenv("TF_ACC_MOCKED") != "" {
-		t.Skip("live App Key lifecycle is covered by the equal mock acceptance sibling")
+		t.Skip("Live App Key test skipped because TF_ACC_MOCKED is set; TestAccAppKeyResourceMockLifecycle covers the mocked lifecycle.")
 	}
 
 	jwk := testAccAppKeyJWK(t)
