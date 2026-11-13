@@ -115,14 +115,7 @@ func TestEditorInterfaceMutationReconciliationProperties(t *testing.T) {
 		requireReconciliationPaths(t, consistencyDiags)
 		assert.Equal(t, expectedEquivalent, state, "known collections restore exact Plan; unknown collections take response")
 
-		expected := EditorInterfaceModel{
-			IDIdentityModel:              expectedEquivalent.IDIdentityModel,
-			EditorInterfaceIdentityModel: expectedEquivalent.EditorInterfaceIdentityModel,
-			EditorLayout:                 NewTypedList(slices.Clone(layout)),
-			Controls:                     NewTypedList(returnedControls),
-			GroupControls:                NewTypedList(returnedGroups),
-			Sidebar:                      NewTypedList(returnedSidebar),
-		}
+		returnedLayout := slices.Clone(layout)
 		index := rapid.IntRange(0, count-1).Draw(t, "changed index")
 		next := (index + 1) % count
 
@@ -146,7 +139,7 @@ func TestEditorInterfaceMutationReconciliationProperties(t *testing.T) {
 			expectedPath = "sidebar"
 		case 3:
 			responseLayout[index], responseLayout[next] = responseLayout[next], responseLayout[index]
-			expected.EditorLayout.Elements()[index], expected.EditorLayout.Elements()[next] = layout[next], layout[index]
+			returnedLayout[index], returnedLayout[next] = returnedLayout[next], returnedLayout[index]
 			expectedPath = "editor_layout"
 		case 4:
 			plan.Controls = NewTypedList(plannedControls)
@@ -168,8 +161,18 @@ func TestEditorInterfaceMutationReconciliationProperties(t *testing.T) {
 		case 7:
 			plan.GroupControls = NewTypedListNull[TypedObject[EditorInterfaceGroupControlValue]]()
 			response.GroupControls.SetTo([]cm.EditorInterfaceGroupControlsItem{})
-			expected.GroupControls = NewTypedList([]TypedObject[EditorInterfaceGroupControlValue]{})
+
+			returnedGroups = []TypedObject[EditorInterfaceGroupControlValue]{}
 			expectedPath = "group_controls"
+		}
+
+		expected := EditorInterfaceModel{
+			IDIdentityModel:              expectedEquivalent.IDIdentityModel,
+			EditorInterfaceIdentityModel: expectedEquivalent.EditorInterfaceIdentityModel,
+			EditorLayout:                 NewTypedList(returnedLayout),
+			Controls:                     NewTypedList(returnedControls),
+			GroupControls:                NewTypedList(returnedGroups),
+			Sidebar:                      NewTypedList(returnedSidebar),
 		}
 
 		state, responseDiags, consistencyDiags = ReconcileEditorInterfaceMutationResponse(ctx, response, plan)
