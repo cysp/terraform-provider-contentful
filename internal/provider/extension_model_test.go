@@ -73,6 +73,21 @@ func FuzzExtensionModelRoundTrip(f *testing.F) {
 		}
 	}
 
+	// Keep representation differences in the seed: struct marshaling compacts
+	// embedded JSON before the target sees it.
+	seed := []byte(`{"extension":{"name":"Extension Name","srcdoc":"","fieldTypes":[]},
+		"parameters":{ "b": [null, {}, [], 9007199254740993, 1.234567890123456789, -0, 1e+30], "a": 1 },
+		"sys":{"id":"extension-id","type":"Extension","version":1,"space":{"sys":{"type":"Link","linkType":"Space","id":"space-id"}},"environment":{"sys":{"type":"Link","linkType":"Environment","id":"environment-id"}}}}`)
+
+	var decodedSeed cm.Extension
+
+	err := json.Unmarshal(seed, &decodedSeed)
+	if err != nil {
+		f.Fatal(err)
+	}
+
+	f.Add(seed)
+
 	f.Fuzz(func(t *testing.T, inputBytes []byte) {
 		var input cm.Extension
 
@@ -107,6 +122,10 @@ func FuzzExtensionModelRoundTrip(f *testing.F) {
 		output := cmt.NewExtensionFromFields(input.Sys.Space.Sys.ID, input.Sys.Environment.Sys.ID, input.Sys.ID, extensionFields)
 		// Version belongs to resource private state, not the configuration model.
 		output.Sys.Version = input.Sys.Version
+		input.Parameters = canonicalModelJSON(t, input.Parameters)
+		output.Parameters = canonicalModelJSON(t, output.Parameters)
+		input.Extension.Parameters = canonicalAppDefinitionParameters(t, input.Extension.Parameters)
+		output.Extension.Parameters = canonicalAppDefinitionParameters(t, output.Extension.Parameters)
 
 		assert.Equal(t, input, output, "Extension should be equal after roundtrip conversion")
 	})

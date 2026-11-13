@@ -86,6 +86,19 @@ func FuzzAppDefinitionResourceModelRoundTrip(f *testing.F) {
 		}
 	}
 
+	seed := []byte(`{"name":"App Definition Name",
+		"parameters":{"installation":[{"id":"parameter-a","type":"Symbol","name":"Parameter A","default":{ "b": [null, {}, [], 9007199254740993, 1.234567890123456789, -0, 1e+30], "a": 1 },"options":[{ "b":2, "a":1 },null,{},[]]}],"instance":[]},
+		"sys":{"id":"app-definition-id","type":"AppDefinition","organization":{"sys":{"type":"Link","linkType":"Organization","id":"organization-id"}}}}`)
+
+	var decodedSeed cm.AppDefinition
+
+	err := json.Unmarshal(seed, &decodedSeed)
+	if err != nil {
+		f.Fatal(err)
+	}
+
+	f.Add(seed)
+
 	f.Fuzz(func(t *testing.T, inputBytes []byte) {
 		var input cm.AppDefinition
 
@@ -114,6 +127,8 @@ func FuzzAppDefinitionResourceModelRoundTrip(f *testing.F) {
 		}
 
 		output := cmt.NewAppDefinitionFromFields(input.Sys.Organization.Sys.ID, input.Sys.ID, appDefinitionFields)
+		input.Parameters = canonicalAppDefinitionParameters(t, input.Parameters)
+		output.Parameters = canonicalAppDefinitionParameters(t, output.Parameters)
 
 		assert.Equal(t, input, output, "AppDefinition should be equal after roundtrip conversion")
 	})
