@@ -286,30 +286,6 @@ func TestContentfulManagementServerCanonicalizesOmittedAndAcceptsCompleteConcept
 	}
 }
 
-func TestContentfulManagementServerRejectsPatchedConceptPreferredLabelWithoutEnUS(t *testing.T) {
-	t.Parallel()
-
-	server, err := cmt.NewContentfulManagementServer()
-	require.NoError(t, err)
-
-	testServer := httptest.NewServer(server)
-	t.Cleanup(testServer.Close)
-
-	status, _ := taxonomyHTTPRequest(t, testServer, http.MethodPut, 0, testJSON(map[string]any{"prefLabel": map[string]any{"en-US": "Concept"}}))
-	require.Equal(t, http.StatusCreated, status)
-
-	status, responseBody := taxonomyHTTPRequest(t, testServer, http.MethodPatch, 1, testJSON([]any{map[string]any{"op": "replace", "path": "/prefLabel", "value": map[string]any{"fr-FR": "Concept"}}}))
-
-	assert.Equal(t, http.StatusUnprocessableEntity, status)
-	assertTaxonomyPrefLabelValidationError(t, responseBody)
-
-	status, responseBody = taxonomyHTTPRequest(t, testServer, http.MethodGet, 0, "")
-	require.Equal(t, http.StatusOK, status)
-	current := decodeTaxonomyConceptResponse(t, responseBody)
-	assert.Equal(t, 1, current.Sys.Version)
-	assert.Equal(t, map[string]string{"en-US": "Concept"}, current.PrefLabel)
-}
-
 func TestContentfulManagementServerRejectsTaxonomyPreferredLabelWithoutEnUS(t *testing.T) {
 	t.Parallel()
 

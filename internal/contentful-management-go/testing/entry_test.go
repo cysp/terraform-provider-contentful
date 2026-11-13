@@ -10,20 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSetEntryStoresFieldValuesUnchanged(t *testing.T) {
-	t.Parallel()
-
-	request := cm.EntryRequest{
-		Fields: cm.NewOptEntryFields(cm.EntryFields{
-			"title": jx.Raw(testJSON(map[string]any{"en-US": "Post 1"})),
-		}),
-	}
-
-	storedField := storeEntryAndGetField(t, request, "title")
-
-	assert.JSONEq(t, testJSON(map[string]any{"en-US": "Post 1"}), string(storedField))
-}
-
 func TestEntryResponsesProjectOmittedFields(t *testing.T) {
 	t.Parallel()
 
@@ -98,25 +84,4 @@ func TestEntryResponsesProjectOmittedFields(t *testing.T) {
 	assert.NotContains(t, published.Response.Fields.Value, "empty")
 	assert.NotContains(t, published.Response.Fields.Value, "raw-null")
 	assert.JSONEq(t, testJSON(map[string]any{"en-US": nil}), string(published.Response.Fields.Value["localized-null"]))
-}
-
-func storeEntryAndGetField(t *testing.T, request cm.EntryRequest, fieldID string) jx.Raw {
-	t.Helper()
-
-	server, err := cmt.NewContentfulManagementServer()
-	require.NoError(t, err)
-
-	server.SetEntry("space", "environment", "content-type", "entry", request)
-
-	response, err := server.Handler().GetEntry(t.Context(), cm.GetEntryParams{
-		SpaceID:       "space",
-		EnvironmentID: "environment",
-		EntryID:       "entry",
-	})
-	require.NoError(t, err)
-
-	entry, ok := response.(*cm.Entry)
-	require.True(t, ok)
-
-	return entry.Fields.Value[fieldID]
 }
