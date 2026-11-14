@@ -54,7 +54,7 @@ func TestRoleMutationReconciliationProperties(t *testing.T) {
 			responsePolicies[index] = rolePolicyValue(effect, returnedActions, jsontypes.NewNormalizedValue(returnedJSON))
 		}
 
-		state, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(ctx, response, plan)
+		state, responseDiags, consistencyDiags, _ := ReconcileRoleMutationResponse(ctx, response, plan, plan.RoleID)
 		require.Empty(t, responseDiags)
 		requireReconciliationPaths(t, consistencyDiags)
 		assert.Equal(t, plan.Permissions, state.Permissions, "equivalent action permutations must restore exact Plan order")
@@ -120,7 +120,7 @@ func TestRoleMutationReconciliationProperties(t *testing.T) {
 			expectedPath = "space_id"
 		}
 
-		state, responseDiags, consistencyDiags = ReconcileRoleMutationResponse(ctx, response, plan)
+		state, responseDiags, consistencyDiags, _ = ReconcileRoleMutationResponse(ctx, response, plan, plan.RoleID)
 		require.Empty(t, responseDiags)
 		requireReconciliationPaths(t, consistencyDiags, expectedPath)
 		assert.Equal(t, expected, state, "one contradiction must retain the complete response except endpoint identity")

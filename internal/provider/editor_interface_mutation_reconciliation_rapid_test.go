@@ -110,7 +110,7 @@ func TestEditorInterfaceMutationReconciliationProperties(t *testing.T) {
 			Controls:     cm.NewOptNilEditorInterfaceControlsItemArray(controls), GroupControls: cm.NewOptNilEditorInterfaceGroupControlsItemArray(groups),
 			Sidebar: cm.NewOptNilEditorInterfaceSidebarItemArray(sidebar),
 		}
-		state, responseDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(ctx, response, plan)
+		state, responseDiags, consistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(ctx, response, plan)
 		require.Empty(t, responseDiags)
 		requireReconciliationPaths(t, consistencyDiags)
 		assert.Equal(t, expectedEquivalent, state, "known collections restore exact Plan; unknown collections take response")
@@ -175,7 +175,7 @@ func TestEditorInterfaceMutationReconciliationProperties(t *testing.T) {
 			Sidebar:                      NewTypedList(returnedSidebar),
 		}
 
-		state, responseDiags, consistencyDiags = ReconcileEditorInterfaceMutationResponse(ctx, response, plan)
+		state, responseDiags, consistencyDiags, _ = ReconcileEditorInterfaceMutationResponse(ctx, response, plan)
 		require.Empty(t, responseDiags)
 		requireReconciliationPaths(t, consistencyDiags, expectedPath)
 		assert.Equal(t, expected, state, "one ordered or nested contradiction must suppress every JSON overlay")

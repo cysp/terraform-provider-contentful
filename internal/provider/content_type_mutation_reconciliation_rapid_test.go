@@ -113,7 +113,7 @@ func TestContentTypeMutationReconciliationProperties(t *testing.T) {
 		expectedEquivalent := plan
 		expectedEquivalent.PublishedVersion = published
 		expectedEquivalent.Metadata = NewTypedObject(ContentTypeMetadataValue{Annotations: jsontypes.NewNormalizedValue(plannedJSON), Taxonomy: taxonomy})
-		state, responseDiags, consistencyDiags := ProjectContentTypeMutationResponse(ctx, response, plan)
+		state, responseDiags, consistencyDiags, _ := ProjectContentTypeMutationResponse(ctx, response, plan)
 		require.Empty(t, responseDiags)
 		requireReconciliationPaths(t, consistencyDiags)
 		assert.Equal(t, expectedEquivalent, state, "equivalent JSON restores exact Plan while unknown taxonomy and publication remain response-owned")
@@ -201,7 +201,7 @@ func TestContentTypeMutationReconciliationProperties(t *testing.T) {
 			Timeouts:                 plan.Timeouts,
 		}
 
-		state, responseDiags, consistencyDiags = ProjectContentTypeMutationResponse(ctx, response, plan)
+		state, responseDiags, consistencyDiags, _ = ProjectContentTypeMutationResponse(ctx, response, plan)
 		require.Empty(t, responseDiags)
 		requireReconciliationPaths(t, consistencyDiags, expectedPath)
 		assert.Equal(t, expected, state, "nested contradiction must retain complete response, publication observation, and endpoint identity")

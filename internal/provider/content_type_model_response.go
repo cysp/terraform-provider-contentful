@@ -58,12 +58,12 @@ func newContentTypeResourceModelFromResponseAt(ctx context.Context, root path.Pa
 // proven equivalent; this prevents a successful but contradictory CMA response
 // being hidden in Terraform state. A known effective Plan constrains taxonomy
 // even when configuration omitted it and planning preserved the prior value.
-func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.ContentType, plan ContentTypeModel) (ContentTypeModel, diag.Diagnostics, diag.Diagnostics) {
+func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.ContentType, plan ContentTypeModel) (ContentTypeModel, diag.Diagnostics, diag.Diagnostics, bool) {
 	data, responseDiags := NewContentTypeResourceModelFromResponse(ctx, contentType)
 
 	data.Timeouts = plan.Timeouts
 	if responseDiags.HasError() {
-		return data, responseDiags, nil
+		return data, responseDiags, nil, false
 	}
 
 	consistencyDiags := diag.Diagnostics{}
@@ -83,6 +83,8 @@ func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.Cont
 			mismatch = true
 		}
 	}
+
+	identityConfirmed := !mismatch
 	// The endpoint, rather than an accidental response body identity, is the
 	// identity Terraform mutated and must remain usable for recovery.
 	data.SpaceID, data.EnvironmentID, data.ContentTypeID = plan.SpaceID, plan.EnvironmentID, plan.ContentTypeID
@@ -126,7 +128,7 @@ func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.Cont
 		}
 	}
 
-	return data, responseDiags, consistencyDiags
+	return data, responseDiags, consistencyDiags, identityConfirmed
 }
 
 func contentTypeMetadataReconciliations(plan ContentTypeModel, data *ContentTypeModel, diags *diag.Diagnostics) ([]func(), bool) {

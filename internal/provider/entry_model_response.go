@@ -210,7 +210,7 @@ func projectEntryMutationResponse(
 	ctx context.Context,
 	plan, response EntryModel,
 	fieldPolicy entryResponseFieldPolicy,
-) (EntryModel, diag.Diagnostics) {
+) (EntryModel, diag.Diagnostics, bool) {
 	var diags diag.Diagnostics
 
 	response.Timeouts = plan.Timeouts
@@ -241,7 +241,8 @@ func projectEntryMutationResponse(
 		entryID = response.EntryID
 	}
 
-	if !response.SpaceID.Equal(spaceID) || !response.EnvironmentID.Equal(environmentID) || !response.EntryID.Equal(entryID) {
+	identityConfirmed := response.SpaceID.Equal(spaceID) && response.EnvironmentID.Equal(environmentID) && response.EntryID.Equal(entryID)
+	if !identityConfirmed {
 		diags.AddError("Unexpected entry identity", "Contentful returned an entry identity that differs from the mutation endpoint.")
 	}
 
@@ -253,7 +254,7 @@ func projectEntryMutationResponse(
 	response.EntryIdentityModel = EntryIdentityModel{SpaceID: spaceID, EnvironmentID: environmentID, EntryID: entryID}
 	response.IDIdentityModel = NewIDIdentityModelFromMultipartID(spaceID.ValueString(), environmentID.ValueString(), entryID.ValueString())
 
-	return response, diags
+	return response, diags, identityConfirmed
 }
 
 func entryResponseFieldsConsistent(

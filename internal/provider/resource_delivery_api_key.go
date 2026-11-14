@@ -109,7 +109,15 @@ func (r *deliveryAPIKeyResource) Create(ctx context.Context, req resource.Create
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, deliveryAPIKeyIdentityAttributeNames(), &data, version)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, deliveryAPIKeyIdentityAttributeNames(), &data, "delivery API key", map[string]string{"space_id": params.SpaceID})
+	resp.Diagnostics.Append(stateDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(setResourceMutationVersion(ctx, resp.Private, version, !identityDiags.HasError())...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl
@@ -247,7 +255,15 @@ func (r *deliveryAPIKeyResource) Update(ctx context.Context, req resource.Update
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, deliveryAPIKeyIdentityAttributeNames(), &data, version)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, deliveryAPIKeyIdentityAttributeNames(), &data, "delivery API key", map[string]string{"space_id": params.SpaceID, "api_key_id": params.APIKeyID})
+	resp.Diagnostics.Append(stateDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(setResourceMutationVersion(ctx, resp.Private, version, !identityDiags.HasError())...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl

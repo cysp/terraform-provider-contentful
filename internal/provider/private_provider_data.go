@@ -30,7 +30,7 @@ func SetPrivateProviderData[T any](ctx context.Context, providerData PrivateProv
 func requiredPrivateVersion(ctx context.Context, providerData PrivateProviderData) (int, diag.Diagnostics) {
 	version, found, diags := optionalPrivateVersion(ctx, providerData)
 	if !found && !diags.HasError() {
-		diags.AddError("Private version is unavailable", "Terraform private state does not contain a Contentful version.")
+		diags.AddError("Private version is unavailable", "Terraform private state does not contain a Contentful version. Refresh the resource successfully to confirm its identity and version before applying again.")
 	}
 
 	return version, diags

@@ -89,11 +89,11 @@ func (r *taxonomyConceptResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *concept)
+	data, responseDiags, consistencyDiags, identityConfirmed := prepared.ProjectResponse(ctx, *concept)
 	resp.Diagnostics.Append(responseDiags...)
 
 	if !resp.Diagnostics.HasError() {
-		resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptIdentityAttributeNames(), &data, concept.Sys.Version)...)
+		resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptIdentityAttributeNames(), &data, concept.Sys.Version, identityConfirmed)...)
 	}
 
 	// A successful remote mutation can disagree with the plan. Publish its
@@ -210,11 +210,11 @@ func (r *taxonomyConceptResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *concept)
+	data, responseDiags, consistencyDiags, identityConfirmed := prepared.ProjectResponse(ctx, *concept)
 	resp.Diagnostics.Append(responseDiags...)
 
 	if !resp.Diagnostics.HasError() {
-		resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptIdentityAttributeNames(), &data, concept.Sys.Version)...)
+		resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptIdentityAttributeNames(), &data, concept.Sys.Version, identityConfirmed)...)
 	}
 
 	// A successful remote mutation can disagree with the plan. Publish its
@@ -259,6 +259,12 @@ func (r *taxonomyConceptResource) Delete(ctx context.Context, req resource.Delet
 			}
 
 			resp.Diagnostics.AddError("Failed to read taxonomy concept before deletion", util.ErrorDetailFromContentfulManagementResponse(response, err))
+
+			return
+		}
+
+		if concept.Sys.Organization.Sys.ID != organizationID || concept.Sys.ID != conceptID {
+			resp.Diagnostics.AddError("Unexpected Contentful taxonomy read identity", "The response identity differs from the taxonomy endpoint requested before deletion. No deletion was attempted. Refresh the resource successfully before retrying.")
 
 			return
 		}

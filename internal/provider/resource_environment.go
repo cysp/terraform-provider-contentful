@@ -111,7 +111,15 @@ func (r *environmentResource) Create(ctx context.Context, req resource.CreateReq
 	data.Timeouts = plan.Timeouts
 	data.SourceEnvironmentID = plan.SourceEnvironmentID
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, environmentIdentityAttributeNames(), &data, version)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, environmentIdentityAttributeNames(), &data, "environment", map[string]string{"space_id": params.SpaceID, "environment_id": params.EnvironmentID})
+	resp.Diagnostics.Append(stateDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(setResourceMutationVersion(ctx, resp.Private, version, !identityDiags.HasError())...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *environmentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -246,7 +254,15 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 	data.Timeouts = plan.Timeouts
 	data.SourceEnvironmentID = plan.SourceEnvironmentID
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, environmentIdentityAttributeNames(), &data, version)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, environmentIdentityAttributeNames(), &data, "environment", map[string]string{"space_id": params.SpaceID, "environment_id": params.EnvironmentID})
+	resp.Diagnostics.Append(stateDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(setResourceMutationVersion(ctx, resp.Private, version, !identityDiags.HasError())...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 //nolint:dupl

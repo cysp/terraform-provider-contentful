@@ -22,8 +22,8 @@ func checkpointEntryDraft(
 	private PrivateProviderData,
 ) (EntryModel, diag.Diagnostics) {
 	diags := private.SetKey(ctx, entryPendingPublicationVersionPrivateKey, nil)
-	response, consistencyDiags := projectEntryMutationResponse(ctx, plan, response, fieldPolicy)
-	diags.Append(setResourceIdentityStateAndVersion(ctx, identity, state, private, entryIdentityAttributeNames(), &response, version)...)
+	response, consistencyDiags, identityConfirmed := projectEntryMutationResponse(ctx, plan, response, fieldPolicy)
+	diags.Append(setResourceIdentityStateAndMutationVersion(ctx, identity, state, private, entryIdentityAttributeNames(), &response, version, identityConfirmed)...)
 	diags.Append(validateEntryDraftResponse(version, response.PublishedVersion)...)
 	diags.Append(consistencyDiags...)
 

@@ -95,10 +95,8 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	switch response := response.(type) {
 	case *cm.AppSigningSecretStatusCode:
-		mutationState := NewAppSigningSecretResourceModelFromResponse(response.Response)
-		if mutationState.Value.IsNull() && !plan.Value.IsUnknown() {
-			mutationState.Value = plan.Value
-		}
+		mutationState, mutationDiags := appSigningSecretMutationResponse(response.Response, plan)
+		resp.Diagnostics.Append(mutationDiags...)
 
 		data = mutationState
 
@@ -238,14 +236,8 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	switch response := response.(type) {
 	case *cm.AppSigningSecretStatusCode:
-		mutationState := NewAppSigningSecretResourceModelFromResponse(response.Response)
-		if mutationState.Value.IsNull() {
-			if !plan.Value.IsUnknown() {
-				mutationState.Value = plan.Value
-			} else if !state.Value.IsUnknown() {
-				mutationState.Value = state.Value
-			}
-		}
+		mutationState, mutationDiags := appSigningSecretMutationResponse(response.Response, plan)
+		resp.Diagnostics.Append(mutationDiags...)
 
 		data = mutationState
 

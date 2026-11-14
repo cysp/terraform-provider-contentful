@@ -74,7 +74,7 @@ func newEditorInterfaceResourceModelFromResponse(ctx context.Context, editorInte
 // response and restores known effective Plan values only after proving that
 // every API-backed value is losslessly, semantically equivalent. Endpoint
 // identity always remains the requested Terraform target.
-func ReconcileEditorInterfaceMutationResponse(ctx context.Context, editorInterface cm.EditorInterface, plan EditorInterfaceModel) (EditorInterfaceModel, diag.Diagnostics, diag.Diagnostics) {
+func ReconcileEditorInterfaceMutationResponse(ctx context.Context, editorInterface cm.EditorInterface, plan EditorInterfaceModel) (EditorInterfaceModel, diag.Diagnostics, diag.Diagnostics, bool) {
 	state, responseDiags, editorLayoutDiags := newEditorInterfaceResourceModelFromResponse(ctx, editorInterface)
 	reconciler := mutationResponseReconciler{resourceName: "Editor Interface"}
 	reconciler.pinIdentity(path.Root("space_id"), plan.SpaceID, state.SpaceID, &state.SpaceID)
@@ -130,7 +130,7 @@ func ReconcileEditorInterfaceMutationResponse(ctx context.Context, editorInterfa
 		state = candidateState
 	}
 
-	return state, responseDiags, reconciler.diagnostics
+	return state, responseDiags, reconciler.diagnostics, !reconciler.identityMismatch
 }
 
 func editorInterfaceControlsEquivalent(ctx context.Context, planned, response TypedList[TypedObject[EditorInterfaceControlValue]]) (bool, diag.Diagnostics) {

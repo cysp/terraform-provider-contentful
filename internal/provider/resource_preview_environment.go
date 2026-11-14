@@ -135,7 +135,7 @@ func (r *previewEnvironmentResource) Create(ctx context.Context, req resource.Cr
 		ownedIdentity.PreviewEnvironmentID = config.PreviewEnvironmentID
 	}
 
-	data, dataDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+	data, dataDiagnostics, consistencyDiagnostics, identityConfirmed := ReconcilePreviewEnvironmentMutationResponse(
 		ctx,
 		*previewEnvironment,
 		plan,
@@ -149,7 +149,7 @@ func (r *previewEnvironmentResource) Create(ctx context.Context, req resource.Cr
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, previewEnvironmentIdentityAttributeNames(), &data, previewEnvironment.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, previewEnvironmentIdentityAttributeNames(), &data, previewEnvironment.Sys.Version, identityConfirmed)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -281,7 +281,7 @@ func (r *previewEnvironmentResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	data, dataDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+	data, dataDiagnostics, consistencyDiagnostics, identityConfirmed := ReconcilePreviewEnvironmentMutationResponse(
 		ctx,
 		*previewEnvironment,
 		plan,
@@ -295,7 +295,7 @@ func (r *previewEnvironmentResource) Update(ctx context.Context, req resource.Up
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, previewEnvironmentIdentityAttributeNames(), &data, previewEnvironment.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, previewEnvironmentIdentityAttributeNames(), &data, previewEnvironment.Sys.Version, identityConfirmed)...)
 
 	if resp.Diagnostics.HasError() {
 		return

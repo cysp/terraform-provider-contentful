@@ -290,21 +290,47 @@ Plan values over it. Unknown values come from the response. Projection warnings
 are retained. A later Read skips this reconciliation and projects the remote
 representation so meaningful remote drift remains visible.
 
-When a successful taxonomy mutation response disagrees with the requested
-endpoint identity, recovery preserves the complete returned response except
-that the requested endpoint identity and legacy ID intentionally remain the
-Terraform target.
+### Mutation endpoint identity
 
-Preview Environment mutation recovery has the same targeted endpoint-identity
-exception. When a successful response contradicts the requested space or
-preview environment ID, Terraform retains the requested endpoint identity and
-legacy multipart ID while checkpointing every other response-derived value and
-the returned `sys.version` before reporting the consistency error. For
-generated-ID creation, the returned preview environment ID remains the target;
-an unexpected known planned ID still constrains consistency and a contradiction
-is reported without replacing the generated target. Configuration omission
-selects the generated-ID endpoint; it does not discard known Plan constraints.
-The [preview environment design](content-preview-environments.md#concurrency-and-recovery)
+Successful mutation responses cannot retarget Terraform to a different addressed
+endpoint. Recovery retains requested path components, rebuilds the legacy
+multipart ID, and publishes other representable response values before reporting
+identity contradictions. Server-generated IDs remain response-owned: a known
+Plan value still constrains consistency but does not select a POST target.
+An explicitly supplied App Action creation ID is an intended target even though
+it travels in the POST body. A singleton body ID, Environment Alias target, or
+related-resource reference is not the addressed identity and remains
+response-owned. The requested environment or alias remains the address; the
+provider does not infer alias resolution from a contradictory response.
+
+A version belongs to the response's identified object. An identity contradiction
+therefore clears the existing private `version` after state/identity encoding
+succeeds; neither the returned version nor the stale pre-mutation version may
+authorize another write. A later successful read must confirm the requested
+identity before restoring version authority. This includes the narrow
+[Taxonomy Delete fallback](#taxonomy-optimistic-version-locking). Nonidentity Plan contradictions retain the
+confirmed endpoint's returned version. Entry publication and Content Type
+activation authority is also revoked after an identity contradiction; no
+follow-up publish or activate request uses that response's version. No path
+repairs a conflict by reading and retrying a newer version.
+
+The mutation publication boundary stages state and structured identity together.
+An encoding failure publishes neither and leaves the prior private version
+unchanged. A private-data write failure is reported after the state/identity pair
+has been published. The [local publication contract](#diagnostics-and-local-publication)
+defines these local guarantees; they do not make a remote mutation transactional.
+
+App Signing Secret mutation responses must identify the requested singleton
+before acknowledging the planned secret. A contradiction leaves prior secret
+state intact on Update and publishes no new secret state on Create. The
+[Webhook Signing Secret](webhook-signing-secret.md#failures-and-confidentiality)
+has its own unconfirmed-write acknowledgement contract.
+
+Preview Environment uses the same endpoint and version rules. On generated-ID
+creation the returned ID remains the target even when an unexpected known Plan
+ID produces a consistency diagnostic. Configuration omission selects this
+endpoint; it does not discard known Plan constraints. The
+[preview environment design](content-preview-environments.md#concurrency-and-recovery)
 records the provider's state-to-plan configuration delta; the
 [API research](../research/content-preview-environments.md#concurrency-and-errors)
 records the observed limits of version locking.
@@ -357,9 +383,9 @@ The tables below use these common rules:
 
 The six Role, Editor Interface, and Webhook callers below differ where the
 endpoint supplies identity or the request needs Config to decide omission.
-Each publishes response-derived state and private version before appending
-consistency diagnostics, allowing Terraform to retain recovery state when apply
-reports the error. Other resources have the separate contracts named in the
+Each publishes response-derived state and handles its private version under the
+[endpoint identity policy](#mutation-endpoint-identity) before appending consistency
+diagnostics, allowing Terraform to retain recovery state when apply reports the error. Other resources have the separate contracts named in the
 [reading map](#reading-map).
 
 | Resource caller | Mutation and identity | Inputs to request conversion | Reconciliation boundary |
@@ -701,8 +727,8 @@ version is contradictory. Missing or different `publishedVersion` and
 nonpositive current versions remain errors. Read cannot use a malformed or
 changed tuple to preserve publication authority. The computed
 `published_version` attribute exposes the authoritative CMA value; `version` in
-resource private state always records the same response version as the published
-Terraform state.
+resource private state records the same response version only when the response
+confirms the endpoint, under the [endpoint identity policy](#mutation-endpoint-identity).
 
 ### Provider-private optimistic-lock barrier
 
@@ -757,15 +783,17 @@ matching the provider's other versioned resources. Update sends the prior
 private-state value supplied at apply. Delete also sends that value when it is
 present. A remote change for which CMA advances the resource's `sys.version` is
 therefore rejected instead of being overwritten. Create, Read, and Update store
-the integer version returned by Contentful, including alongside recovery state
-when an Update response differs from the plan.
+the integer version returned for a confirmed endpoint, including alongside
+recovery state when configuration values differ from the plan. Identity
+contradictions follow the [shared version policy](#mutation-endpoint-identity).
 
 Terraform does not supply prior private data to Delete while replacing a
 tainted resource. This applies both to recovery state published alongside an
 errored Create and to a resource manually marked tainted after successful
 updates. Only when private version data is genuinely absent, Delete performs
-one GET for the requested resource and sends its `sys.version` in the DELETE
-request. A 404 from this GET means the resource is already absent. This narrow
+one GET for the requested resource, validates both its organization and resource
+identity, and sends its `sys.version` in the DELETE request. A contradictory GET
+returns an error before DELETE and leaves both objects untouched. A 404 from this GET means the resource is already absent. This narrow
 apply-time fallback lets tainted replacement delete resources above version
 `1`; a concurrent change between GET and DELETE still produces CMA
 `VersionMismatch` instead of a blind deletion. Valid private data takes the
@@ -912,7 +940,8 @@ values are encoded into staged copies, and both are assigned only after both
 encodings succeed. This is local publication only; it does not make remote API
 operations or private provider data transactional.
 
-For versioned responses, the provider records the private `version` only after
+For versioned responses, the provider records or revokes the private `version`
+under the [endpoint identity policy](#mutation-endpoint-identity) only after
 publishing the matching state and identity. An encoding error leaves the prior
 private version unchanged. A later private-data write error is reported without
 rolling back the published state and identity. Pending lifecycle authority and

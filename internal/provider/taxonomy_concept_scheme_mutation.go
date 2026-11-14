@@ -74,17 +74,18 @@ func (prepared preparedTaxonomyConceptSchemeMutation) NoopState(state TaxonomyCo
 	return data
 }
 
-func (prepared preparedTaxonomyConceptSchemeMutation) ProjectResponse(ctx context.Context, response cm.TaxonomyConceptScheme) (TaxonomyConceptSchemeModel, diag.Diagnostics, diag.Diagnostics) {
+func (prepared preparedTaxonomyConceptSchemeMutation) ProjectResponse(ctx context.Context, response cm.TaxonomyConceptScheme) (TaxonomyConceptSchemeModel, diag.Diagnostics, diag.Diagnostics, bool) {
 	data, responseDiags := NewTaxonomyConceptSchemeModelFromResponse(ctx, response)
 
 	data.Timeouts = prepared.plan.Timeouts
 	if responseDiags.HasError() {
-		return data, responseDiags, nil
+		return data, responseDiags, nil, false
 	}
 
 	consistencyDiags := diag.Diagnostics{}
 	mismatch := taxonomyMutationIdentityConsistency("taxonomy concept scheme", path.Root("organization_id"), prepared.plan.OrganizationID, data.OrganizationID, &consistencyDiags)
 	mismatch = taxonomyMutationIdentityConsistency("taxonomy concept scheme", path.Root("concept_scheme_id"), prepared.plan.ConceptSchemeID, data.ConceptSchemeID, &consistencyDiags) || mismatch
+	identityConfirmed := !mismatch
 	data.OrganizationID, data.ConceptSchemeID = prepared.plan.OrganizationID, prepared.plan.ConceptSchemeID
 	data.IDIdentityModel = NewIDIdentityModelFromMultipartID(prepared.plan.OrganizationID.ValueString(), prepared.plan.ConceptSchemeID.ValueString())
 
@@ -123,7 +124,7 @@ func (prepared preparedTaxonomyConceptSchemeMutation) ProjectResponse(ctx contex
 		}
 	}
 
-	return data, responseDiags, consistencyDiags
+	return data, responseDiags, consistencyDiags, identityConfirmed
 }
 
 func (prepared preparedTaxonomyConceptSchemeMutation) planRequest(ctx context.Context) (cm.TaxonomyConceptSchemeRequest, diag.Diagnostics) {
