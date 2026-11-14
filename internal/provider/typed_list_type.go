@@ -104,9 +104,18 @@ func (t TypedListType[T]) ApplyTerraform5AttributePathStep(step tftypes.Attribut
 	return t.ElementType(), nil
 }
 
+// WithElementType retains the typed value when the replacement equals the
+// descriptor derived from T. Other replacements use the standard Framework type
+// so their values can preserve the requested descriptor.
+//
 //nolint:ireturn
 func (t TypedListType[T]) WithElementType(typ attr.Type) attr.TypeWithElementType {
-	return TypedListType[attr.Value]{elementType: typ}
+	var value T
+	if typ != nil && typ.Equal(value.Type(context.Background())) {
+		return TypedListType[T]{elementType: typ}
+	}
+
+	return basetypes.ListType{ElemType: typ}
 }
 
 //nolint:ireturn

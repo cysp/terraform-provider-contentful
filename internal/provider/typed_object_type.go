@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	tpfr "github.com/cysp/terraform-provider-contentful/internal/terraform-plugin-framework-reflection"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -82,20 +83,28 @@ func (t TypedObjectType[T]) String() string {
 }
 
 func (t TypedObjectType[T]) ApplyTerraform5AttributePathStep(step tftypes.AttributePathStep) (any, error) {
-	var v T
-
-	key, keyOk := step.(tftypes.AttributeName)
-	if !keyOk {
-		//nolint:err113
-		return nil, fmt.Errorf("cannot apply step %T to TypedObject[%T]", step, v)
+	attributeType, err := (basetypes.ObjectType{AttrTypes: t.attributeTypes}).ApplyTerraform5AttributePathStep(step)
+	if err != nil {
+		return nil, fmt.Errorf("traversing typed object: %w", err)
 	}
 
-	return t.attributeTypes[string(key)], nil
+	return attributeType, nil
 }
 
+// WithAttributeTypes retains the typed value when the replacement equals the
+// descriptor derived from T. Other replacements use the standard Framework type
+// so their values can preserve the requested descriptor.
+//
 //nolint:ireturn
 func (t TypedObjectType[T]) WithAttributeTypes(attributeTypes map[string]attr.Type) attr.TypeWithAttributeTypes {
-	return TypedObjectType[struct{}]{attributeTypes: attributeTypes}
+	replacement := TypedObjectType[T]{attributeTypes: attributeTypes}
+	canonical := TypedObjectType[T]{attributeTypes: tpfr.AttributeTypesFor[T](context.Background())}
+
+	if replacement.Equal(canonical) {
+		return replacement
+	}
+
+	return basetypes.ObjectType{AttrTypes: attributeTypes}
 }
 
 func (t TypedObjectType[T]) AttributeTypes() map[string]attr.Type {
