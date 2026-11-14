@@ -399,7 +399,7 @@ func TestReconcilePreviewEnvironmentMutationResponseRestoresEquivalentPlan(t *te
 		"author": "https://preview.invalid/author",
 	})
 
-	state, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+	state, responseDiagnostics, consistencyDiagnostics, _ := ReconcilePreviewEnvironmentMutationResponse(
 		t.Context(),
 		response,
 		plan,
@@ -497,7 +497,7 @@ func TestReconcilePreviewEnvironmentMutationResponseDetectsEveryOwnedContradicti
 			plan := previewEnvironmentMutationModel("preview", "Planned description", map[string]string{
 				"page": "https://preview.invalid/page",
 			})
-			state, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+			state, responseDiagnostics, consistencyDiagnostics, _ := ReconcilePreviewEnvironmentMutationResponse(
 				t.Context(),
 				test.response,
 				plan,
@@ -529,7 +529,7 @@ func TestReconcilePreviewEnvironmentMutationResponseHonorsSelectedIDOwnership(t 
 	generatedPlan.ID = types.StringUnknown()
 	generatedPlan.PreviewEnvironmentID = types.StringUnknown()
 
-	generatedState, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+	generatedState, responseDiagnostics, consistencyDiagnostics, _ := ReconcilePreviewEnvironmentMutationResponse(
 		t.Context(),
 		response,
 		generatedPlan,
@@ -540,7 +540,7 @@ func TestReconcilePreviewEnvironmentMutationResponseHonorsSelectedIDOwnership(t 
 	assert.Equal(t, types.StringValue("generated-id"), generatedState.PreviewEnvironmentID)
 	assert.Equal(t, types.StringValue("space/generated-id"), generatedState.ID)
 
-	constrainedState, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+	constrainedState, responseDiagnostics, consistencyDiagnostics, _ := ReconcilePreviewEnvironmentMutationResponse(
 		t.Context(), response, plan,
 		PreviewEnvironmentIdentityModel{SpaceID: plan.SpaceID, PreviewEnvironmentID: types.StringNull()},
 	)
@@ -550,7 +550,7 @@ func TestReconcilePreviewEnvironmentMutationResponseHonorsSelectedIDOwnership(t 
 	assert.Equal(t, types.StringValue("generated-id"), constrainedState.PreviewEnvironmentID)
 	assert.Equal(t, types.StringValue("space/generated-id"), constrainedState.ID)
 
-	selectedState, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+	selectedState, responseDiagnostics, consistencyDiagnostics, _ := ReconcilePreviewEnvironmentMutationResponse(
 		t.Context(),
 		response,
 		plan,
@@ -579,7 +579,7 @@ func TestReconcilePreviewEnvironmentMutationResponseRetainsProjectionWarnings(t 
 		Enabled:    true,
 	})
 
-	state, responseDiagnostics, consistencyDiagnostics := ReconcilePreviewEnvironmentMutationResponse(
+	state, responseDiagnostics, consistencyDiagnostics, _ := ReconcilePreviewEnvironmentMutationResponse(
 		t.Context(),
 		response,
 		plan,
@@ -654,7 +654,7 @@ func TestReconcilePreviewEnvironmentMutationResponseRejectsInconsistentLegacyID(
 	plan.ID = types.StringValue("space/other-preview")
 	response := previewEnvironmentResponse("space", "preview", "Planned", "", map[string]string{})
 
-	state, responseDiags, consistencyDiags := ReconcilePreviewEnvironmentMutationResponse(t.Context(), response, plan, plan.PreviewEnvironmentIdentityModel)
+	state, responseDiags, consistencyDiags, _ := ReconcilePreviewEnvironmentMutationResponse(t.Context(), response, plan, plan.PreviewEnvironmentIdentityModel)
 
 	assert.Empty(t, responseDiags)
 	require.True(t, consistencyDiags.HasError())
@@ -672,7 +672,7 @@ func TestReconcilePreviewEnvironmentMutationResponseUsesResponseForUnknownPlan(t
 	plan.ContentTypeConfigurations = NewTypedMapUnknown[TypedObject[PreviewEnvironmentContentTypeConfigurationValue]]()
 	response := previewEnvironmentResponse("space", "preview", "Returned", "remote description", map[string]string{"page": "https://preview.invalid/page"})
 
-	state, responseDiags, consistencyDiags := ReconcilePreviewEnvironmentMutationResponse(t.Context(), response, plan, plan.PreviewEnvironmentIdentityModel)
+	state, responseDiags, consistencyDiags, _ := ReconcilePreviewEnvironmentMutationResponse(t.Context(), response, plan, plan.PreviewEnvironmentIdentityModel)
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
@@ -688,7 +688,7 @@ func TestReconcilePreviewEnvironmentMutationResponseDistinguishesNullAndEmptyMap
 	plan.ContentTypeConfigurations = NewTypedMapNull[TypedObject[PreviewEnvironmentContentTypeConfigurationValue]]()
 	response := previewEnvironmentResponse("space", "preview", "Planned", "", map[string]string{})
 
-	state, responseDiags, consistencyDiags := ReconcilePreviewEnvironmentMutationResponse(t.Context(), response, plan, plan.PreviewEnvironmentIdentityModel)
+	state, responseDiags, consistencyDiags, _ := ReconcilePreviewEnvironmentMutationResponse(t.Context(), response, plan, plan.PreviewEnvironmentIdentityModel)
 
 	assert.Empty(t, responseDiags)
 	require.True(t, consistencyDiags.HasError())

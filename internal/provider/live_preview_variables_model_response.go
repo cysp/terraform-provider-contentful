@@ -30,7 +30,7 @@ func NewLivePreviewVariablesResourceModelFromResponse(response cm.LivePreviewVar
 	return model, diagnostics
 }
 
-func ReconcileLivePreviewVariablesMutationResponse(ctx context.Context, response cm.LivePreviewVariables, plan LivePreviewVariablesModel) (LivePreviewVariablesModel, diag.Diagnostics, diag.Diagnostics) {
+func ReconcileLivePreviewVariablesMutationResponse(ctx context.Context, response cm.LivePreviewVariables, plan LivePreviewVariablesModel) (LivePreviewVariablesModel, diag.Diagnostics, diag.Diagnostics, bool) {
 	model, diagnostics := NewLivePreviewVariablesResourceModelFromResponse(response)
 	reconciler := mutationResponseReconciler{resourceName: "live preview variables"}
 	reconciler.pinIdentity(path.Root("space_id"), plan.SpaceID, model.SpaceID, &model.SpaceID)
@@ -55,5 +55,5 @@ func ReconcileLivePreviewVariablesMutationResponse(ctx context.Context, response
 		model = candidateModel
 	}
 
-	return model, diagnostics, reconciler.diagnostics
+	return model, diagnostics, reconciler.diagnostics, !reconciler.identityMismatch
 }

@@ -51,11 +51,11 @@ func newRoleResourceModelFromResponseAtPath(ctx context.Context, role cm.Role, r
 // restores known effective Plan values only after proving that every
 // API-backed value is losslessly, semantically equivalent. Endpoint identity
 // always remains the requested Terraform target.
-func ReconcileRoleMutationResponse(ctx context.Context, role cm.Role, plan RoleModel) (RoleModel, diag.Diagnostics, diag.Diagnostics) {
+func ReconcileRoleMutationResponse(ctx context.Context, role cm.Role, plan RoleModel, endpointID types.String) (RoleModel, diag.Diagnostics, diag.Diagnostics, bool) {
 	state, responseDiags, permissionsDiags, policiesDiags := newRoleResourceModelFromResponse(ctx, role)
 	reconciler := mutationResponseReconciler{resourceName: "role"}
 	reconciler.pinIdentity(path.Root("space_id"), plan.SpaceID, state.SpaceID, &state.SpaceID)
-	reconciler.pinIdentity(path.Root("role_id"), plan.RoleID, state.RoleID, &state.RoleID)
+	reconciler.pinCreatedIdentity(path.Root("role_id"), endpointID, plan.RoleID, state.RoleID, &state.RoleID)
 
 	state.IDIdentityModel = NewIDIdentityModelFromMultipartID(state.SpaceID.ValueString(), state.RoleID.ValueString())
 
@@ -94,7 +94,7 @@ func ReconcileRoleMutationResponse(ctx context.Context, role cm.Role, plan RoleM
 		state = candidateState
 	}
 
-	return state, responseDiags, reconciler.diagnostics
+	return state, responseDiags, reconciler.diagnostics, !reconciler.identityMismatch
 }
 
 func rolePermissionsEquivalent(planned, response TypedMap[TypedList[types.String]]) bool {

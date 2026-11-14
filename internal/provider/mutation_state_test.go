@@ -32,7 +32,7 @@ func TestContentTypeMutationStateRetainsCompleteResponseOnAnyOwnedMismatch(t *te
 		Fields:           plannedFields,
 		Metadata:         NewTypedObjectNull[ContentTypeMetadataValue](),
 	}
-	mutationState, mutationStateDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), mutationResponse, plan)
+	mutationState, mutationStateDiags, consistencyDiags, _ := ProjectContentTypeMutationResponse(t.Context(), mutationResponse, plan)
 	require.False(t, mutationStateDiags.HasError())
 	assert.True(t, consistencyDiags.HasError())
 
@@ -74,7 +74,7 @@ func TestContentTypeMutationStateRejectsUnknownOwnedFieldsWithoutPublishingUnkno
 				Fields:       plannedFields,
 				Metadata:     NewTypedObjectUnknown[ContentTypeMetadataValue](),
 			}
-			mutationState, mutationStateDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), contentTypeMutationStateTestResponse(), plan)
+			mutationState, mutationStateDiags, consistencyDiags, _ := ProjectContentTypeMutationResponse(t.Context(), contentTypeMutationStateTestResponse(), plan)
 			require.False(t, mutationStateDiags.HasError())
 			assert.True(t, consistencyDiags.HasError())
 			assert.False(t, mutationState.Fields.IsUnknown())
@@ -120,7 +120,7 @@ func TestContentTypeMutationStateRejectsContradictoryOwnedResponseValues(t *test
 			response := base
 			response.Fields = append([]cm.ContentTypeFieldsItem(nil), base.Fields...)
 			mutate.mutation(&response)
-			state, responseDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan)
+			state, responseDiags, consistencyDiags, _ := ProjectContentTypeMutationResponse(t.Context(), response, plan)
 			require.False(t, responseDiags.HasError())
 			require.True(t, consistencyDiags.HasError())
 			diagnostic, ok := consistencyDiags.Errors()[0].(diag.DiagnosticWithPath)
@@ -162,7 +162,7 @@ func TestContentTypeMutationStateLeavesUnknownTaxonomyResponseOwned(t *testing.T
 	metadata.Taxonomy = NewTypedListUnknown[TypedObject[ContentTypeMetadataTaxonomyItemValue]]()
 	plan.Metadata = NewTypedObject(metadata)
 
-	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan)
+	state, mutationDiags, consistencyDiags, _ := ProjectContentTypeMutationResponse(t.Context(), response, plan)
 	require.False(t, mutationDiags.HasError())
 	require.False(t, consistencyDiags.HasError())
 	require.Len(t, state.Metadata.Value().Taxonomy.Elements(), 1)
@@ -198,7 +198,7 @@ func TestContentTypeMutationStateAcceptsNormalizedJSONEquivalence(t *testing.T) 
 	})
 	planField.Items = NewTypedObject(planItems)
 	plan.Fields = NewTypedList([]TypedObject[ContentTypeFieldValue]{NewTypedObject(planField)})
-	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan)
+	state, mutationDiags, consistencyDiags, _ := ProjectContentTypeMutationResponse(t.Context(), response, plan)
 	require.False(t, mutationDiags.HasError())
 	assert.False(t, consistencyDiags.HasError())
 	assert.Equal(t, plan.Metadata.Value().Annotations.ValueString(), state.Metadata.Value().Annotations.ValueString())
@@ -220,7 +220,7 @@ func TestContentTypeMutationStateMissingMetadataUsesNullChildSemantics(t *testin
 		Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 	})
 
-	_, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, plan)
+	_, mutationDiags, consistencyDiags, _ := ProjectContentTypeMutationResponse(t.Context(), response, plan)
 	require.False(t, mutationDiags.HasError())
 	assert.False(t, consistencyDiags.HasError())
 
@@ -229,7 +229,7 @@ func TestContentTypeMutationStateMissingMetadataUsesNullChildSemantics(t *testin
 		Annotations: jsontypes.NewNormalizedValue(testJSON(map[string]any{"configured": true})),
 		Taxonomy:    NewTypedListNull[TypedObject[ContentTypeMetadataTaxonomyItemValue]](),
 	})
-	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(t.Context(), response, configured)
+	state, mutationDiags, consistencyDiags, _ := ProjectContentTypeMutationResponse(t.Context(), response, configured)
 	require.False(t, mutationDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
 	diagnostic, ok := consistencyDiags.Errors()[0].(diag.DiagnosticWithPath)
@@ -336,7 +336,7 @@ func TestContentTypeMutationStateRejectsContradictoryKnownTaxonomyPlan(t *testin
 		Timeouts: TimeoutsNull(),
 	}
 
-	state, mutationDiags, consistencyDiags := ProjectContentTypeMutationResponse(
+	state, mutationDiags, consistencyDiags, _ := ProjectContentTypeMutationResponse(
 		t.Context(),
 		response,
 		plan,
@@ -382,20 +382,20 @@ func TestEditorInterfaceMutationStateRejectsLossyLayoutProjection(t *testing.T) 
 		}),
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(t.Context(), response, EditorInterfaceModel{EditorLayout: plannedLayout})
+	mutationState, mutationStateDiags, consistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(t.Context(), response, EditorInterfaceModel{EditorLayout: plannedLayout})
 	assert.False(t, mutationStateDiags.HasError())
 	assert.Len(t, mutationStateDiags.Warnings(), 1)
 	assert.True(t, consistencyDiags.HasError())
 	assert.False(t, mutationState.EditorLayout.Equal(plannedLayout))
 	assert.True(t, mutationState.EditorLayout.Elements()[0].Value().Group.IsNull())
 
-	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags := ReconcileEditorInterfaceMutationResponse(t.Context(), response, EditorInterfaceModel{EditorLayout: NewTypedListUnknown[TypedObject[EditorInterfaceEditorLayoutItemValue]]()})
+	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(t.Context(), response, EditorInterfaceModel{EditorLayout: NewTypedListUnknown[TypedObject[EditorInterfaceEditorLayoutItemValue]]()})
 	assert.False(t, unknownPlanDiags.HasError())
 	assert.Empty(t, unknownConsistencyDiags)
 	assert.False(t, unknownPlanState.EditorLayout.IsUnknown())
 	assert.True(t, unknownPlanState.EditorLayout.Elements()[0].Value().Group.IsNull())
 
-	nullPlanState, nullPlanDiags, nullConsistencyDiags := ReconcileEditorInterfaceMutationResponse(t.Context(), response, EditorInterfaceModel{EditorLayout: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]]()})
+	nullPlanState, nullPlanDiags, nullConsistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(t.Context(), response, EditorInterfaceModel{EditorLayout: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]]()})
 	assert.False(t, nullPlanDiags.HasError())
 	assert.True(t, nullConsistencyDiags.HasError())
 	assert.False(t, nullPlanState.EditorLayout.IsNull())
@@ -415,7 +415,7 @@ func TestEditorInterfaceMutationStateRejectsRepresentableLayoutContradiction(t *
 		}),
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(
+	mutationState, mutationStateDiags, consistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(
 		t.Context(), response, EditorInterfaceModel{EditorLayout: plannedLayout},
 	)
 
@@ -425,7 +425,7 @@ func TestEditorInterfaceMutationStateRejectsRepresentableLayoutContradiction(t *
 	assert.Equal(t, "Contentful returned a different Editor Interface layout", consistencyDiags.Errors()[0].Summary())
 	assert.Equal(t, "response-group", mutationState.EditorLayout.Elements()[0].Value().Group.Value().GroupID.ValueString())
 
-	nullPlanState, nullPlanResponseDiags, nullPlanConsistencyDiags := ReconcileEditorInterfaceMutationResponse(
+	nullPlanState, nullPlanResponseDiags, nullPlanConsistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(
 		t.Context(), response, EditorInterfaceModel{EditorLayout: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]]()},
 	)
 
@@ -453,7 +453,7 @@ func TestEditorInterfaceMutationStateAcceptsEquivalentResponse(t *testing.T) {
 		}),
 	}
 
-	mutationState, responseDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(
+	mutationState, responseDiags, consistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(
 		t.Context(), response, EditorInterfaceModel{EditorLayout: plannedLayout},
 	)
 
@@ -477,7 +477,7 @@ func TestEditorInterfaceMutationStateTreatsLayoutOrderAsMeaningful(t *testing.T)
 		}),
 	}
 
-	mutationState, responseDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(
+	mutationState, responseDiags, consistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(
 		t.Context(), response, EditorInterfaceModel{EditorLayout: plannedLayout},
 	)
 
@@ -489,7 +489,7 @@ func TestEditorInterfaceMutationStateTreatsLayoutOrderAsMeaningful(t *testing.T)
 func TestOptionalMutationStateReconcilesOmittedNullValues(t *testing.T) {
 	t.Parallel()
 
-	editorState, editorResponseDiags, editorConsistencyDiags := ReconcileEditorInterfaceMutationResponse(
+	editorState, editorResponseDiags, editorConsistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(
 		t.Context(),
 		cm.EditorInterface{Sys: cm.NewEditorInterfaceSys("space", "environment", "content_type", "default")},
 		EditorInterfaceModel{EditorLayout: NewTypedListNull[TypedObject[EditorInterfaceEditorLayoutItemValue]]()},
@@ -498,16 +498,17 @@ func TestOptionalMutationStateReconcilesOmittedNullValues(t *testing.T) {
 	assert.Empty(t, editorConsistencyDiags)
 	assert.True(t, editorState.EditorLayout.IsNull())
 
-	webhookState, webhookResponseDiags, webhookConsistencyDiags := ReconcileWebhookMutationResponse(
+	webhookState, webhookResponseDiags, webhookConsistencyDiags, _ := ReconcileWebhookMutationResponse(
 		t.Context(),
 		cm.WebhookDefinition{Sys: cm.NewWebhookDefinitionSys("space", "webhook")},
 		WebhookModel{
-			Name:    types.StringUnknown(),
-			URL:     types.StringUnknown(),
-			Filters: NewTypedListNull[TypedObject[WebhookFilterValue]](),
-			Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
-			Topics:  NewTypedList([]types.String{}),
-		},
+			WebhookID: types.StringUnknown(),
+			Name:      types.StringUnknown(),
+			URL:       types.StringUnknown(),
+			Filters:   NewTypedListNull[TypedObject[WebhookFilterValue]](),
+			Headers:   NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+			Topics:    NewTypedList([]types.String{}),
+		}, types.StringNull(),
 	)
 	assert.Empty(t, webhookResponseDiags)
 	assert.Empty(t, webhookConsistencyDiags)
@@ -547,19 +548,20 @@ func TestWebhookMutationStateDistinguishesNullAndEmptyFilters(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			state, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(
+			state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(
 				t.Context(),
 				cm.WebhookDefinition{
 					Sys:     cm.NewWebhookDefinitionSys("space", "webhook"),
 					Filters: test.response,
 				},
 				WebhookModel{
-					Name:    types.StringUnknown(),
-					URL:     types.StringUnknown(),
-					Filters: test.plan,
-					Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
-					Topics:  NewTypedList([]types.String{}),
-				},
+					WebhookID: types.StringUnknown(),
+					Name:      types.StringUnknown(),
+					URL:       types.StringUnknown(),
+					Filters:   test.plan,
+					Headers:   NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+					Topics:    NewTypedList([]types.String{}),
+				}, types.StringNull(),
 			)
 
 			assert.Empty(t, responseDiags)
@@ -598,7 +600,7 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 		}},
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := ReconcileRoleMutationResponse(t.Context(), response, RoleModel{Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies})
+	mutationState, mutationStateDiags, consistencyDiags, _ := ReconcileRoleMutationResponse(t.Context(), response, RoleModel{RoleID: types.StringUnknown(), Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies}, types.StringNull())
 	assert.False(t, mutationStateDiags.HasError())
 	assert.Len(t, mutationStateDiags.Warnings(), 3)
 	assert.True(t, consistencyDiags.HasError())
@@ -606,11 +608,12 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 	assert.False(t, mutationState.Permissions.Equal(plannedPermissions))
 	assert.False(t, mutationState.Policies.Equal(plannedPolicies))
 
-	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags := ReconcileRoleMutationResponse(t.Context(), response, RoleModel{
+	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags, _ := ReconcileRoleMutationResponse(t.Context(), response, RoleModel{
+		RoleID:      types.StringUnknown(),
 		Name:        types.StringUnknown(),
 		Permissions: NewTypedMapUnknown[TypedList[types.String]](),
 		Policies:    NewTypedListUnknown[TypedObject[RolePolicyValue]](),
-	})
+	}, types.StringNull())
 	assert.False(t, unknownPlanDiags.HasError())
 	assert.Empty(t, unknownConsistencyDiags)
 	assert.False(t, unknownPlanState.Permissions.IsUnknown())
@@ -641,8 +644,8 @@ func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testin
 		}},
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := ReconcileRoleMutationResponse(
-		t.Context(), response, RoleModel{Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies},
+	mutationState, mutationStateDiags, consistencyDiags, _ := ReconcileRoleMutationResponse(
+		t.Context(), response, RoleModel{RoleID: types.StringUnknown(), Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies}, types.StringNull(),
 	)
 
 	require.False(t, mutationStateDiags.HasError())
@@ -676,8 +679,8 @@ func TestRoleMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *testing
 		},
 	}
 
-	mutationState, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(
-		t.Context(), response, RoleModel{Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies},
+	mutationState, responseDiags, consistencyDiags, _ := ReconcileRoleMutationResponse(
+		t.Context(), response, RoleModel{RoleID: types.StringUnknown(), Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies}, types.StringNull(),
 	)
 
 	assert.Empty(t, responseDiags)
@@ -701,8 +704,8 @@ func TestRoleMutationStatePreservesDuplicateMultiplicity(t *testing.T) {
 		Policies: []cm.RolePoliciesItem{},
 	}
 
-	mutationState, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(
-		t.Context(), response, RoleModel{Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies},
+	mutationState, responseDiags, consistencyDiags, _ := ReconcileRoleMutationResponse(
+		t.Context(), response, RoleModel{RoleID: types.StringUnknown(), Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies}, types.StringNull(),
 	)
 
 	assert.Empty(t, responseDiags)
@@ -781,8 +784,8 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 				Policies:    test.response,
 			}
 
-			mutationState, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(
-				t.Context(), response, RoleModel{Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies},
+			mutationState, responseDiags, consistencyDiags, _ := ReconcileRoleMutationResponse(
+				t.Context(), response, RoleModel{RoleID: types.StringUnknown(), Name: types.StringUnknown(), Permissions: plannedPermissions, Policies: plannedPolicies}, types.StringNull(),
 			)
 
 			assert.Empty(t, responseDiags)

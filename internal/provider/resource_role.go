@@ -8,6 +8,7 @@ import (
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -90,15 +91,16 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	})
 
 	var (
-		data             RoleModel
-		consistencyDiags diag.Diagnostics
+		data              RoleModel
+		consistencyDiags  diag.Diagnostics
+		identityConfirmed bool
 	)
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
 		var responseDiags diag.Diagnostics
 
-		data, responseDiags, consistencyDiags = ReconcileRoleMutationResponse(ctx, response.Response, plan)
+		data, responseDiags, consistencyDiags, identityConfirmed = ReconcileRoleMutationResponse(ctx, response.Response, plan, types.StringNull())
 
 		resp.Diagnostics.Append(responseDiags...)
 
@@ -114,7 +116,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, roleIdentityAttributeNames(), &data, version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, roleIdentityAttributeNames(), &data, version, identityConfirmed)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -241,15 +243,16 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	})
 
 	var (
-		data             RoleModel
-		consistencyDiags diag.Diagnostics
+		data              RoleModel
+		consistencyDiags  diag.Diagnostics
+		identityConfirmed bool
 	)
 
 	switch response := response.(type) {
 	case *cm.RoleStatusCode:
 		var responseDiags diag.Diagnostics
 
-		data, responseDiags, consistencyDiags = ReconcileRoleMutationResponse(ctx, response.Response, plan)
+		data, responseDiags, consistencyDiags, identityConfirmed = ReconcileRoleMutationResponse(ctx, response.Response, plan, plan.RoleID)
 
 		resp.Diagnostics.Append(responseDiags...)
 
@@ -265,7 +268,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, roleIdentityAttributeNames(), &data, version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, roleIdentityAttributeNames(), &data, version, identityConfirmed)...)
 
 	if resp.Diagnostics.HasError() {
 		return

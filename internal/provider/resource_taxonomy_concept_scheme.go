@@ -89,11 +89,11 @@ func (r *taxonomyConceptSchemeResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *scheme)
+	data, responseDiags, consistencyDiags, identityConfirmed := prepared.ProjectResponse(ctx, *scheme)
 	resp.Diagnostics.Append(responseDiags...)
 
 	if !resp.Diagnostics.HasError() {
-		resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptSchemeIdentityAttributeNames(), &data, scheme.Sys.Version)...)
+		resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptSchemeIdentityAttributeNames(), &data, scheme.Sys.Version, identityConfirmed)...)
 	}
 
 	// A successful remote mutation can disagree with the plan. Publish its
@@ -210,11 +210,11 @@ func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *scheme)
+	data, responseDiags, consistencyDiags, identityConfirmed := prepared.ProjectResponse(ctx, *scheme)
 	resp.Diagnostics.Append(responseDiags...)
 
 	if !resp.Diagnostics.HasError() {
-		resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptSchemeIdentityAttributeNames(), &data, scheme.Sys.Version)...)
+		resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptSchemeIdentityAttributeNames(), &data, scheme.Sys.Version, identityConfirmed)...)
 	}
 
 	// A successful remote mutation can disagree with the plan. Publish its
@@ -259,6 +259,12 @@ func (r *taxonomyConceptSchemeResource) Delete(ctx context.Context, req resource
 			}
 
 			resp.Diagnostics.AddError("Failed to read taxonomy concept scheme before deletion", util.ErrorDetailFromContentfulManagementResponse(response, err))
+
+			return
+		}
+
+		if scheme.Sys.Organization.Sys.ID != organizationID || scheme.Sys.ID != schemeID {
+			resp.Diagnostics.AddError("Unexpected Contentful taxonomy read identity", "The response identity differs from the taxonomy endpoint requested before deletion. No deletion was attempted. Refresh the resource successfully before retrying.")
 
 			return
 		}

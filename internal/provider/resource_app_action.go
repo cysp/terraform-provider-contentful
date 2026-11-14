@@ -115,13 +115,18 @@ func (r *appActionResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	if !validDiscoveryID(result.Sys.ID) {
+	if !createBody.ID.IsSet() && !validDiscoveryID(result.Sys.ID) {
 		resp.Diagnostics.AddAttributeError(path.Root("app_action_id"), "Invalid App Action response identity", "Contentful returned an App Action ID that Terraform cannot use. Check this App Definition in Contentful before attempting to create the action again.")
 
 		return
 	}
 
-	data, consistencyDiags := reconcileAppActionResponse(ctx, *result, plan, AppActionBaseModel{OrganizationID: plan.OrganizationID, AppDefinitionID: plan.AppDefinitionID})
+	target := AppActionBaseModel{OrganizationID: plan.OrganizationID, AppDefinitionID: plan.AppDefinitionID}
+	if id, supplied := createBody.ID.Get(); supplied {
+		target.AppActionID = types.StringValue(id)
+	}
+
+	data, consistencyDiags := reconcileAppActionResponse(ctx, *result, plan, target)
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appActionIdentityAttributeNames(), &data)...)
 	resp.Diagnostics.Append(consistencyDiags...)
 }

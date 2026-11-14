@@ -143,19 +143,13 @@ func ReconcilePreviewEnvironmentMutationResponse(
 	previewEnvironment cm.PreviewEnvironment,
 	plan PreviewEnvironmentModel,
 	ownedIdentity PreviewEnvironmentIdentityModel,
-) (PreviewEnvironmentModel, diag.Diagnostics, diag.Diagnostics) {
+) (PreviewEnvironmentModel, diag.Diagnostics, diag.Diagnostics, bool) {
 	state, responseDiagnostics, configurationDiagnostics := newPreviewEnvironmentResourceModelFromResponse(previewEnvironment)
 	reconciler := mutationResponseReconciler{resourceName: "content preview platform"}
 	reconciler.pinIdentity(path.Root("space_id"), ownedIdentity.SpaceID, state.SpaceID, &state.SpaceID)
-	reconciler.pinIdentity(path.Root("preview_environment_id"), ownedIdentity.PreviewEnvironmentID, state.PreviewEnvironmentID, &state.PreviewEnvironmentID)
+	reconciler.pinCreatedIdentity(path.Root("preview_environment_id"), ownedIdentity.PreviewEnvironmentID, plan.PreviewEnvironmentID, state.PreviewEnvironmentID, &state.PreviewEnvironmentID)
 
 	state.IDIdentityModel = NewIDIdentityModelFromMultipartID(state.SpaceID.ValueString(), state.PreviewEnvironmentID.ValueString())
-
-	if ownedIdentity.PreviewEnvironmentID.IsNull() || ownedIdentity.PreviewEnvironmentID.IsUnknown() {
-		if !plan.PreviewEnvironmentID.IsNull() {
-			reconciler.compareExact(path.Root("preview_environment_id"), "Contentful returned a different content preview platform ID", plan.PreviewEnvironmentID, state.PreviewEnvironmentID)
-		}
-	}
 
 	if !plan.ID.IsNull() && !plan.ID.IsUnknown() && !plan.ID.Equal(state.ID) {
 		reconciler.diagnostics.AddAttributeError(path.Root("id"), "Content preview platform identity is inconsistent with its endpoint", "The planned legacy ID differs from the content preview platform endpoint identity. Terraform retained the endpoint identity as the resource target and the remaining returned values as recovery state. Review or re-import the content preview platform before applying again.")
@@ -176,7 +170,7 @@ func ReconcilePreviewEnvironmentMutationResponse(
 		}
 	}
 
-	return state, responseDiagnostics, reconciler.diagnostics
+	return state, responseDiagnostics, reconciler.diagnostics, !reconciler.identityMismatch
 }
 
 func checkPreviewEnvironmentConfigurationConsistency(

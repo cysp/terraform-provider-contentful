@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -99,7 +100,7 @@ func (r *localeResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	data, consistencyDiagnostics := ReconcileLocaleMutationResponse(locale.Response, plan)
+	data, consistencyDiagnostics, identityConfirmed := ReconcileLocaleMutationResponse(locale.Response, plan, types.StringNull())
 
 	data.Timeouts = plan.Timeouts
 
@@ -109,7 +110,12 @@ func (r *localeResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(setLocalePrivateVersion(ctx, resp.Private, locale.Response.Sys.Version)...)
+	if identityConfirmed {
+		resp.Diagnostics.Append(setLocalePrivateVersion(ctx, resp.Private, locale.Response.Sys.Version)...)
+	} else {
+		resp.Diagnostics.Append(resp.Private.SetKey(ctx, "version", nil)...)
+	}
+
 	resp.Diagnostics.Append(consistencyDiagnostics...)
 }
 
@@ -242,7 +248,7 @@ func (r *localeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	data, consistencyDiagnostics := ReconcileLocaleMutationResponse(locale.Response, plan)
+	data, consistencyDiagnostics, identityConfirmed := ReconcileLocaleMutationResponse(locale.Response, plan, plan.LocaleID)
 
 	data.Timeouts = plan.Timeouts
 
@@ -252,7 +258,12 @@ func (r *localeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(setLocalePrivateVersion(ctx, resp.Private, locale.Response.Sys.Version)...)
+	if identityConfirmed {
+		resp.Diagnostics.Append(setLocalePrivateVersion(ctx, resp.Private, locale.Response.Sys.Version)...)
+	} else {
+		resp.Diagnostics.Append(resp.Private.SetKey(ctx, "version", nil)...)
+	}
+
 	resp.Diagnostics.Append(consistencyDiagnostics...)
 }
 

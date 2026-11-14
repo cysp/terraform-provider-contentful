@@ -14,7 +14,8 @@ allowances; the provider does not prefetch dependencies or coordinate separate
 resources.
 
 Mutation reconciliation retains endpoint identity, returned configuration, and
-private `version` before reporting plan contradictions. Update sends the saved
+private `version` before reporting configuration contradictions. A contradictory
+endpoint clears the token under the [shared identity policy](terraform-value-semantics.md#mutation-endpoint-identity). Update sends the saved
 version and records the returned one, which may be unchanged for a no-op. Delete
 is unversioned and accepts 404.
 

@@ -540,7 +540,7 @@ func TestPreparedTaxonomyConceptMutationLabelEquivalenceIsDirectional(t *testing
 			prepared, prepareDiags := prepareTaxonomyConceptMutation(plan, plan)
 			require.False(t, prepareDiags.HasError())
 
-			state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
+			state, responseDiags, consistencyDiags, _ := prepared.ProjectResponse(t.Context(), remote)
 			require.False(t, responseDiags.HasError())
 
 			if !test.wantMismatch {
@@ -579,7 +579,7 @@ func TestPreparedTaxonomyConceptMutationReportsIndependentLabelMismatches(t *tes
 
 	prepared, prepareDiags := prepareTaxonomyConceptMutation(plan, plan)
 	require.False(t, prepareDiags.HasError())
-	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
+	state, responseDiags, consistencyDiags, _ := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
 	require.Len(t, consistencyDiags.Errors(), 2)
@@ -616,7 +616,7 @@ func TestPreparedTaxonomyConceptMismatchKeepsCompleteRemoteState(t *testing.T) {
 
 	prepared, prepareDiags := prepareTaxonomyConceptMutation(plan, plan)
 	require.False(t, prepareDiags.HasError())
-	actual, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
+	actual, responseDiags, consistencyDiags, _ := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
 	require.Len(t, consistencyDiags.Errors(), 1)
@@ -637,7 +637,7 @@ func TestPreparedTaxonomyConceptResponseIdentityMismatchKeepsRequestedIdentity(t
 	remote.Sys.Organization.Sys.ID, remote.Sys.ID, remote.Sys.Version = "other", "other", 9
 	prepared, diags := prepareTaxonomyConceptMutation(plan, plan)
 	require.False(t, diags.HasError())
-	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
+	state, responseDiags, consistencyDiags, _ := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
 	assertTaxonomyDiagnosticPath(t, consistencyDiags, path.Root("organization_id"))
@@ -670,7 +670,7 @@ func TestPreparedTaxonomyConceptSchemeResponseIdentityMismatchKeepsRequestedIden
 	remote.Sys.Organization.Sys.ID, remote.Sys.ID, remote.Sys.Version = "other", "other", 9
 	prepared, diags := prepareTaxonomyConceptSchemeMutation(config, plan)
 	require.False(t, diags.HasError())
-	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
+	state, responseDiags, consistencyDiags, _ := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
 	assertTaxonomyDiagnosticPath(t, consistencyDiags, path.Root("organization_id"))

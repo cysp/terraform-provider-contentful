@@ -89,6 +89,7 @@ func TestWebhookMutationResponsePreservesPasswordOnlyWhenAbsent(t *testing.T) {
 				HttpBasicPassword: test.responsePassword,
 			}
 			plan := WebhookModel{
+				WebhookID:         types.StringUnknown(),
 				Name:              types.StringUnknown(),
 				URL:               types.StringUnknown(),
 				HTTPBasicPassword: test.planPassword,
@@ -97,7 +98,7 @@ func TestWebhookMutationResponsePreservesPasswordOnlyWhenAbsent(t *testing.T) {
 				Topics:            NewTypedList([]types.String{}),
 			}
 
-			state, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+			state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 			require.False(t, responseDiags.HasError())
 			assert.Equal(t, test.expectError, consistencyDiags.HasError())

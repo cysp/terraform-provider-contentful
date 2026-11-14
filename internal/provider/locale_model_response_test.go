@@ -28,7 +28,7 @@ func TestLocaleMutationResponseChecksAllPlannedValues(t *testing.T) {
 		ContentDeliveryApi:   true,
 		ContentManagementApi: true,
 	}
-	_, diagnostics := provider.ReconcileLocaleMutationResponse(response, plan)
+	_, diagnostics, _ := provider.ReconcileLocaleMutationResponse(response, plan, plan.LocaleID)
 	require.Empty(t, diagnostics)
 
 	for field, test := range map[string]struct {
@@ -51,7 +51,7 @@ func TestLocaleMutationResponseChecksAllPlannedValues(t *testing.T) {
 
 			contradiction := response
 			test.mutate(&contradiction)
-			state, diagnostics := provider.ReconcileLocaleMutationResponse(contradiction, plan)
+			state, diagnostics, _ := provider.ReconcileLocaleMutationResponse(contradiction, plan, plan.LocaleID)
 			require.Len(t, diagnostics, 1)
 			assert.Equal(t, []string{field}, attributeDiagnosticPaths(t, diagnostics))
 			assert.Equal(t, plan.LocaleIdentityModel, state.LocaleIdentityModel)

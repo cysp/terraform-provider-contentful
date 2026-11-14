@@ -348,7 +348,7 @@ func TestCompleteRolePlanRejectsScalarContradictionWithoutPartialOverlay(t *test
 	response.Sys = cm.NewRoleSys("other-space", "other-role")
 	response.Name = "Response role"
 
-	state, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(t.Context(), response, plan)
+	state, responseDiags, consistencyDiags, _ := ReconcileRoleMutationResponse(t.Context(), response, plan, plan.RoleID)
 
 	assert.Empty(t, responseDiags)
 	require.True(t, consistencyDiags.HasError())
@@ -362,7 +362,7 @@ func TestCompleteRolePlanRestoresCanonicalisedEquivalentResponse(t *testing.T) {
 	t.Parallel()
 
 	plan := completeRoleMutationPlan()
-	state, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(t.Context(), completeRoleMutationResponse(), plan)
+	state, responseDiags, consistencyDiags, _ := ReconcileRoleMutationResponse(t.Context(), completeRoleMutationResponse(), plan, plan.RoleID)
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
@@ -405,7 +405,7 @@ func TestCompleteRolePlanRejectsIndependentAttributeContradictions(t *testing.T)
 			response := completeRoleMutationResponse()
 			test.mutate(t, &plan, &response)
 
-			state, responseDiags, consistencyDiags := ReconcileRoleMutationResponse(t.Context(), response, plan)
+			state, responseDiags, consistencyDiags, _ := ReconcileRoleMutationResponse(t.Context(), response, plan, plan.RoleID)
 
 			assert.Empty(t, responseDiags)
 			require.True(t, consistencyDiags.HasError())
@@ -432,7 +432,7 @@ func TestCompleteEditorInterfacePlanRejectsNestedContradictionAndResponseRetarge
 	sidebar[0].Disabled = cm.NewOptBool(true)
 	response.Sidebar.SetTo(sidebar)
 
-	state, responseDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(t.Context(), response, plan)
+	state, responseDiags, consistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(t.Context(), response, plan)
 
 	assert.Empty(t, responseDiags)
 	require.True(t, consistencyDiags.HasError())
@@ -447,7 +447,7 @@ func TestCompleteEditorInterfacePlanRestoresCanonicalisedEquivalentResponse(t *t
 	t.Parallel()
 
 	plan := completeEditorInterfaceMutationPlan()
-	state, responseDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(t.Context(), completeEditorInterfaceMutationResponse(), plan)
+	state, responseDiags, consistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(t.Context(), completeEditorInterfaceMutationResponse(), plan)
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
@@ -513,7 +513,7 @@ func TestCompleteEditorInterfacePlanDistinguishesNullFromEmptyCollections(t *tes
 			test.makePlanNull(&plan)
 			test.makeResponseEmpty(&response)
 
-			state, responseDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(t.Context(), response, plan)
+			state, responseDiags, consistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(t.Context(), response, plan)
 
 			assert.Empty(t, responseDiags)
 			require.True(t, consistencyDiags.HasError())
@@ -614,7 +614,7 @@ func TestCompleteEditorInterfacePlanRejectsIndependentAttributeContradictions(t 
 			response := completeEditorInterfaceMutationResponse()
 			test.mutate(t, &plan, &response)
 
-			state, responseDiags, consistencyDiags := ReconcileEditorInterfaceMutationResponse(t.Context(), response, plan)
+			state, responseDiags, consistencyDiags, _ := ReconcileEditorInterfaceMutationResponse(t.Context(), response, plan)
 
 			assert.Empty(t, responseDiags)
 			require.True(t, consistencyDiags.HasError())
@@ -648,7 +648,7 @@ func TestCompleteWebhookPlanRejectsScalarContradictionWithoutPartialOverlay(t *t
 		}),
 	})
 
-	state, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+	state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 	assert.Empty(t, responseDiags)
 	require.True(t, consistencyDiags.HasError())
@@ -663,7 +663,7 @@ func TestCompleteWebhookPlanRestoresCanonicalisedEquivalentResponse(t *testing.T
 	t.Parallel()
 
 	plan := completeWebhookMutationPlan()
-	state, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), completeWebhookMutationResponse(), plan)
+	state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), completeWebhookMutationResponse(), plan, plan.WebhookID)
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
@@ -737,7 +737,7 @@ func TestCompleteWebhookPlanRejectsIndependentAttributeContradictions(t *testing
 			response := completeWebhookMutationResponse()
 			test.mutate(t, &plan, &response)
 
-			state, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+			state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 			assert.Empty(t, responseDiags)
 			require.True(t, consistencyDiags.HasError())
@@ -755,7 +755,7 @@ func TestWebhookUnknownOptionalComputedPlanUsesResponse(t *testing.T) {
 	response := completeWebhookMutationResponse()
 	response.Headers = cm.WebhookDefinitionHeaders{{Key: "Response", Value: cm.NewOptString("response"), Secret: cm.NewOptBool(true)}}
 
-	state, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+	state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
@@ -772,7 +772,7 @@ func TestWebhookKnownOptionalComputedPlansConstrainMutationResponse(t *testing.T
 	response.Active = cm.NewOptBool(false)
 	response.Headers = cm.WebhookDefinitionHeaders{{Key: "Response", Value: cm.NewOptString("response"), Secret: cm.NewOptBool(true)}}
 
-	state, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+	state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 	assert.Empty(t, responseDiags)
 	require.True(t, consistencyDiags.HasError())

@@ -39,11 +39,12 @@ func contentTypeIdentityAttributeNames() []string {
 const contentTypePendingActivationVersionPrivateKey = "pending_activation_version"
 
 type contentTypeMutationResult struct {
-	state            ContentTypeModel
-	version          int
-	authorityOutcome pendingLifecycleAuthorityOutcome
-	consistencyDiags diag.Diagnostics
-	activationDiags  diag.Diagnostics
+	state             ContentTypeModel
+	version           int
+	identityConfirmed bool
+	authorityOutcome  pendingLifecycleAuthorityOutcome
+	consistencyDiags  diag.Diagnostics
+	activationDiags   diag.Diagnostics
 }
 
 // contentTypeDraftMutationRequired reports whether the Terraform-managed draft
@@ -245,7 +246,7 @@ func (r *contentTypeResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &activated.state, activated.version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &activated.state, activated.version, activated.identityConfirmed)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -610,7 +611,7 @@ func (r *contentTypeResource) applyContentTypeActivationTransition(
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &activated.state, activated.version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, contentTypeIdentityAttributeNames(), &activated.state, activated.version, activated.identityConfirmed)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -702,11 +703,11 @@ func projectContentTypeDraftMutationResponse(
 	appliedPlan ContentTypeModel,
 	response cm.ContentType,
 ) (contentTypeMutationResult, diag.Diagnostics) {
-	mutationState, diagnostics, consistencyDiags := ProjectContentTypeMutationResponse(ctx, response, appliedPlan)
+	mutationState, diagnostics, consistencyDiags, identityConfirmed := ProjectContentTypeMutationResponse(ctx, response, appliedPlan)
 	consistencyDiags.Append(validateContentTypeDraftResponse(response)...)
 
 	return contentTypeMutationResult{
-		state: mutationState, version: response.Sys.Version, consistencyDiags: consistencyDiags,
+		state: mutationState, version: response.Sys.Version, identityConfirmed: identityConfirmed, consistencyDiags: consistencyDiags,
 	}, diagnostics
 }
 
@@ -777,7 +778,7 @@ func (r *contentTypeResource) activateContentType(
 		}, diagnostics
 	}
 
-	mutationState, mutationStateDiagnostics, consistencyDiags := ProjectContentTypeMutationResponse(ctx, responseContentType.Response, appliedPlan)
+	mutationState, mutationStateDiagnostics, consistencyDiags, identityConfirmed := ProjectContentTypeMutationResponse(ctx, responseContentType.Response, appliedPlan)
 	diagnostics.Append(mutationStateDiagnostics...)
 
 	activationDiags := validateContentTypeActivationResponse(expectedVersion, responseContentType.Response)
@@ -790,7 +791,7 @@ func (r *contentTypeResource) activateContentType(
 	}
 
 	return contentTypeMutationResult{
-		state: mutationState, version: responseContentType.Response.Sys.Version,
+		state: mutationState, version: responseContentType.Response.Sys.Version, identityConfirmed: identityConfirmed,
 		authorityOutcome: outcome, consistencyDiags: consistencyDiags, activationDiags: activationDiags,
 	}, nil, diagnostics
 }
@@ -840,7 +841,7 @@ func checkpointContentTypeDraft(
 	draft contentTypeMutationResult,
 ) diag.Diagnostics {
 	diags := private.SetKey(ctx, contentTypePendingActivationVersionPrivateKey, nil)
-	diags.Append(setResourceIdentityStateAndVersion(ctx, identity, state, private, contentTypeIdentityAttributeNames(), &draft.state, draft.version)...)
+	diags.Append(setResourceIdentityStateAndMutationVersion(ctx, identity, state, private, contentTypeIdentityAttributeNames(), &draft.state, draft.version, draft.identityConfirmed)...)
 	diags.Append(draft.consistencyDiags...)
 
 	if !diags.HasError() {
