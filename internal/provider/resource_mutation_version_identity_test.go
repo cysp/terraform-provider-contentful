@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,21 +22,23 @@ func TestVersionedMutationsRejectVersionFromContradictoryIdentity(t *testing.T) 
 	t.Parallel()
 
 	endpoints := map[string]string{
-		"contentful_live_preview_variables": "/spaces/space/environments/environment/live_preview/variables",
-		"contentful_content_type":           "/spaces/space/environments/environment/content_types/content-type",
-		"contentful_entry":                  "/spaces/space/environments/environment/entries/entry",
-		"contentful_preview_environment":    "/spaces/space/preview_environments/preview",
-		"contentful_delivery_api_key":       "/spaces/space/api_keys/key",
-		"contentful_webhook":                "/spaces/space/webhook_definitions/webhook",
-		"contentful_extension":              "/spaces/space/environments/environment/extensions/extension",
-		"contentful_space_enablements":      "/spaces/space/enablements",
-		"contentful_role":                   "/spaces/space/roles/role",
-		"contentful_team":                   "/organizations/organization/teams/team",
-		"contentful_environment":            "/spaces/space/environments/environment",
-		"contentful_environment_alias":      "/spaces/space/environment_aliases/alias",
-		"contentful_editor_interface":       "/spaces/space/environments/environment/content_types/content-type/editor_interface",
-		"contentful_locale":                 "/spaces/space/environments/environment/locales/locale",
-		"contentful_tag":                    "/spaces/space/environments/environment/tags/tag",
+		"contentful_taxonomy_concept":        "/organizations/organization-id/taxonomy/concepts/concept",
+		"contentful_taxonomy_concept_scheme": "/organizations/organization-id/taxonomy/concept-schemes/scheme",
+		"contentful_live_preview_variables":  "/spaces/space/environments/environment/live_preview/variables",
+		"contentful_content_type":            "/spaces/space/environments/environment/content_types/content-type",
+		"contentful_entry":                   "/spaces/space/environments/environment/entries/entry",
+		"contentful_preview_environment":     "/spaces/space/preview_environments/preview",
+		"contentful_delivery_api_key":        "/spaces/space/api_keys/key",
+		"contentful_webhook":                 "/spaces/space/webhook_definitions/webhook",
+		"contentful_extension":               "/spaces/space/environments/environment/extensions/extension",
+		"contentful_space_enablements":       "/spaces/space/enablements",
+		"contentful_role":                    "/spaces/space/roles/role",
+		"contentful_team":                    "/organizations/organization/teams/team",
+		"contentful_environment":             "/spaces/space/environments/environment",
+		"contentful_environment_alias":       "/spaces/space/environment_aliases/alias",
+		"contentful_editor_interface":        "/spaces/space/environments/environment/content_types/content-type/editor_interface",
+		"contentful_locale":                  "/spaces/space/environments/environment/locales/locale",
+		"contentful_tag":                     "/spaces/space/environments/environment/tags/tag",
 	}
 
 	bodies := make(map[string]map[string]any)
@@ -42,7 +46,21 @@ func TestVersionedMutationsRejectVersionFromContradictoryIdentity(t *testing.T) 
 		bodies["contentful_"+fixture.name] = fixture.body
 	}
 
-	for _, test := range requiredPrivateVersionResourceCases(t) {
+	concept := taxonomyConceptDeleteState()
+	concept.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Prior")})
+	changedConcept := concept
+	changedConcept.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Planned")})
+	scheme := taxonomyConceptSchemeDeleteState()
+	scheme.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Prior")})
+	changedScheme := scheme
+	changedScheme.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Planned")})
+	cases := append(requiredPrivateVersionResourceCases(t),
+		requiredPrivateVersionResourceCase{name: "taxonomy concept update", typeName: "contentful_taxonomy_concept", resourceSchema: TaxonomyConceptResourceSchema(t.Context()), model: concept, plannedModel: changedConcept},
+		requiredPrivateVersionResourceCase{name: "taxonomy concept scheme update", typeName: "contentful_taxonomy_concept_scheme", resourceSchema: TaxonomyConceptSchemeResourceSchema(t.Context()), model: scheme, plannedModel: changedScheme},
+	)
+	methods := map[string]string{"contentful_taxonomy_concept": http.MethodPatch, "contentful_taxonomy_concept_scheme": http.MethodPatch}
+
+	for _, test := range cases {
 		if test.delete {
 			continue
 		}
@@ -55,11 +73,16 @@ func TestVersionedMutationsRejectVersionFromContradictoryIdentity(t *testing.T) 
 			endpoint, found := endpoints[test.typeName]
 			require.True(t, found)
 
+			method := http.MethodPut
+			if configured, exists := methods[test.typeName]; exists {
+				method = configured
+			}
+
 			var requests atomic.Int64
 
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				requests.Add(1)
-				assert.Equal(t, http.MethodPut, r.Method)
+				assert.Equal(t, method, r.Method)
 				assert.Equal(t, endpoint, r.URL.Path)
 				assert.Equal(t, "31", r.Header.Get("X-Contentful-Version"))
 				w.Header().Set("Content-Type", "application/json")
