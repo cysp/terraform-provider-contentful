@@ -208,29 +208,38 @@ func (prepared preparedTaxonomyConceptMutation) ProjectResponse(ctx context.Cont
 	data.OrganizationID, data.ConceptID = prepared.plan.OrganizationID, prepared.plan.ConceptID
 	data.IDIdentityModel = NewIDIdentityModelFromMultipartID(prepared.plan.OrganizationID.ValueString(), prepared.plan.ConceptID.ValueString())
 
-	var projects []func()
+	candidate := data
 
-	compare := func(name string, valuePath path.Path, planned, remote attr.Value, project func()) {
+	compare := func(name string, valuePath path.Path, planned, remote attr.Value) bool {
 		if compareTaxonomyMutationValue("taxonomy concept", name, valuePath, planned, remote, &consistencyDiags) {
-			projects = append(projects, project)
-		} else {
-			mismatch = true
+			return true
 		}
+
+		mismatch = true
+
+		return false
 	}
-	compareNullableLocalizedString := func(name string, valuePath path.Path, planned, remote types.Map, project func()) {
+	compareNullableLocalizedString := func(name string, valuePath path.Path, planned, remote types.Map) bool {
 		if compareTaxonomyNullableLocalizedStringMutationValue("taxonomy concept", name, valuePath, planned, remote, &consistencyDiags) {
-			projects = append(projects, project)
-		} else {
-			mismatch = true
+			return true
 		}
+
+		mismatch = true
+
+		return false
 	}
 
-	compare("uri", path.Root("uri"), prepared.plan.URI, data.URI, func() { data.URI = prepared.plan.URI })
-	compare("pref_label", path.Root("pref_label"), prepared.plan.PrefLabel, data.PrefLabel, func() { data.PrefLabel = prepared.plan.PrefLabel })
+	if compare("uri", path.Root("uri"), prepared.plan.URI, data.URI) {
+		candidate.URI = prepared.plan.URI
+	}
+
+	if compare("pref_label", path.Root("pref_label"), prepared.plan.PrefLabel, data.PrefLabel) {
+		candidate.PrefLabel = prepared.plan.PrefLabel
+	}
 
 	if taxonomyKnownPlanValue(prepared.plan.AltLabels) {
 		if compareTaxonomyLabelMutationValue("taxonomy concept", "alt_labels", path.Root("alt_labels"), prepared.plan.AltLabels, data.AltLabels, prepared.plan.PrefLabel, &consistencyDiags) {
-			projects = append(projects, func() { data.AltLabels = prepared.plan.AltLabels })
+			candidate.AltLabels = prepared.plan.AltLabels
 		} else {
 			mismatch = true
 		}
@@ -238,36 +247,44 @@ func (prepared preparedTaxonomyConceptMutation) ProjectResponse(ctx context.Cont
 
 	if taxonomyKnownPlanValue(prepared.plan.HiddenLabels) {
 		if compareTaxonomyLabelMutationValue("taxonomy concept", "hidden_labels", path.Root("hidden_labels"), prepared.plan.HiddenLabels, data.HiddenLabels, prepared.plan.PrefLabel, &consistencyDiags) {
-			projects = append(projects, func() { data.HiddenLabels = prepared.plan.HiddenLabels })
+			candidate.HiddenLabels = prepared.plan.HiddenLabels
 		} else {
 			mismatch = true
 		}
 	}
 
-	if taxonomyKnownPlanValue(prepared.plan.Notations) {
-		compare("notations", path.Root("notations"), prepared.plan.Notations, data.Notations, func() { data.Notations = prepared.plan.Notations })
+	if taxonomyKnownPlanValue(prepared.plan.Notations) && compare("notations", path.Root("notations"), prepared.plan.Notations, data.Notations) {
+		candidate.Notations = prepared.plan.Notations
 	}
 
-	compareNullableLocalizedString("note", path.Root("note"), prepared.plan.Note, data.Note, func() { data.Note = prepared.plan.Note })
-	compareNullableLocalizedString("change_note", path.Root("change_note"), prepared.plan.ChangeNote, data.ChangeNote, func() { data.ChangeNote = prepared.plan.ChangeNote })
-	compareNullableLocalizedString("definition", path.Root("definition"), prepared.plan.Definition, data.Definition, func() { data.Definition = prepared.plan.Definition })
-	compareNullableLocalizedString("editorial_note", path.Root("editorial_note"), prepared.plan.EditorialNote, data.EditorialNote, func() { data.EditorialNote = prepared.plan.EditorialNote })
-	compareNullableLocalizedString("example", path.Root("example"), prepared.plan.Example, data.Example, func() { data.Example = prepared.plan.Example })
-	compareNullableLocalizedString("history_note", path.Root("history_note"), prepared.plan.HistoryNote, data.HistoryNote, func() { data.HistoryNote = prepared.plan.HistoryNote })
-	compareNullableLocalizedString("scope_note", path.Root("scope_note"), prepared.plan.ScopeNote, data.ScopeNote, func() { data.ScopeNote = prepared.plan.ScopeNote })
-
-	if taxonomyKnownPlanValue(prepared.plan.BroaderConceptIDs) {
-		compare("broader_concept_ids", path.Root("broader_concept_ids"), prepared.plan.BroaderConceptIDs, data.BroaderConceptIDs, func() { data.BroaderConceptIDs = prepared.plan.BroaderConceptIDs })
+	for _, field := range []struct {
+		name            string
+		planned, remote types.Map
+		target          *types.Map
+	}{
+		{"note", prepared.plan.Note, data.Note, &candidate.Note},
+		{"change_note", prepared.plan.ChangeNote, data.ChangeNote, &candidate.ChangeNote},
+		{"definition", prepared.plan.Definition, data.Definition, &candidate.Definition},
+		{"editorial_note", prepared.plan.EditorialNote, data.EditorialNote, &candidate.EditorialNote},
+		{"example", prepared.plan.Example, data.Example, &candidate.Example},
+		{"history_note", prepared.plan.HistoryNote, data.HistoryNote, &candidate.HistoryNote},
+		{"scope_note", prepared.plan.ScopeNote, data.ScopeNote, &candidate.ScopeNote},
+	} {
+		if compareNullableLocalizedString(field.name, path.Root(field.name), field.planned, field.remote) {
+			*field.target = field.planned
+		}
 	}
 
-	if taxonomyKnownPlanValue(prepared.plan.RelatedConceptIDs) {
-		compare("related_concept_ids", path.Root("related_concept_ids"), prepared.plan.RelatedConceptIDs, data.RelatedConceptIDs, func() { data.RelatedConceptIDs = prepared.plan.RelatedConceptIDs })
+	if taxonomyKnownPlanValue(prepared.plan.BroaderConceptIDs) && compare("broader_concept_ids", path.Root("broader_concept_ids"), prepared.plan.BroaderConceptIDs, data.BroaderConceptIDs) {
+		candidate.BroaderConceptIDs = prepared.plan.BroaderConceptIDs
+	}
+
+	if taxonomyKnownPlanValue(prepared.plan.RelatedConceptIDs) && compare("related_concept_ids", path.Root("related_concept_ids"), prepared.plan.RelatedConceptIDs, data.RelatedConceptIDs) {
+		candidate.RelatedConceptIDs = prepared.plan.RelatedConceptIDs
 	}
 
 	if !mismatch {
-		for _, project := range projects {
-			project()
-		}
+		data = candidate
 	}
 
 	return data, responseDiags, consistencyDiags, identityConfirmed

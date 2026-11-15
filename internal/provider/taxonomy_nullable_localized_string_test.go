@@ -102,6 +102,81 @@ func TestPreparedTaxonomyConceptMutationPreservesAllCanonicalEmptyLocalizedStrin
 	assert.Equal(t, taxonomyEmptyLocalizedString(), state.ScopeNote)
 }
 
+func TestPreparedTaxonomyConceptMutationPreservesDistinctLocalizedStrings(t *testing.T) {
+	t.Parallel()
+
+	// The all-empty test covers every canonicalization. Distinct values here
+	// additionally expose swapped field destinations, including one canonicalized value.
+	plan := TaxonomyConceptModel{
+		IDIdentityModel: NewIDIdentityModelFromMultipartID("organization", "concept"),
+		OrganizationID:  types.StringValue("organization"), ConceptID: types.StringValue("concept"),
+		URI: types.StringNull(), PrefLabel: taxonomyLocalizedString("Concept"),
+		AltLabels: types.MapNull(types.ListType{ElemType: types.StringType}), HiddenLabels: types.MapNull(types.ListType{ElemType: types.StringType}),
+		Notations: types.ListNull(types.StringType), BroaderConceptIDs: types.ListNull(types.StringType), RelatedConceptIDs: types.ListNull(types.StringType),
+		Note: taxonomyLocalizedString("A note"), ChangeNote: taxonomyEmptyLocalizedString(), Definition: taxonomyLocalizedString("A definition"),
+		EditorialNote: taxonomyLocalizedString("Editorial guidance"), Example: taxonomyLocalizedString("An example"),
+		HistoryNote: taxonomyLocalizedString("History"), ScopeNote: taxonomyLocalizedString("Scope"),
+	}
+	remote := cm.TaxonomyConcept{
+		Sys:           cm.TaxonomyConceptSys{Organization: cm.NewOrganizationLink("organization"), ID: "concept", Version: 2},
+		PrefLabel:     cm.LocalizedString{"en-US": "Concept"},
+		Note:          cm.NewOptNilNullableLocalizedString(cm.NullableLocalizedString{"en-US": "A note"}),
+		Definition:    cm.NewOptNilNullableLocalizedString(cm.NullableLocalizedString{"en-US": "A definition"}),
+		EditorialNote: cm.NewOptNilNullableLocalizedString(cm.NullableLocalizedString{"en-US": "Editorial guidance"}),
+		Example:       cm.NewOptNilNullableLocalizedString(cm.NullableLocalizedString{"en-US": "An example"}),
+		HistoryNote:   cm.NewOptNilNullableLocalizedString(cm.NullableLocalizedString{"en-US": "History"}),
+		ScopeNote:     cm.NewOptNilNullableLocalizedString(cm.NullableLocalizedString{"en-US": "Scope"}),
+	}
+	remote.ChangeNote.SetToNull()
+
+	prepared, diags := prepareTaxonomyConceptMutation(plan, plan)
+	require.Empty(t, diags)
+	state, responseDiags, consistencyDiags, identityConfirmed := prepared.ProjectResponse(t.Context(), remote)
+	require.Empty(t, responseDiags)
+	require.Empty(t, consistencyDiags)
+	assert.True(t, identityConfirmed)
+	assert.Equal(t, taxonomyLocalizedString("A note"), state.Note)
+	assert.Equal(t, taxonomyEmptyLocalizedString(), state.ChangeNote)
+	assert.Equal(t, taxonomyLocalizedString("A definition"), state.Definition)
+	assert.Equal(t, taxonomyLocalizedString("Editorial guidance"), state.EditorialNote)
+	assert.Equal(t, taxonomyLocalizedString("An example"), state.Example)
+	assert.Equal(t, taxonomyLocalizedString("History"), state.HistoryNote)
+	assert.Equal(t, taxonomyLocalizedString("Scope"), state.ScopeNote)
+}
+
+func TestPreparedTaxonomyConceptSchemeMismatchKeepsCanonicalDefinitionResponse(t *testing.T) {
+	t.Parallel()
+
+	plan := TaxonomyConceptSchemeModel{
+		IDIdentityModel: NewIDIdentityModelFromMultipartID("organization", "scheme"),
+		OrganizationID:  types.StringValue("organization"), ConceptSchemeID: types.StringValue("scheme"),
+		URI: types.StringNull(), PrefLabel: taxonomyLocalizedString("Scheme"), Definition: taxonomyEmptyLocalizedString(),
+		TopConceptIDs: types.ListValueMust(types.StringType, []attr.Value{types.StringValue("planned-top")}),
+		ConceptIDs:    types.ListUnknown(types.StringType),
+	}
+	config := plan
+	config.ConceptIDs = types.ListNull(types.StringType)
+	remote := cm.TaxonomyConceptScheme{
+		Sys:         cm.TaxonomyConceptSchemeSys{Organization: cm.NewOrganizationLink("organization"), ID: "scheme", Version: 2},
+		PrefLabel:   cm.LocalizedString{"en-US": "Scheme"},
+		TopConcepts: []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("returned-top")},
+		Concepts:    []cm.TaxonomyConceptLink{cm.NewTaxonomyConceptLink("returned-concept")}, TotalConcepts: 1,
+	}
+	remote.Definition.SetToNull()
+
+	prepared, diags := prepareTaxonomyConceptSchemeMutation(config, plan)
+	require.Empty(t, diags)
+	state, responseDiags, consistencyDiags, identityConfirmed := prepared.ProjectResponse(t.Context(), remote)
+	require.Empty(t, responseDiags)
+	require.Len(t, consistencyDiags, 1)
+	assertTaxonomyDiagnosticPath(t, consistencyDiags, path.Root("top_concept_ids").AtListIndex(0))
+	assert.True(t, identityConfirmed)
+	assert.Equal(t, types.MapNull(types.StringType), state.Definition, "a later collection contradiction must discard earlier canonicalization")
+	assert.Equal(t, types.ListValueMust(types.StringType, []attr.Value{types.StringValue("returned-top")}), state.TopConceptIDs)
+	assert.Equal(t, types.ListValueMust(types.StringType, []attr.Value{types.StringValue("returned-concept")}), state.ConceptIDs)
+	assert.Equal(t, types.Int64Value(1), state.TotalConcepts)
+}
+
 func TestPreparedTaxonomyNullableLocalizedStringMismatchKeepsCompleteRemoteState(t *testing.T) {
 	t.Parallel()
 

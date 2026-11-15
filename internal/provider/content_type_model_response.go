@@ -90,20 +90,29 @@ func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.Cont
 	data.SpaceID, data.EnvironmentID, data.ContentTypeID = plan.SpaceID, plan.EnvironmentID, plan.ContentTypeID
 	data.IDIdentityModel = NewIDIdentityModelFromMultipartID(plan.SpaceID.ValueString(), plan.EnvironmentID.ValueString(), plan.ContentTypeID.ValueString())
 
-	var project []func()
+	candidate := data
 
-	compare := func(name string, valuePath path.Path, planned, remote attr.Value, restore func()) {
+	compare := func(name string, valuePath path.Path, planned, remote types.String) bool {
 		if contentTypeMutationValueEquivalent(name, valuePath, planned, remote, &consistencyDiags) {
-			project = append(project, restore)
-
-			return
+			return true
 		}
 
 		mismatch = true
+
+		return false
 	}
-	compare("name", path.Root("name"), plan.Name, data.Name, func() { data.Name = plan.Name })
-	compare("description", path.Root("description"), plan.Description, data.Description, func() { data.Description = plan.Description })
-	compare("display_field", path.Root("display_field"), plan.DisplayField, data.DisplayField, func() { data.DisplayField = plan.DisplayField })
+
+	if compare("name", path.Root("name"), plan.Name, data.Name) {
+		candidate.Name = plan.Name
+	}
+
+	if compare("description", path.Root("description"), plan.Description, data.Description) {
+		candidate.Description = plan.Description
+	}
+
+	if compare("display_field", path.Root("display_field"), plan.DisplayField, data.DisplayField) {
+		candidate.DisplayField = plan.DisplayField
+	}
 
 	fieldsPath := path.Root("fields")
 	if plan.Fields.IsUnknown() {
@@ -111,33 +120,33 @@ func ProjectContentTypeMutationResponse(ctx context.Context, contentType cm.Cont
 
 		mismatch = true
 	} else if differencePath, equivalent := contentTypeFieldsEquivalentAt(fieldsPath, plan.Fields, data.Fields); equivalent {
-		project = append(project, func() { data.Fields = plan.Fields })
+		candidate.Fields = plan.Fields
 	} else {
 		consistencyDiags.AddAttributeError(differencePath, "Unexpected Contentful content type response", "The fields response differed meaningfully from the Terraform plan.")
 
 		mismatch = true
 	}
 
-	metadataProjects, metadataMismatch := contentTypeMetadataReconciliations(plan, &data, &consistencyDiags)
-	project = append(project, metadataProjects...)
+	metadata, metadataMismatch := reconcileContentTypeMetadata(plan.Metadata, data.Metadata, &consistencyDiags)
+	candidate.Metadata = metadata
 	mismatch = mismatch || metadataMismatch
 
 	if !mismatch {
-		for _, restore := range project {
-			restore()
-		}
+		data = candidate
 	}
 
 	return data, responseDiags, consistencyDiags, identityConfirmed
 }
 
-func contentTypeMetadataReconciliations(plan ContentTypeModel, data *ContentTypeModel, diags *diag.Diagnostics) ([]func(), bool) {
-	planMetadata, planKnown := plan.Metadata.GetValue()
+// reconcileContentTypeMetadata returns a candidate; the caller adopts it only
+// after all resource reconciliation checks succeed.
+func reconcileContentTypeMetadata(plan, response TypedObject[ContentTypeMetadataValue], diags *diag.Diagnostics) (TypedObject[ContentTypeMetadataValue], bool) {
+	planMetadata, planKnown := plan.GetValue()
 	if !planKnown {
-		return nil, false
+		return response, false
 	}
 
-	dataMetadata, dataKnown := data.Metadata.GetValue()
+	dataMetadata, dataKnown := response.GetValue()
 	annotationsPath := path.Root("metadata").AtName("annotations")
 	taxonomyPath := path.Root("metadata").AtName("taxonomy")
 
@@ -153,19 +162,15 @@ func contentTypeMetadataReconciliations(plan ContentTypeModel, data *ContentType
 			diags.AddAttributeError(taxonomyPath, "Unexpected Contentful content type response", "The metadata taxonomy response was missing from Contentful.")
 		}
 
-		return nil, !annotationsEquivalent || !taxonomyEquivalent
+		return response, !annotationsEquivalent || !taxonomyEquivalent
 	}
 
-	projects := []func(){}
+	candidate := dataMetadata
 	mismatch := false
 
 	if !planMetadata.Annotations.IsUnknown() {
 		if contentTypeNormalizedJSONEquivalent(planMetadata.Annotations, dataMetadata.Annotations) {
-			projects = append(projects, func() {
-				metadata := data.Metadata.Value()
-				metadata.Annotations = planMetadata.Annotations
-				data.Metadata = NewTypedObject(metadata)
-			})
+			candidate.Annotations = planMetadata.Annotations
 		} else {
 			diags.AddAttributeError(annotationsPath, "Unexpected Contentful content type response", "The metadata annotations response differed meaningfully from the Terraform plan.")
 
@@ -175,11 +180,7 @@ func contentTypeMetadataReconciliations(plan ContentTypeModel, data *ContentType
 
 	if !planMetadata.Taxonomy.IsUnknown() {
 		if planMetadata.Taxonomy.Equal(dataMetadata.Taxonomy) {
-			projects = append(projects, func() {
-				metadata := data.Metadata.Value()
-				metadata.Taxonomy = planMetadata.Taxonomy
-				data.Metadata = NewTypedObject(metadata)
-			})
+			candidate.Taxonomy = planMetadata.Taxonomy
 		} else {
 			diags.AddAttributeError(taxonomyPath, "Unexpected Contentful content type response", "The metadata taxonomy response differed meaningfully from the Terraform plan.")
 
@@ -187,10 +188,10 @@ func contentTypeMetadataReconciliations(plan ContentTypeModel, data *ContentType
 		}
 	}
 
-	return projects, mismatch
+	return NewTypedObject(candidate), mismatch
 }
 
-func contentTypeMutationValueEquivalent(name string, valuePath path.Path, planned, remote attr.Value, diags *diag.Diagnostics) bool {
+func contentTypeMutationValueEquivalent(name string, valuePath path.Path, planned, remote types.String, diags *diag.Diagnostics) bool {
 	if planned.IsUnknown() {
 		diags.AddAttributeError(valuePath, "Unexpected unknown value", "A Terraform-owned content type value must be known before Contentful can be changed.")
 
