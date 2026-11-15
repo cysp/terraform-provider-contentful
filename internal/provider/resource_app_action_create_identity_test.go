@@ -2,15 +2,19 @@ package provider_test
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
-	"net/http/httptest"
+	"regexp"
 	"sync"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -58,7 +62,7 @@ func testAppActionSpecifiedIDRecovery(t *testing.T, responseID string) {
 		postBody     string
 	)
 
-	httpServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			body, readErr := io.ReadAll(r.Body)
 			assert.NoError(t, readErr)
@@ -75,40 +79,28 @@ func testAppActionSpecifiedIDRecovery(t *testing.T, responseID string) {
 		}
 
 		adapter.ServeHTTP(w, r)
-	}))
-	t.Cleanup(httpServer.Close)
-	runtime := newTerraformTestRuntime(t)
-	runtime.providerURL = httpServer.URL
-	runtime.writeConfig(t, appActionFunctionWithID("chosenAction"))
-
-	output, err := runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
-	require.Error(t, err, output)
-	assert.Contains(t, output, "Contentful returned a different")
-
-	output, err = runtime.run(t.Context(), "state", "pull")
-	require.NoError(t, err, output)
-
-	var state struct {
-		Resources []struct {
-			Instances []struct {
-				Status     string                     `json:"status"`
-				Attributes map[string]json.RawMessage `json:"attributes"`
-				Identity   map[string]string          `json:"identity"`
-			} `json:"instances"`
-		} `json:"resources"`
-	}
-	require.NoError(t, json.Unmarshal([]byte(output), &state))
-	require.Len(t, state.Resources, 1)
-	require.Len(t, state.Resources[0].Instances, 1)
-	instance := state.Resources[0].Instances[0]
-	assert.Equal(t, "tainted", instance.Status)
-	assert.JSONEq(t, `"org/app/chosenAction"`, string(instance.Attributes["id"]))
-	assert.JSONEq(t, `"chosenAction"`, string(instance.Attributes["app_action_id"]))
-	assert.JSONEq(t, `"Returned"`, string(instance.Attributes["name"]))
-	assert.Equal(t, map[string]string{"organization_id": "org", "app_definition_id": "app", "app_action_id": "chosenAction"}, instance.Identity)
-
-	output, err = runtime.run(t.Context(), "destroy", "-refresh=false", "-auto-approve", "-input=false", "-no-color")
-	require.NoError(t, err, output)
+	})
+	config := appActionFunctionWithID("chosenAction")
+	testAccMockedResource(t, handler, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{Config: config, ExpectError: regexp.MustCompile(`Contentful returned a different`)},
+			{
+				Config: config, PlanOnly: true, ExpectNonEmptyPlan: true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPreRefresh: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(actionAddress, plancheck.ResourceActionDestroyBeforeCreate),
+					expectRecoveryTaint{address: actionAddress, tainted: true},
+					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("id"), knownvalue.StringExact("org/app/chosenAction"))},
+					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("app_action_id"), knownvalue.StringExact("chosenAction"))},
+					testAccPriorState{check: statecheck.ExpectKnownValue(actionAddress, tfjsonpath.New("name"), knownvalue.StringExact("Returned"))},
+					testAccPriorState{check: statecheck.ExpectIdentity(actionAddress, map[string]knownvalue.Check{
+						"organization_id": knownvalue.StringExact("org"), "app_definition_id": knownvalue.StringExact("app"), "app_action_id": knownvalue.StringExact("chosenAction"),
+					})},
+				}},
+			},
+			{Config: config, Destroy: true},
+		},
+	})
 	requestMutex.Lock()
 	assert.Equal(t, []string{"POST /organizations/org/app_definitions/app/actions", "DELETE /organizations/org/app_definitions/app/actions/chosenAction"}, writes)
 	assert.JSONEq(t, testJSON(map[string]any{
