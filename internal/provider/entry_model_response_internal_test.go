@@ -339,7 +339,7 @@ func TestProjectEntryMutationResponse(t *testing.T) {
 
 			assert.Equal(t, expectedMetadata, projected.Metadata)
 			assert.Equal(t, test.plan.Timeouts, projected.Timeouts)
-			assert.Equal(t, test.plan.ContentTypeID, projected.ContentTypeID)
+			assert.Equal(t, test.response.ContentTypeID, projected.ContentTypeID)
 
 			assert.Equal(t, test.plan.EntryIdentityModel, projected.EntryIdentityModel)
 		})

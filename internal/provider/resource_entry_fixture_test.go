@@ -56,15 +56,19 @@ func newEntryAcceptanceFixture(t *testing.T) *entryTestFixture {
 }
 
 func managedEntryConfig(value string) string {
+	return managedEntryConfigForContentType("article", value)
+}
+
+func managedEntryConfigForContentType(contentTypeID, value string) string {
 	return fmt.Sprintf(`
 resource "contentful_entry" "test" {
   space_id        = "space"
   environment_id  = "environment"
   entry_id        = "entry"
-  content_type_id = "article"
-  fields = { managed = jsonencode({ "en-US" = %q }) }
+  content_type_id = %[1]q
+  fields = { managed = jsonencode({ "en-US" = %[2]q }) }
 }
-`, value)
+`, contentTypeID, value)
 }
 
 func getEntryFromTestServer(ctx context.Context, server *cmt.Server) (*cm.Entry, error) {

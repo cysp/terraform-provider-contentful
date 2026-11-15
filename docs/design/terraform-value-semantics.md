@@ -284,11 +284,10 @@ Plan value. Post-mutation state construction starts with the complete response
 projection, compares each constrained API-backed value against it, and restores
 the exact Plan representation only after every comparison is semantically
 equivalent. If Contentful meaningfully contradicts the Plan, the provider emits
-a consistency error. Except for the documented
-[Entry content-type recovery](#entry-publication-ownership-and-partial-field-ownership)
-behavior, it retains complete, truthful response-derived recovery state rather
-than copying Plan values over contradictions. Unknown values come from the
-response. Projection warnings are retained. A later Read skips this reconciliation and projects the remote
+a consistency error and retains complete, truthful response-derived recovery
+state; it never hides the contradiction by copying Plan values over it. Unknown
+values come from the response. Projection warnings are retained. A later Read
+skips this reconciliation and projects the remote
 representation so meaningful remote drift remains visible.
 
 ### Mutation endpoint identity
@@ -704,10 +703,13 @@ A later Read remains authoritative and can expose Contentful-added defaults,
 which `ignore_changes` can preserve through a subsequent managed update. When
 Contentful contradicts a planned field, metadata, content type, or endpoint
 identity, the provider reports an error and checkpoints the representable
-response `fields` and `metadata`, while retaining the planned content type and
-requested endpoint identity. Returned fields and metadata provide the recovery
-checkpoint; response-only field additions cannot become configuration-owned
-values or new publication authority.
+response `fields`, `metadata`, and `content_type_id`, while retaining the requested
+endpoint identity. The content type is a related-resource reference, not part of
+the Entry endpoint. A refresh-disabled retry can plan replacement for a
+contradictory content type; cleanup still addresses the intended Entry. A
+successful refresh can instead restore the actual content type without granting
+publication authority. Response-only field additions cannot become
+configuration-owned values or new publication authority.
 
 A Create or Update draft response grants authority to any positive exact
 returned version in a plan-consistent response. Either response may omit
