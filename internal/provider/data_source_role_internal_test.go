@@ -75,7 +75,7 @@ func TestRoleDataSourceProjectionWarningsFromTypedIrregularResponse(t *testing.T
 	assertDiagnosticPath(t, diagnostics.Warnings()[0], root.AtName("permissions").AtMapKey("ContentModel"))
 	assertDiagnosticPath(t, diagnostics.Warnings()[1], root.AtName("policies").AtListIndex(0).AtName("effect"))
 	assertDiagnosticPath(t, diagnostics.Warnings()[2], root.AtName("policies").AtListIndex(0).AtName("actions"))
-	assert.True(t, item.Permissions.Elements()["ContentModel"].IsNull())
+	assert.Nil(t, item.Permissions["ContentModel"])
 	assert.True(t, item.Policies.Elements()[0].Value().Actions.IsNull())
 	assert.True(t, item.Policies.Elements()[0].Value().Effect.IsNull())
 	assert.True(t, item.Description.IsNull())

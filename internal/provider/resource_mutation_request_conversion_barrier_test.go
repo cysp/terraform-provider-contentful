@@ -212,9 +212,9 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 				},
 				Name:        types.StringValue("Role"),
 				Description: types.StringNull(),
-				Permissions: NewTypedMap(map[string]TypedList[types.String]{
-					"ContentModel": NewTypedList([]types.String{types.StringValue("all"), types.StringValue("read")}),
-				}),
+				Permissions: map[string][]types.String{
+					"ContentModel": {types.StringValue("all"), types.StringValue("read")},
+				},
 				Policies: NewTypedList([]TypedObject[RolePolicyValue]{}),
 				Timeouts: TimeoutsNull(),
 			},

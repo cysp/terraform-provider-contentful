@@ -21,7 +21,7 @@ func TestRoleSchemaRejectsAllCombinedWithOtherValues(t *testing.T) {
 	permissionPath := path.Root("permissions").AtMapKey("ContentModel")
 	permissionDiags := validateRolePermissionValuesConfig(t, permissionsAttribute, types.MapValueMust(
 		permissionsAttribute.ElementType,
-		map[string]attr.Value{"ContentModel": NewTypedListFromStringSlice([]string{"all", "read"})},
+		map[string]attr.Value{"ContentModel": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("all"), types.StringValue("read")})},
 	))
 	assertRoleValidationDiagnostic(
 		t,
@@ -55,7 +55,7 @@ func TestRoleAllValidatorsHandleUnresolvedValues(t *testing.T) {
 	assert.Empty(t, validateRolePermissionValuesConfig(t, permissionsAttribute, types.MapValueMust(
 		permissionsAttribute.ElementType,
 		map[string]attr.Value{
-			"ContentModel": NewTypedList([]types.String{types.StringValue("read"), types.StringUnknown()}),
+			"ContentModel": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("read"), types.StringUnknown()}),
 		},
 	)))
 
@@ -75,7 +75,7 @@ func TestRoleSchemaRejectsKnownAllWithUnknownSibling(t *testing.T) {
 	permissionDiags := validateRolePermissionValuesConfig(t, permissionsAttribute, types.MapValueMust(
 		permissionsAttribute.ElementType,
 		map[string]attr.Value{
-			"ContentModel": NewTypedList([]types.String{types.StringValue("all"), types.StringUnknown()}),
+			"ContentModel": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("all"), types.StringUnknown()}),
 		},
 	))
 	assertRoleValidationDiagnostic(

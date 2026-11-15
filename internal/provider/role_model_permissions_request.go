@@ -9,19 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToRoleDataPermissions(path path.Path, permissions TypedMap[TypedList[types.String]]) (cm.RoleDataPermissions, diag.Diagnostics) {
+func ToRoleDataPermissions(path path.Path, permissions map[string][]types.String) (cm.RoleDataPermissions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	switch {
-	case permissions.IsUnknown():
-		diags.AddAttributeError(
-			path,
-			"Unexpected unknown permissions",
-			"Permissions must be known before they can be sent to Contentful.",
-		)
-
-		return nil, diags
-	case permissions.IsNull():
+	if permissions == nil {
 		diags.AddAttributeError(
 			path,
 			"Unexpected null permissions",
@@ -31,21 +22,19 @@ func ToRoleDataPermissions(path path.Path, permissions TypedMap[TypedList[types.
 		return nil, diags
 	}
 
-	permissionsValues := permissions.Elements()
-
-	keys := make([]string, 0, len(permissionsValues))
-	for key := range permissionsValues {
+	keys := make([]string, 0, len(permissions))
+	for key := range permissions {
 		keys = append(keys, key)
 	}
 
 	slices.Sort(keys)
 
-	rolePermissionsItems := make(cm.RoleDataPermissions, len(permissionsValues))
+	rolePermissionsItems := make(cm.RoleDataPermissions, len(permissions))
 
 	for _, key := range keys {
 		itemPath := path.AtMapKey(key)
 
-		permissionsItem, permissionsItemDiags := ToRoleDataPermissionsItem(itemPath, permissionsValues[key])
+		permissionsItem, permissionsItemDiags := ToRoleDataPermissionsItem(itemPath, permissions[key])
 		diags.Append(permissionsItemDiags...)
 
 		if !permissionsItemDiags.HasError() {
@@ -60,20 +49,10 @@ func ToRoleDataPermissions(path path.Path, permissions TypedMap[TypedList[types.
 	return rolePermissionsItems, diags
 }
 
-//nolint:dupl // Permission values and policy actions require distinct domain terminology and diagnostics.
-func ToRoleDataPermissionsItem(path path.Path, value TypedList[types.String]) (cm.RoleDataPermissionsItem, diag.Diagnostics) {
+func ToRoleDataPermissionsItem(path path.Path, value []types.String) (cm.RoleDataPermissionsItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	switch {
-	case value.IsUnknown():
-		diags.AddAttributeError(
-			path,
-			"Unexpected unknown permission values",
-			"Permission values must be known before they can be sent to Contentful.",
-		)
-
-		return cm.RoleDataPermissionsItem{}, diags
-	case value.IsNull():
+	if value == nil {
 		diags.AddAttributeError(
 			path,
 			"Unexpected null permission values",
@@ -83,7 +62,7 @@ func ToRoleDataPermissionsItem(path path.Path, value TypedList[types.String]) (c
 		return cm.RoleDataPermissionsItem{}, diags
 	}
 
-	permissionValues, valueDiags := knownStringListElements(path, value.Elements())
+	permissionValues, valueDiags := knownStringListElements(path, value)
 	diags.Append(valueDiags...)
 
 	if valueDiags.HasError() {

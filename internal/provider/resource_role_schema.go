@@ -111,8 +111,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"permissions": schema.MapAttribute{
 				Description: "Map of Contentful permission names to their values. Use an empty list to disable a permission, `[\"read\"]` for read-only access where supported, and `[\"manage\"]` or `[\"all\"]` for read and write access. Terraform `[\"all\"]` is sent to Contentful as the scalar `\"all\"`; `\"all\"` must be the only value in its list.",
-				ElementType: NewTypedListNull[types.String]().Type(ctx),
-				CustomType:  NewTypedMapNull[TypedList[types.String]]().CustomType(ctx),
+				ElementType: types.ListType{ElemType: types.StringType},
 				Required:    true,
 				Validators: []validator.Map{
 					mapvalidator.NoNullValues(),

@@ -583,9 +583,9 @@ func TestWebhookMutationStateDistinguishesNullAndEmptyFilters(t *testing.T) {
 func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testing.T) {
 	t.Parallel()
 
-	plannedPermissions := NewTypedMap(map[string]TypedList[types.String]{
-		"Entry": NewTypedList([]types.String{types.StringValue("read")}),
-	})
+	plannedPermissions := map[string][]types.String{
+		"Entry": {types.StringValue("read")},
+	}
 	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{
 		rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedNull()),
 	})
@@ -605,29 +605,30 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 	assert.Len(t, mutationStateDiags.Warnings(), 3)
 	assert.True(t, consistencyDiags.HasError())
 	assert.Len(t, consistencyDiags.Errors(), 2)
-	assert.False(t, mutationState.Permissions.Equal(plannedPermissions))
+	assert.NotEqual(t, plannedPermissions, mutationState.Permissions)
 	assert.False(t, mutationState.Policies.Equal(plannedPolicies))
 
-	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags, _ := ReconcileRoleMutationResponse(t.Context(), response, RoleModel{
+	unknownPoliciesResponse := response
+	unknownPoliciesResponse.Permissions = cm.RolePermissions{"Entry": cm.NewStringArrayRolePermissionsItem([]string{"read"})}
+	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags, _ := ReconcileRoleMutationResponse(t.Context(), unknownPoliciesResponse, RoleModel{
 		RoleID:      types.StringUnknown(),
 		Name:        types.StringUnknown(),
-		Permissions: NewTypedMapUnknown[TypedList[types.String]](),
+		Permissions: plannedPermissions,
 		Policies:    NewTypedListUnknown[TypedObject[RolePolicyValue]](),
 	}, types.StringNull())
 	assert.False(t, unknownPlanDiags.HasError())
 	assert.Empty(t, unknownConsistencyDiags)
-	assert.False(t, unknownPlanState.Permissions.IsUnknown())
 	assert.False(t, unknownPlanState.Policies.IsUnknown())
-	assert.True(t, unknownPlanState.Permissions.Elements()["Entry"].IsNull())
+	assert.Equal(t, plannedPermissions, unknownPlanState.Permissions)
 	assert.True(t, unknownPlanState.Policies.Elements()[0].Value().Effect.IsNull())
 }
 
 func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testing.T) {
 	t.Parallel()
 
-	plannedPermissions := NewTypedMap(map[string]TypedList[types.String]{
-		"Entry": NewTypedList([]types.String{types.StringValue("read")}),
-	})
+	plannedPermissions := map[string][]types.String{
+		"Entry": {types.StringValue("read")},
+	}
 	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{
 		rolePolicyValue("allow", []string{"read", "create"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 	})
@@ -652,7 +653,7 @@ func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testin
 	require.True(t, consistencyDiags.HasError())
 	assert.Equal(t, []string{"permissions"}, attributeDiagnosticPaths(t, consistencyDiags))
 	assert.Equal(t, "Contentful returned different role permissions", consistencyDiags.Errors()[0].Summary())
-	assert.Equal(t, []types.String{types.StringValue("manage")}, mutationState.Permissions.Elements()["Entry"].Elements())
+	assert.Equal(t, []types.String{types.StringValue("manage")}, mutationState.Permissions["Entry"])
 	assert.Equal(t, []types.String{types.StringValue("create"), types.StringValue("read")}, mutationState.Policies.Elements()[0].Value().Actions.Elements())
 	assert.Equal(t, "Response role", mutationState.Name.ValueString())
 }
@@ -660,9 +661,9 @@ func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testin
 func TestRoleMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *testing.T) {
 	t.Parallel()
 
-	plannedPermissions := NewTypedMap(map[string]TypedList[types.String]{
-		"Entry": NewTypedList([]types.String{types.StringValue("read"), types.StringValue("create"), types.StringValue("read")}),
-	})
+	plannedPermissions := map[string][]types.String{
+		"Entry": {types.StringValue("read"), types.StringValue("create"), types.StringValue("read")},
+	}
 	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{
 		rolePolicyValue("allow", []string{"read", "create"}, jsontypes.NewNormalizedValue(`{"b":2,"a":1}`)),
 		rolePolicyValue("deny", []string{"delete"}, jsontypes.NewNormalizedNull()),
@@ -685,16 +686,16 @@ func TestRoleMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *testing
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
-	assert.True(t, mutationState.Permissions.Equal(plannedPermissions))
+	assert.Equal(t, plannedPermissions, mutationState.Permissions)
 	assert.True(t, mutationState.Policies.Equal(plannedPolicies))
 }
 
 func TestRoleMutationStatePreservesDuplicateMultiplicity(t *testing.T) {
 	t.Parallel()
 
-	plannedPermissions := NewTypedMap(map[string]TypedList[types.String]{
-		"Entry": NewTypedList([]types.String{types.StringValue("read"), types.StringValue("read")}),
-	})
+	plannedPermissions := map[string][]types.String{
+		"Entry": {types.StringValue("read"), types.StringValue("read")},
+	}
 	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{})
 	response := cm.Role{
 		Sys: cm.NewRoleSys("space", "role"),
@@ -710,15 +711,15 @@ func TestRoleMutationStatePreservesDuplicateMultiplicity(t *testing.T) {
 
 	assert.Empty(t, responseDiags)
 	require.True(t, consistencyDiags.HasError())
-	assert.Equal(t, []types.String{types.StringValue("read"), types.StringValue("create")}, mutationState.Permissions.Elements()["Entry"].Elements())
+	assert.Equal(t, []types.String{types.StringValue("read"), types.StringValue("create")}, mutationState.Permissions["Entry"])
 }
 
 func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T) {
 	t.Parallel()
 
-	plannedPermissions := NewTypedMap(map[string]TypedList[types.String]{
-		"Entry": NewTypedList([]types.String{types.StringValue("read"), types.StringValue("create")}),
-	})
+	plannedPermissions := map[string][]types.String{
+		"Entry": {types.StringValue("read"), types.StringValue("create")},
+	}
 	for name, test := range map[string]struct {
 		planned             []TypedObject[RolePolicyValue]
 		response            []cm.RolePoliciesItem
@@ -793,8 +794,8 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 			assert.Equal(t, []string{"policies"}, attributeDiagnosticPaths(t, consistencyDiags))
 			assert.False(t, mutationState.Policies.Equal(plannedPolicies))
 			assert.Equal(t, "Response role", mutationState.Name.ValueString())
-			assert.False(t, mutationState.Permissions.Equal(plannedPermissions))
-			assert.Equal(t, []types.String{types.StringValue("create"), types.StringValue("read")}, mutationState.Permissions.Elements()["Entry"].Elements())
+			assert.NotEqual(t, plannedPermissions, mutationState.Permissions)
+			assert.Equal(t, []types.String{types.StringValue("create"), types.StringValue("read")}, mutationState.Permissions["Entry"])
 			require.Len(t, mutationState.Policies.Elements(), len(test.expectedEffects))
 
 			for index, expectedEffect := range test.expectedEffects {

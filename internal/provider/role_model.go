@@ -17,7 +17,7 @@ type RoleModel struct {
 
 	Name        types.String                            `tfsdk:"name"`
 	Description types.String                            `tfsdk:"description"`
-	Permissions TypedMap[TypedList[types.String]]       `tfsdk:"permissions"`
+	Permissions map[string][]types.String               `tfsdk:"permissions"`
 	Policies    TypedList[TypedObject[RolePolicyValue]] `tfsdk:"policies"`
 
 	Timeouts timeouts.Value `tfsdk:"timeouts"`

@@ -95,45 +95,31 @@ func TestRoleRequestRejectsUnresolvedValues(t *testing.T) {
 		},
 		"null permissions": {
 			mutate: func(model *RoleModel) {
-				model.Permissions = NewTypedMapNull[TypedList[types.String]]()
-			},
-			expectedPaths: []string{"permissions"},
-		},
-		"unknown permissions": {
-			mutate: func(model *RoleModel) {
-				model.Permissions = NewTypedMapUnknown[TypedList[types.String]]()
+				model.Permissions = nil
 			},
 			expectedPaths: []string{"permissions"},
 		},
 		"null permission values": {
 			mutate: func(model *RoleModel) {
-				model.Permissions = NewTypedMap(map[string]TypedList[types.String]{
-					"ContentModel": NewTypedListNull[types.String](),
-				})
-			},
-			expectedPaths: []string{`permissions["ContentModel"]`},
-		},
-		"unknown permission values": {
-			mutate: func(model *RoleModel) {
-				model.Permissions = NewTypedMap(map[string]TypedList[types.String]{
-					"ContentModel": NewTypedListUnknown[types.String](),
-				})
+				model.Permissions = map[string][]types.String{
+					"ContentModel": nil,
+				}
 			},
 			expectedPaths: []string{`permissions["ContentModel"]`},
 		},
 		"null permission value": {
 			mutate: func(model *RoleModel) {
-				model.Permissions = NewTypedMap(map[string]TypedList[types.String]{
-					"ContentModel": NewTypedList([]types.String{types.StringValue("read"), types.StringNull()}),
-				})
+				model.Permissions = map[string][]types.String{
+					"ContentModel": {types.StringValue("read"), types.StringNull()},
+				}
 			},
 			expectedPaths: []string{`permissions["ContentModel"][1]`},
 		},
 		"unknown permission value": {
 			mutate: func(model *RoleModel) {
-				model.Permissions = NewTypedMap(map[string]TypedList[types.String]{
-					"ContentModel": NewTypedList([]types.String{types.StringValue("read"), types.StringUnknown()}),
-				})
+				model.Permissions = map[string][]types.String{
+					"ContentModel": {types.StringValue("read"), types.StringUnknown()},
+				}
 			},
 			expectedPaths: []string{`permissions["ContentModel"][1]`},
 		},
@@ -255,7 +241,7 @@ func TestRoleRequestAggregatesParentDiagnostics(t *testing.T) {
 	model := validRoleRequestModel()
 	model.Name = types.StringUnknown()
 	model.Description = types.StringUnknown()
-	model.Permissions = NewTypedMapUnknown[TypedList[types.String]]()
+	model.Permissions = nil
 	model.Policies = NewTypedListUnknown[TypedObject[RolePolicyValue]]()
 
 	request, diags := model.ToRoleData()
@@ -277,7 +263,7 @@ func TestRoleRequestRejectsAllCombinedWithOtherValues(t *testing.T) {
 
 			_, diags := ToRoleDataPermissionsItem(
 				path.Root("permissions").AtMapKey("ContentModel"),
-				NewTypedListFromStringSlice(values),
+				roleStringValues(values),
 			)
 
 			require.True(t, diags.HasError())
@@ -343,7 +329,7 @@ func TestRoleRequestEncodesPermissionValuesAndPolicyActions(t *testing.T) {
 
 			permissionValues, permissionDiags := ToRoleDataPermissionsItem(
 				path.Root("permissions").AtMapKey("ContentModel"),
-				NewTypedListFromStringSlice(test.permissionValues),
+				roleStringValues(test.permissionValues),
 			)
 			policyActions, policyDiags := ToRoleDataPoliciesItemActions(
 				path.Root("policies").AtListIndex(0).AtName("actions"),
@@ -414,9 +400,9 @@ func TestRoleRequestOmitsNullPolicyConstraint(t *testing.T) {
 func validRoleRequestModel() RoleModel {
 	return RoleModel{
 		Name: types.StringValue("role"),
-		Permissions: NewTypedMap(map[string]TypedList[types.String]{
-			"ContentModel": NewTypedList([]types.String{types.StringValue("read")}),
-		}),
+		Permissions: map[string][]types.String{
+			"ContentModel": {types.StringValue("read")},
+		},
 		Policies: rolePoliciesWith(RolePolicyValue{
 			Actions:    NewTypedList([]types.String{types.StringValue("read")}),
 			Constraint: jsontypes.NewNormalizedNull(),
@@ -427,4 +413,13 @@ func validRoleRequestModel() RoleModel {
 
 func rolePoliciesWith(policy RolePolicyValue) TypedList[TypedObject[RolePolicyValue]] {
 	return NewTypedList([]TypedObject[RolePolicyValue]{NewTypedObject(policy)})
+}
+
+func roleStringValues(values []string) []types.String {
+	result := make([]types.String, len(values))
+	for index, value := range values {
+		result[index] = types.StringValue(value)
+	}
+
+	return result
 }

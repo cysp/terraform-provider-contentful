@@ -183,9 +183,9 @@ func completeRoleMutationPlan() RoleModel {
 		RoleID:          types.StringValue("role"),
 		Name:            types.StringValue("Planned role"),
 		Description:     types.StringValue("Planned description"),
-		Permissions: NewTypedMap(map[string]TypedList[types.String]{
-			"Entry": NewTypedList([]types.String{types.StringValue("read"), types.StringValue("create")}),
-		}),
+		Permissions: map[string][]types.String{
+			"Entry": {types.StringValue("read"), types.StringValue("create")},
+		},
 		Policies: NewTypedList([]TypedObject[RolePolicyValue]{
 			rolePolicyValue("allow", []string{"read", "create"}, jsontypes.NewNormalizedValue(`{"b":2,"a":1}`)),
 		}),
@@ -355,7 +355,7 @@ func TestCompleteRolePlanRejectsScalarContradictionWithoutPartialOverlay(t *test
 	assert.Equal(t, []string{"space_id", "role_id", "name"}, attributeDiagnosticPaths(t, consistencyDiags))
 	assert.Equal(t, "space/role", state.ID.ValueString())
 	assert.Equal(t, "Response role", state.Name.ValueString())
-	assert.Equal(t, []types.String{types.StringValue("create"), types.StringValue("read")}, state.Permissions.Elements()["Entry"].Elements())
+	assert.Equal(t, []types.String{types.StringValue("create"), types.StringValue("read")}, state.Permissions["Entry"])
 }
 
 func TestCompleteRolePlanRestoresCanonicalisedEquivalentResponse(t *testing.T) {
@@ -366,7 +366,7 @@ func TestCompleteRolePlanRestoresCanonicalisedEquivalentResponse(t *testing.T) {
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
-	assert.True(t, state.Permissions.Equal(plan.Permissions))
+	assert.Equal(t, plan.Permissions, state.Permissions)
 	assert.True(t, state.Policies.Equal(plan.Policies))
 }
 
