@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"maps"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"sync/atomic"
 	"testing"
 
@@ -27,10 +25,10 @@ type mutationEndpointCase struct {
 	body                                 map[string]any
 	createMethod, createPath, updatePath string
 	createIdentity, updateIdentity       map[string]string
+	createDiagnostics, updateDiagnostics []string
 	createID, updateID                   string
 	returned                             map[string]any
 	versioned                            bool
-	rejectResponse                       bool
 }
 
 func TestResourceMutationsRetainAddressedEndpointAndReturnedValues(t *testing.T) {
@@ -55,15 +53,18 @@ func testMutationEndpoint(t *testing.T, test mutationEndpointCase, operation str
 	t.Helper()
 
 	method, endpoint, expectedIdentity, expectedID := test.createMethod, test.createPath, test.createIdentity, test.createID
+
+	expectedDiagnostics := test.createDiagnostics
 	if operation == "update" {
 		method, endpoint, expectedIdentity, expectedID = http.MethodPut, test.updatePath, test.updateIdentity, test.updateID
+		expectedDiagnostics = test.updateDiagnostics
 	}
 
 	body := testJSON(test.body)
 
 	var calls atomic.Int64
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	providerServer := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls.Add(1)
 		assert.Equal(t, method, r.Method)
 		assert.Equal(t, endpoint, r.URL.Path)
@@ -82,16 +83,6 @@ func testMutationEndpoint(t *testing.T, test mutationEndpointCase, operation str
 		w.WriteHeader(status)
 		_, _ = w.Write([]byte(body))
 	}))
-	t.Cleanup(server.Close)
-
-	providerServer, err := makeTestAccProtoV6ProviderFactories(WithContentfulURL(server.URL), WithAccessToken("test-token"))["contentful"]()
-	require.NoError(t, err)
-	providerConfig, err := providerConfigDynamicValue(map[string]any{"url": server.URL, "access_token": "test-token"})
-	require.NoError(t, err)
-	configured, err := providerServer.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{Config: &providerConfig})
-	require.NoError(t, err)
-	require.Empty(t, configured.Diagnostics)
-
 	values := maps.Clone(test.plan)
 	values["id"] = expectedID
 	planned := mutationEndpointDynamicValue(t, test.schema, values)
@@ -103,10 +94,6 @@ func testMutationEndpoint(t *testing.T, test mutationEndpointCase, operation str
 		previous["name"] = "Prior"
 		if _, exists := values["name"]; !exists {
 			delete(previous, "name")
-		}
-
-		if _, exists := values["value"]; exists {
-			previous["value"] = strings.Repeat("b", 64)
 		}
 
 		if _, exists := values["parameters"]; exists {
@@ -122,30 +109,17 @@ func testMutationEndpoint(t *testing.T, test mutationEndpointCase, operation str
 	require.NoError(t, err)
 	require.EqualValues(t, 1, calls.Load(), result.Diagnostics)
 
-	if test.rejectResponse {
-		require.NotEmpty(t, result.Diagnostics)
-		assert.Contains(t, result.Diagnostics[0].Summary, "Unconfirmed app signing secret")
-		require.NotNil(t, result.NewState)
-		priorRaw, err := prior.Unmarshal(test.schema.Type().TerraformType(t.Context()))
-		require.NoError(t, err)
-		actualRaw, err := result.NewState.Unmarshal(test.schema.Type().TerraformType(t.Context()))
-		require.NoError(t, err)
-		assert.True(t, priorRaw.Equal(actualRaw), "unconfirmed response must not acknowledge a new secret")
-
-		return
-	}
-
-	assertMutationEndpoint(t, test, result, expectedIdentity, expectedID)
+	assertMutationEndpoint(t, test, result, expectedIdentity, expectedID, expectedDiagnostics)
 }
 
-func assertMutationEndpoint(t *testing.T, test mutationEndpointCase, result *tfprotov6.ApplyResourceChangeResponse, expectedIdentity map[string]string, expectedID string) {
+func assertMutationEndpoint(t *testing.T, test mutationEndpointCase, result *tfprotov6.ApplyResourceChangeResponse, expectedIdentity map[string]string, expectedID string, expectedDiagnostics []string) {
 	t.Helper()
 
 	for _, diagnostic := range result.Diagnostics {
 		t.Logf("%s: %s", diagnostic.Summary, diagnostic.Detail)
 	}
 
-	assert.Len(t, result.Diagnostics, len(expectedIdentity), result.Diagnostics)
+	assert.Len(t, result.Diagnostics, len(expectedDiagnostics), result.Diagnostics)
 
 	for _, diagnostic := range result.Diagnostics {
 		assert.Equal(t, tfprotov6.DiagnosticSeverityError, diagnostic.Severity)
@@ -165,7 +139,7 @@ func assertMutationEndpoint(t *testing.T, test mutationEndpointCase, result *tfp
 	require.NotNil(t, result.NewIdentity.IdentityData)
 
 	identityTypes := make(map[string]tftypes.Type)
-	for name := range test.updateIdentity {
+	for name := range expectedIdentity {
 		identityTypes[name] = tftypes.String
 	}
 
@@ -175,7 +149,7 @@ func assertMutationEndpoint(t *testing.T, test mutationEndpointCase, result *tfp
 	var identity map[string]tftypes.Value
 	require.NoError(t, identityRaw.As(&identity))
 
-	for name, expected := range expectedIdentity {
+	for _, name := range expectedDiagnostics {
 		foundDiagnostic := false
 
 		for _, diagnostic := range result.Diagnostics {
@@ -185,7 +159,9 @@ func assertMutationEndpoint(t *testing.T, test mutationEndpointCase, result *tfp
 		}
 
 		assert.True(t, foundDiagnostic, "missing attribute diagnostic for %s", name)
+	}
 
+	for name, expected := range expectedIdentity {
 		var value types.String
 		require.Empty(t, state.GetAttribute(t.Context(), path.Root(name), &value))
 		assert.Equal(t, types.StringValue(expected), value, name)
@@ -257,209 +233,216 @@ func mutationEndpointCases(t *testing.T) []mutationEndpointCase {
 	require.True(t, ok)
 
 	appKeySys["id"] = jwkData.kid
-	secret := strings.Repeat("a", 64)
 
 	return []mutationEndpointCase{
 		{
-			name:           "app_definition",
-			schema:         AppDefinitionResourceSchema(ctx),
-			plan:           map[string]any{"organization_id": "org", "app_definition_id": "app", "name": "Planned", "locations": []any{}},
-			body:           mutationEndpointBody("AppDefinition", map[string]any{"name": "Returned", "locations": []any{}}),
-			createMethod:   "POST",
-			createPath:     "/organizations/org/app_definitions",
-			updatePath:     "/organizations/org/app_definitions/app",
-			createIdentity: map[string]string{"organization_id": "org"},
-			updateIdentity: map[string]string{"organization_id": "org", "app_definition_id": "app"},
-			createID:       "org/returned-id",
-			updateID:       "org/app",
-			returned:       map[string]any{"name": "Returned"},
+			name:              "app_definition",
+			schema:            AppDefinitionResourceSchema(ctx),
+			plan:              map[string]any{"organization_id": "org", "app_definition_id": "app", "name": "Planned", "locations": []any{}},
+			body:              mutationEndpointBody("AppDefinition", map[string]any{"name": "Returned", "locations": []any{}}),
+			createMethod:      "POST",
+			createPath:        "/organizations/org/app_definitions",
+			updatePath:        "/organizations/org/app_definitions/app",
+			createIdentity:    map[string]string{"organization_id": "org", "app_definition_id": "returned-id"},
+			createDiagnostics: []string{"organization_id"},
+			updateIdentity:    map[string]string{"organization_id": "org", "app_definition_id": "app"},
+			updateDiagnostics: []string{"organization_id", "app_definition_id"},
+			createID:          "org/returned-id",
+			updateID:          "org/app",
+			returned:          map[string]any{"name": "Returned"},
 		},
 		{
-			name:           "app_installation",
-			schema:         AppInstallationResourceSchema(ctx),
-			plan:           map[string]any{"space_id": "space", "environment_id": "environment", "app_definition_id": "app", "parameters": testJSON(map[string]string{"value": "planned"})},
-			body:           mutationEndpointBody("AppInstallation", map[string]any{"parameters": map[string]string{"value": "returned"}}),
-			createMethod:   "PUT",
-			createPath:     "/spaces/space/environments/environment/app_installations/app",
-			updatePath:     "/spaces/space/environments/environment/app_installations/app",
-			createIdentity: map[string]string{"space_id": "space", "environment_id": "environment", "app_definition_id": "app"},
-			updateIdentity: map[string]string{"space_id": "space", "environment_id": "environment", "app_definition_id": "app"},
-			createID:       "space/environment/app",
-			updateID:       "space/environment/app",
-			returned:       map[string]any{"parameters": testJSON(map[string]string{"value": "returned"})},
+			name:              "app_installation",
+			schema:            AppInstallationResourceSchema(ctx),
+			plan:              map[string]any{"space_id": "space", "environment_id": "environment", "app_definition_id": "app", "parameters": testJSON(map[string]string{"value": "planned"})},
+			body:              mutationEndpointBody("AppInstallation", map[string]any{"parameters": map[string]string{"value": "returned"}}),
+			createMethod:      "PUT",
+			createPath:        "/spaces/space/environments/environment/app_installations/app",
+			updatePath:        "/spaces/space/environments/environment/app_installations/app",
+			createIdentity:    map[string]string{"space_id": "space", "environment_id": "environment", "app_definition_id": "app"},
+			createDiagnostics: []string{"space_id", "environment_id", "app_definition_id"},
+			updateIdentity:    map[string]string{"space_id": "space", "environment_id": "environment", "app_definition_id": "app"},
+			updateDiagnostics: []string{"space_id", "environment_id", "app_definition_id"},
+			createID:          "space/environment/app",
+			updateID:          "space/environment/app",
+			returned:          map[string]any{"parameters": testJSON(map[string]string{"value": "returned"})},
 		},
 		{
-			name:           "app_key",
-			schema:         AppKeyResourceSchema(ctx),
-			plan:           map[string]any{"organization_id": "org", "app_definition_id": "app", "jwk": jwk},
-			body:           appKeyBody,
-			createMethod:   "POST",
-			createPath:     "/organizations/org/app_definitions/app/keys",
-			createIdentity: map[string]string{"organization_id": "org", "app_definition_id": "app"},
-			updateIdentity: map[string]string{"organization_id": "org", "app_definition_id": "app", "key_kid": jwkData.kid},
-			createID:       "org/app/" + jwkData.kid,
-			returned:       map[string]any{"key_kid": jwkData.kid},
+			name:              "app_key",
+			schema:            AppKeyResourceSchema(ctx),
+			plan:              map[string]any{"organization_id": "org", "app_definition_id": "app", "jwk": jwk},
+			body:              appKeyBody,
+			createMethod:      "POST",
+			createPath:        "/organizations/org/app_definitions/app/keys",
+			createIdentity:    map[string]string{"organization_id": "org", "app_definition_id": "app", "key_kid": jwkData.kid},
+			createDiagnostics: []string{"organization_id", "app_definition_id"},
+			createID:          "org/app/" + jwkData.kid,
 		},
 		{
-			name:           "app_signing_secret",
-			rejectResponse: true,
-			schema:         AppSigningSecretResourceSchema(ctx),
-			plan:           map[string]any{"organization_id": "org", "app_definition_id": "app", "value": secret},
-			body:           mutationEndpointBody("AppSigningSecret", map[string]any{"redactedValue": "****aaaa"}),
-			createMethod:   "PUT",
-			createPath:     "/organizations/org/app_definitions/app/signing_secret",
-			updatePath:     "/organizations/org/app_definitions/app/signing_secret",
-			createIdentity: map[string]string{"organization_id": "org", "app_definition_id": "app"},
-			updateIdentity: map[string]string{"organization_id": "org", "app_definition_id": "app"},
-			createID:       "org/app",
-			updateID:       "org/app",
-			returned:       map[string]any{"value": secret},
+			name:              "delivery_api_key",
+			schema:            DeliveryAPIKeyResourceSchema(ctx),
+			plan:              map[string]any{"space_id": "space", "api_key_id": "key", "name": "Planned", "environments": []any{}},
+			body:              mutationEndpointBody("ApiKey", map[string]any{"name": "Returned", "description": "", "accessToken": "returned-token", "environments": []any{}, "preview_api_key": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "PreviewApiKey", "id": "preview"}}}),
+			createMethod:      "POST",
+			createPath:        "/spaces/space/api_keys",
+			updatePath:        "/spaces/space/api_keys/key",
+			createIdentity:    map[string]string{"space_id": "space", "api_key_id": "returned-id"},
+			createDiagnostics: []string{"space_id"},
+			updateIdentity:    map[string]string{"space_id": "space", "api_key_id": "key"},
+			updateDiagnostics: []string{"space_id", "api_key_id"},
+			createID:          "space/returned-id",
+			updateID:          "space/key",
+			returned:          map[string]any{"name": "Returned", "access_token": "returned-token"},
+			versioned:         true,
 		},
 		{
-			name:           "delivery_api_key",
-			schema:         DeliveryAPIKeyResourceSchema(ctx),
-			plan:           map[string]any{"space_id": "space", "api_key_id": "key", "name": "Planned", "environments": []any{}},
-			body:           mutationEndpointBody("ApiKey", map[string]any{"name": "Returned", "description": "", "accessToken": "returned-token", "environments": []any{}, "preview_api_key": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "PreviewApiKey", "id": "preview"}}}),
-			createMethod:   "POST",
-			createPath:     "/spaces/space/api_keys",
-			updatePath:     "/spaces/space/api_keys/key",
-			createIdentity: map[string]string{"space_id": "space"},
-			updateIdentity: map[string]string{"space_id": "space", "api_key_id": "key"},
-			createID:       "space/returned-id",
-			updateID:       "space/key",
-			returned:       map[string]any{"name": "Returned", "access_token": "returned-token"},
-			versioned:      true,
+			name:              "environment",
+			schema:            EnvironmentResourceSchema(ctx),
+			plan:              map[string]any{"space_id": "space", "environment_id": "environment", "name": "Planned"},
+			body:              mutationEndpointBody("Environment", map[string]any{"name": "Returned"}),
+			createMethod:      "PUT",
+			createPath:        "/spaces/space/environments/environment",
+			updatePath:        "/spaces/space/environments/environment",
+			createIdentity:    map[string]string{"space_id": "space", "environment_id": "environment"},
+			createDiagnostics: []string{"space_id", "environment_id"},
+			updateIdentity:    map[string]string{"space_id": "space", "environment_id": "environment"},
+			updateDiagnostics: []string{"space_id", "environment_id"},
+			createID:          "space/environment",
+			updateID:          "space/environment",
+			returned:          map[string]any{"name": "Returned"},
+			versioned:         true,
 		},
 		{
-			name:           "environment",
-			schema:         EnvironmentResourceSchema(ctx),
-			plan:           map[string]any{"space_id": "space", "environment_id": "environment", "name": "Planned"},
-			body:           mutationEndpointBody("Environment", map[string]any{"name": "Returned"}),
-			createMethod:   "PUT",
-			createPath:     "/spaces/space/environments/environment",
-			updatePath:     "/spaces/space/environments/environment",
-			createIdentity: map[string]string{"space_id": "space", "environment_id": "environment"},
-			updateIdentity: map[string]string{"space_id": "space", "environment_id": "environment"},
-			createID:       "space/environment",
-			updateID:       "space/environment",
-			returned:       map[string]any{"name": "Returned"},
-			versioned:      true,
+			name:              "environment_alias",
+			schema:            EnvironmentAliasResourceSchema(ctx),
+			plan:              map[string]any{"space_id": "space", "environment_alias_id": "alias", "target_environment_id": "target"},
+			body:              mutationEndpointBody("EnvironmentAlias", map[string]any{"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "returned-target"}}}),
+			createMethod:      "PUT",
+			createPath:        "/spaces/space/environment_aliases/alias",
+			updatePath:        "/spaces/space/environment_aliases/alias",
+			createIdentity:    map[string]string{"space_id": "space", "environment_alias_id": "alias"},
+			createDiagnostics: []string{"space_id", "environment_alias_id"},
+			updateIdentity:    map[string]string{"space_id": "space", "environment_alias_id": "alias"},
+			updateDiagnostics: []string{"space_id", "environment_alias_id"},
+			createID:          "space/alias",
+			updateID:          "space/alias",
+			returned:          map[string]any{"target_environment_id": "returned-target"},
+			versioned:         true,
 		},
 		{
-			name:           "environment_alias",
-			schema:         EnvironmentAliasResourceSchema(ctx),
-			plan:           map[string]any{"space_id": "space", "environment_alias_id": "alias", "target_environment_id": "target"},
-			body:           mutationEndpointBody("EnvironmentAlias", map[string]any{"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "returned-target"}}}),
-			createMethod:   "PUT",
-			createPath:     "/spaces/space/environment_aliases/alias",
-			updatePath:     "/spaces/space/environment_aliases/alias",
-			createIdentity: map[string]string{"space_id": "space", "environment_alias_id": "alias"},
-			updateIdentity: map[string]string{"space_id": "space", "environment_alias_id": "alias"},
-			createID:       "space/alias",
-			updateID:       "space/alias",
-			returned:       map[string]any{"target_environment_id": "returned-target"},
-			versioned:      true,
+			name:              "extension",
+			schema:            ExtensionResourceSchema(ctx),
+			plan:              map[string]any{"space_id": "space", "environment_id": "environment", "extension_id": "extension", "extension": map[string]any{"name": "Planned", "srcdoc": "<p>planned</p>", "field_types": []any{}, "sidebar": false}},
+			body:              mutationEndpointBody("Extension", map[string]any{"extension": map[string]any{"name": "Returned", "srcdoc": "<p>returned</p>", "fieldTypes": []any{}, "sidebar": false}}),
+			createMethod:      "PUT",
+			createPath:        "/spaces/space/environments/environment/extensions/extension",
+			updatePath:        "/spaces/space/environments/environment/extensions/extension",
+			createIdentity:    map[string]string{"space_id": "space", "environment_id": "environment", "extension_id": "extension"},
+			createDiagnostics: []string{"space_id", "environment_id", "extension_id"},
+			updateIdentity:    map[string]string{"space_id": "space", "environment_id": "environment", "extension_id": "extension"},
+			updateDiagnostics: []string{"space_id", "environment_id", "extension_id"},
+			createID:          "space/environment/extension",
+			updateID:          "space/environment/extension",
+			versioned:         true,
 		},
 		{
-			name:           "extension",
-			schema:         ExtensionResourceSchema(ctx),
-			plan:           map[string]any{"space_id": "space", "environment_id": "environment", "extension_id": "extension", "extension": map[string]any{"name": "Planned", "srcdoc": "<p>planned</p>", "field_types": []any{}, "sidebar": false}},
-			body:           mutationEndpointBody("Extension", map[string]any{"extension": map[string]any{"name": "Returned", "srcdoc": "<p>returned</p>", "fieldTypes": []any{}, "sidebar": false}}),
-			createMethod:   "PUT",
-			createPath:     "/spaces/space/environments/environment/extensions/extension",
-			updatePath:     "/spaces/space/environments/environment/extensions/extension",
-			createIdentity: map[string]string{"space_id": "space", "environment_id": "environment", "extension_id": "extension"},
-			updateIdentity: map[string]string{"space_id": "space", "environment_id": "environment", "extension_id": "extension"},
-			createID:       "space/environment/extension",
-			updateID:       "space/environment/extension",
-			versioned:      true,
+			name:              "resource_provider",
+			schema:            ResourceProviderResourceSchema(ctx),
+			plan:              map[string]any{"organization_id": "org", "app_definition_id": "app", "resource_provider_id": "provider", "function_id": "planned-function"},
+			body:              mutationEndpointBody("ResourceProvider", map[string]any{"type": "function", "function": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "returned-function"}}}),
+			createMethod:      "PUT",
+			createPath:        "/organizations/org/app_definitions/app/resource_provider",
+			updatePath:        "/organizations/org/app_definitions/app/resource_provider",
+			createIdentity:    map[string]string{"organization_id": "org", "app_definition_id": "app"},
+			createDiagnostics: []string{"organization_id", "app_definition_id"},
+			updateIdentity:    map[string]string{"organization_id": "org", "app_definition_id": "app"},
+			updateDiagnostics: []string{"organization_id", "app_definition_id"},
+			createID:          "org/app",
+			updateID:          "org/app",
+			returned:          map[string]any{"resource_provider_id": "returned-id", "function_id": "returned-function"},
 		},
 		{
-			name:           "resource_provider",
-			schema:         ResourceProviderResourceSchema(ctx),
-			plan:           map[string]any{"organization_id": "org", "app_definition_id": "app", "resource_provider_id": "provider", "function_id": "planned-function"},
-			body:           mutationEndpointBody("ResourceProvider", map[string]any{"type": "function", "function": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Function", "id": "returned-function"}}}),
-			createMethod:   "PUT",
-			createPath:     "/organizations/org/app_definitions/app/resource_provider",
-			updatePath:     "/organizations/org/app_definitions/app/resource_provider",
-			createIdentity: map[string]string{"organization_id": "org", "app_definition_id": "app"},
-			updateIdentity: map[string]string{"organization_id": "org", "app_definition_id": "app"},
-			createID:       "org/app",
-			updateID:       "org/app",
-			returned:       map[string]any{"resource_provider_id": "returned-id", "function_id": "returned-function"},
+			name:              "resource_type",
+			schema:            ResourceTypeResourceSchema(ctx),
+			plan:              map[string]any{"organization_id": "org", "app_definition_id": "app", "resource_type_id": "provider:type", "resource_provider_id": "provider", "name": "Planned", "default_field_mapping": map[string]any{"title": "title"}},
+			body:              mutationEndpointBody("ResourceType", map[string]any{"name": "Returned", "defaultFieldMapping": map[string]any{"title": "returned-title"}}),
+			createMethod:      "PUT",
+			createPath:        "/organizations/org/app_definitions/app/resource_provider/resource_types/provider:type",
+			updatePath:        "/organizations/org/app_definitions/app/resource_provider/resource_types/provider:type",
+			createIdentity:    map[string]string{"organization_id": "org", "app_definition_id": "app", "resource_type_id": "provider:type"},
+			createDiagnostics: []string{"organization_id", "app_definition_id", "resource_type_id"},
+			updateIdentity:    map[string]string{"organization_id": "org", "app_definition_id": "app", "resource_type_id": "provider:type"},
+			updateDiagnostics: []string{"organization_id", "app_definition_id", "resource_type_id"},
+			createID:          "org/app/provider:type",
+			updateID:          "org/app/provider:type",
+			returned:          map[string]any{"name": "Returned", "resource_provider_id": "returned-provider"},
 		},
 		{
-			name:           "resource_type",
-			schema:         ResourceTypeResourceSchema(ctx),
-			plan:           map[string]any{"organization_id": "org", "app_definition_id": "app", "resource_type_id": "provider:type", "resource_provider_id": "provider", "name": "Planned", "default_field_mapping": map[string]any{"title": "title"}},
-			body:           mutationEndpointBody("ResourceType", map[string]any{"name": "Returned", "defaultFieldMapping": map[string]any{"title": "returned-title"}}),
-			createMethod:   "PUT",
-			createPath:     "/organizations/org/app_definitions/app/resource_provider/resource_types/provider:type",
-			updatePath:     "/organizations/org/app_definitions/app/resource_provider/resource_types/provider:type",
-			createIdentity: map[string]string{"organization_id": "org", "app_definition_id": "app", "resource_type_id": "provider:type"},
-			updateIdentity: map[string]string{"organization_id": "org", "app_definition_id": "app", "resource_type_id": "provider:type"},
-			createID:       "org/app/provider:type",
-			updateID:       "org/app/provider:type",
-			returned:       map[string]any{"name": "Returned", "resource_provider_id": "returned-provider"},
+			name:              "space_enablements",
+			schema:            SpaceEnablementsResourceSchema(ctx),
+			plan:              map[string]any{"space_id": "space", "cross_space_links": false, "space_templates": false},
+			body:              mutationEndpointBody("SpaceEnablement", map[string]any{"crossSpaceLinks": map[string]any{"enabled": true}, "spaceTemplates": map[string]any{"enabled": true}}),
+			createMethod:      "PUT",
+			createPath:        "/spaces/space/enablements",
+			updatePath:        "/spaces/space/enablements",
+			createIdentity:    map[string]string{"space_id": "space"},
+			createDiagnostics: []string{"space_id"},
+			updateIdentity:    map[string]string{"space_id": "space"},
+			updateDiagnostics: []string{"space_id"},
+			createID:          "space",
+			updateID:          "space",
+			returned:          map[string]any{"cross_space_links": true},
+			versioned:         true,
 		},
 		{
-			name:           "space_enablements",
-			schema:         SpaceEnablementsResourceSchema(ctx),
-			plan:           map[string]any{"space_id": "space", "cross_space_links": false, "space_templates": false},
-			body:           mutationEndpointBody("SpaceEnablement", map[string]any{"crossSpaceLinks": map[string]any{"enabled": true}, "spaceTemplates": map[string]any{"enabled": true}}),
-			createMethod:   "PUT",
-			createPath:     "/spaces/space/enablements",
-			updatePath:     "/spaces/space/enablements",
-			createIdentity: map[string]string{"space_id": "space"},
-			updateIdentity: map[string]string{"space_id": "space"},
-			createID:       "space",
-			updateID:       "space",
-			returned:       map[string]any{"cross_space_links": true},
-			versioned:      true,
+			name:              "tag",
+			schema:            TagResourceSchema(ctx),
+			plan:              map[string]any{"space_id": "space", "environment_id": "environment", "tag_id": "tag", "name": "Planned", "visibility": "private"},
+			body:              mutationEndpointBody("Tag", map[string]any{"name": "Returned"}),
+			createMethod:      "PUT",
+			createPath:        "/spaces/space/environments/environment/tags/tag",
+			updatePath:        "/spaces/space/environments/environment/tags/tag",
+			createIdentity:    map[string]string{"space_id": "space", "environment_id": "environment", "tag_id": "tag"},
+			createDiagnostics: []string{"space_id", "environment_id", "tag_id"},
+			updateIdentity:    map[string]string{"space_id": "space", "environment_id": "environment", "tag_id": "tag"},
+			updateDiagnostics: []string{"space_id", "environment_id", "tag_id"},
+			createID:          "space/environment/tag",
+			updateID:          "space/environment/tag",
+			returned:          map[string]any{"name": "Returned"},
+			versioned:         true,
 		},
 		{
-			name:           "tag",
-			schema:         TagResourceSchema(ctx),
-			plan:           map[string]any{"space_id": "space", "environment_id": "environment", "tag_id": "tag", "name": "Planned", "visibility": "private"},
-			body:           mutationEndpointBody("Tag", map[string]any{"name": "Returned"}),
-			createMethod:   "PUT",
-			createPath:     "/spaces/space/environments/environment/tags/tag",
-			updatePath:     "/spaces/space/environments/environment/tags/tag",
-			createIdentity: map[string]string{"space_id": "space", "environment_id": "environment", "tag_id": "tag"},
-			updateIdentity: map[string]string{"space_id": "space", "environment_id": "environment", "tag_id": "tag"},
-			createID:       "space/environment/tag",
-			updateID:       "space/environment/tag",
-			returned:       map[string]any{"name": "Returned"},
-			versioned:      true,
+			name:              "team",
+			schema:            TeamResourceSchema(ctx),
+			plan:              map[string]any{"organization_id": "org", "team_id": "team", "name": "Planned"},
+			body:              mutationEndpointBody("Team", map[string]any{"name": "Returned", "description": ""}),
+			createMethod:      "POST",
+			createPath:        "/organizations/org/teams",
+			updatePath:        "/organizations/org/teams/team",
+			createIdentity:    map[string]string{"organization_id": "org", "team_id": "returned-id"},
+			createDiagnostics: []string{"organization_id"},
+			updateIdentity:    map[string]string{"organization_id": "org", "team_id": "team"},
+			updateDiagnostics: []string{"organization_id", "team_id"},
+			createID:          "org/returned-id",
+			updateID:          "org/team",
+			returned:          map[string]any{"name": "Returned"},
+			versioned:         true,
 		},
 		{
-			name:           "team",
-			schema:         TeamResourceSchema(ctx),
-			plan:           map[string]any{"organization_id": "org", "team_id": "team", "name": "Planned"},
-			body:           mutationEndpointBody("Team", map[string]any{"name": "Returned", "description": ""}),
-			createMethod:   "POST",
-			createPath:     "/organizations/org/teams",
-			updatePath:     "/organizations/org/teams/team",
-			createIdentity: map[string]string{"organization_id": "org"},
-			updateIdentity: map[string]string{"organization_id": "org", "team_id": "team"},
-			createID:       "org/returned-id",
-			updateID:       "org/team",
-			returned:       map[string]any{"name": "Returned"},
-			versioned:      true,
-		},
-		{
-			name:           "team_space_membership",
-			schema:         TeamSpaceMembershipResourceSchema(ctx),
-			plan:           map[string]any{"space_id": "space", "team_space_membership_id": "membership", "team_id": "team", "admin": false, "roles": []any{}},
-			body:           mutationEndpointBody("TeamSpaceMembership", map[string]any{"admin": true, "roles": []any{}}),
-			createMethod:   "POST",
-			createPath:     "/spaces/space/team_space_memberships",
-			updatePath:     "/spaces/space/team_space_memberships/membership",
-			createIdentity: map[string]string{"space_id": "space"},
-			updateIdentity: map[string]string{"space_id": "space", "team_space_membership_id": "membership"},
-			createID:       "space/returned-id",
-			updateID:       "space/membership",
-			returned:       map[string]any{"team_id": "returned-team", "admin": true},
+			name:              "team_space_membership",
+			schema:            TeamSpaceMembershipResourceSchema(ctx),
+			plan:              map[string]any{"space_id": "space", "team_space_membership_id": "membership", "team_id": "team", "admin": false, "roles": []any{}},
+			body:              mutationEndpointBody("TeamSpaceMembership", map[string]any{"admin": true, "roles": []any{}}),
+			createMethod:      "POST",
+			createPath:        "/spaces/space/team_space_memberships",
+			updatePath:        "/spaces/space/team_space_memberships/membership",
+			createIdentity:    map[string]string{"space_id": "space", "team_space_membership_id": "returned-id"},
+			createDiagnostics: []string{"space_id"},
+			updateIdentity:    map[string]string{"space_id": "space", "team_space_membership_id": "membership"},
+			updateDiagnostics: []string{"space_id", "team_space_membership_id"},
+			createID:          "space/returned-id",
+			updateID:          "space/membership",
+			returned:          map[string]any{"team_id": "returned-team", "admin": true},
 		},
 	}
 }

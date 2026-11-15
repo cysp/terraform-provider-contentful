@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -23,23 +22,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-//nolint:ireturn
-func livePreviewVariablesProtocolServer(t *testing.T, handler http.Handler) tfprotov6.ProviderServer {
-	t.Helper()
-
-	server := httptest.NewServer(handler)
-	t.Cleanup(server.Close)
-	providerServer, err := makeTestAccProtoV6ProviderFactories(WithContentfulURL(server.URL), WithAccessToken(cmt.ValidAccessToken))["contentful"]()
-	require.NoError(t, err)
-	config, err := providerConfigDynamicValue(map[string]any{"url": server.URL, "access_token": cmt.ValidAccessToken})
-	require.NoError(t, err)
-	response, err := providerServer.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{Config: &config})
-	require.NoError(t, err)
-	require.Empty(t, response.Diagnostics)
-
-	return providerServer
-}
 
 func livePreviewVariablesModelFromDynamicValue(t *testing.T, value *tfprotov6.DynamicValue) LivePreviewVariablesModel {
 	t.Helper()
@@ -108,7 +90,7 @@ func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 
 				body := livePreviewVariablesJSON(t, test.spaceID, test.environmentID, 43, test.variables)
 
-				providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				providerServer := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					requests.Add(1)
 					assert.Equal(t, http.MethodPut, r.Method)
 					assert.Equal(t, "/spaces/space/environments/environment/live_preview/variables", r.URL.Path)
@@ -235,7 +217,7 @@ func runLivePreviewVariablesErrorTest(t *testing.T, operation string, test liveP
 
 	var requests atomic.Int64
 
-	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	providerServer := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
 		assert.Equal(t, "/spaces/space/environments/environment/live_preview/variables", r.URL.Path)
 
@@ -312,7 +294,7 @@ func TestLivePreviewVariablesUnknownInputsDoNotMutate(t *testing.T) {
 
 				var requests atomic.Int64
 
-				providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				providerServer := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 					requests.Add(1)
 					w.WriteHeader(http.StatusInternalServerError)
 				}))
@@ -352,7 +334,7 @@ func TestLivePreviewVariablesUsesDefaultMutationRetryPolicy(t *testing.T) {
 	rateLimitedBody := livePreviewVariablesErrorJSON(t, "RateLimitExceeded", "Rate limited", nil)
 	serverErrorBody := livePreviewVariablesResponseJSON(t, &cm.LivePreviewVariablesServiceError{StatusCode: http.StatusInternalServerError, Error: "Internal Server Error", Message: "Unknown outcome"})
 
-	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	providerServer := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPut, r.Method)
 		assert.Equal(t, "0", r.Header.Get("X-Contentful-Version"))
 		w.Header().Set("Content-Type", "application/json")
@@ -388,7 +370,7 @@ func TestLivePreviewVariablesReadProjectsResponse(t *testing.T) {
 
 			body := livePreviewVariablesJSON(t, "space", "environment", 29, testJSON(map[string]any{"remote": "new"}))
 
-			providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			providerServer := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				requests.Add(1)
 				assert.Equal(t, http.MethodGet, r.Method)
 				assert.Equal(t, "/spaces/space/environments/environment/live_preview/variables", r.URL.Path)
@@ -452,7 +434,7 @@ func TestLivePreviewVariablesMultipleValidationErrorDiagnostics(t *testing.T) {
 		},
 	})))
 
-	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	providerServer := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
 		assert.Equal(t, http.MethodPut, r.Method)
 		assert.Equal(t, "/spaces/space/environments/environment/live_preview/variables", r.URL.Path)
@@ -485,7 +467,7 @@ func TestLivePreviewVariablesReadFeedsTheNextUpdateVersion(t *testing.T) {
 	readBody := livePreviewVariablesJSON(t, "space", "routing-id", 29, testJSON(map[string]any{"remote": map[string]any{"future": []any{true, int64(9007199254740993)}}}))
 	updateBody := livePreviewVariablesJSON(t, "space", "routing-id", 30, testJSON(map[string]any{}))
 
-	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	providerServer := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestNumber := requests.Add(1)
 
 		assert.Equal(t, "/spaces/space/environments/routing-id/live_preview/variables", r.URL.Path)
@@ -534,7 +516,7 @@ func TestLivePreviewVariablesUpdateCanRecreateAnAbsentDocument(t *testing.T) {
 
 	var requests atomic.Int64
 
-	providerServer := livePreviewVariablesProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	providerServer := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
 		assert.Equal(t, http.MethodPut, r.Method)
 		assert.Equal(t, "17", r.Header.Get("X-Contentful-Version"))
