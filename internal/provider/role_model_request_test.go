@@ -125,32 +125,20 @@ func TestRoleRequestRejectsUnresolvedValues(t *testing.T) {
 		},
 		"null policies": {
 			mutate: func(model *RoleModel) {
-				model.Policies = NewTypedListNull[TypedObject[RolePolicyValue]]()
-			},
-			expectedPaths: []string{"policies"},
-		},
-		"unknown policies": {
-			mutate: func(model *RoleModel) {
-				model.Policies = NewTypedListUnknown[TypedObject[RolePolicyValue]]()
+				model.Policies = nil
 			},
 			expectedPaths: []string{"policies"},
 		},
 		"null policy": {
 			mutate: func(model *RoleModel) {
-				model.Policies = NewTypedList([]TypedObject[RolePolicyValue]{NewTypedObjectNull[RolePolicyValue]()})
-			},
-			expectedPaths: []string{"policies[0]"},
-		},
-		"unknown policy": {
-			mutate: func(model *RoleModel) {
-				model.Policies = NewTypedList([]TypedObject[RolePolicyValue]{NewTypedObjectUnknown[RolePolicyValue]()})
+				model.Policies = []*RolePolicyValue{nil}
 			},
 			expectedPaths: []string{"policies[0]"},
 		},
 		"null policy effect": {
 			mutate: func(model *RoleModel) {
 				model.Policies = rolePoliciesWith(RolePolicyValue{
-					Actions:    NewTypedList([]types.String{types.StringValue("read")}),
+					Actions:    []types.String{types.StringValue("read")},
 					Constraint: jsontypes.NewNormalizedNull(),
 					Effect:     types.StringNull(),
 				})
@@ -160,7 +148,7 @@ func TestRoleRequestRejectsUnresolvedValues(t *testing.T) {
 		"unknown policy effect": {
 			mutate: func(model *RoleModel) {
 				model.Policies = rolePoliciesWith(RolePolicyValue{
-					Actions:    NewTypedList([]types.String{types.StringValue("read")}),
+					Actions:    []types.String{types.StringValue("read")},
 					Constraint: jsontypes.NewNormalizedNull(),
 					Effect:     types.StringUnknown(),
 				})
@@ -170,17 +158,7 @@ func TestRoleRequestRejectsUnresolvedValues(t *testing.T) {
 		"null policy actions": {
 			mutate: func(model *RoleModel) {
 				model.Policies = rolePoliciesWith(RolePolicyValue{
-					Actions:    NewTypedListNull[types.String](),
-					Constraint: jsontypes.NewNormalizedNull(),
-					Effect:     types.StringValue("allow"),
-				})
-			},
-			expectedPaths: []string{"policies[0].actions"},
-		},
-		"unknown policy actions": {
-			mutate: func(model *RoleModel) {
-				model.Policies = rolePoliciesWith(RolePolicyValue{
-					Actions:    NewTypedListUnknown[types.String](),
+					Actions:    nil,
 					Constraint: jsontypes.NewNormalizedNull(),
 					Effect:     types.StringValue("allow"),
 				})
@@ -190,7 +168,7 @@ func TestRoleRequestRejectsUnresolvedValues(t *testing.T) {
 		"null policy action": {
 			mutate: func(model *RoleModel) {
 				model.Policies = rolePoliciesWith(RolePolicyValue{
-					Actions:    NewTypedList([]types.String{types.StringValue("read"), types.StringNull()}),
+					Actions:    []types.String{types.StringValue("read"), types.StringNull()},
 					Constraint: jsontypes.NewNormalizedNull(),
 					Effect:     types.StringValue("allow"),
 				})
@@ -200,7 +178,7 @@ func TestRoleRequestRejectsUnresolvedValues(t *testing.T) {
 		"unknown policy action": {
 			mutate: func(model *RoleModel) {
 				model.Policies = rolePoliciesWith(RolePolicyValue{
-					Actions:    NewTypedList([]types.String{types.StringValue("read"), types.StringUnknown()}),
+					Actions:    []types.String{types.StringValue("read"), types.StringUnknown()},
 					Constraint: jsontypes.NewNormalizedNull(),
 					Effect:     types.StringValue("allow"),
 				})
@@ -210,7 +188,7 @@ func TestRoleRequestRejectsUnresolvedValues(t *testing.T) {
 		"unknown policy constraint": {
 			mutate: func(model *RoleModel) {
 				model.Policies = rolePoliciesWith(RolePolicyValue{
-					Actions:    NewTypedList([]types.String{types.StringValue("read")}),
+					Actions:    []types.String{types.StringValue("read")},
 					Constraint: jsontypes.NewNormalizedUnknown(),
 					Effect:     types.StringValue("allow"),
 				})
@@ -242,7 +220,7 @@ func TestRoleRequestAggregatesParentDiagnostics(t *testing.T) {
 	model.Name = types.StringUnknown()
 	model.Description = types.StringUnknown()
 	model.Permissions = nil
-	model.Policies = NewTypedListUnknown[TypedObject[RolePolicyValue]]()
+	model.Policies = nil
 
 	request, diags := model.ToRoleData()
 
@@ -277,7 +255,7 @@ func TestRoleRequestRejectsAllCombinedWithOtherValues(t *testing.T) {
 
 			_, diags := ToRoleDataPoliciesItemActions(
 				path.Root("policies").AtListIndex(0).AtName("actions"),
-				NewTypedListFromStringSlice(values),
+				roleStringValues(values),
 			)
 
 			require.True(t, diags.HasError())
@@ -333,7 +311,7 @@ func TestRoleRequestEncodesPermissionValuesAndPolicyActions(t *testing.T) {
 			)
 			policyActions, policyDiags := ToRoleDataPoliciesItemActions(
 				path.Root("policies").AtListIndex(0).AtName("actions"),
-				NewTypedListFromStringSlice(test.policyActions),
+				roleStringValues(test.policyActions),
 			)
 
 			require.Empty(t, permissionDiags)
@@ -404,15 +382,15 @@ func validRoleRequestModel() RoleModel {
 			"ContentModel": {types.StringValue("read")},
 		},
 		Policies: rolePoliciesWith(RolePolicyValue{
-			Actions:    NewTypedList([]types.String{types.StringValue("read")}),
+			Actions:    []types.String{types.StringValue("read")},
 			Constraint: jsontypes.NewNormalizedNull(),
 			Effect:     types.StringValue("allow"),
 		}),
 	}
 }
 
-func rolePoliciesWith(policy RolePolicyValue) TypedList[TypedObject[RolePolicyValue]] {
-	return NewTypedList([]TypedObject[RolePolicyValue]{NewTypedObject(policy)})
+func rolePoliciesWith(policy RolePolicyValue) []*RolePolicyValue {
+	return []*RolePolicyValue{&policy}
 }
 
 func roleStringValues(values []string) []types.String {

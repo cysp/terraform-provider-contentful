@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []cm.RolePoliciesItem) (TypedList[TypedObject[RolePolicyValue]], diag.Diagnostics) {
+func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, policies []cm.RolePoliciesItem) ([]*RolePolicyValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	policiesValues := make([]TypedObject[RolePolicyValue], len(policies))
+	policiesValues := make([]*RolePolicyValue, len(policies))
 
 	for index, item := range policies {
 		path := path.AtListIndex(index)
@@ -24,12 +24,10 @@ func NewPoliciesListValueFromResponse(ctx context.Context, path path.Path, polic
 		policiesValues[index] = policiesValue
 	}
 
-	policiesListValue := NewTypedList(policiesValues)
-
-	return policiesListValue, diags
+	return policiesValues, diags
 }
 
-func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.RolePoliciesItem) (TypedObject[RolePolicyValue], diag.Diagnostics) {
+func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.RolePoliciesItem) (*RolePolicyValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	effect, err := item.Effect.MarshalText()
@@ -41,7 +39,7 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 		effectValue = types.StringValue(string(effect))
 	}
 
-	value := RolePolicyValue{
+	value := &RolePolicyValue{
 		Effect: effectValue,
 	}
 
@@ -61,27 +59,25 @@ func NewPoliciesValueFromResponse(ctx context.Context, path path.Path, item cm.R
 		value.Constraint = jsontypes.NewNormalizedNull()
 	}
 
-	object := NewTypedObject(value)
-
-	return object, diags
+	return value, diags
 }
 
-func NewPolicyActionsListValueFromResponse(_ context.Context, path path.Path, actions cm.RolePoliciesItemActions) (TypedList[types.String], diag.Diagnostics) {
+func NewPolicyActionsListValueFromResponse(_ context.Context, path path.Path, actions cm.RolePoliciesItemActions) ([]types.String, diag.Diagnostics) {
 	switch actions.Type {
 	case cm.StringRolePoliciesItemActions:
-		actionsValues := make([]types.String, 1)
-		actionsValues[0] = types.StringValue(actions.String)
-
-		actionsListValue := NewTypedList(actionsValues)
-
-		return actionsListValue, nil
+		return []types.String{types.StringValue(actions.String)}, nil
 
 	case cm.StringArrayRolePoliciesItemActions:
-		return NewTypedListFromStringSlice(actions.StringArray), nil
+		values := make([]types.String, len(actions.StringArray))
+		for index, value := range actions.StringArray {
+			values[index] = types.StringValue(value)
+		}
+
+		return values, nil
 	}
 
 	diags := diag.Diagnostics{}
 	diags.AddAttributeWarning(path, "Unsupported policy actions", "Contentful returned an unsupported policy action shape. Terraform state retains a known null list; a later request conversion will reject it until configured with a supported shape.")
 
-	return NewTypedListNull[types.String](), diags
+	return nil, diags
 }

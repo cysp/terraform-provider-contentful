@@ -17,16 +17,8 @@ func TestRolePermissionValuesAndPolicyActionsFromResponse(t *testing.T) {
 	t.Parallel()
 
 	permissionPath := path.Root("permissions").AtMapKey("ContentModel")
-	values, diagnostics := NewPermissionValuesListValueFromResponse(t.Context(), permissionPath, cm.NewStringRolePermissionsItem("all"))
-	assert.Empty(t, diagnostics)
-	assert.Equal(t, []types.String{types.StringValue("all")}, values)
-	values, diagnostics = NewPermissionValuesListValueFromResponse(t.Context(), permissionPath, cm.RolePermissionsItem{})
-	assert.False(t, diagnostics.HasError())
-	require.Len(t, diagnostics.Warnings(), 1)
-	diagnostic, ok := diagnostics.Warnings()[0].(diag.DiagnosticWithPath)
-	require.True(t, ok)
-	assert.Equal(t, permissionPath, diagnostic.Path())
-	assert.Nil(t, values)
+	assertRoleStringListFromResponse(t, permissionPath, cm.NewStringRolePermissionsItem("all"), NewPermissionValuesListValueFromResponse, false)
+	assertRoleStringListFromResponse(t, permissionPath, cm.RolePermissionsItem{}, NewPermissionValuesListValueFromResponse, true)
 
 	policyActionsPath := path.Root("policies").AtListIndex(0).AtName("actions")
 	assertRoleStringListFromResponse(t, policyActionsPath, cm.NewStringRolePoliciesItemActions("all"), NewPolicyActionsListValueFromResponse, false)
@@ -47,14 +39,14 @@ func TestRolePolicyResponsePreservesUnknownEffect(t *testing.T) {
 	diagnostic, ok := diags.Warnings()[0].(diag.DiagnosticWithPath)
 	require.True(t, ok)
 	assert.Equal(t, valuePath.AtName("effect"), diagnostic.Path())
-	assert.True(t, actual.Value().Effect.IsNull())
+	assert.True(t, actual.Effect.IsNull())
 }
 
 func assertRoleStringListFromResponse[T any](
 	t *testing.T,
 	valuePath path.Path,
 	input T,
-	convert func(context.Context, path.Path, T) (TypedList[types.String], diag.Diagnostics),
+	convert func(context.Context, path.Path, T) ([]types.String, diag.Diagnostics),
 	expectWarning bool,
 ) {
 	t.Helper()
@@ -67,11 +59,11 @@ func assertRoleStringListFromResponse[T any](
 		diagnostic, ok := diags.Warnings()[0].(diag.DiagnosticWithPath)
 		require.True(t, ok)
 		assert.Equal(t, valuePath, diagnostic.Path())
-		assert.True(t, actual.IsNull())
+		assert.Nil(t, actual)
 
 		return
 	}
 
 	assert.Empty(t, diags)
-	assert.Equal(t, NewTypedList([]types.String{types.StringValue("all")}), actual)
+	assert.Equal(t, []types.String{types.StringValue("all")}, actual)
 }

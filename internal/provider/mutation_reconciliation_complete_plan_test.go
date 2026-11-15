@@ -186,9 +186,9 @@ func completeRoleMutationPlan() RoleModel {
 		Permissions: map[string][]types.String{
 			"Entry": {types.StringValue("read"), types.StringValue("create")},
 		},
-		Policies: NewTypedList([]TypedObject[RolePolicyValue]{
+		Policies: []*RolePolicyValue{
 			rolePolicyValue("allow", []string{"read", "create"}, jsontypes.NewNormalizedValue(`{"b":2,"a":1}`)),
-		}),
+		},
 		Timeouts: TimeoutsNull(),
 	}
 }
@@ -367,7 +367,7 @@ func TestCompleteRolePlanRestoresCanonicalisedEquivalentResponse(t *testing.T) {
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
 	assert.Equal(t, plan.Permissions, state.Permissions)
-	assert.True(t, state.Policies.Equal(plan.Policies))
+	assert.Equal(t, plan.Policies, state.Policies)
 }
 
 func TestCompleteRolePlanRejectsIndependentAttributeContradictions(t *testing.T) {

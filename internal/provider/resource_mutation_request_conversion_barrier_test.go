@@ -215,7 +215,7 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 				Permissions: map[string][]types.String{
 					"ContentModel": {types.StringValue("all"), types.StringValue("read")},
 				},
-				Policies: NewTypedList([]TypedObject[RolePolicyValue]{}),
+				Policies: []*RolePolicyValue{},
 				Timeouts: TimeoutsNull(),
 			},
 			resourceSchema: RoleResourceSchema(ctx),

@@ -11,19 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToRoleDataPolicies(path path.Path, policies TypedList[TypedObject[RolePolicyValue]]) ([]cm.RoleDataPoliciesItem, diag.Diagnostics) {
+func ToRoleDataPolicies(path path.Path, policies []*RolePolicyValue) ([]cm.RoleDataPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	switch {
-	case policies.IsUnknown():
-		diags.AddAttributeError(
-			path,
-			"Unexpected unknown policies",
-			"Policies must be known before they can be sent to Contentful.",
-		)
-
-		return nil, diags
-	case policies.IsNull():
+	if policies == nil {
 		diags.AddAttributeError(
 			path,
 			"Unexpected null policies",
@@ -33,11 +24,9 @@ func ToRoleDataPolicies(path path.Path, policies TypedList[TypedObject[RolePolic
 		return nil, diags
 	}
 
-	policiesValues := policies.Elements()
+	rolePoliciesItems := make([]cm.RoleDataPoliciesItem, 0, len(policies))
 
-	rolePoliciesItems := make([]cm.RoleDataPoliciesItem, 0, len(policiesValues))
-
-	for index, policiesValueElement := range policiesValues {
+	for index, policiesValueElement := range policies {
 		itemPath := path.AtListIndex(index)
 
 		policiesItem, policiesItemDiags := ToRoleDataPoliciesItem(itemPath, policiesValueElement)
@@ -55,35 +44,26 @@ func ToRoleDataPolicies(path path.Path, policies TypedList[TypedObject[RolePolic
 	return rolePoliciesItems, diags
 }
 
-func ToRoleDataPoliciesItem(path path.Path, policy TypedObject[RolePolicyValue]) (cm.RoleDataPoliciesItem, diag.Diagnostics) {
+func ToRoleDataPoliciesItem(path path.Path, policy *RolePolicyValue) (cm.RoleDataPoliciesItem, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	policyValue, ok := policy.GetValue()
-	if !ok {
-		if policy.IsUnknown() {
-			diags.AddAttributeError(
-				path,
-				"Unexpected unknown policy",
-				"The policy must be known before it can be sent to Contentful.",
-			)
-		} else {
-			diags.AddAttributeError(
-				path,
-				"Unexpected null policy",
-				"Null policies cannot be sent to Contentful.",
-			)
-		}
+	if policy == nil {
+		diags.AddAttributeError(
+			path,
+			"Unexpected null policy",
+			"Null policies cannot be sent to Contentful.",
+		)
 
 		return cm.RoleDataPoliciesItem{}, diags
 	}
 
-	effect, effectDiags := requestRequiredString(policyValue.Effect, path.AtName("effect"))
+	effect, effectDiags := requestRequiredString(policy.Effect, path.AtName("effect"))
 	diags.Append(effectDiags...)
 
-	actions, actionsDiags := ToRoleDataPoliciesItemActions(path.AtName("actions"), policyValue.Actions)
+	actions, actionsDiags := ToRoleDataPoliciesItemActions(path.AtName("actions"), policy.Actions)
 	diags.Append(actionsDiags...)
 
-	constraint, constraintDiags := ToOptRoleDataPoliciesItemConstraint(path.AtName("constraint"), policyValue.Constraint)
+	constraint, constraintDiags := ToOptRoleDataPoliciesItemConstraint(path.AtName("constraint"), policy.Constraint)
 	diags.Append(constraintDiags...)
 
 	if diags.HasError() {
@@ -97,19 +77,10 @@ func ToRoleDataPoliciesItem(path path.Path, policy TypedObject[RolePolicyValue])
 	}, diags
 }
 
-func ToRoleDataPoliciesItemActions(path path.Path, actions TypedList[types.String]) (cm.RoleDataPoliciesItemActions, diag.Diagnostics) {
+func ToRoleDataPoliciesItemActions(path path.Path, actions []types.String) (cm.RoleDataPoliciesItemActions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	switch {
-	case actions.IsUnknown():
-		diags.AddAttributeError(
-			path,
-			"Unexpected unknown policy actions",
-			"Policy actions must be known before they can be sent to Contentful.",
-		)
-
-		return cm.RoleDataPoliciesItemActions{}, diags
-	case actions.IsNull():
+	if actions == nil {
 		diags.AddAttributeError(
 			path,
 			"Unexpected null policy actions",
@@ -119,7 +90,7 @@ func ToRoleDataPoliciesItemActions(path path.Path, actions TypedList[types.Strin
 		return cm.RoleDataPoliciesItemActions{}, diags
 	}
 
-	actionsStrings, actionDiags := knownStringListElements(path, actions.Elements())
+	actionsStrings, actionDiags := knownStringListElements(path, actions)
 	diags.Append(actionDiags...)
 
 	if actionDiags.HasError() {

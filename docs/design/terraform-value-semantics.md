@@ -460,6 +460,14 @@ and the unchanged transition is a no-op.
 
 ### Role mutation decisions
 
+Role resource and data-source models use native maps, slices, and policy pointers
+with Framework scalar values. Nil containers and pointers represent null;
+allocated empty containers remain known empty values. Whole-container and
+whole-policy unknown values fail with attribute-path diagnostics during model
+decoding. Unknown scalar children remain representable and are rejected by
+request conversion before mutation. Role has no model-decoding planning hook;
+adding one would require a representation that preserves deferred containers.
+
 | Attribute | Schema and identity | Config, effective Plan, and prior State | Response projection and equivalence | State and diagnostic |
 | --- | --- | --- | --- | --- |
 | `id` | Computed legacy identity | Config cannot set it. Create Plan is unknown; Update may preserve prior State. | Derived as `space_id/role_id`; no independent CMA field. | Use the endpoint-derived identity. If a known Plan `id` conflicts with that identity, retain the endpoint identity and add an `id` error. |
