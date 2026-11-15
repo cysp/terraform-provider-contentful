@@ -96,3 +96,83 @@ func TestMutationVersionPublicationPreservesFailureBoundaries(t *testing.T) {
 		})
 	}
 }
+
+func TestMutationEndpointPublicationPreservesFailureBoundaries(t *testing.T) {
+	t.Parallel()
+
+	for name, test := range map[string]struct {
+		responseID      string
+		encodingFails   bool
+		privateFails    bool
+		expectedVersion string
+	}{
+		"confirmed endpoint":                   {responseID: "target", expectedVersion: "42"},
+		"contradictory endpoint":               {responseID: "other"},
+		"failed version write":                 {responseID: "target", privateFails: true, expectedVersion: "17"},
+		"failed revocation keeps diagnostic":   {responseID: "other", privateFails: true, expectedVersion: "17"},
+		"encoding failure prevents revocation": {responseID: "other", encodingFails: true, expectedVersion: "17"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			identity, state := emptyPublicationTargets()
+
+			attributes := []string{"id"}
+			if test.encodingFails {
+				attributes = []string{"missing"}
+			}
+
+			writes := 0
+			private := &publicationPrivateData{data: map[string][]byte{"version": []byte("17")}, write: func(key string, _ []byte) diag.Diagnostics {
+				writes++
+
+				assert.Equal(t, "version", key)
+
+				var stateModel publicationStateModel
+
+				var identityModel publicationIdentityModel
+
+				require.Empty(t, state.Get(t.Context(), &stateModel))
+				require.Empty(t, identity.Get(t.Context(), &identityModel))
+				assert.Equal(t, types.StringValue("target"), stateModel.ID)
+				assert.Equal(t, types.StringValue("target"), identityModel.ID)
+
+				if test.privateFails {
+					return diag.Diagnostics{diag.NewErrorDiagnostic("Private write failed", "The test storage rejected the version change.")}
+				}
+
+				return nil
+			}}
+			model := publicationStateModel{ID: types.StringValue(test.responseID)}
+			diags := setResourceMutationStateAndVersion(t.Context(), identity, state, private, attributes, &model, "resource", map[string]string{"id": "target"}, 42)
+			assert.Equal(t, test.expectedVersion, string(private.data["version"]))
+			assert.Equal(t, types.StringValue(test.responseID), model.ID)
+
+			if test.encodingFails {
+				require.True(t, diags.HasError())
+				assert.Zero(t, writes)
+				assertPublicationTargetsNull(t, identity, state)
+
+				return
+			}
+
+			assert.Equal(t, 1, writes)
+
+			var summaries []string
+			for _, diagnostic := range diags {
+				summaries = append(summaries, diagnostic.Summary())
+			}
+
+			var expected []string
+			if test.privateFails {
+				expected = append(expected, "Private write failed")
+			}
+
+			if test.responseID == "other" {
+				expected = append(expected, "Contentful returned a different resource identity")
+			}
+
+			assert.Equal(t, expected, summaries)
+		})
+	}
+}
