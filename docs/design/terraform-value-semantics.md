@@ -296,8 +296,8 @@ representation so meaningful remote drift remains visible.
 Mutation recovery retains requested path components in state, structured identity,
 and the legacy multipart ID. Server-generated IDs remain response-owned: a known
 Plan value constrains consistency but does not select a POST target. An explicitly
-supplied App Action creation ID also selects the recovery target, even though it
-travels in the request body. Singleton body IDs, Environment Alias targets, and
+supplied App Action creation ID or validated App Key `jwk.kid` fingerprint also
+selects the recovery target, even though it travels in the request body. Singleton body IDs, Environment Alias targets, and
 related-resource references do not select the addressed endpoint; their value
 reconciliation follows the resource-specific contract. The requested environment
 or alias remains the address; the provider does not infer alias resolution from
