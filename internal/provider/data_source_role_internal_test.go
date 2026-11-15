@@ -41,7 +41,7 @@ func TestRoleDataSourceResponseOrderWarningPaths(t *testing.T) {
 	require.Len(t, items, 2)
 	assert.Equal(t, "item-b", items[0].RoleID.ValueString())
 	assert.Equal(t, "item-a", items[1].RoleID.ValueString())
-	assert.True(t, items[0].Policies.Elements()[0].Value().Effect.IsNull())
+	assert.True(t, items[0].Policies[0].Effect.IsNull())
 }
 
 //nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
@@ -76,10 +76,10 @@ func TestRoleDataSourceProjectionWarningsFromTypedIrregularResponse(t *testing.T
 	assertDiagnosticPath(t, diagnostics.Warnings()[1], root.AtName("policies").AtListIndex(0).AtName("effect"))
 	assertDiagnosticPath(t, diagnostics.Warnings()[2], root.AtName("policies").AtListIndex(0).AtName("actions"))
 	assert.Nil(t, item.Permissions["ContentModel"])
-	assert.True(t, item.Policies.Elements()[0].Value().Actions.IsNull())
-	assert.True(t, item.Policies.Elements()[0].Value().Effect.IsNull())
+	assert.Nil(t, item.Policies[0].Actions)
+	assert.True(t, item.Policies[0].Effect.IsNull())
 	assert.True(t, item.Description.IsNull())
-	assert.True(t, item.Policies.Elements()[0].Value().Constraint.IsNull())
+	assert.True(t, item.Policies[0].Constraint.IsNull())
 }
 
 //nolint:forcetypeassert // Fixture mutations target independently defined object shapes.

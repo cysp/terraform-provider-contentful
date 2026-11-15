@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func roleDataSourceItemAttributes(ctx context.Context) map[string]schema.Attribute {
+func roleDataSourceItemAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"role_id":     schema.StringAttribute{Description: "System ID of the role.", Computed: true},
 		"name":        schema.StringAttribute{Description: "Name of the role.", Computed: true},
@@ -27,22 +27,19 @@ func roleDataSourceItemAttributes(ctx context.Context) map[string]schema.Attribu
 					"actions": schema.ListAttribute{
 						Description: "Actions allowed or denied by this policy. Scalar `\"all\"` is represented as `[\"all\"]`; action order and duplicates are preserved.",
 						ElementType: types.StringType,
-						CustomType:  TypedList[types.String]{}.CustomType(ctx),
 						Computed:    true,
 					},
 					"constraint": schema.StringAttribute{Description: "Normalized JSON constraint, or null when absent.", CustomType: jsontypes.NormalizedType{}, Computed: true},
 					"effect":     schema.StringAttribute{Description: "Policy effect: `allow` or `deny` for the specified actions.", Computed: true},
 				},
-				CustomType: NewTypedObjectUnknown[RolePolicyValue]().CustomType(ctx),
 			},
-			CustomType: TypedList[TypedObject[RolePolicyValue]]{}.CustomType(ctx),
-			Computed:   true,
+			Computed: true,
 		},
 	}
 }
 
 func RoleDataSourceSchema(ctx context.Context) schema.Schema {
-	attributes := roleDataSourceItemAttributes(ctx)
+	attributes := roleDataSourceItemAttributes()
 	attributes["space_id"] = schema.StringAttribute{Description: "ID of the space containing the role.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["role_id"] = schema.StringAttribute{Description: "System ID of the role to look up.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/role_id` form.", Computed: true}
@@ -57,7 +54,7 @@ func RolesDataSourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"space_id": schema.StringAttribute{Description: "ID of the space containing the roles.", Required: true, Validators: []validator.String{discoveryIDValidator{}}},
 			"id":       schema.StringAttribute{Description: "Terraform identifier equal to `space_id`.", Computed: true},
-			"roles":    schema.ListNestedAttribute{Description: "Roles in the order returned by Contentful. An empty collection returns an empty list.", Computed: true, NestedObject: schema.NestedAttributeObject{Attributes: roleDataSourceItemAttributes(ctx)}},
+			"roles":    schema.ListNestedAttribute{Description: "Roles in the order returned by Contentful. An empty collection returns an empty list.", Computed: true, NestedObject: schema.NestedAttributeObject{Attributes: roleDataSourceItemAttributes()}},
 			"timeouts": timeouts.Attributes(ctx),
 		},
 	}

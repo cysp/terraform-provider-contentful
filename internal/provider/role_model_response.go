@@ -84,7 +84,7 @@ func ReconcileRoleMutationResponse(ctx context.Context, role cm.Role, plan RoleM
 
 	if reconciler.compareSemantic(
 		path.Root("policies"), "role policies", "Contentful returned different role policies",
-		plan.Policies.IsUnknown(), policiesDiags,
+		false, policiesDiags,
 		func() (bool, diag.Diagnostics) { return rolePoliciesEquivalent(ctx, plan.Policies, state.Policies) },
 	) {
 		candidateState.Policies = plan.Policies
@@ -112,34 +112,26 @@ func rolePermissionsEquivalent(planned, response map[string][]types.String) bool
 	return true
 }
 
-func rolePoliciesEquivalent(ctx context.Context, planned, response TypedList[TypedObject[RolePolicyValue]]) (bool, diag.Diagnostics) {
-	if planned.Equal(response) {
-		return true, nil
-	}
-
-	if planned.IsNull() || planned.IsUnknown() || response.IsNull() || response.IsUnknown() {
+func rolePoliciesEquivalent(ctx context.Context, planned, response []*RolePolicyValue) (bool, diag.Diagnostics) {
+	if (planned == nil) != (response == nil) {
 		return false, nil
 	}
 
-	return unorderedElementsEquivalent(planned.Elements(), response.Elements(), func(plannedElement, responseElement TypedObject[RolePolicyValue]) (bool, diag.Diagnostics) {
+	return unorderedElementsEquivalent(planned, response, func(plannedElement, responseElement *RolePolicyValue) (bool, diag.Diagnostics) {
 		return rolePolicyEquivalent(ctx, plannedElement, responseElement)
 	})
 }
 
-func rolePolicyEquivalent(ctx context.Context, planned, response TypedObject[RolePolicyValue]) (bool, diag.Diagnostics) {
-	if planned.Equal(response) {
-		return true, nil
+func rolePolicyEquivalent(ctx context.Context, planned, response *RolePolicyValue) (bool, diag.Diagnostics) {
+	if planned == nil || response == nil {
+		return planned == response, nil
 	}
 
-	plannedValue, plannedKnown := planned.GetValue()
-
-	responseValue, responseKnown := response.GetValue()
-	if !plannedKnown || !responseKnown || !plannedValue.Effect.Equal(responseValue.Effect) ||
-		!unorderedStringListsEquivalent(plannedValue.Actions, responseValue.Actions) {
+	if !planned.Effect.Equal(response.Effect) || !roleActionsEquivalent(planned.Actions, response.Actions) {
 		return false, nil
 	}
 
-	return normalizedJSONEquivalent(ctx, plannedValue.Constraint, responseValue.Constraint)
+	return normalizedJSONEquivalent(ctx, planned.Constraint, response.Constraint)
 }
 
 func roleActionsEquivalent(planned, response []types.String) bool {

@@ -15,16 +15,16 @@ type RoleModel struct {
 	IDIdentityModel
 	RoleIdentityModel
 
-	Name        types.String                            `tfsdk:"name"`
-	Description types.String                            `tfsdk:"description"`
-	Permissions map[string][]types.String               `tfsdk:"permissions"`
-	Policies    TypedList[TypedObject[RolePolicyValue]] `tfsdk:"policies"`
+	Name        types.String              `tfsdk:"name"`
+	Description types.String              `tfsdk:"description"`
+	Permissions map[string][]types.String `tfsdk:"permissions"`
+	Policies    []*RolePolicyValue        `tfsdk:"policies"`
 
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 type RolePolicyValue struct {
-	Actions    TypedList[types.String] `tfsdk:"actions"`
-	Constraint jsontypes.Normalized    `tfsdk:"constraint"`
-	Effect     types.String            `tfsdk:"effect"`
+	Actions    []types.String       `tfsdk:"actions"`
+	Constraint jsontypes.Normalized `tfsdk:"constraint"`
+	Effect     types.String         `tfsdk:"effect"`
 }

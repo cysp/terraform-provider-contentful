@@ -41,7 +41,6 @@ func TestModelTypesPreserveNullAndUnknown(t *testing.T) {
 		NewTypedObjectNull[EditorInterfaceEditorLayoutItemGroupItemGroupItemFieldValue]().Type(ctx),
 		NewTypedObjectNull[EditorInterfaceGroupControlValue]().Type(ctx),
 		NewTypedObjectNull[EditorInterfaceSidebarValue]().Type(ctx),
-		NewTypedObjectNull[RolePolicyValue]().Type(ctx),
 		NewTypedObjectNull[WebhookFilterEqualsValue]().Type(ctx),
 		NewTypedObjectNull[WebhookFilterInValue]().Type(ctx),
 		NewTypedObjectNull[WebhookFilterNotValue]().Type(ctx),

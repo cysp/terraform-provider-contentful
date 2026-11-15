@@ -237,7 +237,7 @@ func TestRoleUpdateRequestConversionErrorStopsBeforeMutation(t *testing.T) {
 
 	plannedModel := priorModel
 	plannedModel.Policies = rolePoliciesWith(RolePolicyValue{
-		Actions:    NewTypedList([]types.String{types.StringValue("all"), types.StringValue("read")}),
+		Actions:    []types.String{types.StringValue("all"), types.StringValue("read")},
 		Constraint: jsontypes.NewNormalizedNull(),
 		Effect:     types.StringValue("allow"),
 	})

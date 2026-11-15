@@ -586,9 +586,9 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 	plannedPermissions := map[string][]types.String{
 		"Entry": {types.StringValue("read")},
 	}
-	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{
+	plannedPolicies := []*RolePolicyValue{
 		rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedNull()),
-	})
+	}
 	response := cm.Role{
 		Sys: cm.NewRoleSys("space", "role"),
 		Permissions: cm.RolePermissions{
@@ -606,21 +606,11 @@ func TestRoleMutationStateRejectsLossyPermissionsAndPoliciesProjection(t *testin
 	assert.True(t, consistencyDiags.HasError())
 	assert.Len(t, consistencyDiags.Errors(), 2)
 	assert.NotEqual(t, plannedPermissions, mutationState.Permissions)
-	assert.False(t, mutationState.Policies.Equal(plannedPolicies))
+	assert.NotEqual(t, plannedPolicies, mutationState.Policies)
 
-	unknownPoliciesResponse := response
-	unknownPoliciesResponse.Permissions = cm.RolePermissions{"Entry": cm.NewStringArrayRolePermissionsItem([]string{"read"})}
-	unknownPlanState, unknownPlanDiags, unknownConsistencyDiags, _ := ReconcileRoleMutationResponse(t.Context(), unknownPoliciesResponse, RoleModel{
-		RoleID:      types.StringUnknown(),
-		Name:        types.StringUnknown(),
-		Permissions: plannedPermissions,
-		Policies:    NewTypedListUnknown[TypedObject[RolePolicyValue]](),
-	}, types.StringNull())
-	assert.False(t, unknownPlanDiags.HasError())
-	assert.Empty(t, unknownConsistencyDiags)
-	assert.False(t, unknownPlanState.Policies.IsUnknown())
-	assert.Equal(t, plannedPermissions, unknownPlanState.Permissions)
-	assert.True(t, unknownPlanState.Policies.Elements()[0].Value().Effect.IsNull())
+	assert.Nil(t, mutationState.Permissions["Entry"])
+	assert.Nil(t, mutationState.Policies[0].Actions)
+	assert.True(t, mutationState.Policies[0].Effect.IsNull())
 }
 
 func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testing.T) {
@@ -629,9 +619,9 @@ func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testin
 	plannedPermissions := map[string][]types.String{
 		"Entry": {types.StringValue("read")},
 	}
-	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{
+	plannedPolicies := []*RolePolicyValue{
 		rolePolicyValue("allow", []string{"read", "create"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
-	})
+	}
 	response := cm.Role{
 		Sys:  cm.NewRoleSys("space", "role"),
 		Name: "Response role",
@@ -654,7 +644,7 @@ func TestRoleMutationStateRejectsRepresentablePermissionsContradiction(t *testin
 	assert.Equal(t, []string{"permissions"}, attributeDiagnosticPaths(t, consistencyDiags))
 	assert.Equal(t, "Contentful returned different role permissions", consistencyDiags.Errors()[0].Summary())
 	assert.Equal(t, []types.String{types.StringValue("manage")}, mutationState.Permissions["Entry"])
-	assert.Equal(t, []types.String{types.StringValue("create"), types.StringValue("read")}, mutationState.Policies.Elements()[0].Value().Actions.Elements())
+	assert.Equal(t, []types.String{types.StringValue("create"), types.StringValue("read")}, mutationState.Policies[0].Actions)
 	assert.Equal(t, "Response role", mutationState.Name.ValueString())
 }
 
@@ -664,10 +654,10 @@ func TestRoleMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *testing
 	plannedPermissions := map[string][]types.String{
 		"Entry": {types.StringValue("read"), types.StringValue("create"), types.StringValue("read")},
 	}
-	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{
+	plannedPolicies := []*RolePolicyValue{
 		rolePolicyValue("allow", []string{"read", "create"}, jsontypes.NewNormalizedValue(`{"b":2,"a":1}`)),
 		rolePolicyValue("deny", []string{"delete"}, jsontypes.NewNormalizedNull()),
-	})
+	}
 	response := cm.Role{
 		Sys:  cm.NewRoleSys("space", "role"),
 		Name: "Response role",
@@ -687,7 +677,7 @@ func TestRoleMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *testing
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
 	assert.Equal(t, plannedPermissions, mutationState.Permissions)
-	assert.True(t, mutationState.Policies.Equal(plannedPolicies))
+	assert.Equal(t, plannedPolicies, mutationState.Policies)
 }
 
 func TestRoleMutationStatePreservesDuplicateMultiplicity(t *testing.T) {
@@ -696,7 +686,7 @@ func TestRoleMutationStatePreservesDuplicateMultiplicity(t *testing.T) {
 	plannedPermissions := map[string][]types.String{
 		"Entry": {types.StringValue("read"), types.StringValue("read")},
 	}
-	plannedPolicies := NewTypedList([]TypedObject[RolePolicyValue]{})
+	plannedPolicies := []*RolePolicyValue{}
 	response := cm.Role{
 		Sys: cm.NewRoleSys("space", "role"),
 		Permissions: cm.RolePermissions{
@@ -721,14 +711,14 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 		"Entry": {types.StringValue("read"), types.StringValue("create")},
 	}
 	for name, test := range map[string]struct {
-		planned             []TypedObject[RolePolicyValue]
+		planned             []*RolePolicyValue
 		response            []cm.RolePoliciesItem
 		expectedEffects     []string
 		expectedActions     [][]types.String
 		expectedConstraints []string
 	}{
 		"effect": {
-			planned: []TypedObject[RolePolicyValue]{
+			planned: []*RolePolicyValue{
 				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 			},
 			response: []cm.RolePoliciesItem{
@@ -739,7 +729,7 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 			expectedConstraints: []string{testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}})},
 		},
 		"actions": {
-			planned: []TypedObject[RolePolicyValue]{
+			planned: []*RolePolicyValue{
 				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 			},
 			response: []cm.RolePoliciesItem{
@@ -750,7 +740,7 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 			expectedConstraints: []string{testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}})},
 		},
 		"constraint": {
-			planned: []TypedObject[RolePolicyValue]{
+			planned: []*RolePolicyValue{
 				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 			},
 			response: []cm.RolePoliciesItem{
@@ -761,7 +751,7 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 			expectedConstraints: []string{testJSON(map[string]any{"sys": map[string]any{"type": "Asset"}})},
 		},
 		"duplicate multiplicity": {
-			planned: []TypedObject[RolePolicyValue]{
+			planned: []*RolePolicyValue{
 				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 				rolePolicyValue("allow", []string{"read"}, jsontypes.NewNormalizedValue(testJSON(map[string]any{"sys": map[string]any{"type": "Entry"}}))),
 			},
@@ -777,7 +767,7 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			plannedPolicies := NewTypedList(test.planned)
+			plannedPolicies := test.planned
 			response := cm.Role{
 				Sys:         cm.NewRoleSys("space", "role"),
 				Name:        "Response role",
@@ -792,33 +782,33 @@ func TestRoleMutationStateRejectsRepresentablePolicyContradictions(t *testing.T)
 			assert.Empty(t, responseDiags)
 			require.True(t, consistencyDiags.HasError())
 			assert.Equal(t, []string{"policies"}, attributeDiagnosticPaths(t, consistencyDiags))
-			assert.False(t, mutationState.Policies.Equal(plannedPolicies))
+			assert.NotEqual(t, plannedPolicies, mutationState.Policies)
 			assert.Equal(t, "Response role", mutationState.Name.ValueString())
 			assert.NotEqual(t, plannedPermissions, mutationState.Permissions)
 			assert.Equal(t, []types.String{types.StringValue("create"), types.StringValue("read")}, mutationState.Permissions["Entry"])
-			require.Len(t, mutationState.Policies.Elements(), len(test.expectedEffects))
+			require.Len(t, mutationState.Policies, len(test.expectedEffects))
 
 			for index, expectedEffect := range test.expectedEffects {
-				actualPolicy := mutationState.Policies.Elements()[index].Value()
+				actualPolicy := mutationState.Policies[index]
 				assert.Equal(t, expectedEffect, actualPolicy.Effect.ValueString())
-				assert.Equal(t, test.expectedActions[index], actualPolicy.Actions.Elements())
+				assert.Equal(t, test.expectedActions[index], actualPolicy.Actions)
 				assert.Equal(t, test.expectedConstraints[index], actualPolicy.Constraint.ValueString())
 			}
 		})
 	}
 }
 
-func rolePolicyValue(effect string, actions []string, constraint jsontypes.Normalized) TypedObject[RolePolicyValue] {
+func rolePolicyValue(effect string, actions []string, constraint jsontypes.Normalized) *RolePolicyValue {
 	typedActions := make([]types.String, len(actions))
 	for index, action := range actions {
 		typedActions[index] = types.StringValue(action)
 	}
 
-	return NewTypedObject(RolePolicyValue{
-		Actions:    NewTypedList(typedActions),
+	return &RolePolicyValue{
+		Actions:    typedActions,
 		Constraint: constraint,
 		Effect:     types.StringValue(effect),
-	})
+	}
 }
 
 func rolePolicyResponse(effect string, actions []string, constraint string) cm.RolePoliciesItem {

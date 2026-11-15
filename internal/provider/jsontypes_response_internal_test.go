@@ -46,7 +46,7 @@ func TestResponseJSONNormalization(t *testing.T) {
 					Effect: cm.RolePoliciesItemEffectAllow, Actions: cm.NewStringRolePoliciesItemActions("read"), Constraint: raw,
 				})
 
-				return model.Value().Constraint, diags
+				return model.Constraint, diags
 			},
 		},
 		{

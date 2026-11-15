@@ -29,12 +29,12 @@ func TestRoleMutationReconciliationProperties(t *testing.T) {
 		plan := completeRoleMutationPlan()
 		plan.Permissions = map[string][]types.String{"Entry": roleStringValues(plannedActions)}
 
-		policies := make([]TypedObject[RolePolicyValue], len(plannedEffects))
+		policies := make([]*RolePolicyValue, len(plannedEffects))
 		for index, effect := range plannedEffects {
 			policies[index] = rolePolicyValue(effect, plannedActions, jsontypes.NewNormalizedValue(plannedJSON))
 		}
 
-		plan.Policies = NewTypedList(policies)
+		plan.Policies = policies
 		roleID := "role"
 
 		if rapid.Bool().Draw(t, "generated identity") {
@@ -48,7 +48,7 @@ func TestRoleMutationReconciliationProperties(t *testing.T) {
 		response.Permissions = cm.RolePermissions{"Entry": cm.NewStringArrayRolePermissionsItem(returnedActions)}
 		response.Policies = make([]cm.RolePoliciesItem, len(returnedEffects))
 
-		responsePolicies := make([]TypedObject[RolePolicyValue], len(returnedEffects))
+		responsePolicies := make([]*RolePolicyValue, len(returnedEffects))
 		for index, effect := range returnedEffects {
 			response.Policies[index] = rolePolicyResponse(effect, returnedActions, returnedJSON)
 			responsePolicies[index] = rolePolicyValue(effect, returnedActions, jsontypes.NewNormalizedValue(returnedJSON))
@@ -71,7 +71,7 @@ func TestRoleMutationReconciliationProperties(t *testing.T) {
 			Name:        plan.Name,
 			Description: plan.Description,
 			Permissions: map[string][]types.String{"Entry": roleStringValues(returnedActions)},
-			Policies:    NewTypedList(responsePolicies),
+			Policies:    responsePolicies,
 		}
 
 		var expectedPath string
@@ -95,7 +95,7 @@ func TestRoleMutationReconciliationProperties(t *testing.T) {
 				responsePolicies[index] = rolePolicyValue(effect, returnedActions, jsontypes.NewNormalizedValue(returnedJSON))
 			}
 
-			expected.Policies = NewTypedList(responsePolicies)
+			expected.Policies = responsePolicies
 			expectedPath = "policies"
 		case 2:
 			index := rapid.IntRange(0, len(response.Policies)-1).Draw(t, "policy index")
@@ -103,13 +103,13 @@ func TestRoleMutationReconciliationProperties(t *testing.T) {
 			changed[0] = "create"
 			response.Policies[index].Actions = cm.NewStringArrayRolePoliciesItemActions(changed)
 			responsePolicies[index] = rolePolicyValue(returnedEffects[index], changed, jsontypes.NewNormalizedValue(returnedJSON))
-			expected.Policies = NewTypedList(responsePolicies)
+			expected.Policies = responsePolicies
 			expectedPath = "policies"
 		case 3:
 			index := rapid.IntRange(0, len(response.Policies)-1).Draw(t, "policy index")
 			response.Policies[index].Constraint = []byte(reversedJSON)
 			responsePolicies[index] = rolePolicyValue(returnedEffects[index], returnedActions, jsontypes.NewNormalizedValue(reversedJSON))
-			expected.Policies = NewTypedList(responsePolicies)
+			expected.Policies = responsePolicies
 			expectedPath = "policies"
 		case 4:
 			response.Name += " changed"

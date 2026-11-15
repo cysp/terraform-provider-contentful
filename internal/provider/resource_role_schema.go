@@ -124,11 +124,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 			"policies": schema.ListNestedAttribute{
 				Description: "Policies that allow or deny actions on selected resources, such as Entries of a specific content type or values in a specific locale.",
 				NestedObject: schema.NestedAttributeObject{
-					Attributes: RolePolicyValue{}.SchemaAttributes(ctx),
-					CustomType: NewTypedObjectUnknown[RolePolicyValue]().CustomType(ctx),
+					Attributes: RolePolicyValue{}.SchemaAttributes(),
 				},
-				CustomType: TypedList[TypedObject[RolePolicyValue]]{}.CustomType(ctx),
-				Required:   true,
+				Required: true,
 				Validators: []validator.List{
 					listvalidator.NoNullValues(),
 				},
@@ -138,12 +136,11 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 	}
 }
 
-func (v RolePolicyValue) SchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+func (v RolePolicyValue) SchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"actions": schema.ListAttribute{
 			Description: "Actions that the policy allows or denies. Terraform `[\"all\"]` sends Contentful’s scalar `\"all\"`, which aliases the content actions `read`, `create`, `update`, `delete`, `archive`, `unarchive`, `publish`, and `unpublish`; use `[\"access\"]` for environment access. `\"all\"` must be the only action in the list.",
 			ElementType: types.StringType,
-			CustomType:  TypedList[types.String]{}.CustomType(ctx),
 			Required:    true,
 			Validators: []validator.List{
 				listvalidator.NoNullValues(),
