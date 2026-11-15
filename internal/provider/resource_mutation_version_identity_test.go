@@ -2,109 +2,43 @@ package provider_test
 
 import (
 	"encoding/json"
+	"maps"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"sync/atomic"
 	"testing"
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// The existing request fixtures supply valid Terraform models; the response
-// fixtures contain independently written contradictory identities and version 73.
+// Each mutation supplies its own valid prior state, planned changes, and an
+// independently authored contradictory response with version 73.
 func TestVersionedMutationsRejectVersionFromContradictoryIdentity(t *testing.T) {
 	t.Parallel()
 
-	endpoints := map[string]string{
-		"contentful_taxonomy_concept":        "/organizations/organization-id/taxonomy/concepts/concept",
-		"contentful_taxonomy_concept_scheme": "/organizations/organization-id/taxonomy/concept-schemes/scheme",
-		"contentful_live_preview_variables":  "/spaces/space/environments/environment/live_preview/variables",
-		"contentful_content_type":            "/spaces/space/environments/environment/content_types/content-type",
-		"contentful_entry":                   "/spaces/space/environments/environment/entries/entry",
-		"contentful_preview_environment":     "/spaces/space/preview_environments/preview",
-		"contentful_delivery_api_key":        "/spaces/space/api_keys/key",
-		"contentful_webhook":                 "/spaces/space/webhook_definitions/webhook",
-		"contentful_extension":               "/spaces/space/environments/environment/extensions/extension",
-		"contentful_space_enablements":       "/spaces/space/enablements",
-		"contentful_role":                    "/spaces/space/roles/role",
-		"contentful_team":                    "/organizations/organization/teams/team",
-		"contentful_environment":             "/spaces/space/environments/environment",
-		"contentful_environment_alias":       "/spaces/space/environment_aliases/alias",
-		"contentful_editor_interface":        "/spaces/space/environments/environment/content_types/content-type/editor_interface",
-		"contentful_locale":                  "/spaces/space/environments/environment/locales/locale",
-		"contentful_tag":                     "/spaces/space/environments/environment/tags/tag",
-	}
-
-	bodies := make(map[string]map[string]any)
-	for _, fixture := range readEndpointCases(t) {
-		bodies["contentful_"+fixture.name] = fixture.body
-	}
-
-	concept := taxonomyConceptDeleteState()
-	concept.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Prior")})
-	changedConcept := concept
-	changedConcept.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Planned")})
-	scheme := taxonomyConceptSchemeDeleteState()
-	scheme.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Prior")})
-	changedScheme := scheme
-	changedScheme.PrefLabel = types.MapValueMust(types.StringType, map[string]attr.Value{"en-US": types.StringValue("Planned")})
-	cases := append(requiredPrivateVersionResourceCases(t),
-		requiredPrivateVersionResourceCase{name: "taxonomy concept update", typeName: "contentful_taxonomy_concept", resourceSchema: TaxonomyConceptResourceSchema(t.Context()), model: concept, plannedModel: changedConcept},
-		requiredPrivateVersionResourceCase{name: "taxonomy concept scheme update", typeName: "contentful_taxonomy_concept_scheme", resourceSchema: TaxonomyConceptSchemeResourceSchema(t.Context()), model: scheme, plannedModel: changedScheme},
-	)
-	methods := map[string]string{"contentful_taxonomy_concept": http.MethodPatch, "contentful_taxonomy_concept_scheme": http.MethodPatch}
-
-	for _, test := range cases {
-		if test.delete {
-			continue
-		}
-
+	for _, test := range versionedMutationIdentityCases(t) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			body, found := bodies[test.typeName]
-			require.True(t, found)
-			endpoint, found := endpoints[test.typeName]
-			require.True(t, found)
-
-			method := http.MethodPut
-			if configured, exists := methods[test.typeName]; exists {
-				method = configured
-			}
-
 			var requests atomic.Int64
 
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			protocol := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				requests.Add(1)
-				assert.Equal(t, method, r.Method)
-				assert.Equal(t, endpoint, r.URL.Path)
+				assert.Equal(t, test.method, r.Method)
+				assert.Equal(t, test.endpoint, r.URL.Path)
 				assert.Equal(t, "31", r.Header.Get("X-Contentful-Version"))
 				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write([]byte(testJSON(body)))
+				_, _ = w.Write([]byte(testJSON(test.body)))
 			}))
-			t.Cleanup(server.Close)
-			protocol, err := makeTestAccProtoV6ProviderFactories(WithContentfulURL(server.URL), WithAccessToken("test-token"))["contentful"]()
-			require.NoError(t, err)
-			configuration, err := providerConfigDynamicValue(map[string]any{"url": server.URL, "access_token": "test-token"})
-			require.NoError(t, err)
-			configured, err := protocol.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{Config: &configuration})
-			require.NoError(t, err)
-			require.Empty(t, configured.Diagnostics)
-			prior := resourceModelDynamicValue(t, test.resourceSchema, test.model)
-
-			plannedModel := test.model
-			if test.plannedModel != nil {
-				plannedModel = test.plannedModel
-			}
-
-			plan := resourceModelDynamicValue(t, test.resourceSchema, plannedModel)
+			prior := mutationEndpointDynamicValue(t, test.schema, test.prior)
+			planned := maps.Clone(test.prior)
+			maps.Copy(planned, test.changes)
+			plan := mutationEndpointDynamicValue(t, test.schema, planned)
 			response, err := protocol.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: test.typeName, PriorState: &prior, PlannedState: &plan, Config: &plan, PlannedPrivate: privateVersionBytes(t, 31)})
 			require.NoError(t, err)
 			require.EqualValues(t, 1, requests.Load(), response.Diagnostics)
@@ -136,6 +70,128 @@ func TestVersionedMutationsRejectVersionFromContradictoryIdentity(t *testing.T) 
 	}
 }
 
+type versionedMutationIdentityCase struct {
+	name, typeName, method, endpoint string
+	schema                           schema.Schema
+	prior, changes, body             map[string]any
+}
+
+func versionedMutationIdentityCases(t *testing.T) []versionedMutationIdentityCase {
+	t.Helper()
+	ctx := t.Context()
+
+	return []versionedMutationIdentityCase{
+		{
+			name: "live preview variables update", typeName: "contentful_live_preview_variables", method: http.MethodPut,
+			endpoint: "/spaces/space/environments/environment/live_preview/variables", schema: LivePreviewVariablesResourceSchema(ctx),
+			prior:   map[string]any{"id": "space/environment", "space_id": "space", "environment_id": "environment", "variables": testJSON(map[string]any{})},
+			changes: map[string]any{"variables": testJSON(map[string]any{"updated": "value"})},
+			body:    readEndpointBody("LivePreviewVariables", map[string]any{"variables": map[string]any{"returned": "value"}}),
+		},
+		{
+			name: "content type update", typeName: "contentful_content_type", method: http.MethodPut,
+			endpoint: "/spaces/space/environments/environment/content_types/content-type", schema: ContentTypeResourceSchema(ctx),
+			prior:   map[string]any{"id": "space/environment/content-type", "space_id": "space", "environment_id": "environment", "content_type_id": "content-type", "name": "Prior", "description": "A test content type", "display_field": "title", "fields": []any{map[string]any{"id": "title", "name": "Title", "type": "Symbol", "required": true, "localized": false, "disabled": false, "omitted": false, "validations": []any{}}}, "published_version": 1},
+			changes: map[string]any{"name": "Planned"},
+			body:    readEndpointBody("ContentType", map[string]any{"name": "Returned", "displayField": nil, "fields": []any{}}),
+		},
+		{
+			name: "entry update", typeName: "contentful_entry", method: http.MethodPut,
+			endpoint: "/spaces/space/environments/environment/entries/entry", schema: EntryResourceSchema(ctx),
+			prior:   map[string]any{"id": "space/environment/entry", "space_id": "space", "environment_id": "environment", "entry_id": "entry", "content_type_id": "content-type", "fields": map[string]any{}, "metadata": map[string]any{"concepts": []any{}, "tags": []any{}}},
+			changes: map[string]any{"fields": map[string]any{"managed": testJSON(map[string]any{"en-US": "changed"})}},
+			body:    readEndpointBody("Entry", map[string]any{"fields": map[string]any{}}),
+		},
+		{
+			name: "preview environment update", typeName: "contentful_preview_environment", method: http.MethodPut,
+			endpoint: "/spaces/space/preview_environments/preview", schema: PreviewEnvironmentResourceSchema(ctx),
+			prior:   map[string]any{"id": "space/preview", "space_id": "space", "preview_environment_id": "preview", "name": "Prior", "description": "", "content_type_configurations": map[string]any{"page": map[string]any{"url": "https://preview.invalid/page"}}},
+			changes: map[string]any{"name": "Planned"},
+			body:    readEndpointBody("PreviewEnvironment", map[string]any{"name": "Returned", "description": "", "configurations": []any{}}),
+		},
+		{
+			name: "delivery API key update", typeName: "contentful_delivery_api_key", method: http.MethodPut,
+			endpoint: "/spaces/space/api_keys/key", schema: DeliveryAPIKeyResourceSchema(ctx),
+			prior: map[string]any{"id": "space/key", "space_id": "space", "api_key_id": "key", "name": "Key", "environments": []any{}, "access_token": "redacted", "preview_api_key_id": "preview"},
+			body:  readEndpointBody("ApiKey", map[string]any{"name": "Returned", "description": "", "accessToken": "returned-token", "environments": []any{}, "preview_api_key": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "PreviewApiKey", "id": "preview"}}}),
+		},
+		{
+			name: "webhook update", typeName: "contentful_webhook", method: http.MethodPut,
+			endpoint: "/spaces/space/webhook_definitions/webhook", schema: WebhookResourceSchema(ctx),
+			prior: map[string]any{"id": "space/webhook", "space_id": "space", "webhook_id": "webhook", "name": "Prior", "url": "https://example.com/webhook", "active": true},
+			body:  readEndpointBody("WebhookDefinition", map[string]any{"name": "Returned", "url": "https://example.test/returned", "topics": []any{"Entry.delete"}}),
+		},
+		{
+			name: "extension update", typeName: "contentful_extension", method: http.MethodPut,
+			endpoint: "/spaces/space/environments/environment/extensions/extension", schema: ExtensionResourceSchema(ctx),
+			prior: map[string]any{"id": "space/environment/extension", "space_id": "space", "environment_id": "environment", "extension_id": "extension", "extension": map[string]any{"name": "Prior", "srcdoc": "<p>planned</p>", "field_types": []any{}, "sidebar": false}},
+			body:  readEndpointBody("Extension", map[string]any{"extension": map[string]any{"name": "Returned", "srcdoc": "<p>returned</p>", "fieldTypes": []any{}, "sidebar": false}}),
+		},
+		{
+			name: "space enablements update", typeName: "contentful_space_enablements", method: http.MethodPut,
+			endpoint: "/spaces/space/enablements", schema: SpaceEnablementsResourceSchema(ctx),
+			prior: map[string]any{"id": "space", "space_id": "space", "cross_space_links": false, "space_templates": false, "studio_experiences": false, "suggest_concepts": false},
+			body:  readEndpointBody("SpaceEnablement", map[string]any{"crossSpaceLinks": map[string]any{"enabled": true}, "spaceTemplates": map[string]any{"enabled": true}}),
+		},
+		{
+			name: "role update", typeName: "contentful_role", method: http.MethodPut,
+			endpoint: "/spaces/space/roles/role", schema: RoleResourceSchema(ctx),
+			prior: map[string]any{"id": "space/role", "space_id": "space", "role_id": "role", "name": "Prior", "permissions": map[string]any{"ContentModel": []any{"read"}}, "policies": []any{map[string]any{"actions": []any{"read"}, "effect": "allow"}}},
+			body:  readEndpointBody("Role", map[string]any{"name": "Returned", "permissions": map[string]any{}}),
+		},
+		{
+			name: "team update", typeName: "contentful_team", method: http.MethodPut,
+			endpoint: "/organizations/organization/teams/team", schema: TeamResourceSchema(ctx),
+			prior: map[string]any{"id": "organization/team", "organization_id": "organization", "team_id": "team", "name": "Team"},
+			body:  readEndpointBody("Team", map[string]any{"name": "Returned", "description": ""}),
+		},
+		{
+			name: "environment update", typeName: "contentful_environment", method: http.MethodPut,
+			endpoint: "/spaces/space/environments/environment", schema: EnvironmentResourceSchema(ctx),
+			prior: map[string]any{"id": "space/environment", "space_id": "space", "environment_id": "environment", "name": "Environment", "status": "ready"},
+			body:  readEndpointBody("Environment", map[string]any{"name": "Returned"}),
+		},
+		{
+			name: "environment alias update", typeName: "contentful_environment_alias", method: http.MethodPut,
+			endpoint: "/spaces/space/environment_aliases/alias", schema: EnvironmentAliasResourceSchema(ctx),
+			prior: map[string]any{"id": "space/alias", "space_id": "space", "environment_alias_id": "alias", "target_environment_id": "environment"},
+			body:  readEndpointBody("EnvironmentAlias", map[string]any{"environment": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "returned-target"}}}),
+		},
+		{
+			name: "editor interface update", typeName: "contentful_editor_interface", method: http.MethodPut,
+			endpoint: "/spaces/space/environments/environment/content_types/content-type/editor_interface", schema: EditorInterfaceResourceSchema(ctx),
+			prior: map[string]any{"id": "space/environment/content-type", "space_id": "space", "environment_id": "environment", "content_type_id": "content-type"},
+			body:  readEndpointBody("EditorInterface", map[string]any{"controls": []any{}}),
+		},
+		{
+			name: "locale update", typeName: "contentful_locale", method: http.MethodPut,
+			endpoint: "/spaces/space/environments/environment/locales/locale", schema: LocaleResourceSchema(ctx),
+			prior: map[string]any{"id": "space/environment/locale", "space_id": "space", "environment_id": "environment", "locale_id": "locale", "name": "English (Australia)", "code": "en-AU", "content_delivery_api": true, "content_management_api": true, "optional": false, "default": false},
+			body:  readEndpointBody("Locale", map[string]any{"name": "Returned", "code": "en-US", "fallbackCode": nil, "default": false, "contentDeliveryApi": true, "contentManagementApi": true, "optional": true}),
+		},
+		{
+			name: "tag update", typeName: "contentful_tag", method: http.MethodPut,
+			endpoint: "/spaces/space/environments/environment/tags/tag", schema: TagResourceSchema(ctx),
+			prior: map[string]any{"id": "space/environment/tag", "space_id": "space", "environment_id": "environment", "tag_id": "tag", "name": "Tag", "visibility": "private"},
+			body:  readEndpointBody("Tag", map[string]any{"name": "Returned"}),
+		},
+		{
+			name: "taxonomy concept update", typeName: "contentful_taxonomy_concept", method: http.MethodPatch,
+			endpoint: "/organizations/organization-id/taxonomy/concepts/concept", schema: TaxonomyConceptResourceSchema(ctx),
+			prior:   map[string]any{"id": "organization-id/concept", "organization_id": "organization-id", "concept_id": "concept", "pref_label": map[string]any{"en-US": "Prior"}},
+			changes: map[string]any{"pref_label": map[string]any{"en-US": "Planned"}},
+			body:    readEndpointBody("TaxonomyConcept", map[string]any{"prefLabel": map[string]any{"en-US": "Returned"}, "conceptSchemes": []any{}}),
+		},
+		{
+			name: "taxonomy concept scheme update", typeName: "contentful_taxonomy_concept_scheme", method: http.MethodPatch,
+			endpoint: "/organizations/organization-id/taxonomy/concept-schemes/scheme", schema: TaxonomyConceptSchemeResourceSchema(ctx),
+			prior:   map[string]any{"id": "organization-id/scheme", "organization_id": "organization-id", "concept_scheme_id": "scheme", "pref_label": map[string]any{"en-US": "Prior"}},
+			changes: map[string]any{"pref_label": map[string]any{"en-US": "Planned"}},
+			body:    readEndpointBody("TaxonomyConceptScheme", map[string]any{"prefLabel": map[string]any{"en-US": "Returned"}, "topConcepts": []any{}, "concepts": []any{}, "totalConcepts": 0}),
+		},
+	}
+}
+
 func TestPendingLifecycleMutationsRevokeAuthorityOnIdentityContradiction(t *testing.T) {
 	t.Parallel()
 
@@ -153,7 +209,7 @@ func TestPendingLifecycleMutationsRevokeAuthorityOnIdentityContradiction(t *test
 		},
 	}
 
-	for _, fixture := range requiredPrivateVersionResourceCases(t) {
+	for _, fixture := range versionedMutationIdentityCases(t) {
 		test, ok := cases[fixture.typeName]
 		if !ok {
 			continue
@@ -169,12 +225,14 @@ func TestPendingLifecycleMutationsRevokeAuthorityOnIdentityContradiction(t *test
 			t.Run(fixture.typeName+"/"+stage.name, func(t *testing.T) {
 				t.Parallel()
 
-				plannedModel, retryModel := fixture.plannedModel, fixture.model
+				plannedModel := maps.Clone(fixture.prior)
+				maps.Copy(plannedModel, fixture.changes)
+				retryModel := fixture.prior
 				endpoint := test.endpoint
 
 				if stage.publish {
 					// An unchanged Plan consumes the existing marker without a draft PUT.
-					plannedModel, retryModel = fixture.model, fixture.plannedModel
+					plannedModel, retryModel = fixture.prior, plannedModel
 					endpoint += "/published"
 				}
 
@@ -183,7 +241,7 @@ func TestPendingLifecycleMutationsRevokeAuthorityOnIdentityContradiction(t *test
 
 				var requests atomic.Int64
 
-				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				protocol := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					requests.Add(1)
 					assert.Equal(t, http.MethodPut, r.Method)
 					assert.Equal(t, endpoint, r.URL.Path)
@@ -191,16 +249,8 @@ func TestPendingLifecycleMutationsRevokeAuthorityOnIdentityContradiction(t *test
 					w.Header().Set("Content-Type", "application/json")
 					_, _ = w.Write(body)
 				}))
-				t.Cleanup(server.Close)
-				protocol, err := makeTestAccProtoV6ProviderFactories(WithContentfulURL(server.URL), WithAccessToken("test-token"))["contentful"]()
-				require.NoError(t, err)
-				configuration, err := providerConfigDynamicValue(map[string]any{"url": server.URL, "access_token": "test-token"})
-				require.NoError(t, err)
-				configured, err := protocol.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{Config: &configuration})
-				require.NoError(t, err)
-				require.Empty(t, configured.Diagnostics)
-				prior := resourceModelDynamicValue(t, fixture.resourceSchema, fixture.model)
-				plan := resourceModelDynamicValue(t, fixture.resourceSchema, plannedModel)
+				prior := mutationEndpointDynamicValue(t, fixture.schema, fixture.prior)
+				plan := mutationEndpointDynamicValue(t, fixture.schema, plannedModel)
 				private, err := json.Marshal(map[string][]byte{"version": []byte("31"), test.pendingKey: []byte("31")})
 				require.NoError(t, err)
 
@@ -225,7 +275,7 @@ func TestPendingLifecycleMutationsRevokeAuthorityOnIdentityContradiction(t *test
 				require.NotNil(t, response.NewIdentity)
 
 				// A different Plan requires another write, rather than a state-only no-op.
-				retryPlan := resourceModelDynamicValue(t, fixture.resourceSchema, retryModel)
+				retryPlan := mutationEndpointDynamicValue(t, fixture.schema, retryModel)
 				retry, err := protocol.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{
 					TypeName: fixture.typeName, PriorState: response.NewState, PlannedIdentity: response.NewIdentity,
 					PlannedState: &retryPlan, Config: &retryPlan, PlannedPrivate: response.Private,
@@ -262,9 +312,9 @@ func pendingLifecycleIdentityResponse(typeName string, publish bool) map[string]
 	} else {
 		sys["type"], sys["id"], sys["publishedVersion"] = "ContentType", "content-type", 1
 
-		body["name"], body["description"], body["displayField"] = "Test", "A test content type", "title"
+		body["name"], body["description"], body["displayField"] = "Prior", "A test content type", "title"
 		if !publish {
-			body["name"] = "Changed content type"
+			body["name"] = "Planned"
 		}
 
 		body["fields"] = []any{map[string]any{

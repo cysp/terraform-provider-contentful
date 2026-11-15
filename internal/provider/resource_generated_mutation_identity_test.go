@@ -5,11 +5,12 @@ import (
 	"io"
 	"maps"
 	"net/http"
-	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -23,24 +24,40 @@ import (
 func TestGeneratedMutationIdentityRemainsResponseOwnedAcrossPlanConstraints(t *testing.T) {
 	t.Parallel()
 
-	cases := map[string]struct{ attribute, createPath, deletePath, id string }{
-		"contentful_preview_environment": {"preview_environment_id", "/spaces/space/preview_environments", "/spaces/space/preview_environments/allocated", "space/allocated"},
-		"contentful_role":                {"role_id", "/spaces/space/roles", "/spaces/space/roles/allocated", "space/allocated"},
-		"contentful_webhook":             {"webhook_id", "/spaces/space/webhook_definitions", "/spaces/space/webhook_definitions/allocated", "space/allocated"},
-		"contentful_locale":              {"locale_id", "/spaces/space/environments/environment/locales", "/spaces/space/environments/environment/locales/allocated", "space/environment/allocated"},
+	cases := []struct {
+		typeName, attribute, createPath, deletePath, id string
+		schema                                          schema.Schema
+		plan, body                                      map[string]any
+		omitConfiguredID                                bool
+	}{
+		{
+			typeName: "contentful_preview_environment", attribute: "preview_environment_id", schema: PreviewEnvironmentResourceSchema(t.Context()),
+			createPath: "/spaces/space/preview_environments", deletePath: "/spaces/space/preview_environments/allocated", id: "space/allocated",
+			plan:             map[string]any{"space_id": "space", "name": "Preview", "description": "", "content_type_configurations": map[string]any{"page": map[string]any{"url": "https://preview.invalid/page"}}},
+			body:             readEndpointBody("PreviewEnvironment", map[string]any{"name": "Returned", "description": "", "configurations": []any{}}),
+			omitConfiguredID: true,
+		},
+		{
+			typeName: "contentful_role", attribute: "role_id", schema: RoleResourceSchema(t.Context()),
+			createPath: "/spaces/space/roles", deletePath: "/spaces/space/roles/allocated", id: "space/allocated",
+			plan: map[string]any{"space_id": "space", "name": "Role", "permissions": map[string]any{"ContentModel": []any{"read"}}, "policies": []any{map[string]any{"actions": []any{"read"}, "effect": "allow"}}},
+			body: readEndpointBody("Role", map[string]any{"name": "Returned", "permissions": map[string]any{}}),
+		},
+		{
+			typeName: "contentful_webhook", attribute: "webhook_id", schema: WebhookResourceSchema(t.Context()),
+			createPath: "/spaces/space/webhook_definitions", deletePath: "/spaces/space/webhook_definitions/allocated", id: "space/allocated",
+			plan: map[string]any{"space_id": "space", "name": "Webhook", "url": "https://example.com/webhook", "active": true},
+			body: readEndpointBody("WebhookDefinition", map[string]any{"name": "Returned", "url": "https://example.test/returned", "topics": []any{"Entry.delete"}}),
+		},
+		{
+			typeName: "contentful_locale", attribute: "locale_id", schema: LocaleResourceSchema(t.Context()),
+			createPath: "/spaces/space/environments/environment/locales", deletePath: "/spaces/space/environments/environment/locales/allocated", id: "space/environment/allocated",
+			plan: map[string]any{"space_id": "space", "environment_id": "environment", "name": "English (Australia)", "code": "en-AU", "content_delivery_api": true, "content_management_api": true, "optional": false, "default": false},
+			body: readEndpointBody("Locale", map[string]any{"name": "Returned", "code": "en-US", "fallbackCode": nil, "default": false, "contentDeliveryApi": true, "contentManagementApi": true, "optional": true}),
+		},
 	}
 
-	bodies := make(map[string]map[string]any)
-	for _, fixture := range readEndpointCases(t) {
-		bodies["contentful_"+fixture.name] = fixture.body
-	}
-
-	for _, fixture := range requiredPrivateVersionResourceCases(t) {
-		test, ok := cases[fixture.typeName]
-		if !ok || fixture.delete {
-			continue
-		}
-
+	for _, test := range cases {
 		for _, constraint := range []struct {
 			name          string
 			value         types.String
@@ -50,10 +67,12 @@ func TestGeneratedMutationIdentityRemainsResponseOwnedAcrossPlanConstraints(t *t
 			{"null", types.StringNull(), true},
 			{"unknown", types.StringUnknown(), false},
 		} {
-			t.Run(fixture.typeName+"/"+constraint.name, func(t *testing.T) {
+			t.Run(test.typeName+"/"+constraint.name, func(t *testing.T) {
 				t.Parallel()
 
-				body := maps.Clone(bodies[fixture.typeName])
+				var creates, deletes atomic.Int64
+
+				body := maps.Clone(test.body)
 				sys, ok := body["sys"].(map[string]any)
 				require.True(t, ok)
 
@@ -62,9 +81,10 @@ func TestGeneratedMutationIdentityRemainsResponseOwnedAcrossPlanConstraints(t *t
 				sys["id"] = "allocated"
 				sys["space"] = map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Space", "id": "space"}}
 				sys["environment"] = map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Environment", "id": "environment"}}
-				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				protocol := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					switch r.Method {
 					case http.MethodPost:
+						creates.Add(1)
 						assert.Equal(t, test.createPath, r.URL.Path)
 						request, err := io.ReadAll(r.Body)
 						assert.NoError(t, err)
@@ -76,6 +96,7 @@ func TestGeneratedMutationIdentityRemainsResponseOwnedAcrossPlanConstraints(t *t
 						w.WriteHeader(http.StatusCreated)
 						_, _ = w.Write([]byte(testJSON(body)))
 					case http.MethodDelete:
+						deletes.Add(1)
 						assert.Equal(t, test.deletePath, r.URL.Path)
 						w.WriteHeader(http.StatusNoContent)
 					default:
@@ -83,31 +104,27 @@ func TestGeneratedMutationIdentityRemainsResponseOwnedAcrossPlanConstraints(t *t
 						w.WriteHeader(http.StatusBadRequest)
 					}
 				}))
-				t.Cleanup(server.Close)
-				protocol, err := makeTestAccProtoV6ProviderFactories(WithContentfulURL(server.URL), WithAccessToken("test-token"))["contentful"]()
+				prior := nullResourceDynamicValue(t, test.schema)
+				input := mutationEndpointDynamicValue(t, test.schema, test.plan)
+				raw, err := input.Unmarshal(test.schema.Type().TerraformType(t.Context()))
 				require.NoError(t, err)
-				config, err := providerConfigDynamicValue(map[string]any{"url": server.URL, "access_token": "test-token"})
-				require.NoError(t, err)
-				configured, err := protocol.ConfigureProvider(t.Context(), &tfprotov6.ConfigureProviderRequest{Config: &config})
-				require.NoError(t, err)
-				require.Empty(t, configured.Diagnostics)
-				prior := nullResourceDynamicValue(t, fixture.resourceSchema)
-				frameworkPlan := tfsdk.Plan{Schema: fixture.resourceSchema}
-				require.Empty(t, frameworkPlan.Set(t.Context(), fixture.model))
+
+				frameworkPlan := tfsdk.Plan{Schema: test.schema, Raw: raw}
 				require.Empty(t, frameworkPlan.SetAttribute(t.Context(), path.Root("id"), types.StringUnknown()))
 				require.Empty(t, frameworkPlan.SetAttribute(t.Context(), path.Root(test.attribute), constraint.value))
-				planned, err := tfprotov6.NewDynamicValue(fixture.resourceSchema.Type().TerraformType(t.Context()), frameworkPlan.Raw)
+				planned, err := tfprotov6.NewDynamicValue(test.schema.Type().TerraformType(t.Context()), frameworkPlan.Raw)
 				require.NoError(t, err)
 				// Preview endpoint selection follows Config presence while effective Plan
 				// values remain consistency constraints for the generated result.
-				if fixture.typeName == "contentful_preview_environment" {
+				if test.omitConfiguredID {
 					require.Empty(t, frameworkPlan.SetAttribute(t.Context(), path.Root(test.attribute), types.StringNull()))
 				}
 
-				configuration, err := tfprotov6.NewDynamicValue(fixture.resourceSchema.Type().TerraformType(t.Context()), frameworkPlan.Raw)
+				configuration, err := tfprotov6.NewDynamicValue(test.schema.Type().TerraformType(t.Context()), frameworkPlan.Raw)
 				require.NoError(t, err)
-				response, err := protocol.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: fixture.typeName, PriorState: &prior, PlannedState: &planned, Config: &configuration})
+				response, err := protocol.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: test.typeName, PriorState: &prior, PlannedState: &planned, Config: &configuration})
 				require.NoError(t, err)
+				require.EqualValues(t, 1, creates.Load(), response.Diagnostics)
 
 				foundIDError := false
 
@@ -119,10 +136,10 @@ func TestGeneratedMutationIdentityRemainsResponseOwnedAcrossPlanConstraints(t *t
 
 				assert.Equal(t, constraint.expectIDError, foundIDError, "only unknown Plan IDs are unconstrained")
 				require.NotNil(t, response.NewState)
-				raw, err := response.NewState.Unmarshal(fixture.resourceSchema.Type().TerraformType(t.Context()))
+				raw, err = response.NewState.Unmarshal(test.schema.Type().TerraformType(t.Context()))
 				require.NoError(t, err)
 
-				state := tfsdk.State{Schema: fixture.resourceSchema, Raw: raw}
+				state := tfsdk.State{Schema: test.schema, Raw: raw}
 
 				var id, allocated types.String
 				require.Empty(t, state.GetAttribute(t.Context(), path.Root("id"), &id))
@@ -133,9 +150,10 @@ func TestGeneratedMutationIdentityRemainsResponseOwnedAcrossPlanConstraints(t *t
 				var private map[string][]byte
 				require.NoError(t, json.Unmarshal(response.Private, &private))
 				assert.Equal(t, "73", string(private["version"]), "the generated object confirmed its endpoint")
-				deleted, err := protocol.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: fixture.typeName, PriorState: response.NewState, PlannedState: &prior, Config: &prior, PlannedPrivate: response.Private})
+				deleted, err := protocol.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: test.typeName, PriorState: response.NewState, PlannedState: &prior, Config: &prior, PlannedPrivate: response.Private})
 				require.NoError(t, err)
 				assert.Empty(t, deleted.Diagnostics)
+				assert.EqualValues(t, 1, deletes.Load(), "the allocated object must be deleted")
 			})
 		}
 	}
