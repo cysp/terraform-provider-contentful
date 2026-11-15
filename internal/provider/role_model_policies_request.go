@@ -97,7 +97,6 @@ func ToRoleDataPoliciesItem(path path.Path, policy TypedObject[RolePolicyValue])
 	}, diags
 }
 
-//nolint:dupl // Policy actions and permission values require distinct domain terminology and diagnostics.
 func ToRoleDataPoliciesItemActions(path path.Path, actions TypedList[types.String]) (cm.RoleDataPoliciesItemActions, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 

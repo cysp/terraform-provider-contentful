@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, permissions cm.RolePermissions) (TypedMap[TypedList[types.String]], diag.Diagnostics) {
+func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, permissions cm.RolePermissions) (map[string][]types.String, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	permissionsValuesMap := make(map[string]TypedList[types.String], len(permissions))
+	permissionsValuesMap := make(map[string][]types.String, len(permissions))
 
 	for permission, item := range permissions {
 		path := path.AtMapKey(permission)
@@ -23,27 +23,25 @@ func NewPermissionsMapValueFromResponse(ctx context.Context, path path.Path, per
 		permissionsValuesMap[permission] = permissionValuesListValue
 	}
 
-	permissionsMapValue := NewTypedMap(permissionsValuesMap)
-
-	return permissionsMapValue, diags
+	return permissionsValuesMap, diags
 }
 
-func NewPermissionValuesListValueFromResponse(_ context.Context, path path.Path, item cm.RolePermissionsItem) (TypedList[types.String], diag.Diagnostics) {
+func NewPermissionValuesListValueFromResponse(_ context.Context, path path.Path, item cm.RolePermissionsItem) ([]types.String, diag.Diagnostics) {
 	switch item.Type {
 	case cm.StringRolePermissionsItem:
-		permissionValues := make([]types.String, 1)
-		permissionValues[0] = types.StringValue(item.String)
-
-		permissionValuesListValue := NewTypedList(permissionValues)
-
-		return permissionValuesListValue, nil
+		return []types.String{types.StringValue(item.String)}, nil
 
 	case cm.StringArrayRolePermissionsItem:
-		return NewTypedListFromStringSlice(item.StringArray), nil
+		values := make([]types.String, len(item.StringArray))
+		for index, value := range item.StringArray {
+			values[index] = types.StringValue(value)
+		}
+
+		return values, nil
 	}
 
 	diags := diag.Diagnostics{}
 	diags.AddAttributeWarning(path, "Unsupported permission value", "Contentful returned an unsupported permission value representation. Terraform state retains a known null list; a later request conversion will reject it until configured with a supported representation.")
 
-	return NewTypedListNull[types.String](), diags
+	return nil, diags
 }

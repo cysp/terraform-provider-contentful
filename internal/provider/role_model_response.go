@@ -74,7 +74,7 @@ func ReconcileRoleMutationResponse(ctx context.Context, role cm.Role, plan RoleM
 
 	if reconciler.compareSemantic(
 		path.Root("permissions"), "role permissions", "Contentful returned different role permissions",
-		plan.Permissions.IsUnknown(), permissionsDiags,
+		false, permissionsDiags,
 		func() (bool, diag.Diagnostics) {
 			return rolePermissionsEquivalent(plan.Permissions, state.Permissions), nil
 		},
@@ -97,25 +97,14 @@ func ReconcileRoleMutationResponse(ctx context.Context, role cm.Role, plan RoleM
 	return state, responseDiags, reconciler.diagnostics, !reconciler.identityMismatch
 }
 
-func rolePermissionsEquivalent(planned, response TypedMap[TypedList[types.String]]) bool {
-	if planned.Equal(response) {
-		return true
-	}
-
-	if planned.IsNull() || planned.IsUnknown() || response.IsNull() || response.IsUnknown() {
+func rolePermissionsEquivalent(planned, response map[string][]types.String) bool {
+	if (planned == nil) != (response == nil) || len(planned) != len(response) {
 		return false
 	}
 
-	plannedElements := planned.Elements()
-
-	responseElements := response.Elements()
-	if len(plannedElements) != len(responseElements) {
-		return false
-	}
-
-	for name, plannedActions := range plannedElements {
-		responseActions, ok := responseElements[name]
-		if !ok || !unorderedStringListsEquivalent(plannedActions, responseActions) {
+	for name, plannedActions := range planned {
+		responseActions, ok := response[name]
+		if !ok || !roleActionsEquivalent(plannedActions, responseActions) {
 			return false
 		}
 	}
@@ -151,4 +140,16 @@ func rolePolicyEquivalent(ctx context.Context, planned, response TypedObject[Rol
 	}
 
 	return normalizedJSONEquivalent(ctx, plannedValue.Constraint, responseValue.Constraint)
+}
+
+func roleActionsEquivalent(planned, response []types.String) bool {
+	if (planned == nil) != (response == nil) {
+		return false
+	}
+
+	equivalent, _ := unorderedElementsEquivalent(planned, response, func(plannedElement, responseElement types.String) (bool, diag.Diagnostics) {
+		return plannedElement.Equal(responseElement), nil
+	})
+
+	return equivalent
 }

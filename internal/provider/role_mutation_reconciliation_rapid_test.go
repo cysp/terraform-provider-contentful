@@ -27,7 +27,7 @@ func TestRoleMutationReconciliationProperties(t *testing.T) {
 		returnedEffects := rapid.Permutation(effects).Draw(t, "returned policies")
 
 		plan := completeRoleMutationPlan()
-		plan.Permissions = NewTypedMap(map[string]TypedList[types.String]{"Entry": NewTypedListFromStringSlice(plannedActions)})
+		plan.Permissions = map[string][]types.String{"Entry": roleStringValues(plannedActions)}
 
 		policies := make([]TypedObject[RolePolicyValue], len(plannedEffects))
 		for index, effect := range plannedEffects {
@@ -70,7 +70,7 @@ func TestRoleMutationReconciliationProperties(t *testing.T) {
 			SpaceID:         types.StringValue("space"), RoleID: types.StringValue(roleID),
 			Name:        plan.Name,
 			Description: plan.Description,
-			Permissions: NewTypedMap(map[string]TypedList[types.String]{"Entry": NewTypedListFromStringSlice(returnedActions)}),
+			Permissions: map[string][]types.String{"Entry": roleStringValues(returnedActions)},
 			Policies:    NewTypedList(responsePolicies),
 		}
 
@@ -82,7 +82,7 @@ func TestRoleMutationReconciliationProperties(t *testing.T) {
 			changed[0] = "create"
 			changed = rapid.Permutation(changed).Draw(t, "changed permissions")
 			response.Permissions["Entry"] = cm.NewStringArrayRolePermissionsItem(changed)
-			expected.Permissions = NewTypedMap(map[string]TypedList[types.String]{"Entry": NewTypedListFromStringSlice(changed)})
+			expected.Permissions = map[string][]types.String{"Entry": roleStringValues(changed)}
 			expectedPath = "permissions"
 		case 1:
 			// Change one duplicate policy, preserving length and the set of effects.

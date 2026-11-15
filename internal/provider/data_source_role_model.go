@@ -9,7 +9,7 @@ type RoleDataSourceItemModel struct {
 	RoleID      types.String                            `tfsdk:"role_id"`
 	Name        types.String                            `tfsdk:"name"`
 	Description types.String                            `tfsdk:"description"`
-	Permissions TypedMap[TypedList[types.String]]       `tfsdk:"permissions"`
+	Permissions map[string][]types.String               `tfsdk:"permissions"`
 	Policies    TypedList[TypedObject[RolePolicyValue]] `tfsdk:"policies"`
 }
 

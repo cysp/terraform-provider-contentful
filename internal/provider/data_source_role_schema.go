@@ -17,8 +17,7 @@ func roleDataSourceItemAttributes(ctx context.Context) map[string]schema.Attribu
 		"description": schema.StringAttribute{Description: "Description of the role, or null when absent.", Computed: true},
 		"permissions": schema.MapAttribute{
 			Description: "Permission names mapped to value lists. Contentful's scalar `\"all\"` appears as `[\"all\"]`; empty lists and duplicate values are preserved.",
-			ElementType: NewTypedListNull[types.String]().Type(ctx),
-			CustomType:  NewTypedMapNull[TypedList[types.String]]().CustomType(ctx),
+			ElementType: types.ListType{ElemType: types.StringType},
 			Computed:    true,
 		},
 		"policies": schema.ListNestedAttribute{

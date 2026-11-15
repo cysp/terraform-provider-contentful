@@ -17,8 +17,16 @@ func TestRolePermissionValuesAndPolicyActionsFromResponse(t *testing.T) {
 	t.Parallel()
 
 	permissionPath := path.Root("permissions").AtMapKey("ContentModel")
-	assertRoleStringListFromResponse(t, permissionPath, cm.NewStringRolePermissionsItem("all"), NewPermissionValuesListValueFromResponse, false)
-	assertRoleStringListFromResponse(t, permissionPath, cm.RolePermissionsItem{}, NewPermissionValuesListValueFromResponse, true)
+	values, diagnostics := NewPermissionValuesListValueFromResponse(t.Context(), permissionPath, cm.NewStringRolePermissionsItem("all"))
+	assert.Empty(t, diagnostics)
+	assert.Equal(t, []types.String{types.StringValue("all")}, values)
+	values, diagnostics = NewPermissionValuesListValueFromResponse(t.Context(), permissionPath, cm.RolePermissionsItem{})
+	assert.False(t, diagnostics.HasError())
+	require.Len(t, diagnostics.Warnings(), 1)
+	diagnostic, ok := diagnostics.Warnings()[0].(diag.DiagnosticWithPath)
+	require.True(t, ok)
+	assert.Equal(t, permissionPath, diagnostic.Path())
+	assert.Nil(t, values)
 
 	policyActionsPath := path.Root("policies").AtListIndex(0).AtName("actions")
 	assertRoleStringListFromResponse(t, policyActionsPath, cm.NewStringRolePoliciesItemActions("all"), NewPolicyActionsListValueFromResponse, false)
