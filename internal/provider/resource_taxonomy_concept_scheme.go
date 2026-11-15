@@ -263,6 +263,12 @@ func (r *taxonomyConceptSchemeResource) Delete(ctx context.Context, req resource
 			return
 		}
 
+		if scheme.Sys.Organization.Sys.ID != organizationID || scheme.Sys.ID != schemeID {
+			resp.Diagnostics.AddError("Unexpected Contentful taxonomy read identity", "The response identity differs from the taxonomy endpoint requested before deletion. No deletion was attempted. Refresh the resource successfully before retrying.")
+
+			return
+		}
+
 		priorStateVersion = scheme.Sys.Version
 	}
 

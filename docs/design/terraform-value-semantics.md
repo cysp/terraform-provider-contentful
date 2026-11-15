@@ -764,8 +764,10 @@ Terraform does not supply prior private data to Delete while replacing a
 tainted resource. This applies both to recovery state published alongside an
 errored Create and to a resource manually marked tainted after successful
 updates. Only when private version data is genuinely absent, Delete performs
-one GET for the requested resource and sends its `sys.version` in the DELETE
-request. A 404 from this GET means the resource is already absent. This narrow
+one GET for the requested resource and validates its organization and resource
+identity before using its `sys.version` in the DELETE request. A contradictory
+response stops deletion and retains state for a subsequent confirmed read. A 404
+from this GET means the resource is already absent. This narrow
 apply-time fallback lets tainted replacement delete resources above version
 `1`; a concurrent change between GET and DELETE still produces CMA
 `VersionMismatch` instead of a blind deletion. Valid private data takes the
