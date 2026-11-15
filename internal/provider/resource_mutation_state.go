@@ -66,3 +66,28 @@ func setResourceMutationState(
 
 	return diags, reconciler.diagnostics
 }
+
+// setResourceMutationStateAndVersion publishes recovery state and identity before
+// recording or revoking the version. Encoding errors leave private data unchanged;
+// private-write errors do not suppress the response's identity contradictions.
+func setResourceMutationStateAndVersion(
+	ctx context.Context,
+	identity *tfsdk.ResourceIdentity,
+	state *tfsdk.State,
+	private PrivateProviderData,
+	identityAttributeNames []string,
+	stateModel any,
+	resourceName string,
+	endpoint map[string]string,
+	version int,
+) diag.Diagnostics {
+	diags, identityDiags := setResourceMutationState(ctx, identity, state, identityAttributeNames, stateModel, resourceName, endpoint)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(setResourceMutationVersion(ctx, private, version, !identityDiags.HasError())...)
+	diags.Append(identityDiags...)
+
+	return diags
+}

@@ -106,15 +106,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data, "team", map[string]string{"organization_id": params.OrganizationID})
-	resp.Diagnostics.Append(stateDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceMutationVersion(ctx, resp.Private, version, !identityDiags.HasError())...)
-	resp.Diagnostics.Append(identityDiags...)
+	resp.Diagnostics.Append(setResourceMutationStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, teamIdentityAttributeNames(), &data, "team", map[string]string{"organization_id": params.OrganizationID}, version)...)
 }
 
 //nolint:dupl
@@ -247,15 +239,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	data.Timeouts = plan.Timeouts
 
-	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, teamIdentityAttributeNames(), &data, "team", map[string]string{"organization_id": params.OrganizationID, "team_id": params.TeamID})
-	resp.Diagnostics.Append(stateDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(setResourceMutationVersion(ctx, resp.Private, version, !identityDiags.HasError())...)
-	resp.Diagnostics.Append(identityDiags...)
+	resp.Diagnostics.Append(setResourceMutationStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, teamIdentityAttributeNames(), &data, "team", map[string]string{"organization_id": params.OrganizationID, "team_id": params.TeamID}, version)...)
 }
 
 //nolint:dupl
