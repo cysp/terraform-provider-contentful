@@ -1,16 +1,20 @@
 package provider_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
+	"regexp"
 	"sync"
 	"sync/atomic"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,47 +26,55 @@ func TestAccTeamResourceIdentityContradictionPreservesRecoveryState(t *testing.T
 		t.Run(operation, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			testTeamIdentityRecovery(t, operation)
+		})
+	}
+}
 
-			adapter := &mutationJSONResponseAdapter{delegate: server}
+func testTeamIdentityRecovery(t *testing.T, operation string) {
+	t.Helper()
 
-			var (
-				requestsMu sync.Mutex
-				requests   []string
-			)
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
 
-			httpServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				requestsMu.Lock()
+	adapter := &mutationJSONResponseAdapter{delegate: server}
 
-				requests = append(requests, r.Method+" "+r.URL.Path+" version="+r.Header.Get("X-Contentful-Version"))
-				requestsMu.Unlock()
-				adapter.ServeHTTP(w, r)
-			}))
-			t.Cleanup(httpServer.Close)
-			runtime := newTerraformTestRuntime(t)
-			runtime.providerURL = httpServer.URL
+	var (
+		requestsMu sync.Mutex
+		requests   []string
+	)
 
-			config := func(name string) string {
-				return fmt.Sprintf(`resource "contentful_team" "test" {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestsMu.Lock()
+
+		requests = append(requests, r.Method+" "+r.URL.Path+" version="+r.Header.Get("X-Contentful-Version"))
+		requestsMu.Unlock()
+		adapter.ServeHTTP(w, r)
+	})
+
+	config := func(name string) string {
+		return fmt.Sprintf(`resource "contentful_team" "test" {
  organization_id = "org"
  name = %q
  description = ""
 }`, name)
-			}
-			if operation == "update" {
-				runtime.writeConfig(t, config("Prior"))
-				output, err := runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
-				require.NoError(t, err, output)
-			}
+	}
 
-			method := http.MethodPost
-			if operation == "update" {
-				method = http.MethodPut
-			}
+	var steps []resource.TestStep
 
-			var createdID atomic.Value
+	if operation == "update" {
+		steps = append(steps, resource.TestStep{Config: config("Prior")})
+	}
 
+	method := http.MethodPost
+	if operation == "update" {
+		method = http.MethodPut
+	}
+
+	var createdID atomic.Value
+
+	steps = append(steps, resource.TestStep{
+		PreConfig: func() {
 			adapter.mutateNext(method, func(response map[string]any) {
 				sys, ok := response["sys"].(map[string]any)
 				if !assert.True(t, ok) {
@@ -81,92 +93,96 @@ func TestAccTeamResourceIdentityContradictionPreservesRecoveryState(t *testing.T
 
 				sys["organization"] = map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": "other-organization"}}
 			})
-			runtime.writeConfig(t, config("Planned"))
-			output, err := runtime.run(t.Context(), "apply", "-auto-approve", "-input=false", "-no-color")
-			require.Error(t, err, output)
-			assert.Contains(t, output, "Contentful returned a different team identity")
+		},
+		Config:      config("Planned"),
+		ExpectError: regexp.MustCompile(`Contentful returned a different team identity`),
+	})
 
+	checkID := func(prefix string) knownvalue.Check {
+		return knownvalue.StringFunc(func(value string) error {
 			teamID, ok := createdID.Load().(string)
-			require.True(t, ok, "mutation response adapter did not run")
-			require.NotEmpty(t, teamID)
-
-			output, err = runtime.run(t.Context(), "state", "pull")
-			require.NoError(t, err, output)
-
-			var state struct {
-				Resources []struct {
-					Instances []struct {
-						Attributes map[string]string `json:"attributes"`
-						Identity   map[string]string `json:"identity"`
-						Status     string            `json:"status"`
-						Private    []byte            `json:"private"`
-					} `json:"instances"`
-				} `json:"resources"`
-			}
-			require.NoError(t, json.Unmarshal([]byte(output), &state))
-			require.Len(t, state.Resources, 1)
-			require.Len(t, state.Resources[0].Instances, 1)
-			instance := state.Resources[0].Instances[0]
-			assert.Equal(t, "org/"+teamID, instance.Attributes["id"])
-			assert.Equal(t, "org", instance.Attributes["organization_id"])
-			assert.Equal(t, teamID, instance.Attributes["team_id"])
-			assert.Equal(t, "Planned", instance.Attributes["name"])
-			assert.Equal(t, map[string]string{"organization_id": "org", "team_id": teamID}, instance.Identity)
-
-			var private map[string][]byte
-			if len(instance.Private) != 0 {
-				require.NoError(t, json.Unmarshal(instance.Private, &private))
+			if !ok || teamID == "" || value != prefix+teamID {
+				return fmt.Errorf("%w: recovery ID = %q, want %q followed by generated team ID %v", errUnexpectedTerraformPlan, value, prefix, createdID.Load())
 			}
 
-			assert.Empty(t, private["version"], "contradictory version 73 must not survive apply")
-
-			if operation == "create" {
-				assert.Equal(t, "tainted", instance.Status)
-			} else {
-				assert.Empty(t, instance.Status)
-				requestsMu.Lock()
-				before := len(requests)
-				requestsMu.Unlock()
-				runtime.writeConfig(t, config("Next"))
-				output, err = runtime.run(t.Context(), "apply", "-refresh=false", "-auto-approve", "-input=false", "-no-color")
-				require.Error(t, err, output)
-				assert.Contains(t, output, "Private version is unavailable")
-				requestsMu.Lock()
-				assert.Len(t, requests, before, "missing version must stop before a network mutation")
-				requestsMu.Unlock()
-				runtime.writeConfig(t, config("Planned"))
-			}
-
-			output, err = runtime.run(t.Context(), "plan", "-input=false", "-no-color")
-			require.NoError(t, err, output)
-
-			if operation == "create" {
-				assert.Contains(t, output, "1 to add, 0 to change, 1 to destroy")
-			} else {
-				assert.Contains(t, output, "No changes.")
-			}
-
-			output, err = runtime.run(t.Context(), "destroy", "-auto-approve", "-input=false", "-no-color")
-			require.NoError(t, err, output)
-			remote, err := server.Handler().GetTeam(t.Context(), cm.GetTeamParams{OrganizationID: "org", TeamID: teamID})
-			require.NoError(t, err)
-
-			missing, ok := remote.(*cm.ErrorStatusCode)
-			require.True(t, ok)
-			assert.Equal(t, http.StatusNotFound, missing.StatusCode)
-			unrelated, err := server.Handler().GetTeam(t.Context(), cm.GetTeamParams{OrganizationID: "other-organization", TeamID: teamID})
-			require.NoError(t, err)
-
-			other, ok := unrelated.(*cm.Team)
-			require.True(t, ok)
-			assert.Equal(t, "Untouched", other.Name)
-			requestsMu.Lock()
-			assert.Contains(t, requests, "DELETE /organizations/org/teams/"+teamID+" version=")
-
-			for _, request := range requests {
-				assert.NotContains(t, request, "/organizations/other-organization/")
-			}
-			requestsMu.Unlock()
+			return nil
 		})
 	}
+
+	recoveryAction := plancheck.ResourceActionNoop
+	if operation == "create" {
+		recoveryAction = plancheck.ResourceActionDestroyBeforeCreate
+	}
+
+	steps = append(steps, resource.TestStep{
+		Config: config("Planned"), PlanOnly: true, ExpectNonEmptyPlan: operation == "create",
+		ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPreRefresh: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction("contentful_team.test", recoveryAction),
+			expectRecoveryTaint{address: "contentful_team.test", tainted: operation == "create"},
+			testAccPriorState{check: statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("id"), checkID("org/"))},
+			testAccPriorState{check: statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("organization_id"), knownvalue.StringExact("org"))},
+			testAccPriorState{check: statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("team_id"), checkID(""))},
+			testAccPriorState{check: statecheck.ExpectKnownValue("contentful_team.test", tfjsonpath.New("name"), knownvalue.StringExact("Planned"))},
+			testAccPriorState{check: statecheck.ExpectIdentity("contentful_team.test", map[string]knownvalue.Check{
+				"organization_id": knownvalue.StringExact("org"), "team_id": checkID(""),
+			})},
+		}},
+	})
+
+	var beforeRetry int
+
+	if operation == "update" {
+		// Protocol tests inspect private-version bytes directly. Here Core
+		// must persist their revocation and block a retry without refresh.
+		steps = append(steps, resource.TestStep{
+			PreConfig: func() {
+				requestsMu.Lock()
+				beforeRetry = len(requests)
+				requestsMu.Unlock()
+			},
+			Config: config("Next"), ExpectError: regexp.MustCompile(`Private version is unavailable`),
+		})
+	}
+
+	cliOptions := &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}}
+
+	steps = append(steps, resource.TestStep{
+		PreConfig: func() {
+			if operation == "update" {
+				requestsMu.Lock()
+				assert.Len(t, requests, beforeRetry, "missing version must stop before a network mutation")
+				requestsMu.Unlock()
+			}
+
+			cliOptions.Plan.NoRefresh = false
+		},
+		Config: config("Planned"), PlanOnly: true, ExpectNonEmptyPlan: operation == "create",
+		ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction("contentful_team.test", recoveryAction),
+		}},
+	})
+	testAccMockedResource(t, handler, resource.TestCase{AdditionalCLIOptions: cliOptions, Steps: steps})
+
+	teamID, ok := createdID.Load().(string)
+	require.True(t, ok, "mutation response adapter did not run")
+	require.NotEmpty(t, teamID)
+	remote, err := server.Handler().GetTeam(t.Context(), cm.GetTeamParams{OrganizationID: "org", TeamID: teamID})
+	require.NoError(t, err)
+
+	missing, ok := remote.(*cm.ErrorStatusCode)
+	require.True(t, ok)
+	assert.Equal(t, http.StatusNotFound, missing.StatusCode)
+	unrelated, err := server.Handler().GetTeam(t.Context(), cm.GetTeamParams{OrganizationID: "other-organization", TeamID: teamID})
+	require.NoError(t, err)
+
+	other, ok := unrelated.(*cm.Team)
+	require.True(t, ok)
+	assert.Equal(t, "Untouched", other.Name)
+	requestsMu.Lock()
+	assert.Contains(t, requests, "DELETE /organizations/org/teams/"+teamID+" version=")
+
+	for _, request := range requests {
+		assert.NotContains(t, request, "/organizations/other-organization/")
+	}
+	requestsMu.Unlock()
 }
