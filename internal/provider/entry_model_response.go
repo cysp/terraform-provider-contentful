@@ -220,8 +220,6 @@ func projectEntryMutationResponse(
 		diags.AddError("Unexpected entry content type", fmt.Sprintf("Contentful returned content type %q after Terraform sent %q.", response.ContentTypeID.ValueString(), plan.ContentTypeID.ValueString()))
 	}
 
-	response.ContentTypeID = plan.ContentTypeID
-
 	fieldsEquivalent, fieldsDiags := entryResponseFieldsConsistent(ctx, plan.Fields, response.Fields, fieldPolicy)
 	diags.Append(fieldsDiags...)
 
