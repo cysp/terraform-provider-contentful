@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -94,15 +95,16 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	})
 
 	var (
-		data             WebhookModel
-		consistencyDiags diag.Diagnostics
+		data              WebhookModel
+		consistencyDiags  diag.Diagnostics
+		identityConfirmed bool
 	)
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
 		var responseDiags diag.Diagnostics
 
-		data, responseDiags, consistencyDiags = ReconcileWebhookMutationResponse(ctx, response.Response, plan)
+		data, responseDiags, consistencyDiags, identityConfirmed = ReconcileWebhookMutationResponse(ctx, response.Response, plan, types.StringNull())
 
 		resp.Diagnostics.Append(responseDiags...)
 
@@ -118,7 +120,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, webhookIdentityAttributeNames(), &data, version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, webhookIdentityAttributeNames(), &data, version, identityConfirmed)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -252,15 +254,16 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	})
 
 	var (
-		data             WebhookModel
-		consistencyDiags diag.Diagnostics
+		data              WebhookModel
+		consistencyDiags  diag.Diagnostics
+		identityConfirmed bool
 	)
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinitionStatusCode:
 		var responseDiags diag.Diagnostics
 
-		data, responseDiags, consistencyDiags = ReconcileWebhookMutationResponse(ctx, response.Response, plan)
+		data, responseDiags, consistencyDiags, identityConfirmed = ReconcileWebhookMutationResponse(ctx, response.Response, plan, plan.WebhookID)
 
 		resp.Diagnostics.Append(responseDiags...)
 
@@ -276,7 +279,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, webhookIdentityAttributeNames(), &data, version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, webhookIdentityAttributeNames(), &data, version, identityConfirmed)...)
 
 	if resp.Diagnostics.HasError() {
 		return

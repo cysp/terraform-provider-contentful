@@ -575,8 +575,8 @@ func (r *entryResource) publishAndCheckpointEntry(
 
 	responseVersion := response.Response.Sys.Version
 
-	responseModel, consistencyDiags := projectEntryMutationResponse(ctx, entry, responseModel, fieldPolicy)
-	checkpointDiags := setResourceIdentityStateAndVersion(ctx, identity, state, private, entryIdentityAttributeNames(), &responseModel, responseVersion)
+	responseModel, consistencyDiags, identityConfirmed := projectEntryMutationResponse(ctx, entry, responseModel, fieldPolicy)
+	checkpointDiags := setResourceIdentityStateAndMutationVersion(ctx, identity, state, private, entryIdentityAttributeNames(), &responseModel, responseVersion, identityConfirmed)
 	publicationDiags := validateEntryPublicationResponse(version, response.Response.Sys.Version, response.Response.Sys.PublishedVersion)
 
 	diags.Append(checkpointDiags...)

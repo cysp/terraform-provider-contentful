@@ -85,7 +85,7 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 		transformation.Body = jsontypes.NewNormalizedValue(returnedJSON)
 		expected.Transformation = NewTypedObject(transformation)
 
-		state, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(ctx, response, plan)
+		state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(ctx, response, plan, plan.WebhookID)
 		require.Empty(t, responseDiags)
 		requireReconciliationPaths(t, consistencyDiags)
 		assert.Equal(t, plan.Filters, state.Filters, "equivalent duplicate permutations must restore exact Plan")
@@ -155,7 +155,7 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 			expectedPath = "filters"
 		}
 
-		state, responseDiags, consistencyDiags = ReconcileWebhookMutationResponse(ctx, response, plan)
+		state, responseDiags, consistencyDiags, _ = ReconcileWebhookMutationResponse(ctx, response, plan, plan.WebhookID)
 		require.Empty(t, responseDiags)
 		requireReconciliationPaths(t, consistencyDiags, expectedPath)
 		assert.Equal(t, expected, state, "contradiction must retain complete response and narrow omission fallbacks")

@@ -90,7 +90,7 @@ func TestPreparedTaxonomyConceptMutationPreservesAllCanonicalEmptyLocalizedStrin
 
 	prepared, diags := prepareTaxonomyConceptMutation(plan, plan)
 	require.False(t, diags.HasError())
-	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
+	state, responseDiags, consistencyDiags, _ := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
 	require.False(t, consistencyDiags.HasError())
 	assert.Equal(t, taxonomyEmptyLocalizedString(), state.Note)
@@ -116,7 +116,7 @@ func TestPreparedTaxonomyNullableLocalizedStringMismatchKeepsCompleteRemoteState
 	prepared, diags := prepareTaxonomyConceptMutation(plan, plan)
 	require.False(t, diags.HasError())
 
-	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
+	state, responseDiags, consistencyDiags, _ := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
 	assertTaxonomyDiagnosticPath(t, consistencyDiags, path.Root("note").AtMapKey("en-US"))
@@ -135,7 +135,7 @@ func TestPreparedTaxonomyConceptSchemeMutationPreservesCanonicalEmptyDefinition(
 	prepared, diags := prepareTaxonomyConceptSchemeMutation(plan, plan)
 	require.False(t, diags.HasError())
 
-	state, responseDiags, consistencyDiags := prepared.ProjectResponse(t.Context(), remote)
+	state, responseDiags, consistencyDiags, _ := prepared.ProjectResponse(t.Context(), remote)
 	require.False(t, responseDiags.HasError())
 	require.False(t, consistencyDiags.HasError())
 	assert.Equal(t, taxonomyEmptyLocalizedString(), state.Definition)

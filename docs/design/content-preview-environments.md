@@ -71,7 +71,8 @@ The [resource schema](../../internal/provider/resource_preview_environment_schem
 limits selected IDs to 1–64 ASCII letters, digits, hyphens, or underscores. This
 is the provider's supported subset, not a complete statement of Contentful's ID
 grammar. It omits response-only timestamps, aliases, and `example` from public
-state and stores `sys.version` privately.
+state and stores `sys.version` privately for confirmed endpoint responses, under
+the [shared identity policy](terraform-value-semantics.md#mutation-endpoint-identity).
 
 Platform ordering, preview mode, and custom preview tokens are separate
 concerns. The provider does not validate URL schemes, placeholder grammar,

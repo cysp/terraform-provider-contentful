@@ -92,12 +92,13 @@ func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 			variables, spaceID, environmentID string
 			plannedID                         string
 			paths                             []string
+			expectedVersion                   string
 		}{
-			"equivalent":                       {variables: testJSON(map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}), spaceID: "space", environmentID: "environment"},
-			"different variables":              {variables: testJSON(map[string]any{"remote": "VALUE_DO_NOT_ECHO"}), spaceID: "space", environmentID: "environment", paths: []string{"variables"}},
+			"equivalent":                       {expectedVersion: "43", variables: testJSON(map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}), spaceID: "space", environmentID: "environment"},
+			"different variables":              {expectedVersion: "43", variables: testJSON(map[string]any{"remote": "VALUE_DO_NOT_ECHO"}), spaceID: "space", environmentID: "environment", paths: []string{"variables"}},
 			"different space":                  {variables: testJSON(map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}), spaceID: "other", environmentID: "environment", paths: []string{"space_id"}},
 			"different environment":            {variables: testJSON(map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}), spaceID: "space", environmentID: "other", paths: []string{"environment_id"}},
-			"different legacy ID":              {variables: testJSON(map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}), spaceID: "space", environmentID: "environment", plannedID: "other/identity", paths: []string{"id"}},
+			"different legacy ID":              {expectedVersion: "43", variables: testJSON(map[string]any{"a": "VALUE_DO_NOT_ECHO", "b": nil}), spaceID: "space", environmentID: "environment", plannedID: "other/identity", paths: []string{"id"}},
 			"different identity and variables": {variables: testJSON(map[string]any{"remote": "VALUE_DO_NOT_ECHO"}), spaceID: "other", environmentID: "other", paths: []string{"space_id", "environment_id", "variables"}},
 		} {
 			t.Run(operation+"/"+name, func(t *testing.T) {
@@ -170,8 +171,11 @@ func TestLivePreviewVariablesMutationPublishesResponseAndVersion(t *testing.T) {
 				}
 
 				var private map[string][]byte
-				require.NoError(t, json.Unmarshal(response.Private, &private))
-				require.Equal(t, "43", string(private["version"]))
+				if len(response.Private) != 0 {
+					require.NoError(t, json.Unmarshal(response.Private, &private))
+				}
+
+				require.Equal(t, test.expectedVersion, string(private["version"]))
 				require.NotNil(t, response.NewIdentity)
 				assert.NotContains(t, logs.String(), "VALUE_DO_NOT_ECHO")
 			})

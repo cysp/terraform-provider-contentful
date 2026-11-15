@@ -284,30 +284,51 @@ Plan value. Post-mutation state construction starts with the complete response
 projection, compares each constrained API-backed value against it, and restores
 the exact Plan representation only after every comparison is semantically
 equivalent. If Contentful meaningfully contradicts the Plan, the provider emits
-an attribute-scoped consistency error and retains complete, truthful
-response-derived recovery state; it never hides the contradiction by copying
-Plan values over it. Unknown values come from the response. Projection warnings
-are retained. A later Read skips this reconciliation and projects the remote
+a consistency error. Except for the documented
+[Entry content-type recovery](#entry-publication-ownership-and-partial-field-ownership)
+behavior, it retains complete, truthful response-derived recovery state rather
+than copying Plan values over contradictions. Unknown values come from the
+response. Projection warnings are retained. A later Read skips this reconciliation and projects the remote
 representation so meaningful remote drift remains visible.
 
-When a successful taxonomy mutation response disagrees with the requested
-endpoint identity, recovery preserves the complete returned response except
-that the requested endpoint identity and legacy ID intentionally remain the
-Terraform target.
+### Mutation endpoint identity
 
-Preview Environment mutation recovery has the same targeted endpoint-identity
-exception. When a successful response contradicts the requested space or
-preview environment ID, Terraform retains the requested endpoint identity and
-legacy multipart ID while checkpointing every other response-derived value and
-the returned `sys.version` before reporting the consistency error. For
-generated-ID creation, the returned preview environment ID remains the target;
-an unexpected known planned ID still constrains consistency and a contradiction
-is reported without replacing the generated target. Configuration omission
-selects the generated-ID endpoint; it does not discard known Plan constraints.
-The [preview environment design](content-preview-environments.md#concurrency-and-recovery)
-records the provider's state-to-plan configuration delta; the
+Mutation recovery retains requested path components in state, structured identity,
+and the legacy multipart ID. Server-generated IDs remain response-owned: a known
+Plan value constrains consistency but does not select a POST target. An explicitly
+supplied App Action creation ID also selects the recovery target, even though it
+travels in the request body. Singleton body IDs, Environment Alias targets, and
+related-resource references do not select the addressed endpoint; their value
+reconciliation follows the resource-specific contract. The requested environment
+or alias remains the address; the provider does not infer alias resolution from
+a contradictory response.
+
+A version belongs to the response's identified object. An identity contradiction
+therefore clears the existing private `version` after state/identity encoding
+succeeds; neither the returned version nor the stale pre-mutation version may
+authorize another write. A later successful refresh must confirm the
+requested identity before restoring version authority. Nonidentity Plan
+contradictions retain the confirmed endpoint's returned version. Entry publication
+and Content Type activation authority is also revoked after an identity contradiction; no
+follow-up publish or activate request uses that response's version. No path
+repairs a conflict by reading and retrying a newer version.
+
+The [local publication contract](#diagnostics-and-local-publication) defines the
+state/identity encoding boundary and subsequent private-data writes. These local
+guarantees do not make a remote mutation transactional.
+
+App Signing Secret mutation responses must identify the requested singleton
+before acknowledging the planned secret. A contradiction leaves prior secret
+state intact on Update and publishes no new secret state on Create. The
+[Webhook Signing Secret](webhook-signing-secret.md#failures-and-confidentiality)
+has its own unconfirmed-write acknowledgement contract.
+
+For Preview Environment, Config omission selects generated-ID creation without
+discarding known Plan constraints. See the
+[preview environment design](content-preview-environments.md#concurrency-and-recovery)
+for its state-to-plan configuration delta, and the
 [API research](../research/content-preview-environments.md#concurrency-and-errors)
-records the observed limits of version locking.
+for observed version-locking limits.
 
 Apply-time authority follows the effective Plan at the individual attribute,
 including attributes nested inside known objects:
@@ -357,9 +378,10 @@ The tables below use these common rules:
 
 The six Role, Editor Interface, and Webhook callers below differ where the
 endpoint supplies identity or the request needs Config to decide omission.
-Each publishes response-derived state and private version before appending
-consistency diagnostics, allowing Terraform to retain recovery state when apply
-reports the error. Other resources have the separate contracts named in the
+Each publishes response-derived state and handles its private version under the
+[endpoint identity policy](#mutation-endpoint-identity) before appending consistency
+diagnostics, allowing Terraform to retain recovery state when apply reports the
+error. Other resources have the separate contracts named in the
 [reading map](#reading-map).
 
 | Resource caller | Mutation and identity | Inputs to request conversion | Reconciliation boundary |
@@ -443,7 +465,7 @@ and the unchanged transition is a no-op.
 | --- | --- | --- | --- | --- |
 | `id` | Computed legacy identity | Config cannot set it. Create Plan is unknown; Update may preserve prior State. | Derived as `space_id/role_id`; no independent CMA field. | Use the endpoint-derived identity. If a known Plan `id` conflicts with that identity, retain the endpoint identity and add an `id` error. |
 | `space_id` | Required endpoint identity | Config must be known and non-null. Replacement and `ignore_changes` are already reflected in Plan; prior State otherwise has no authority. | Exact comparison with `sys.space.sys.id`. | Always retain the requested endpoint value. A different response adds a `space_id` error and cannot retarget the resource. |
-| `role_id` | Computed response-owned identity on Create; endpoint identity on Update | Config cannot set it. Create Plan is unknown; Update normally preserves prior State. | Exact comparison with `sys.id` when Plan is known. | Unknown Plan takes the created response ID. Known mismatch retains the endpoint ID and adds a `role_id` error. |
+| `role_id` | Computed response-owned identity on Create; endpoint identity on Update | Config cannot set it. Create Plan is unknown; Update normally preserves prior State. | Exact comparison with `sys.id` when Plan is known. | Create retains the allocated response ID, including when a known or null Plan produces a consistency error. Update retains the endpoint ID and reports a mismatch at `role_id`. |
 | `name` | Required | Config and effective Plan must be known; prior State matters only through `ignore_changes`. Empty is a known value. | Exact scalar comparison. | Equivalent response restores Plan. Difference retains response and adds a `name` error. |
 | `description` | Optional | Omitted Config produces known null; explicit empty remains empty. Effective Plan, including prior State selected by `ignore_changes`, is authoritative. | Exact nullable scalar comparison; null and empty are distinct. | Equivalent response restores Plan. Difference retains response and adds a `description` error. |
 | `permissions` | Required map of lists | Null/unknown cannot reach mutation. Empty map and empty action lists are known. Effective Plan may come from `ignore_changes`. | Map keys are exact; each action list is unordered while duplicate multiplicity is preserved. Unsupported permission variants make projection lossy. | Equivalent response restores the exact map/list Plan representation. Difference adds a `permissions` error; lossy projection retains its warning and adds the same scoped consistency error. |
@@ -532,7 +554,7 @@ Content Type. Editor Interface Delete only relinquishes Terraform ownership.
 | --- | --- | --- | --- | --- |
 | `id` | Computed legacy identity | Config cannot set it. Create Plan is unknown; Update may preserve prior State. | Derived as `space_id/webhook_id`; no independent CMA field. | Use endpoint-derived identity. A conflicting known Plan adds an `id` error. |
 | `space_id` | Required endpoint identity | Must be known and non-null. Replacement and `ignore_changes` are already reflected in Plan. | Exact comparison with `sys.space.sys.id`. | Always retain requested endpoint value. Difference adds a `space_id` error and cannot retarget the resource. |
-| `webhook_id` | Computed response-owned identity on Create; endpoint identity on Update | Config cannot set it. Create Plan is unknown; Update normally preserves prior State. | Exact comparison with `sys.id` when Plan is known. | Unknown Plan takes created response ID. Known mismatch retains endpoint ID and adds a `webhook_id` error. |
+| `webhook_id` | Computed response-owned identity on Create; endpoint identity on Update | Config cannot set it. Create Plan is unknown; Update normally preserves prior State. | Exact comparison with `sys.id` when Plan is known. | Create retains the allocated response ID, including when a known or null Plan produces a consistency error. Update retains the endpoint ID and reports a mismatch at `webhook_id`. |
 | `active` | Optional+Computed with static `true` default | Omitted Config normally yields known `true`; explicit Config, prior State selected by planning, and `ignore_changes` likewise produce the effective Plan. Only an actually unknown Plan is response-owned. | Exact boolean comparison. CMA has also been observed to default an omitted raw request member to `true`; the provider normally sends its known default explicitly. | Equivalent response restores Plan. Difference retains response and adds an `active` error. |
 | `name`, `url` | Required strings | Must be known and non-null; empty remains a known value. Prior State matters only through `ignore_changes`. | Exact scalar comparison. | Equivalent response restores Plan. Difference retains response and adds an error at `name` or `url`. |
 | `topics` | Required non-empty ordered list of strings | Null, unknown, empty, or null-element values fail validation or request conversion before mutation. The known non-empty effective Plan, including a value selected by `ignore_changes`, is authoritative. | Exact ordered comparison; duplicates remain meaningful. | Equivalent response restores the exact effective Plan. Difference retains response and adds a `topics` error. |
@@ -682,10 +704,10 @@ A later Read remains authoritative and can expose Contentful-added defaults,
 which `ignore_changes` can preserve through a subsequent managed update. When
 Contentful contradicts a planned field, metadata, content type, or endpoint
 identity, the provider reports an error and checkpoints the representable
-response `fields` and `metadata`, while retaining the requested immutable content
-type and endpoint identity. The complete returned response remains the truthful
-checkpoint, while response-only field additions cannot become
-configuration-owned values or new publication authority.
+response `fields` and `metadata`, while retaining the planned content type and
+requested endpoint identity. Returned fields and metadata provide the recovery
+checkpoint; response-only field additions cannot become configuration-owned
+values or new publication authority.
 
 A Create or Update draft response grants authority to any positive exact
 returned version in a plan-consistent response. Either response may omit
@@ -701,8 +723,8 @@ version is contradictory. Missing or different `publishedVersion` and
 nonpositive current versions remain errors. Read cannot use a malformed or
 changed tuple to preserve publication authority. The computed
 `published_version` attribute exposes the authoritative CMA value; `version` in
-resource private state always records the same response version as the published
-Terraform state.
+resource private state records the same response version only when the response
+confirms the endpoint, under the [endpoint identity policy](#mutation-endpoint-identity).
 
 ### Provider-private optimistic-lock barrier
 
@@ -757,8 +779,9 @@ matching the provider's other versioned resources. Update sends the prior
 private-state value supplied at apply. Delete also sends that value when it is
 present. A remote change for which CMA advances the resource's `sys.version` is
 therefore rejected instead of being overwritten. Create, Read, and Update store
-the integer version returned by Contentful, including alongside recovery state
-when an Update response differs from the plan.
+the integer version returned for a confirmed endpoint, including alongside
+recovery state when configuration values differ from the plan. Identity
+contradictions follow the [shared version policy](#mutation-endpoint-identity).
 
 Terraform does not supply prior private data to Delete while replacing a
 tainted resource. This applies both to recovery state published alongside an
@@ -877,8 +900,9 @@ Unknown required values stop mutation.
 Response projection checks JSON validity but does not impose request-shape
 validation on readable remote data. Mutation reconciliation retains the supplied
 endpoint identity, diagnoses contradictory links or variables, and checkpoints
-representable response data and private `version` before reporting consistency
-errors. Exact planned JSON is preserved only after all reconciliation checks pass.
+representable response data before reporting consistency errors. Private `version`
+is retained or revoked under the [endpoint identity policy](#mutation-endpoint-identity).
+Exact planned JSON is preserved only after all reconciliation checks pass.
 Read validates the addressed identity before publishing remote values and the
 returned version, following the shared [Read identity contract](#read-identity). See the
 [endpoint evidence and limitations](../research/live-preview-variables.md).
@@ -914,7 +938,8 @@ values are encoded into staged copies, and both are assigned only after both
 encodings succeed. This is local publication only; it does not make remote API
 operations or private provider data transactional.
 
-For versioned responses, the provider records the private `version` only after
+For versioned responses, the provider records or revokes the private `version`
+under the [endpoint identity policy](#mutation-endpoint-identity) only after
 publishing the matching state and identity. An encoding error leaves the prior
 private version unchanged. A later private-data write error is reported without
 rolling back the published state and identity. Pending lifecycle authority and

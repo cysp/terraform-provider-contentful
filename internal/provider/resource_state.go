@@ -20,6 +20,27 @@ func setResourceIdentityAndState(
 	identityAttributeNames []string,
 	stateModel any,
 ) diag.Diagnostics {
+	stagedState := *state
+
+	diags := stagedState.Set(ctx, stateModel)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(publishResourceIdentityAndState(ctx, identity, state, identityAttributeNames, stagedState)...)
+
+	return diags
+}
+
+// publishResourceIdentityAndState commits an already encoded state and its
+// derived identity together. Neither target changes if identity encoding fails.
+func publishResourceIdentityAndState(
+	ctx context.Context,
+	identity *tfsdk.ResourceIdentity,
+	state *tfsdk.State,
+	identityAttributeNames []string,
+	stagedState tfsdk.State,
+) diag.Diagnostics {
 	if identity == nil {
 		return diag.Diagnostics{
 			diag.NewErrorDiagnostic(
@@ -30,12 +51,8 @@ func setResourceIdentityAndState(
 	}
 
 	stagedIdentity := *identity
-	stagedState := *state
 
-	diags := stagedState.Set(ctx, stateModel)
-	if diags.HasError() {
-		return diags
-	}
+	var diags diag.Diagnostics
 
 	for _, attributeName := range identityAttributeNames {
 		attributePath := path.Root(attributeName)
@@ -83,4 +100,36 @@ func setResourceIdentityStateAndVersion(
 	diags.Append(SetPrivateProviderData(ctx, private, "version", version)...)
 
 	return diags
+}
+
+// setResourceIdentityStateAndMutationVersion publishes representable recovery
+// state, then records a version only when the response identified the endpoint.
+// A contradiction clears the previous lock token: neither a response from another
+// object nor the stale pre-mutation version may authorize the next write.
+func setResourceIdentityStateAndMutationVersion(
+	ctx context.Context,
+	identity *tfsdk.ResourceIdentity,
+	state *tfsdk.State,
+	private PrivateProviderData,
+	identityAttributeNames []string,
+	stateModel any,
+	version int,
+	identityConfirmed bool,
+) diag.Diagnostics {
+	diags := setResourceIdentityAndState(ctx, identity, state, identityAttributeNames, stateModel)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(setResourceMutationVersion(ctx, private, version, identityConfirmed)...)
+
+	return diags
+}
+
+func setResourceMutationVersion(ctx context.Context, private PrivateProviderData, version int, identityConfirmed bool) diag.Diagnostics {
+	if !identityConfirmed {
+		return private.SetKey(ctx, "version", nil)
+	}
+
+	return SetPrivateProviderData(ctx, private, "version", version)
 }
