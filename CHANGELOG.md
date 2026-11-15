@@ -5,6 +5,60 @@ Entries through 0.0.70 preserve the existing
 [GitHub release notes](https://github.com/cysp/terraform-provider-contentful/releases);
 dates are UTC publication dates.
 
+## [0.0.73](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.72...v0.0.73) (2026-11-15)
+
+
+### Features
+
+* **provider:** validate App Action legacy parameter definitions ([e24b83c](https://github.com/cysp/terraform-provider-contentful/commit/e24b83c3a83a0b0677481ed4902138357a26802a))
+* **provider:** validate App Definition locations and parameter definitions ([3af8cfb](https://github.com/cysp/terraform-provider-contentful/commit/3af8cfb656d1e5119f790de7d9fd315fa2d0e09e))
+* **provider:** validate Content Type field IDs and JSON object shapes ([3dfe16c](https://github.com/cysp/terraform-provider-contentful/commit/3dfe16c9f05721ef6953801c7d0e6af63c335127))
+* **provider:** validate Editor Interface settings and layout relationships ([0a374b0](https://github.com/cysp/terraform-provider-contentful/commit/0a374b0438c8ea7da28503c6722807095246b889))
+* **provider:** validate Extension field types and parameter definitions ([ddece6b](https://github.com/cysp/terraform-provider-contentful/commit/ddece6b163e1bcc970310679405688118d0b5129))
+* **provider:** validate Webhook transformation methods and content types ([9b49139](https://github.com/cysp/terraform-provider-contentful/commit/9b491390c32725ee28880525008844ba68c64630))
+
+
+### Bug fixes
+
+* **provider:** clarify diagnostic outcomes and coverage wording ([067982d](https://github.com/cysp/terraform-provider-contentful/commit/067982ddae87c3f4e4f4e235395fc9494b186b60))
+
+
+### Documentation
+
+* **provider:** clarify App Definition authoring examples ([a21e276](https://github.com/cysp/terraform-provider-contentful/commit/a21e27637870b8acd8699941f6f6019396e735cb))
+* **provider:** clarify identifiers and standalone schema help ([5380fea](https://github.com/cysp/terraform-provider-contentful/commit/5380fea39504e77fbfa40cdee01e46d3957cece2))
+* **provider:** complete standalone schema help cleanup ([bf1a770](https://github.com/cysp/terraform-provider-contentful/commit/bf1a770f1223f8d1911d7cbeb503c2698f6060db))
+* **provider:** tighten practitioner schema descriptions ([006042d](https://github.com/cysp/terraform-provider-contentful/commit/006042de270ecd0a333ec16189aabfdb71d99794))
+
+
+### Continuous integration
+
+* remove redundant step names ([4fdede8](https://github.com/cysp/terraform-provider-contentful/commit/4fdede8d4754fdfbd8e843e98003c2483ab82912))
+* share one required gate for merges and releases ([21b7618](https://github.com/cysp/terraform-provider-contentful/commit/21b761886079a0ee784ca8c662a807d2aea5786a))
+* **test:** run bounded property and fuzz campaigns ([44c939a](https://github.com/cysp/terraform-provider-contentful/commit/44c939a2a456d7c6c3e5a0845e6a0e08608efda4))
+
+
+### Tests
+
+* **contentful-management-go:** remove redundant Entry and taxonomy checks ([61cead0](https://github.com/cysp/terraform-provider-contentful/commit/61cead0fabd659f451e8bb3c19cd329d6aa10dd4))
+* **provider:** add mutation reconciliation properties ([7bf3e30](https://github.com/cysp/terraform-provider-contentful/commit/7bf3e307eb24be08eb049c128562477bea4c4c8e))
+* **provider:** broaden Entry and Content Type properties ([6e55e89](https://github.com/cysp/terraform-provider-contentful/commit/6e55e89e3c094037bc253ca4a586c19120e99b00))
+* **provider:** compare opaque JSON semantically in fuzz oracles ([e5eaec3](https://github.com/cysp/terraform-provider-contentful/commit/e5eaec346da6b82e98501658be4c4961f4dc7b21))
+* **provider:** construct reconciliation expectations after mutation ([959c766](https://github.com/cysp/terraform-provider-contentful/commit/959c76671f41cce62af49d8b81362e4a3bf6419f))
+* **provider:** cover typed value and request state combinations ([d8d3f51](https://github.com/cysp/terraform-provider-contentful/commit/d8d3f51df2c2d68a20f7f17270d3d25554dd7914))
+* **provider:** exhaust request union state combinations ([dd71ac9](https://github.com/cysp/terraform-provider-contentful/commit/dd71ac924303e1f0ba63ba4c53b3f8fb6e74cd94))
+* **provider:** remove redundant request and lifecycle tests ([d020fb1](https://github.com/cysp/terraform-provider-contentful/commit/d020fb14521552915bce211736db5dfbf920eda1))
+
+
+### Maintenance
+
+* **deps:** bump indirect dependencies ([8bf80d6](https://github.com/cysp/terraform-provider-contentful/commit/8bf80d6d5f580baf2aec38b12ceea18ca09d1d4d))
+* **deps:** bump indirect dependencies ([298a371](https://github.com/cysp/terraform-provider-contentful/commit/298a37111ddf5c4a6fa4bc9633cdc646d2fac5c2))
+* **deps:** bump peter-evans/create-pull-request from 8.1.1 to 8.1.2 ([3ad4237](https://github.com/cysp/terraform-provider-contentful/commit/3ad42370a12c9e85237fc8caad9721ebc559b943))
+* **deps:** bump peter-evans/create-pull-request from 8.1.2 to 8.1.3 ([1444f32](https://github.com/cysp/terraform-provider-contentful/commit/1444f32ae8efe9b3fe1598dbea97fc5f4b8ded7e))
+* **deps:** update Go to 1.27.4 ([fbdf1e5](https://github.com/cysp/terraform-provider-contentful/commit/fbdf1e52f7511b85658887b84f8da23671e3e07e))
+* **release:** update GoReleaser to 2.20.2 ([11d36be](https://github.com/cysp/terraform-provider-contentful/commit/11d36be15bb77bca318c467817b941be9c9fd639))
+
 ## [0.0.72](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.71...v0.0.72) (2026-11-07)
 
 **Compatibility:** Opaque JSON returned in App Installation and Extension
