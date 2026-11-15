@@ -89,39 +89,53 @@ func (prepared preparedTaxonomyConceptSchemeMutation) ProjectResponse(ctx contex
 	data.OrganizationID, data.ConceptSchemeID = prepared.plan.OrganizationID, prepared.plan.ConceptSchemeID
 	data.IDIdentityModel = NewIDIdentityModelFromMultipartID(prepared.plan.OrganizationID.ValueString(), prepared.plan.ConceptSchemeID.ValueString())
 
-	var projects []func()
+	candidate := data
 
-	compare := func(name string, valuePath path.Path, planned, remote attr.Value, project func()) {
+	compare := func(name string, valuePath path.Path, planned, remote attr.Value) bool {
 		if compareTaxonomyMutationValue("taxonomy concept scheme", name, valuePath, planned, remote, &consistencyDiags) {
-			projects = append(projects, project)
-		} else {
-			mismatch = true
+			return true
 		}
+
+		mismatch = true
+
+		return false
 	}
-	compareNullableLocalizedString := func(name string, valuePath path.Path, planned, remote types.Map, project func()) {
+	compareNullableLocalizedString := func(name string, valuePath path.Path, planned, remote types.Map) bool {
 		if compareTaxonomyNullableLocalizedStringMutationValue("taxonomy concept scheme", name, valuePath, planned, remote, &consistencyDiags) {
-			projects = append(projects, project)
-		} else {
-			mismatch = true
+			return true
 		}
+
+		mismatch = true
+
+		return false
 	}
 
-	compare("uri", path.Root("uri"), prepared.plan.URI, data.URI, func() { data.URI = prepared.plan.URI })
-	compare("pref_label", path.Root("pref_label"), prepared.plan.PrefLabel, data.PrefLabel, func() { data.PrefLabel = prepared.plan.PrefLabel })
-	compareNullableLocalizedString("definition", path.Root("definition"), prepared.plan.Definition, data.Definition, func() { data.Definition = prepared.plan.Definition })
+	if compare("uri", path.Root("uri"), prepared.plan.URI, data.URI) {
+		candidate.URI = prepared.plan.URI
+	}
+
+	if compare("pref_label", path.Root("pref_label"), prepared.plan.PrefLabel, data.PrefLabel) {
+		candidate.PrefLabel = prepared.plan.PrefLabel
+	}
+
+	if compareNullableLocalizedString("definition", path.Root("definition"), prepared.plan.Definition, data.Definition) {
+		candidate.Definition = prepared.plan.Definition
+	}
 
 	if taxonomyKnownPlanValue(prepared.plan.TopConceptIDs) {
-		compare("top_concept_ids", path.Root("top_concept_ids"), prepared.plan.TopConceptIDs, data.TopConceptIDs, func() { data.TopConceptIDs = prepared.plan.TopConceptIDs })
+		if compare("top_concept_ids", path.Root("top_concept_ids"), prepared.plan.TopConceptIDs, data.TopConceptIDs) {
+			candidate.TopConceptIDs = prepared.plan.TopConceptIDs
+		}
 	}
 
 	if taxonomyKnownPlanValue(prepared.plan.ConceptIDs) {
-		compare("concept_ids", path.Root("concept_ids"), prepared.plan.ConceptIDs, data.ConceptIDs, func() { data.ConceptIDs = prepared.plan.ConceptIDs })
+		if compare("concept_ids", path.Root("concept_ids"), prepared.plan.ConceptIDs, data.ConceptIDs) {
+			candidate.ConceptIDs = prepared.plan.ConceptIDs
+		}
 	}
 
 	if !mismatch {
-		for _, project := range projects {
-			project()
-		}
+		data = candidate
 	}
 
 	return data, responseDiags, consistencyDiags, identityConfirmed
