@@ -13,10 +13,12 @@ fallback. Contentful validates codes, fallback graphs, default restrictions, and
 allowances; the provider does not prefetch dependencies or coordinate separate
 resources.
 
-Mutation reconciliation retains endpoint identity, returned configuration, and
-private `version` before reporting plan contradictions. Update sends the saved
-version and records the returned one, which may be unchanged for a no-op. Delete
-is unversioned and accepts 404.
+Mutation reconciliation retains the addressed identity and returned configuration
+before reporting Plan contradictions. A confirmed endpoint's version is retained
+for nonidentity Plan contradictions; an identity contradiction clears it under the
+[shared identity policy](terraform-value-semantics.md#mutation-endpoint-identity).
+Update sends the saved version, which may be unchanged for a no-op. Delete is
+unversioned and accepts 404.
 
 The shared client keeps `sys.version` optional for discovery compatibility.
 Managed Create/Read/Update report its absence as an error and clear the response's

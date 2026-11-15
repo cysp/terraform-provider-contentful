@@ -559,11 +559,12 @@ func TestWebhookMutationStateDoesNotManufactureEqualityFromLossyFallback(t *test
 		webhookEqualsFilter(types.StringValue("sys.type"), types.StringNull()),
 	})
 	plan := WebhookModel{
-		Name:    types.StringUnknown(),
-		URL:     types.StringUnknown(),
-		Filters: plannedFilters,
-		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
-		Topics:  NewTypedList([]types.String{}),
+		WebhookID: types.StringUnknown(),
+		Name:      types.StringUnknown(),
+		URL:       types.StringUnknown(),
+		Filters:   plannedFilters,
+		Headers:   NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+		Topics:    NewTypedList([]types.String{}),
 	}
 	response := cm.WebhookDefinition{
 		Sys: cm.NewWebhookDefinitionSys("space", "webhook"),
@@ -572,7 +573,7 @@ func TestWebhookMutationStateDoesNotManufactureEqualityFromLossyFallback(t *test
 		}),
 	}
 
-	mutationState, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+	mutationState, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 	assert.Len(t, responseDiags.Warnings(), 1)
 	require.True(t, consistencyDiags.HasError())
@@ -588,11 +589,12 @@ func TestWebhookMutationStateRejectsRepresentableFilterContradiction(t *testing.
 		webhookEqualsFilter(types.StringValue("sys.type"), types.StringValue("Entry")),
 	})
 	plan := WebhookModel{
-		Name:    types.StringUnknown(),
-		URL:     types.StringUnknown(),
-		Filters: plannedFilters,
-		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
-		Topics:  NewTypedList([]types.String{}),
+		WebhookID: types.StringUnknown(),
+		Name:      types.StringUnknown(),
+		URL:       types.StringUnknown(),
+		Filters:   plannedFilters,
+		Headers:   NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+		Topics:    NewTypedList([]types.String{}),
 	}
 	response := cm.WebhookDefinition{
 		Sys:  cm.NewWebhookDefinitionSys("space", "webhook"),
@@ -602,7 +604,7 @@ func TestWebhookMutationStateRejectsRepresentableFilterContradiction(t *testing.
 		}),
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+	mutationState, mutationStateDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 	require.False(t, mutationStateDiags.HasError())
 	require.True(t, consistencyDiags.HasError())
@@ -649,14 +651,15 @@ func TestWebhookMutationStateRestoresSemanticallyEquivalentReorderedPlan(t *test
 		}),
 	}
 	plan := WebhookModel{
-		Name:    types.StringUnknown(),
-		URL:     types.StringUnknown(),
-		Filters: plannedFilters,
-		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
-		Topics:  NewTypedList([]types.String{}),
+		WebhookID: types.StringUnknown(),
+		Name:      types.StringUnknown(),
+		URL:       types.StringUnknown(),
+		Filters:   plannedFilters,
+		Headers:   NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+		Topics:    NewTypedList([]types.String{}),
 	}
 
-	mutationState, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+	mutationState, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
@@ -679,14 +682,15 @@ func TestWebhookMutationStatePreservesFilterDuplicateMultiplicity(t *testing.T) 
 		}),
 	}
 	plan := WebhookModel{
-		Name:    types.StringUnknown(),
-		URL:     types.StringUnknown(),
-		Filters: plannedFilters,
-		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
-		Topics:  NewTypedList([]types.String{}),
+		WebhookID: types.StringUnknown(),
+		Name:      types.StringUnknown(),
+		URL:       types.StringUnknown(),
+		Filters:   plannedFilters,
+		Headers:   NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+		Topics:    NewTypedList([]types.String{}),
 	}
 
-	mutationState, responseDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+	mutationState, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 	assert.Empty(t, responseDiags)
 	require.True(t, consistencyDiags.HasError())
@@ -703,14 +707,15 @@ func TestWebhookMutationStateUsesResponseForUnknownFilters(t *testing.T) {
 		}),
 	}
 	plan := WebhookModel{
-		Name:    types.StringUnknown(),
-		URL:     types.StringUnknown(),
-		Filters: NewTypedListUnknown[TypedObject[WebhookFilterValue]](),
-		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
-		Topics:  NewTypedList([]types.String{}),
+		WebhookID: types.StringUnknown(),
+		Name:      types.StringUnknown(),
+		URL:       types.StringUnknown(),
+		Filters:   NewTypedListUnknown[TypedObject[WebhookFilterValue]](),
+		Headers:   NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
+		Topics:    NewTypedList([]types.String{}),
 	}
 
-	mutationState, mutationStateDiags, consistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+	mutationState, mutationStateDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 	assert.False(t, mutationStateDiags.HasError())
 	assert.Empty(t, consistencyDiags)
@@ -719,7 +724,7 @@ func TestWebhookMutationStateUsesResponseForUnknownFilters(t *testing.T) {
 	assert.Equal(t, "Entry", mutationState.Filters.Elements()[0].Value().Equals.Value().Value.ValueString())
 
 	plan.Filters = NewTypedListNull[TypedObject[WebhookFilterValue]]()
-	nullPlanState, nullPlanDiags, nullConsistencyDiags := ReconcileWebhookMutationResponse(t.Context(), response, plan)
+	nullPlanState, nullPlanDiags, nullConsistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 	assert.False(t, nullPlanDiags.HasError())
 	assert.True(t, nullConsistencyDiags.HasError())
 	assert.False(t, nullPlanState.Filters.IsNull())

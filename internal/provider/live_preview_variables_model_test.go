@@ -164,7 +164,7 @@ func TestLivePreviewVariablesResponseReconciliation(t *testing.T) {
 				response.Sys.Environment = cm.NewEnvironmentLink(test.environmentID)
 			}
 
-			model, diagnostics, consistencyDiagnostics := ReconcileLivePreviewVariablesMutationResponse(t.Context(), response, plan)
+			model, diagnostics, consistencyDiagnostics, _ := ReconcileLivePreviewVariablesMutationResponse(t.Context(), response, plan)
 			require.Equal(t, test.projectionError, diagnostics.HasError(), diagnostics)
 			require.Equal(t, test.consistencyError, consistencyDiagnostics.HasError(), consistencyDiagnostics)
 			require.Equal(t, plan.LivePreviewVariablesIdentityModel, model.LivePreviewVariablesIdentityModel)

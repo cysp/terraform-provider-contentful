@@ -30,12 +30,12 @@ func NewLocaleResourceModelFromResponse(locale cm.Locale) LocaleModel {
 
 // ReconcileLocaleMutationResponse retains endpoint identity and reports any
 // contradiction to a known planned value alongside the returned recovery state.
-func ReconcileLocaleMutationResponse(locale cm.Locale, plan LocaleModel) (LocaleModel, diag.Diagnostics) {
+func ReconcileLocaleMutationResponse(locale cm.Locale, plan LocaleModel, endpointID types.String) (LocaleModel, diag.Diagnostics, bool) {
 	data := NewLocaleResourceModelFromResponse(locale)
 	reconciler := mutationResponseReconciler{resourceName: "locale"}
 	reconciler.pinIdentity(path.Root("space_id"), plan.SpaceID, data.SpaceID, &data.SpaceID)
 	reconciler.pinIdentity(path.Root("environment_id"), plan.EnvironmentID, data.EnvironmentID, &data.EnvironmentID)
-	reconciler.pinIdentity(path.Root("locale_id"), plan.LocaleID, data.LocaleID, &data.LocaleID)
+	reconciler.pinCreatedIdentity(path.Root("locale_id"), endpointID, plan.LocaleID, data.LocaleID, &data.LocaleID)
 	data.IDIdentityModel = NewIDIdentityModelFromMultipartID(data.SpaceID.ValueString(), data.EnvironmentID.ValueString(), data.LocaleID.ValueString())
 	reconciler.compareExact(path.Root("id"), "Contentful returned a different locale id", plan.ID, data.ID)
 	reconciler.compareExact(path.Root("name"), "Contentful returned a different locale name", plan.Name, data.Name)
@@ -46,5 +46,5 @@ func ReconcileLocaleMutationResponse(locale cm.Locale, plan LocaleModel) (Locale
 	reconciler.compareExact(path.Root("optional"), `Contentful returned a different value for locale attribute "optional"`, plan.Optional, data.Optional)
 	reconciler.compareExact(path.Root("default"), `Contentful returned a different value for locale attribute "default"`, plan.Default, data.Default)
 
-	return data, reconciler.diagnostics
+	return data, reconciler.diagnostics, !reconciler.identityMismatch
 }

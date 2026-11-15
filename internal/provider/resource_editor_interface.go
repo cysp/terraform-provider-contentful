@@ -109,15 +109,16 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 	})
 
 	var (
-		data             EditorInterfaceModel
-		consistencyDiags diag.Diagnostics
+		data              EditorInterfaceModel
+		consistencyDiags  diag.Diagnostics
+		identityConfirmed bool
 	)
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
 		var responseDiags diag.Diagnostics
 
-		data, responseDiags, consistencyDiags = ReconcileEditorInterfaceMutationResponse(ctx, response.Response, plan)
+		data, responseDiags, consistencyDiags, identityConfirmed = ReconcileEditorInterfaceMutationResponse(ctx, response.Response, plan)
 		resp.Diagnostics.Append(responseDiags...)
 
 		version = response.Response.Sys.Version
@@ -136,7 +137,7 @@ func (r *editorInterfaceResource) Create(ctx context.Context, req resource.Creat
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, editorInterfaceIdentityAttributeNames(), &data, version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, editorInterfaceIdentityAttributeNames(), &data, version, identityConfirmed)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -276,15 +277,16 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 	})
 
 	var (
-		data             EditorInterfaceModel
-		consistencyDiags diag.Diagnostics
+		data              EditorInterfaceModel
+		consistencyDiags  diag.Diagnostics
+		identityConfirmed bool
 	)
 
 	switch response := response.(type) {
 	case *cm.EditorInterfaceStatusCode:
 		var responseDiags diag.Diagnostics
 
-		data, responseDiags, consistencyDiags = ReconcileEditorInterfaceMutationResponse(ctx, response.Response, plan)
+		data, responseDiags, consistencyDiags, identityConfirmed = ReconcileEditorInterfaceMutationResponse(ctx, response.Response, plan)
 
 		resp.Diagnostics.Append(responseDiags...)
 
@@ -304,7 +306,7 @@ func (r *editorInterfaceResource) Update(ctx context.Context, req resource.Updat
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, editorInterfaceIdentityAttributeNames(), &data, version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, editorInterfaceIdentityAttributeNames(), &data, version, identityConfirmed)...)
 
 	if resp.Diagnostics.HasError() {
 		return

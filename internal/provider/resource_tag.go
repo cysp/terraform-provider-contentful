@@ -101,7 +101,15 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, tagIdentityAttributeNames(), &data, version)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, tagIdentityAttributeNames(), &data, "tag", map[string]string{"space_id": params.SpaceID, "environment_id": params.EnvironmentID, "tag_id": params.TagID})
+	resp.Diagnostics.Append(stateDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(setResourceMutationVersion(ctx, resp.Private, version, !identityDiags.HasError())...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -227,7 +235,15 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	data.Timeouts = plan.Timeouts
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, tagIdentityAttributeNames(), &data, version)...)
+	stateDiags, identityDiags := setResourceMutationState(ctx, resp.Identity, &resp.State, tagIdentityAttributeNames(), &data, "tag", map[string]string{"space_id": params.SpaceID, "environment_id": params.EnvironmentID, "tag_id": params.TagID})
+	resp.Diagnostics.Append(stateDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(setResourceMutationVersion(ctx, resp.Private, version, !identityDiags.HasError())...)
+	resp.Diagnostics.Append(identityDiags...)
 }
 
 func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

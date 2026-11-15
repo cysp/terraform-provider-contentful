@@ -98,7 +98,7 @@ func (r *livePreviewVariablesResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	data, dataDiagnostics, consistencyDiagnostics := ReconcileLivePreviewVariablesMutationResponse(ctx, *variables, plan)
+	data, dataDiagnostics, consistencyDiagnostics, identityConfirmed := ReconcileLivePreviewVariablesMutationResponse(ctx, *variables, plan)
 	resp.Diagnostics.Append(dataDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
@@ -106,7 +106,7 @@ func (r *livePreviewVariablesResource) Create(ctx context.Context, req resource.
 	}
 
 	data.Timeouts = plan.Timeouts
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, livePreviewVariablesIdentityAttributeNames(), &data, variables.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, livePreviewVariablesIdentityAttributeNames(), &data, variables.Sys.Version, identityConfirmed)...)
 	resp.Diagnostics.Append(consistencyDiagnostics...)
 }
 
@@ -206,7 +206,7 @@ func (r *livePreviewVariablesResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	data, dataDiagnostics, consistencyDiagnostics := ReconcileLivePreviewVariablesMutationResponse(ctx, *variables, plan)
+	data, dataDiagnostics, consistencyDiagnostics, identityConfirmed := ReconcileLivePreviewVariablesMutationResponse(ctx, *variables, plan)
 	resp.Diagnostics.Append(dataDiagnostics...)
 
 	if resp.Diagnostics.HasError() {
@@ -214,7 +214,7 @@ func (r *livePreviewVariablesResource) Update(ctx context.Context, req resource.
 	}
 
 	data.Timeouts = plan.Timeouts
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, livePreviewVariablesIdentityAttributeNames(), &data, variables.Sys.Version)...)
+	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, livePreviewVariablesIdentityAttributeNames(), &data, variables.Sys.Version, identityConfirmed)...)
 	resp.Diagnostics.Append(consistencyDiagnostics...)
 }
 

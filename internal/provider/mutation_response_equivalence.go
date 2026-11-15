@@ -14,8 +14,9 @@ import (
 // Callers publish their candidate Plan representation only when it reports no
 // errors.
 type mutationResponseReconciler struct {
-	resourceName string
-	diagnostics  diag.Diagnostics
+	resourceName     string
+	diagnostics      diag.Diagnostics
+	identityMismatch bool
 }
 
 func (r *mutationResponseReconciler) compareSemantic(valuePath path.Path, subject, mismatchSummary string, planUnknown bool, projectionDiags diag.Diagnostics, equivalent func() (bool, diag.Diagnostics)) bool {
@@ -62,10 +63,22 @@ func (r *mutationResponseReconciler) pinIdentity(valuePath path.Path, plan, resp
 	}
 
 	if !plan.Equal(response) {
+		r.identityMismatch = true
 		r.diagnostics.AddAttributeError(valuePath, "Contentful returned a different "+r.resourceName+" identity", "Contentful accepted the request but returned an identity that differs from the requested Terraform resource. Terraform retained the requested identity as the resource target and the remaining returned values as recovery state. Review the "+r.resourceName+" in Contentful before applying again.")
 	}
 
 	*target = plan
+}
+
+// pinCreatedIdentity distinguishes an addressed ID from one allocated by POST.
+// A known planned value still constrains consistency in the latter case, but
+// cannot redirect recovery to an ID which the request did not address.
+func (r *mutationResponseReconciler) pinCreatedIdentity(valuePath path.Path, endpointID, plan, response types.String, target *types.String) {
+	r.pinIdentity(valuePath, endpointID, response, target)
+
+	if endpointID.IsNull() || endpointID.IsUnknown() {
+		r.compareExact(valuePath, "Contentful returned a different "+r.resourceName+" ID", plan, response)
+	}
 }
 
 func normalizedJSONEquivalent(ctx context.Context, planned, response jsontypes.Normalized) (bool, diag.Diagnostics) {

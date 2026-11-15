@@ -89,11 +89,11 @@ func (r *taxonomyConceptSchemeResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *scheme)
+	data, responseDiags, consistencyDiags, identityConfirmed := prepared.ProjectResponse(ctx, *scheme)
 	resp.Diagnostics.Append(responseDiags...)
 
 	if !resp.Diagnostics.HasError() {
-		resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptSchemeIdentityAttributeNames(), &data, scheme.Sys.Version)...)
+		resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptSchemeIdentityAttributeNames(), &data, scheme.Sys.Version, identityConfirmed)...)
 	}
 
 	// A successful remote mutation can disagree with the plan. Publish its
@@ -210,11 +210,11 @@ func (r *taxonomyConceptSchemeResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	data, responseDiags, consistencyDiags := prepared.ProjectResponse(ctx, *scheme)
+	data, responseDiags, consistencyDiags, identityConfirmed := prepared.ProjectResponse(ctx, *scheme)
 	resp.Diagnostics.Append(responseDiags...)
 
 	if !resp.Diagnostics.HasError() {
-		resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptSchemeIdentityAttributeNames(), &data, scheme.Sys.Version)...)
+		resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, taxonomyConceptSchemeIdentityAttributeNames(), &data, scheme.Sys.Version, identityConfirmed)...)
 	}
 
 	// A successful remote mutation can disagree with the plan. Publish its

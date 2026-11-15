@@ -59,11 +59,11 @@ func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 // API-backed value is losslessly, semantically equivalent. Endpoint identity
 // always remains the requested Terraform target. Password and secret-header
 // response omissions retain their established narrow fallbacks.
-func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, plan WebhookModel) (WebhookModel, diag.Diagnostics, diag.Diagnostics) {
+func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, plan WebhookModel, endpointID types.String) (WebhookModel, diag.Diagnostics, diag.Diagnostics, bool) {
 	state, responseDiags, filtersDiags := newWebhookResourceModelFromResponse(ctx, webhookDefinition, plan.Headers.Elements())
 	reconciler := mutationResponseReconciler{resourceName: "webhook"}
 	reconciler.pinIdentity(path.Root("space_id"), plan.SpaceID, state.SpaceID, &state.SpaceID)
-	reconciler.pinIdentity(path.Root("webhook_id"), plan.WebhookID, state.WebhookID, &state.WebhookID)
+	reconciler.pinCreatedIdentity(path.Root("webhook_id"), endpointID, plan.WebhookID, state.WebhookID, &state.WebhookID)
 
 	state.IDIdentityModel = NewIDIdentityModelFromMultipartID(state.SpaceID.ValueString(), state.WebhookID.ValueString())
 
@@ -130,7 +130,7 @@ func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.
 		state = candidateState
 	}
 
-	return state, responseDiags, reconciler.diagnostics
+	return state, responseDiags, reconciler.diagnostics, !reconciler.identityMismatch
 }
 
 func webhookFiltersEquivalent(planned, response TypedList[TypedObject[WebhookFilterValue]]) bool {

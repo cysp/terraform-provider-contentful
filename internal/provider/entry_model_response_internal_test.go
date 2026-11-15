@@ -327,7 +327,7 @@ func TestProjectEntryMutationResponse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			projected, diags := projectEntryMutationResponse(t.Context(), test.plan, test.response, test.policy)
+			projected, diags, _ := projectEntryMutationResponse(t.Context(), test.plan, test.response, test.policy)
 
 			assert.Equal(t, test.hasError, diags.HasError(), diags.Errors())
 			assert.Equal(t, test.expectedFields, projected.Fields)
