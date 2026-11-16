@@ -187,8 +187,8 @@ github.com/rogpeppe/go-internal v1.16.0 h1:O9DK+vNMDVGLr2BeZqmpLeMjiMNkuXfcqntWb
 github.com/rogpeppe/go-internal v1.16.0/go.mod h1:DrUVZyrJU+txYW5/1kwtXQSMFio52ZOxX7yM1VHvnxs=
 github.com/segmentio/asm v1.2.1 h1:DTNbBqs57ioxAD4PrArqftgypG4/qNpXoJx8TVXxPR0=
 github.com/segmentio/asm v1.2.1/go.mod h1:BqMnlJP91P8d+4ibuonYZw9mfnzI9HfxselHZr5aAcs=
-github.com/sergi/go-diff v1.4.0 h1:n/SP9D5ad1fORl+llWyN+D6qoUETXNZARKjyY2/KVCw=
-github.com/sergi/go-diff v1.4.0/go.mod h1:A0bzQcvG0E7Rwjx0REVgAGH58e96+X0MeOfepqsbeW4=
+github.com/sergi/go-diff v1.4.2 h1:h/nr6WH+32OMs5amzAyj5nQv7sdYS2CMjQ3yDZRGCvU=
+github.com/sergi/go-diff v1.4.2/go.mod h1:A0bzQcvG0E7Rwjx0REVgAGH58e96+X0MeOfepqsbeW4=
 github.com/shopspring/decimal v1.6.0 h1:DcTwjCj4tJPLuGZYsR9W0hyX9pQwMIkdo26Ig1T9xX4=
 github.com/shopspring/decimal v1.6.0/go.mod h1:gawqmDU56v4yIKSwfBSFip1HdCCXN8/+DMd9qYNcwME=
 github.com/skeema/knownhosts v1.3.3 h1:tiFvsjIW+xqP5cqVsod7atn/xm57OY6v9KwxB1xWUyA=
