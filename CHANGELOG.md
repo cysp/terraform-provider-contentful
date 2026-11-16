@@ -5,6 +5,29 @@ Entries through 0.0.70 preserve the existing
 [GitHub release notes](https://github.com/cysp/terraform-provider-contentful/releases);
 dates are UTC publication dates.
 
+## [0.0.74](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.73...v0.0.74) (2026-11-16)
+
+
+### Bug fixes
+
+* **provider:** preserve mutation targets and version authority ([6ac47f4](https://github.com/cysp/terraform-provider-contentful/commit/6ac47f4a5fbcb2a330bf71d1966bd2d7cb2da764))
+* **provider:** preserve returned entry content type ([324e310](https://github.com/cysp/terraform-provider-contentful/commit/324e31073c41240ede0a35acb204c9547d41b1fb))
+* **provider:** retain supplied app key identity during recovery ([417d982](https://github.com/cysp/terraform-provider-contentful/commit/417d982009184ef5780977b993e389d573015926))
+* **provider:** validate taxonomy identity before recovery deletion ([5b024b0](https://github.com/cysp/terraform-provider-contentful/commit/5b024b0a19e9344613678d1e562c64228be476a3))
+
+
+### Tests
+
+* **provider:** cover identity failures with pending lifecycle authority ([68150fe](https://github.com/cysp/terraform-provider-contentful/commit/68150fe0ac2a0514d0a757a07bcba38ffafc74a8))
+* **provider:** migrate recovery lifecycles to the test framework ([21c7737](https://github.com/cysp/terraform-provider-contentful/commit/21c7737d6778b1c024a48c250196eafd2d9f6a9b))
+* **provider:** simplify mutation protocol fixtures and oracles ([8d7d6c7](https://github.com/cysp/terraform-provider-contentful/commit/8d7d6c7c8b1f52d8afbdd8d0a7ea24b36cb037c7))
+
+
+### Refactoring
+
+* **provider:** centralize mutation response publication ([8172085](https://github.com/cysp/terraform-provider-contentful/commit/8172085e007ecb9d1c6b3bd5f9949e4418ddf785))
+* **provider:** simplify reconciliation candidate models ([86c5a8b](https://github.com/cysp/terraform-provider-contentful/commit/86c5a8bd083a76faaefba2f48b80351ef8b46fce))
+
 ## [0.0.73](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.72...v0.0.73) (2026-11-15)
 
 
