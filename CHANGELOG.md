@@ -7,6 +7,27 @@ dates are UTC publication dates.
 
 ## [0.0.74](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.73...v0.0.74) (2026-11-16)
 
+### Compatibility and recovery
+
+No configuration, resource schema, or state-format migration is introduced. This
+release changes recovery after successful API responses that contradict the
+requested resource identity or Entry content type:
+
+* Mutation recovery keeps the addressed target. If a response identifies another
+  object, the provider clears the saved version; further versioned updates require
+  a successful refresh confirming the target. Entry publication and Content Type
+  activation stop, and refresh alone does not authorize them again.
+* Entry recovery retains the returned `content_type_id`. After a contradictory
+  response, retrying with `-refresh=false` can plan replacement. Inspect Contentful
+  and review a refreshed plan before applying.
+* App Signing Secret responses identifying another endpoint do not acknowledge
+  the new secret. Any prior secret state remains, although the remote write may
+  have succeeded; check the secret in Contentful before applying again.
+
+Upgrading does not repair incorrect identities or version data already saved by
+an older provider. If recovering from a previously failed apply, inspect the
+intended Contentful object and review a normal refreshed plan before proceeding.
+
 
 ### Bug fixes
 
