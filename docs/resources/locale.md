@@ -30,11 +30,11 @@ When publishing all locales together, a fallback does not satisfy required-field
 
 ## Manage existing and default locales
 
-Import existing locales; creating the same code does not adopt them. Find system IDs with the [Locale data sources](../guides/existing-configuration), or generate import configuration with the [Locale list resource](../list-resources/locale). Review flags and fallback before applying: omitted flags take the resource defaults, and an omitted fallback clears it. After an ambiguous creation error, check Contentful and import an unrecorded locale before retrying.
+Import an existing locale by its system ID. Creating a locale with the same code cannot adopt it. Find the ID with the [Locale data sources](../guides/existing-configuration), or generate import configuration with the [Locale list resource](../list-resources/locale). Check the fallback and flags before applying. Omitting the fallback clears it, and omitted flags take their resource defaults. If creation fails, check Contentful for an unrecorded locale before retrying.
 
-Terraform tracks each locale by space, environment, and system ID. Changing its code updates that entity in place; it does not move the read-only `default` status to another entity. In a two-resource code swap, identities and content values stay with their original Terraform resources while code labels change. Stage the swap through an unused code, subject to Contentful's allowance; it is not atomic.
+Changing a locale code preserves its system ID, translations, and default status. To swap two codes, use an unused intermediate code if Contentful permits the change. Each rename takes effect separately.
 
-Review code-dependent Entry/Asset configurations, Content Type defaults, and clients before renaming. Content Management API (CMA) responses relabel existing values without advancing content versions or republishing. Verify Content Delivery API (CDA) and Content Preview API (CPA) responses separately: delivery and creation validation have been observed using older configurations after successful CMA updates.
+Review Entry and Asset configurations, Content Type defaults, and clients that use the old code. Content Management API (CMA) responses can show the new code without a change in content version or publication. Delivery responses and new content validation can still use the previous configuration. Check the Content Delivery API (CDA) and Content Preview API (CPA) separately.
 
 Use [`prevent_destroy`](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#prevent_destroy) to reject default-locale destruction or replacement while that rule remains configured. To stop managing it, use a [`removed` block with `destroy = false`](https://developer.hashicorp.com/terraform/language/block/removed) (Terraform 1.7 or later).
 
@@ -85,18 +85,14 @@ Deletion permanently removes translations and can remove Entry locale publicatio
 
 Optional:
 
-- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
-- `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
-- `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `create` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
+- `delete` (String) Includes retries and uses the duration saved in state (default `2m`, minimum provider timeout `10s`).
+- `read` (String) Includes retries and uses the duration saved in state (default `2m`, minimum provider timeout `10s`).
+- `update` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
 
 ## Import
 
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
-
-### Import by identity
-
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+### By identity (Terraform 1.12 or later)
 
 ```terraform
 import {
@@ -109,15 +105,19 @@ import {
 }
 ```
 
-### Import by ID
-
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+### By ID (Terraform 1.5 or later)
 
 ```terraform
 import {
   id = "${var.contentful_space_id}/${var.contentful_environment_id}/${var.contentful_locale_id}"
   to = contentful_locale.example
 }
+```
+
+### From the command line
+
+```shell
+terraform import contentful_locale.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_LOCALE_ID"
 ```
 
 <!-- schema generated by tfplugindocs -->

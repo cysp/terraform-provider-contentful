@@ -36,7 +36,7 @@ func LivePreviewVariablesResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  jsontypes.NormalizedType{},
 				Validators:  []validator.String{livePreviewVariablesValidator{}},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

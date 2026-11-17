@@ -45,7 +45,7 @@ func TeamResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Default:     stringdefault.StaticString(""),
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

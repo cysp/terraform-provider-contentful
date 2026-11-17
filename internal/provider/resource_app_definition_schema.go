@@ -151,7 +151,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				Optional:   true,
 				Validators: []validator.Object{appDefinitionParametersValidator{}},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

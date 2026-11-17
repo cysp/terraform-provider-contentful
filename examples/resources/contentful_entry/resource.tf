@@ -1,17 +1,9 @@
 resource "contentful_entry" "example" {
-  space_id        = var.contentful_space_id
-  environment_id  = var.contentful_environment_id
-  content_type_id = "blogPost"
+  space_id        = contentful_content_type.author.space_id
+  environment_id  = contentful_content_type.author.environment_id
+  content_type_id = contentful_content_type.author.content_type_id
 
   fields = {
-    title = jsonencode({
-      "en-US" = "My First Blog Post"
-    })
-    body = jsonencode({
-      "en-US" = "This is the content of my first blog post."
-    })
-    slug = jsonencode({
-      "en-US" = "my-first-blog-post"
-    })
+    name = jsonencode({ "en-US" = "Ursula Le Guin" })
   }
 }

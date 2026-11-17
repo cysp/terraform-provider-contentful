@@ -63,7 +63,7 @@ func MarketplaceAppDefinitionDataSourceSchema(ctx context.Context) schema.Schema
 				},
 				Computed: true,
 			},
-			"timeouts": timeouts.Attributes(ctx),
+			"timeouts": timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription}),
 		},
 	}
 }

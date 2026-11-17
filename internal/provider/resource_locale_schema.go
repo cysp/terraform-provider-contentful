@@ -76,7 +76,7 @@ func LocaleResourceSchema(ctx context.Context) schema.Schema {
 				Description: "Whether this is the environment's default locale. Contentful does not allow changing this status.",
 				Computed:    true,
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

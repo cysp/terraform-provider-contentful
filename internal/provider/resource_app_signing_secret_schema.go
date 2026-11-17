@@ -76,7 +76,7 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 					appSigningSecretValueValidator{},
 				},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

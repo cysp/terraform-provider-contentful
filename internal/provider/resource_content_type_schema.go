@@ -86,7 +86,7 @@ func ContentTypeResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Computed:    true,
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

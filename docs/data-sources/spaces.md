@@ -3,12 +3,12 @@
 page_title: "contentful_spaces Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves all Contentful Spaces accessible to the account.
+  Lists spaces accessible to the account. Set organization_id to limit the lookup to one organization.
 ---
 
 # contentful_spaces (Data Source)
 
-Retrieves all Contentful Spaces accessible to the account.
+Lists spaces accessible to the account. Set `organization_id` to limit the lookup to one organization.
 
 ## Example Usage
 
@@ -38,7 +38,7 @@ data "contentful_spaces" "accessible" {
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
 
 
 <a id="nestedatt--spaces"></a>

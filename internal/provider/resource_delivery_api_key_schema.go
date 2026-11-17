@@ -74,7 +74,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

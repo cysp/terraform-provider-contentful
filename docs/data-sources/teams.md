@@ -3,12 +3,12 @@
 page_title: "contentful_teams Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves all Contentful Teams in an organization.
+  Lists Contentful Teams in an organization.
 ---
 
 # contentful_teams (Data Source)
 
-Retrieves all Contentful Teams in an organization.
+Lists Contentful Teams in an organization.
 
 ## Example Usage
 
@@ -18,8 +18,6 @@ data "contentful_teams" "example" {
 }
 
 # Choose a name that identifies exactly one team in this organization.
-# one(...) returns null for no matches and errors for multiple matches;
-# the membership below requires a matching team.
 locals {
   selected_team = one([
     for team in data.contentful_teams.example.teams : team
@@ -57,7 +55,7 @@ resource "contentful_team_space_membership" "example" {
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
 
 
 <a id="nestedatt--teams"></a>

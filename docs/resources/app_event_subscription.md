@@ -24,39 +24,13 @@ resource "contentful_app_event_subscription" "this" {
 
 ## Ownership and changes
 
-Use one resource per organization and App Definition. The subscription applies
-across app installations. Create and Update send the complete desired subscription
-configuration. Creating this resource can overwrite an existing subscription.
-[Import](#import) an existing subscription to review its configuration before
-applying changes.
-
-Create, Update, and Delete have no version precondition. Writes can overwrite
-concurrent changes; destroying the resource deletes the current subscription,
-including changes made outside Terraform.
+Contentful stores one subscription per App Definition in an organization. It applies across installations. Create and Update replace the whole subscription, even if another system created it. [Import](#import) an existing subscription before taking ownership. Writes have no version check, and destroy deletes the subscription as it exists at that moment.
 
 ## Replacement and recovery
 
-Do not use `create_before_destroy` when replacing a subscription with the same
-`organization_id` and `app_definition_id`: Create updates the existing subscription,
-then Delete removes the newly written configuration. Terraform can retain the
-resource in state even though the subscription is absent; the next refreshed plan
-proposes creation. Check the replacement order in the plan, including
-[`create_before_destroy` inherited from dependent resources](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#create_before_destroy).
-Replacement with unchanged IDs must destroy the subscription before creating it again.
+If the plan replaces a subscription on the same App Definition, check the order. Creating first overwrites the existing subscription, and deleting the old instance then removes the new subscription. Terraform can [inherit `create_before_destroy` from a dependent resource](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#create_before_destroy).
 
-Create, Update, and Delete retry explicit rate limiting (HTTP 429) with the same
-request within the operation timeout. Connection errors and server errors (HTTP
-5xx) are not automatically retried. A failed request can leave the subscription
-changed or deleted. If a
-request fails or returns different values, inspect the subscription, refresh,
-and review the next plan before retrying.
-
-Terraform can record the returned configuration while reporting an error.
-After a failed Create with saved state, Terraform marks the resource as tainted
-and plans to replace the entire subscription,
-even if it existed before that Create. The replacement order described above also
-applies to tainted resources. A failed Update does not itself taint the resource.
-Import the subscription if creation succeeded without saving resource state.
+After a [failed write](../guides/operation-timeouts#recover-after-a-failed-write), inspect the subscription in Contentful and run `terraform plan`. A failed create can leave a tainted resource that Terraform proposes to replace. If Contentful created the subscription and Terraform has no record of it, import it.
 
 ## Function configuration
 
@@ -109,18 +83,14 @@ or target, the provider records the returned values and reports an error.
 
 Optional:
 
-- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
-- `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
-- `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `create` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
+- `delete` (String) Includes retries and uses the duration saved in state (default `2m`, minimum provider timeout `10s`).
+- `read` (String) Includes retries and uses the duration saved in state (default `2m`, minimum provider timeout `10s`).
+- `update` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
 
 ## Import
 
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
-
-### Import by identity
-
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+### By identity (Terraform 1.12 or later)
 
 ```terraform
 import {
@@ -132,9 +102,7 @@ import {
 }
 ```
 
-### Import by ID
-
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+### By ID (Terraform 1.5 or later)
 
 ```terraform
 import {
@@ -143,9 +111,7 @@ import {
 }
 ```
 
-### Import with the CLI
-
-Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+### From the command line
 
 ```shell
 terraform import contentful_app_event_subscription.this "$CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID"

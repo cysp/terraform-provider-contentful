@@ -82,7 +82,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Delete: true}),
+			"timeouts": timeouts.Attributes(ctx, resourceTimeoutOptions(timeouts.Opts{Create: true, Read: true, Delete: true})),
 		},
 	}
 }

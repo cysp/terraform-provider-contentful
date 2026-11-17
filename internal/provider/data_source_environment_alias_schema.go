@@ -20,17 +20,17 @@ func EnvironmentAliasDataSourceSchema(ctx context.Context) schema.Schema {
 	attributes["space_id"] = schema.StringAttribute{Description: "ID of the space.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["environment_alias_id"] = schema.StringAttribute{Description: "ID of the environment alias.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/environment_alias_id` form.", Computed: true}
-	attributes["timeouts"] = timeouts.Attributes(ctx)
+	attributes["timeouts"] = timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription})
 
-	return schema.Schema{Description: "Retrieves a Contentful Environment Alias.", Attributes: attributes}
+	return schema.Schema{Description: "Reads a Contentful Environment Alias and its target environment.", Attributes: attributes}
 }
 
 func EnvironmentAliasesDataSourceSchema(ctx context.Context) schema.Schema {
 	attributes := map[string]schema.Attribute{}
 	attributes["space_id"] = schema.StringAttribute{Description: "ID of the space.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["id"] = schema.StringAttribute{Description: "Terraform identifier for this lookup, equal to `space_id`.", Computed: true}
-	attributes["timeouts"] = timeouts.Attributes(ctx)
+	attributes["timeouts"] = timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription})
 	attributes["environment_aliases"] = schema.ListNestedAttribute{Description: "Environment aliases in the space, ordered lexicographically by `environment_alias_id`.", Computed: true, NestedObject: schema.NestedAttributeObject{Attributes: environmentAliasDataSourceItemAttributes()}}
 
-	return schema.Schema{Description: "Retrieves all Contentful Environment Aliases in a space.", Attributes: attributes}
+	return schema.Schema{Description: "Lists Contentful Environment Aliases in a space.", Attributes: attributes}
 }

@@ -57,7 +57,7 @@ func TagResourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.OneOf("private", "public"),
 				},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

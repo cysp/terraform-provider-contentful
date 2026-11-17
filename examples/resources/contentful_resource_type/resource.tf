@@ -1,8 +1,7 @@
-# The resource_provider example creates the Catalog provider.
 resource "contentful_resource_type" "this" {
-  organization_id   = var.contentful_organization_id
-  app_definition_id = var.app_definition_id
-  resource_type_id  = "Catalog:Product"
+  organization_id   = contentful_resource_provider.this.organization_id
+  app_definition_id = contentful_resource_provider.this.app_definition_id
+  resource_type_id  = "${contentful_resource_provider.this.resource_provider_id}:Product"
 
   name = "Product"
 

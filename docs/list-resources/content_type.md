@@ -10,9 +10,7 @@ description: |-
 
 Lists Contentful Content Types in an existing space and environment.
 
-## Using list resources
-
-List resources require Terraform 1.14 or later. The example below is a reference snippet for a `.tfquery.hcl` file: configure the provider and declare its input variables, or replace the variable references with your IDs. See [Discover and import existing resources](../guides/resource-discovery) for a complete query workflow, configuration generation, and import review.
+Use this query in a `.tfquery.hcl` file with Terraform 1.14 or later. See [Discover and import existing resources](../guides/resource-discovery) to generate configuration from the results.
 
 ## Example Usage
 

@@ -10,12 +10,10 @@ description: |-
 
 {{ .Description | trimspace }}
 
-~> When adopting or updating an installation, configure every parameter you want to retain. Omitting `parameters` can clear existing values. See [parameter ownership](#parameter-ownership) and [App Installation secrets](../guides/secrets-and-state#app-installation-secrets).
-
 {{ if .HasExamples -}}
 ## Example Usage
 
-The custom app example requires an App Definition with an `apiKey` installation parameter of type `Secret`. Declare `app_api_key` as a sensitive Terraform variable and supply its value through your usual secret input mechanism. Terraform still stores it in state and saved plans.
+The [App Definition example](app_definition#example-usage) declares the `apiKey` Secret used by the custom installation. Supply `app_api_key` as a sensitive variable and restrict access to state and saved plans.
 
 {{- range .ExampleFiles }}
 
@@ -25,11 +23,9 @@ The custom app example requires an App Definition with an `apiKey` installation 
 
 ## Parameter ownership
 
-Each write sends the complete planned `parameters` object. A successful write removes omitted keys; Contentful can reject the request if a required parameter is missing. Omitting the entire object can clear existing values. Changing an ordinary parameter also resubmits the planned secrets, which can overwrite external rotations that refresh could not detect.
+Configure every parameter you want to keep. Writes replace the complete object. Changing an ordinary parameter or a `marketplace` acknowledgment can overwrite a secret rotated elsewhere. Omitting `parameters` can clear existing values. Changing only `timeouts` skips the write.
 
-Changing only `timeouts` updates Terraform state without writing the installation. Changing `marketplace` acknowledgments still writes the complete planned parameter object.
-
-When Contentful returns an all-asterisk value, the provider can preserve the corresponding value from the plan or prior state. A preserved value does not verify the current remote secret. Import retains returned masks because the original values are unavailable. See [App Installation secrets](../guides/secrets-and-state#app-installation-secrets) for rotation, import, and changes outside Terraform.
+Contentful can mask secrets even when a refresh appears to match the plan. See [App Installation secrets](../guides/secrets-and-state#app-installation-secrets) for rotation and import.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
@@ -37,30 +33,22 @@ When Contentful returns an all-asterisk value, the provider can preserve the cor
 ## Import
 
 Configure the complete `parameters` object you want to retain before applying an imported installation. Import cannot recover Secret values; supply the values Terraform should manage. See [parameter ownership](#parameter-ownership) for omission behavior.
-
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
 {{- end }}
 {{- if .HasImportIdentityConfig }}
 
-### Import by identity
-
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+### By identity (Terraform 1.12 or later)
 
 {{tffile .ImportIdentityConfigFile }}
 {{- end }}
 {{- if .HasImportIDConfig }}
 
-### Import by ID
-
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+### By ID (Terraform 1.5 or later)
 
 {{tffile .ImportIDConfigFile }}
 {{- end }}
 {{- if .HasImport }}
 
-### Import with the CLI
-
-Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+### From the command line
 
 {{codefile "shell" .ImportFile }}
 {{- end }}

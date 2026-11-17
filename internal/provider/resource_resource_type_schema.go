@@ -11,7 +11,7 @@ import (
 
 func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful App Resource Type and the field mappings used to display external resources in the web app. Create its App Resource Provider before configuring the type. See [Contentful resource entities](https://www.contentful.com/developers/docs/extensibility/app-framework/resource-entities/) for the relationship between providers, types, and functions.",
+		Description: "Manages a Contentful App Resource Type and the field mappings used to display external resources in the web app. The example references the [Catalog App Resource Provider](resource_provider#example-usage). See [Contentful resource entities](https://www.contentful.com/developers/docs/extensibility/app-framework/resource-entities/) for the relationship between providers, types, and functions.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in `organization_id/app_definition_id/resource_type_id` form.",
@@ -102,7 +102,7 @@ func ResourceTypeResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

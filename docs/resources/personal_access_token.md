@@ -30,7 +30,7 @@ resource "contentful_personal_access_token" "this" {
 
 ### Optional
 
-- `expires_in` (Number) Token lifetime in seconds. Omission disables automatic expiry. Changing this value replaces the resource.
+- `expires_in` (Number) Token lifetime in seconds. Omit it on creation for a token without automatic expiry. Changing the duration replaces the token. Import leaves it unset even when the token has an expiry date.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -45,17 +45,15 @@ resource "contentful_personal_access_token" "this" {
 
 Optional:
 
-- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
-- `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
+- `create` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
+- `delete` (String) Includes retries and uses the duration saved in state (default `2m`, minimum provider timeout `10s`).
+- `read` (String) Includes retries and uses the duration saved in state (default `2m`, minimum provider timeout `10s`).
 
 ## Import
 
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
+To keep an existing token, match its `name` and `scopes` and omit `expires_in`. Contentful returns the expiry timestamp in `expires_at`. Setting `expires_in`, even to the original duration, plans a replacement that revokes the imported token. Import cannot recover the secret `token` value.
 
-### Import by identity
-
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+### By identity (Terraform 1.12 or later)
 
 ```terraform
 import {
@@ -66,9 +64,7 @@ import {
 }
 ```
 
-### Import by ID
-
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+### By ID (Terraform 1.5 or later)
 
 ```terraform
 import {
@@ -77,9 +73,7 @@ import {
 }
 ```
 
-### Import with the CLI
-
-Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+### From the command line
 
 ```shell
 terraform import contentful_personal_access_token.this "$CONTENTFUL_PERSONAL_ACCESS_TOKEN_ID"

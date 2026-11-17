@@ -91,14 +91,14 @@ func resolveProviderString(override string, configured types.String, environment
 
 func (p *ContentfulProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages Contentful content and configuration in existing spaces, plus supported organization and account configuration. The provider does not create or delete spaces.",
+		Description: "Manage content models, Entries, and settings in existing Contentful spaces. You can also manage organization resources such as teams and App Definitions, and credentials for your account.",
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
-				Description: "Contentful Management API base URL. Set this attribute or the `CONTENTFUL_URL` environment variable. A non-null configured value takes precedence. If neither source supplies a URL, or the resolved value is empty, the provider uses the public Contentful Management API. Configure the final API endpoint directly. The provider does not follow HTTP redirects for mutation requests (POST, PUT, PATCH, or DELETE).",
+				Description: "Content Management API base URL. Defaults to `CONTENTFUL_URL` when omitted or null. An empty resolved URL selects the public Contentful Management API at `https://api.contentful.com`. Use the final endpoint directly because the provider rejects redirects on writes.",
 				Optional:    true,
 			},
 			"access_token": schema.StringAttribute{
-				Description: "Contentful Management API access token. Set this attribute or the `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` environment variable. A non-null configured value takes precedence, including an empty string. The token must be known and non-empty when Terraform configures the provider.",
+				Description: "Content Management API access token. Defaults to `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` when omitted or null. An explicit empty string overrides the environment variable and fails validation. The token must be known at provider configuration.",
 				Optional:    true,
 				Sensitive:   true,
 			},

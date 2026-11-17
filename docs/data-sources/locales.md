@@ -3,12 +3,12 @@
 page_title: "contentful_locales Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves all Contentful Locales in an environment. See Using environment aliases ../guides/existing-configuration#use-environment-aliases for alias lookups.
+  Lists Contentful Locales in an environment. See Using environment aliases ../guides/existing-configuration#use-environment-aliases for alias lookups.
 ---
 
 # contentful_locales (Data Source)
 
-Retrieves all Contentful Locales in an environment. See [Using environment aliases](../guides/existing-configuration#use-environment-aliases) for alias lookups.
+Lists Contentful Locales in an environment. See [Using environment aliases](../guides/existing-configuration#use-environment-aliases) for alias lookups.
 
 ## Example Usage
 
@@ -54,7 +54,7 @@ locals {
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
 
 
 <a id="nestedatt--locales"></a>

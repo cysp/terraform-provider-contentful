@@ -74,7 +74,7 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"headers":        WebhookHeadersSchema(ctx, true),
 			"transformation": WebhookTransformationSchema(ctx, true),
-			"timeouts":       timeouts.AttributesAll(ctx),
+			"timeouts":       timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

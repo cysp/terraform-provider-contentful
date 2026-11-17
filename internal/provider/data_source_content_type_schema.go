@@ -136,19 +136,19 @@ func ContentTypeDataSourceSchema(ctx context.Context) schema.Schema {
 	attributes["environment_id"] = schema.StringAttribute{Description: "ID of the environment or environment alias.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["content_type_id"] = schema.StringAttribute{Description: "System ID of the content type.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/environment_id/content_type_id` form.", Computed: true}
-	attributes["timeouts"] = timeouts.Attributes(ctx)
+	attributes["timeouts"] = timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription})
 
-	return schema.Schema{Description: "Retrieves a Contentful Content Type, including unactivated changes. See [Using environment aliases](../guides/existing-configuration#use-environment-aliases) for alias lookups.", Attributes: attributes}
+	return schema.Schema{Description: "Reads a Contentful Content Type, including unactivated changes. See [Using environment aliases](../guides/existing-configuration#use-environment-aliases) for alias lookups.", Attributes: attributes}
 }
 
 func ContentTypesDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Retrieves Contentful Content Types in an environment, including unactivated changes. See [Using environment aliases](../guides/existing-configuration#use-environment-aliases) for alias lookups.",
+		Description: "Lists Contentful Content Types in an environment, including unactivated changes. See [Using environment aliases](../guides/existing-configuration#use-environment-aliases) for alias lookups.",
 		Attributes: map[string]schema.Attribute{
 			"space_id":       schema.StringAttribute{Description: "ID of the space.", Required: true, Validators: []validator.String{discoveryIDValidator{}}},
 			"environment_id": schema.StringAttribute{Description: "ID of the environment or environment alias.", Required: true, Validators: []validator.String{discoveryIDValidator{}}},
 			"id":             schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/environment_id` form.", Computed: true},
-			"timeouts":       timeouts.Attributes(ctx),
+			"timeouts":       timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription}),
 			"content_types": schema.ListNestedAttribute{
 				Description: "Content Types in the order returned by Contentful; empty when none are returned.",
 				Computed:    true,

@@ -19,7 +19,7 @@ Look up existing Contentful configuration by ID, or select an object from a scop
 
 ## Read existing configuration
 
-With the [provider configured](../index#authentication), this example reads an existing Space and Environment, selects the default Locale, and outputs its ID and content code.
+Set `contentful_space_id` to your space ID. This configuration looks up the default Locale in `master`. Set `contentful_environment_id` to select another environment.
 
 ```terraform
 terraform {
@@ -39,23 +39,14 @@ variable "contentful_environment_id" {
   default = "master"
 }
 
-data "contentful_space" "existing" {
-  space_id = var.contentful_space_id
-}
-
-data "contentful_environment" "existing" {
-  space_id       = data.contentful_space.existing.space_id
-  environment_id = var.contentful_environment_id
-}
-
 data "contentful_locales" "existing" {
-  space_id       = data.contentful_space.existing.space_id
-  environment_id = data.contentful_environment.existing.environment_id
+  space_id       = var.contentful_space_id
+  environment_id = var.contentful_environment_id
 
   lifecycle {
     postcondition {
       condition     = length([for locale in self.locales : locale if locale.default]) == 1
-      error_message = "Exactly one Locale must match the selection."
+      error_message = "Expected one default Locale in the selected environment."
     }
   }
 }
@@ -73,35 +64,21 @@ output "locale_code" {
 }
 ```
 
-Set `contentful_space_id` and, if needed, `contentful_environment_id`, then run `terraform init` and `terraform plan`. Run `terraform apply` to save the lookup results and outputs in state. These data sources do not change Contentful configuration.
-
-The Environment data source reports status immediately. Use [`contentful_environment_status_ready`](../data-sources/environment_status_ready) when a lookup needs to wait for an Environment to become ready.
-
-## Select exactly one discovered object
-
-Filter collection results by name, locale code, or another returned attribute. To select a locale by code, use `locale.code == "en-GB"` in both the postcondition and the `one(...)` expression above. Comparisons are case-sensitive.
-
-The postcondition requires exactly one match before dependent expressions use it: `one([])` returns null, while multiple matches produce an error. Apply the same pattern to `self.spaces` and `space.name` to select a Space by name, using `organization_id` to narrow the search when needed.
-
 Use `locale_id` for a Locale lookup and `code` for localized content. To manage a discovered Locale, import it into the [`contentful_locale` resource](../resources/locale). For bulk import and configuration generation, use the [Locale list resource](../list-resources/locale).
 
-Use `role_id` from a Role data source when assigning roles with [`contentful_team_space_membership`](../resources/team_space_membership).
+When looking up a Space by name, set `organization_id` if the same name occurs in multiple organizations. Use `role_id` from a Role data source when assigning roles with [`contentful_team_space_membership`](../resources/team_space_membership).
 
 ## Reference a Content Type
 
-When the ID is known, use `contentful_content_type` and pass its `content_type_id` to an Entry or Editor Interface configuration. To find an ID by name, see the [plural example](../data-sources/content_types).
+If you already know the Content Type ID, pass it directly to the Entry or Editor Interface. Use the [Content Type data source](../data-sources/content_type) to read field definitions, or [look up a Content Type by name](../data-sources/content_types) when you need its ID.
 
-Both data sources may return unactivated changes. `published_version` reports the most recently activated version when present; it does not mean the returned fields match that version. To manage a discovered Content Type, import it into the [`contentful_content_type` resource](../resources/content_type).
+Both Content Type data sources may return unactivated changes. `published_version` reports the most recently activated version when present; it does not mean the returned fields match that version. To manage a discovered Content Type, import it into the [`contentful_content_type` resource](../resources/content_type).
 
 ## Use environment aliases
 
-An Environment lookup accepts an alias ID and returns its target as `aliased_environment_id` when Contentful supplies it. An Environment Alias lookup returns `target_environment_id`. Using the resolved target ID makes dependent requests address that environment directly.
+An Environment lookup can return an alias's target as `aliased_environment_id`. The Environment Alias data source exposes it as `target_environment_id`. A lookup through the alias can resolve to a different target after someone repoints it. Use a concrete environment ID to keep lookups tied to one environment.
 
-Alias lookups refresh on later plans, so a resolved target can change. To keep lookups tied to one environment across alias changes, use a concrete environment ID.
-
-Locale lookups also accept an environment alias ID as `environment_id`. The provider currently supports responses whose environment link identifies that alias; other responses produce an identity error. Use the target environment ID if you encounter this error.
-
-If a Content Type lookup through an alias returns a different environment ID, the provider reports an identity error. Use the concrete environment ID for that lookup.
+Locale and Content Type lookups check the environment ID in the response. If a lookup through an alias reports an identity error, repeat it with the target environment ID.
 
 ## Collection reads
 

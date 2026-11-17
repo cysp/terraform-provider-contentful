@@ -34,7 +34,7 @@ func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"expires_in": schema.Int64Attribute{
-				Description: "Token lifetime in seconds. Omission disables automatic expiry. Changing this value replaces the resource.",
+				Description: "Token lifetime in seconds. Omit it on creation for a token without automatic expiry. Changing the duration replaces the token. Import leaves it unset even when the token has an expiry date.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
@@ -67,7 +67,7 @@ func PersonalAccessTokenResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Sensitive:   true,
 			},
-			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Delete: true}),
+			"timeouts": timeouts.Attributes(ctx, resourceTimeoutOptions(timeouts.Opts{Create: true, Read: true, Delete: true})),
 		},
 	}
 }

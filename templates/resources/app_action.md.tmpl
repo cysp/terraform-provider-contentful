@@ -21,47 +21,31 @@ description: |-
 
 ## Failure recovery
 
-Create, Update, and Delete retry HTTP 429 responses with the same request within
-the operation timeout. Connection errors and HTTP 5xx responses are not
-automatically retried.
-
-After a failed create, check the App Definition for an action created without
-saved Terraform state and import it before applying again. After a failed update
-or delete, refresh state and review the plan before retrying.
+If creation fails, inspect the actions in the target App Definition. Import an action only if you can identify it as the one from the failed create and it is missing from Terraform state. After a failed update or delete, run `terraform plan` and check what Terraform proposes to retry.
 
 Read and import preserve existing Custom parameter definitions. Updates validate
 the complete planned `parameters`, including values retained by `ignore_changes`.
-Configuration must also be valid for `terraform destroy`; correct the
-configuration first, then destroy without applying the correction to Contentful.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
 
 ## Import
-
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
 {{- end }}
 {{- if .HasImportIdentityConfig }}
 
-### Import by identity
-
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+### By identity (Terraform 1.12 or later)
 
 {{tffile .ImportIdentityConfigFile }}
 {{- end }}
 {{- if .HasImportIDConfig }}
 
-### Import by ID
-
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+### By ID (Terraform 1.5 or later)
 
 {{tffile .ImportIDConfigFile }}
 {{- end }}
 {{- if .HasImport }}
 
-### Import with the CLI
-
-Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+### From the command line
 
 {{codefile "shell" .ImportFile }}
 {{- end }}

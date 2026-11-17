@@ -12,7 +12,7 @@ If you already know an object's ID, use the Import section on its resource page.
 
 ## 1. Define the query
 
-With the [provider configured](../index), save this example as `query.tfquery.hcl`. Replace `SPACE_ID` with your existing space ID. It finds Entries of the `blogPost` Content Type in the `master` environment:
+With the [provider configured](../index), save this example as `query.tfquery.hcl`. Replace `SPACE_ID` with your existing space ID. It finds Entries of the `author` Content Type in the `master` environment:
 
 {{ tffile "examples/guides/resource-discovery/query.tfquery.hcl" }}
 
@@ -38,7 +38,7 @@ See HashiCorp's [bulk import workflow](https://developer.hashicorp.com/terraform
 
 ## 3. Review and apply the import
 
-Review the generated configuration against each resource's schema and run `terraform plan`. Check for proposed updates as well as imports before applying. Remove or adjust arguments that do not describe the configuration you want Terraform to manage.
+Run `terraform plan` on the generated configuration. A plan can include updates alongside imports. Remove or adjust arguments that would change content you intend to keep.
 
 For Entries, review the complete `fields` and `metadata` values. For Content Types, review the field definitions and metadata. For Locales, review fallback codes and delivery/editing flags; discovery also returns the default locale, which Contentful does not allow deleting. See [Locale management](../resources/locale#manage-existing-and-default-locales). The generated configuration may adopt values that other editors or systems currently manage.
 
