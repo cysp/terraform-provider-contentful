@@ -11,9 +11,7 @@ description: |-
 
 ## Authentication
 
-Set `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` in the environment to a [Content Management API token](https://www.contentful.com/developers/docs/references/authentication/#the-content-management-api) with access to the spaces and organizations you intend to manage. Contentful Management API tokens use the permissions of their account owner.
-
-The provider reads the token from the environment when `access_token` is omitted or null. See the schema below for configuration precedence and API URL overrides. For values managed by resources, see [Secrets and Terraform state](guides/secrets-and-state).
+Set `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` to a [Content Management API access token](https://www.contentful.com/developers/docs/references/authentication/#the-content-management-api) with permission to manage the objects in your configuration.
 
 {{ if .HasExamples -}}
 ## Configuration
@@ -22,30 +20,15 @@ The provider reads the token from the environment when `access_token` is omitted
 
 {{ tffile . }}
 {{- end }}
-
-Add the resources you want to manage, run `terraform init`, then review `terraform plan` before applying. Choose a provider version constraint for your configuration using Terraform's [provider requirements](https://developer.hashicorp.com/terraform/language/providers/requirements).
 {{- end }}
 
-## Choose a workflow
+## Common tasks
 
-| Task | Documentation |
-| --- | --- |
-| Define a content model and manage content | [Content Types](resources/content_type) and [Entries](resources/entry) |
-| Copy an environment and wait before using it | [Environments](resources/environment) and [readiness data source](data-sources/environment_status_ready) |
-| Configure content preview | [Preview environments](resources/preview_environment) and [live preview variables](resources/live_preview_variables) |
-| Define and install apps | [App Definitions](resources/app_definition) and [App Installations](resources/app_installation) |
-| Manage access | [Roles](resources/role), [Teams](resources/team), and [Delivery API keys](resources/delivery_api_key) |
-| Reference existing Spaces, Environments, aliases, and Locales | [Configuration data sources](guides/existing-configuration) |
-| Discover existing objects and generate import configuration | [Resource discovery](guides/resource-discovery) |
-| Manage secrets and credential rotation | [Secrets and Terraform state](guides/secrets-and-state) |
-| Configure operation timeouts and readiness waits | [Operation timeouts](guides/operation-timeouts) |
-
-Each resource page includes configuration and import syntax. Follow its adoption guidance before managing an existing object. Entry and Content Type resources publish or activate managed changes, so review their lifecycle guidance before adopting externally edited content.
-
-## Use the examples
-
-Resource and data-source examples are reference snippets to add to a configuration with this provider. Declare the `var.*` inputs or replace them with your existing IDs and values. Examples that reference another resource require that resource in the same configuration.
-
-Import examples show alternatives: choose one import block or the CLI command for each object. Match the resource address and Contentful IDs to your configuration, and review the plan for changes as well as imports. Shell examples use environment variables such as `CONTENTFUL_SPACE_ID` as placeholders; these are separate from Terraform input variables.
+- **Work with existing content.** Use [data sources](guides/existing-configuration) to reference objects managed elsewhere. To bring Entries, Content Types, or Locales under Terraform management, [discover and import them](guides/resource-discovery). Managed changes to [Entries](resources/entry) publish content. Managed changes to [Content Types](resources/content_type) activate the content model.
+- **Clone an environment.** [Wait for the copy to become ready](resources/environment#environment-readiness) before pointing an alias at it. The [timeouts guide](guides/operation-timeouts) covers slow copies and interrupted writes.
+- **Configure content preview.** Set [preview URLs](resources/preview_environment) for Content Types and [custom preview tokens](resources/live_preview_variables) for an environment.
+- **Manage access.** Assign [roles](resources/role) to [teams](resources/team) through [space memberships](resources/team_space_membership). Use [Delivery API keys](resources/delivery_api_key) for applications that read published content.
+- **Install an app.** Use an [App Definition](resources/app_definition) you manage or look up a [Marketplace App Definition](data-sources/marketplace_app_definition), then [install it in an environment](resources/app_installation).
+- **Adopt or rotate credentials.** Check [which secrets Contentful returns on import](guides/secrets-and-state) before applying a configuration that could replace an existing secret.
 
 {{ .SchemaMarkdown | trimspace }}

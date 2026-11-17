@@ -1,0 +1,1 @@
+terraform import contentful_locale.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_LOCALE_ID"

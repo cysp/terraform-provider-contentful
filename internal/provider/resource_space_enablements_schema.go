@@ -60,7 +60,7 @@ func SpaceEnablementsResourceSchema(ctx context.Context) schema.Schema {
 					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Update: true}),
+			"timeouts": timeouts.Attributes(ctx, resourceTimeoutOptions(timeouts.Opts{Create: true, Read: true, Update: true})),
 		},
 	}
 }

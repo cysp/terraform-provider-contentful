@@ -6,9 +6,7 @@ description: |-
 
 # Secrets and Terraform state
 
-Terraform's `sensitive` marking redacts normal CLI output but does not keep values out of state or saved plans. Restrict access to both when using resources that manage credentials. See HashiCorp's [sensitive-data guidance](https://developer.hashicorp.com/terraform/language/manage-sensitive-data) for storage and redaction behavior.
-
-Refresh can verify a value only when Contentful returns it. Import starts without a previously stored secret, so it cannot recover values that Contentful withholds. Preserving a stored value does not detect external changes to an unreadable secret.
+Restrict access to Terraform state and saved plans when managing credentials. Sensitive expressions redact values in normal CLI output. Contentful controls which values it returns on refresh and import. [Terraform sensitive-data guidance](https://developer.hashicorp.com/terraform/language/manage-sensitive-data)
 
 | Value | Refresh | Import |
 | --- | --- | --- |
@@ -23,29 +21,24 @@ Refresh can verify a value only when Contentful returns it. Import starts withou
 
 ## Webhook signing secrets
 
-[`contentful_webhook_signing_secret`](../resources/webhook_signing_secret) manages the signing secret for all webhooks in a space. Creating the resource replaces an existing secret; destroying it deletes the current secret, including one rotated outside Terraform. A space has at most one signing secret. Multiple Terraform resources can target it and overwrite or delete one another's value. A same-space replacement with `create_before_destroy` can delete the newly written secret.
+[`contentful_webhook_signing_secret`](../resources/webhook_signing_secret) manages the signing secret for all webhooks in a space. Use one resource per space.
 
-Contentful returns only a redacted representation. Refresh preserves the complete `value` last applied by Terraform and cannot detect external rotation. To rotate the secret, change `value` and apply. Contentful's [key rotation workflow](https://www.contentful.com/developers/docs/extensibility/webhooks/request-verification/#key-rotation) describes how receivers accept the old and new secrets during rotation. Changing only `timeouts` leaves the remote secret unchanged.
-
-### Uncertain writes
-
-The provider retries explicit rate limiting (HTTP 429) with the same request within the operation timeout. Connection errors and server errors (HTTP 5xx) are not automatically retried. A failed request can leave the remote secret changed, and a read cannot confirm the complete value. A later apply can overwrite or delete intervening changes.
-
-After an uncertain create, [importing without rotation](#importing-signing-secrets) can adopt an existing secret without another write. This confirms its presence, not which value Contentful stored.
+Coordinate receivers before rotating the space's secret. Contentful describes how to accept the old and new secrets during [key rotation](https://www.contentful.com/developers/docs/extensibility/webhooks/request-verification/#key-rotation).
 
 ## App signing secrets
 
-Whenever [`contentful_app_signing_secret`](../resources/app_signing_secret) writes a secret to Contentful, it stores the complete configured `value` in Terraform state. Contentful returns only a redacted representation during reads, so refresh preserves the stored value and cannot detect a secret rotated outside Terraform.
-
-To rotate the secret through Terraform, change `value` and apply. Changing only `timeouts` leaves the remote secret unchanged, including a secret rotated outside Terraform.
+[`contentful_app_signing_secret`](../resources/app_signing_secret) manages the signing secret for an App Definition. Use one resource per App Definition.
 
 ## Importing signing secrets
 
-Importing a webhook or app signing secret leaves `value` null because Contentful does not return the complete secret. Applying the configured value then replaces the remote secret, including during a configuration-driven import. This lets Terraform take over rotation using a value you supply.
+Contentful supports one webhook signing secret per space and one app signing secret per App Definition. Creating a secret overwrites any existing value at that scope. Destroying the resource deletes the current secret, including one rotated outside Terraform. If a replacement at the same scope uses `create_before_destroy`, the final delete removes the newly written secret. To rotate in place, change `value` and apply.
 
-To leave the existing value managed outside Terraform, you can set `ignore_changes = [value]`. The imported value remains null and Terraform does not write the configured value while updating that resource. Reads and deletion require only the resource identifiers and the provider's management API credentials. Changing only `timeouts` sends no mutation, so none of these operations needs the unreadable secret. Creating or rotating a secret requires the complete value to install.
+After an uncertain write, Contentful can confirm that a signing secret exists but cannot return its full value. Refresh preserves the last value Terraform wrote, so an external rotation can go undetected.
 
-This setting suppresses configuration-driven rotation; it does not recover or verify the remote value. External rotation is already undetectable without it. `value` is still required in configuration, and Terraform uses it for creation or replacement, including recreation after remote deletion. [Terraform's lifecycle reference](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) explains the distinction between creation and updates. Destroy still deletes the secret. Remove the setting when ready to rotate through Terraform.
+Import leaves `value` null. Choose who will manage rotation before applying:
+
+- **Terraform.** Configure the complete secret to install. Applying can replace the existing value in the same operation as the import.
+- **An external system.** Set `ignore_changes = [value]` to preserve the existing secret on updates. Supply a valid `value` for creation or replacement, including recreation after remote deletion. Destroy still deletes the current secret. Remove `ignore_changes` when you want Terraform to rotate it.
 
 ## Webhook credentials and secret headers
 
@@ -69,50 +62,32 @@ After import, choose how Terraform should manage headers:
 
 ## App and extension parameters
 
-The `parameters` values on [`contentful_app_installation`](../resources/app_installation) and [`contentful_extension`](../resources/extension) can contain both ordinary configuration and secrets. Supply secrets through sensitive Terraform expressions. Defining an App Definition's installation parameter as type `Secret` does not mark its Terraform value sensitive.
-
-Parameter omission has different effects for these resources. Follow each resource's `parameters` description before importing an existing object or removing configured values.
+Use `jsonencode` with sensitive Terraform inputs for credentials. A `Secret` declaration controls masking in Contentful. In an [App Installation](../resources/app_installation), omitting the parameter object can clear it. In a [UI Extension](../resources/extension), omission retains the installation values returned by Contentful, including after import.
 
 ## App Installation secrets
 
-Terraform sends the complete planned `parameters` object whenever it writes an App Installation. Include every parameter you want to retain, including secrets. Refresh cannot reliably detect secrets rotated outside Terraform. A later parameter or Marketplace update can overwrite such a rotation.
+An [App Installation](../resources/app_installation) sends the complete `parameters` object on every write. Include each value you want to keep. Omitted keys are removed on a successful write, and Contentful can reject a missing required parameter. An empty object or an omitted `parameters` attribute can clear existing values.
 
-### Configuring and rotating secrets
+### Rotation and changes outside Terraform
 
-Use `jsonencode(...)` to configure the parameter object and supply secrets through sensitive Terraform expressions, as shown in the [App Installation example](../resources/app_installation#example-usage). To rotate a secret through Terraform, change its configured value and apply.
+With a personal access token, Contentful masks Secret values with asterisks. For a top-level value made entirely of asterisks, the provider can retain the planned value after a write or the previous value on refresh. Even an ordinary string changed to literal asterisks can be hidden. This fallback applies only to returned top-level keys. [Contentful Secret installation parameters](https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/#secret-installation-parameters)
 
-Contentful redacts App Installation parameters declared as `Secret` when read through the Content Management API with a personal access token. See [Contentful's Secret installation parameter documentation](https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/#secret-installation-parameters).
-
-When a top-level parameter is returned as asterisks, the provider can retain its planned value after a successful write or its prior state value during refresh. A retained value does not confirm the current remote secret. Mask length does not establish equality, and even an ordinary string changed remotely to literal asterisks can be hidden. Missing keys and values inside nested objects or arrays are not restored.
-
-Changing only `timeouts` does not write the installation. Changing `marketplace` acknowledgments still writes the complete planned parameter object.
-
-A failed apply does not imply that Contentful rolled back the write. A readable response that contradicts the plan can cause an inconsistent-result error after Contentful accepted the request; a redacted response cannot confirm which secret was stored after an uncertain write.
+To rotate a secret, supply its new value and apply. Updating an ordinary parameter or a `marketplace` acknowledgment resends all planned secrets, including any stale value after an external rotation. Changing only `timeouts` skips the write. With `ignore_changes = [parameters]`, another change can still resend the stored object, including old plaintext or imported masks.
 
 ### Importing an installation
 
-Import retains returned masks and cannot recover the original Secret values. Before applying, configure the complete object, including the Secret values Terraform should manage. Do not copy masks into configuration as if they were recovered values.
+Import retains the masks that Contentful returns. Supply the actual values before applying. Sending the exact current mask can preserve the existing secret, even when you meant to set a literal string of asterisks. A stale mask can become the literal secret.
 
-On a successful write, omitted keys are removed, including secrets. An empty object clears optional values; Contentful can reject an object that omits a required parameter. Omitting the entire `parameters` object can clear existing values, including after import.
-
-Sending the exact current asterisk mask can preserve the existing secret. A stale or different-length mask can instead become a literal secret. This also means that requesting a literal all-asterisk value equal to the current mask can leave the old secret in place.
-
-### Changes outside Terraform
-
-Updating an ordinary parameter resubmits the planned secrets and can overwrite a secret rotated outside Terraform, even when refresh reported no change to it.
-
-During updates, `ignore_changes = [parameters]` suppresses configured changes to the entire JSON object, including ordinary parameters and intentional secret rotation. It does not provide selective Secret management. Creation still uses the configured values.
-
-If a later update requires a write, such as a change to `marketplace`, the provider sends the complete effective plan, including any values retained by `ignore_changes`. Those values may be older plaintext or imported masks, so this setting cannot guarantee preservation of an external rotation.
+If a write fails or Terraform reports an inconsistent result, inspect the installation before retrying. Contentful may have accepted the change, and a masked response cannot confirm which secret it stored.
 
 ## Personal access tokens
 
 [`contentful_personal_access_token`](../resources/personal_access_token) stores the secret `token` returned at creation. Contentful does not return that value again, so refresh preserves the known value and import leaves it null.
 
-Changing `name`, `scopes`, or `expires_in` replaces the token and revokes the old one. Review dependent consumers before applying a replacement. Changing only `timeouts` preserves the existing token; destroying the resource revokes it.
+If a create response was lost and no consumer has the credential, identify and revoke the unusable token and issue a new one for the consumer. If consumers already have the credential, [import the existing token](../resources/personal_access_token#import) to manage it without interrupting them.
 
 ## App keys
 
 [`contentful_app_key`](../resources/app_key) manages public JWK material that you supply. The corresponding private key is not sent to Contentful and is not stored by this resource.
 
-Unlike the redacted secrets above, the public JWK is readable: import and refresh populate it from Contentful. Changing configured JWK material replaces the App Key rather than updating it in place; importing the public key cannot recover its corresponding private key.
+Changing the public JWK replaces the App Key. Keep the corresponding private key wherever the app signs its requests.

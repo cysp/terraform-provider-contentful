@@ -3,12 +3,12 @@
 page_title: "contentful_environment_alias Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves a Contentful Environment Alias.
+  Reads a Contentful Environment Alias and its target environment.
 ---
 
 # contentful_environment_alias (Data Source)
 
-Retrieves a Contentful Environment Alias.
+Reads a Contentful Environment Alias and its target environment.
 
 ## Example Usage
 
@@ -46,4 +46,4 @@ data "contentful_environment" "target" {
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.

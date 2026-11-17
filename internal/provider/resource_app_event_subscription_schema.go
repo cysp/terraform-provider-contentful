@@ -62,7 +62,7 @@ func AppEventSubscriptionResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Validators:  []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

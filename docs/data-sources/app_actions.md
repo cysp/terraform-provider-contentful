@@ -3,12 +3,12 @@
 page_title: "contentful_app_actions Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves all Contentful App Actions in an App Definition.
+  Lists Contentful App Actions in an App Definition.
 ---
 
 # contentful_app_actions (Data Source)
 
-Retrieves all Contentful App Actions in an App Definition.
+Lists Contentful App Actions in an App Definition.
 
 ## Example Usage
 
@@ -41,7 +41,7 @@ data "contentful_app_actions" "this" {
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
 
 
 <a id="nestedatt--app_actions"></a>

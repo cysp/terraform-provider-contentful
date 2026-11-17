@@ -3,12 +3,12 @@
 page_title: "contentful_environment_aliases Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves all Contentful Environment Aliases in a space.
+  Lists Contentful Environment Aliases in a space.
 ---
 
 # contentful_environment_aliases (Data Source)
 
-Retrieves all Contentful Environment Aliases in a space.
+Lists Contentful Environment Aliases in a space.
 
 ## Example Usage
 
@@ -46,7 +46,7 @@ locals {
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
 
 
 <a id="nestedatt--environment_aliases"></a>

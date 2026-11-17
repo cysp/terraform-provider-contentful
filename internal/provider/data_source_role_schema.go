@@ -43,19 +43,19 @@ func RoleDataSourceSchema(ctx context.Context) schema.Schema {
 	attributes["space_id"] = schema.StringAttribute{Description: "ID of the space containing the role.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["role_id"] = schema.StringAttribute{Description: "System ID of the role to look up.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/role_id` form.", Computed: true}
-	attributes["timeouts"] = timeouts.Attributes(ctx)
+	attributes["timeouts"] = timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription})
 
-	return schema.Schema{Description: "Retrieves an existing Contentful Role in a space.", Attributes: attributes}
+	return schema.Schema{Description: "Reads a Contentful Role in a space.", Attributes: attributes}
 }
 
 func RolesDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Retrieves all Contentful Roles in a space.",
+		Description: "Lists Contentful Roles in a space.",
 		Attributes: map[string]schema.Attribute{
 			"space_id": schema.StringAttribute{Description: "ID of the space containing the roles.", Required: true, Validators: []validator.String{discoveryIDValidator{}}},
 			"id":       schema.StringAttribute{Description: "Terraform identifier equal to `space_id`.", Computed: true},
 			"roles":    schema.ListNestedAttribute{Description: "Roles in the order returned by Contentful. An empty collection returns an empty list.", Computed: true, NestedObject: schema.NestedAttributeObject{Attributes: roleDataSourceItemAttributes()}},
-			"timeouts": timeouts.Attributes(ctx),
+			"timeouts": timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription}),
 		},
 	}
 }

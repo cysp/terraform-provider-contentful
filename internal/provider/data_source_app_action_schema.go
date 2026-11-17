@@ -78,7 +78,7 @@ func AppActionDataSourceSchema(ctx context.Context) schema.Schema {
 		Description: "Composite Terraform identifier in `organization_id/app_definition_id/app_action_id` form.",
 		Computed:    true,
 	}
-	attributes["timeouts"] = timeouts.Attributes(ctx)
+	attributes["timeouts"] = timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription})
 
 	return schema.Schema{
 		Description: "Reads an existing Contentful App Action, including its target and parameter definitions.",
@@ -88,7 +88,7 @@ func AppActionDataSourceSchema(ctx context.Context) schema.Schema {
 
 func AppActionsDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Retrieves all Contentful App Actions in an App Definition.",
+		Description: "Lists Contentful App Actions in an App Definition.",
 		Attributes: map[string]schema.Attribute{
 			"organization_id": schema.StringAttribute{
 				Description: "ID of the organization.",
@@ -111,7 +111,7 @@ func AppActionsDataSourceSchema(ctx context.Context) schema.Schema {
 					Attributes: appActionDataSourceAttributes(),
 				},
 			},
-			"timeouts": timeouts.Attributes(ctx),
+			"timeouts": timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription}),
 		},
 	}
 }

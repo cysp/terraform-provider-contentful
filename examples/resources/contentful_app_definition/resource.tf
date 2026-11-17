@@ -7,6 +7,7 @@ resource "contentful_app_definition" "this" {
 
   locations = [
     { location = "app-config" },
+    { location = "entry-sidebar" },
     {
       location = "entry-field"
       field_types = [
@@ -31,8 +32,8 @@ resource "contentful_app_definition" "this" {
         default = jsonencode(42)
       },
       {
-        id   = "accessToken"
-        name = "Access Token"
+        id   = "apiKey"
+        name = "API key"
         type = "Secret"
       },
     ]

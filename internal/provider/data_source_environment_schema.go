@@ -22,17 +22,17 @@ func EnvironmentDataSourceSchema(ctx context.Context) schema.Schema {
 	attributes["space_id"] = schema.StringAttribute{Description: "ID of the space.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["environment_id"] = schema.StringAttribute{Description: "ID of the environment or environment alias.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/environment_id` form.", Computed: true}
-	attributes["timeouts"] = timeouts.Attributes(ctx)
+	attributes["timeouts"] = timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription})
 
-	return schema.Schema{Description: "Retrieves a Contentful Environment. Use `contentful_environment_status_ready` to wait for readiness.", Attributes: attributes}
+	return schema.Schema{Description: "Reads a Contentful Environment. Use `contentful_environment_status_ready` to wait for readiness.", Attributes: attributes}
 }
 
 func EnvironmentsDataSourceSchema(ctx context.Context) schema.Schema {
 	attributes := map[string]schema.Attribute{}
 	attributes["space_id"] = schema.StringAttribute{Description: "ID of the space.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["id"] = schema.StringAttribute{Description: "Terraform identifier for this lookup, equal to `space_id`.", Computed: true}
-	attributes["timeouts"] = timeouts.Attributes(ctx)
+	attributes["timeouts"] = timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription})
 	attributes["environments"] = schema.ListNestedAttribute{Description: "Environments in the space, ordered lexicographically by `environment_id`.", Computed: true, NestedObject: schema.NestedAttributeObject{Attributes: environmentDataSourceItemAttributes()}}
 
-	return schema.Schema{Description: "Retrieves all Contentful Environments in a space. Use `contentful_environment_status_ready` to wait for readiness.", Attributes: attributes}
+	return schema.Schema{Description: "Lists Contentful Environments in a space. Use `contentful_environment_status_ready` to wait for readiness.", Attributes: attributes}
 }

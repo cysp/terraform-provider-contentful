@@ -3,12 +3,12 @@
 page_title: "contentful_space Data Source - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Retrieves a Contentful Space.
+  Reads a Contentful Space.
 ---
 
 # contentful_space (Data Source)
 
-Retrieves a Contentful Space.
+Reads a Contentful Space.
 
 ## Example Usage
 
@@ -40,4 +40,4 @@ data "contentful_space" "existing" {
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.

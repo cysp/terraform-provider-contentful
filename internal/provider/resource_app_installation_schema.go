@@ -58,7 +58,7 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  jsontypes.NormalizedType{},
 				Optional:    true,
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

@@ -28,7 +28,7 @@ When replacing a platform that has had configurations, choose a new selected ID.
 
 ## Example Usage
 
-These examples show two alternatives: a Contentful-generated ID and an ID you select. Choose the one you need.
+The first example lets Contentful assign an ID. The second supplies `preview_environment_id`.
 
 ```terraform
 resource "contentful_preview_environment" "this" {
@@ -61,9 +61,9 @@ resource "contentful_preview_environment" "selected_id" {
 
 ## Concurrent edits and recovery
 
-Updates use Contentful's last observed version. Configuration-only changes have been observed not to advance that version, so version checks cannot protect against concurrent edits to the same preview URL.
+Updates use the last observed version. Editing preview URLs can leave that version unchanged, so two editors can overwrite each other's changes.
 
-If a write returns values that differ from the plan, the provider records the returned values in state and reports a consistency error. Inspect the preview platform, then refresh and review the next plan before applying again.
+If a write returns values that differ from the plan, the provider records the returned values in state and reports a consistency error. Inspect the preview URLs in Contentful and review the next `terraform plan` before applying again.
 
 If Contentful returns an unsupported or ambiguous active configuration, refresh warns and omits that entry while retaining the configurations it can represent. Resolve the reported configuration in Contentful before applying again.
 
@@ -99,20 +99,16 @@ Required:
 
 Optional:
 
-- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
-- `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
-- `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `create` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
+- `delete` (String) Includes retries and uses the duration saved in state (default `2m`, minimum provider timeout `10s`).
+- `read` (String) Includes retries and uses the duration saved in state (default `2m`, minimum provider timeout `10s`).
+- `update` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
 
 ## Import
 
 Import uses the space ID and preview environment ID. Only active content type configurations enter Terraform state. The examples target the generated-ID resource `contentful_preview_environment.this`; change the address if managing the selected-ID example.
 
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
-
-### Import by identity
-
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+### By identity (Terraform 1.12 or later)
 
 ```terraform
 import {
@@ -124,9 +120,7 @@ import {
 }
 ```
 
-### Import by ID
-
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+### By ID (Terraform 1.5 or later)
 
 ```terraform
 import {
@@ -135,9 +129,7 @@ import {
 }
 ```
 
-### Import with the CLI
-
-Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+### From the command line
 
 ```shell
 terraform import contentful_preview_environment.this "$CONTENTFUL_SPACE_ID/$CONTENTFUL_PREVIEW_ENVIRONMENT_ID"

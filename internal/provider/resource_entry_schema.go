@@ -88,7 +88,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 					objectplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

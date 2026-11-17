@@ -9,7 +9,7 @@ import (
 
 func TeamsDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Retrieves all Contentful Teams in an organization.",
+		Description: "Lists Contentful Teams in an organization.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Terraform identifier for this lookup, equal to `organization_id`.",
@@ -39,7 +39,7 @@ func TeamsDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 				Computed: true,
 			},
-			"timeouts": timeouts.Attributes(ctx),
+			"timeouts": timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription}),
 		},
 	}
 }

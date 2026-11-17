@@ -12,36 +12,25 @@ Manages a Contentful Entry in an environment. Creating an Entry or changing its 
 
 ## Example Usage
 
-This example requires an existing space and environment, an activated `blogPost` Content Type with `title`, `body`, and `slug` fields, and the `en-US` locale enabled. Applying it creates and publishes the Entry.
+Use the [Author Content Type example](content_type#example-usage) in the same configuration. This Entry sets the author's name in `en-US`. Use the environment's default locale code if it differs.
 
 ```terraform
 resource "contentful_entry" "example" {
-  space_id        = var.contentful_space_id
-  environment_id  = var.contentful_environment_id
-  content_type_id = "blogPost"
+  space_id        = contentful_content_type.author.space_id
+  environment_id  = contentful_content_type.author.environment_id
+  content_type_id = contentful_content_type.author.content_type_id
 
   fields = {
-    title = jsonencode({
-      "en-US" = "My First Blog Post"
-    })
-    body = jsonencode({
-      "en-US" = "This is the content of my first blog post."
-    })
-    slug = jsonencode({
-      "en-US" = "my-first-blog-post"
-    })
+    name = jsonencode({ "en-US" = "Ursula Le Guin" })
   }
 }
 ```
-
-## Lifecycle behavior
-
-Creating an Entry, or changing its `fields` or `metadata` through Terraform, writes a draft and publishes it. Changes that only affect Terraform state do not write or publish the Entry. The read-only `published_version` reports Contentful `sys.publishedVersion`. See [Operation timeouts](../guides/operation-timeouts) for defaults and deadline precedence.
 
 Routine provider logs omit Entry request and response payloads. Contentful error diagnostics can still contain Entry content, even when its Terraform expression is sensitive. Review diagnostics before sharing them. See [Secrets and Terraform state](../guides/secrets-and-state) for storage and redaction behavior.
 
 ## Drift and field ownership
 
+- Outside pending draft recovery, changing only `timeouts` leaves the remote Entry untouched.
 - Unpublishing outside Terraform makes `published_version` null. Terraform does not republish solely to restore the previous publication. A later managed `fields` or `metadata` change writes and publishes a new draft.
 - Entry updates replace the complete `fields` payload. Values retained by `ignore_changes` remain in that payload and are published with any later managed change. An ignored-only external draft is left untouched.
 - Content Type defaults may be added when an Entry is created, but Contentful does not reapply them on updates. Use `ignore_changes` for defaulted fields that another system should continue to manage.
@@ -59,22 +48,11 @@ Destroy unpublishes the Entry, then deletes it. If unpublishing fails for a reas
 
 ## Publication recovery
 
-If publication fails after a confirmed draft write, inspect the Entry in Contentful and run `terraform plan` again. A creation apply can finish with a warning when publication is unconfirmed. An unchanged later apply can publish the recorded draft version without repeating the write.
+If publication fails after Contentful accepts a draft, inspect the Entry and run `terraform plan`. Creation can finish with a warning. A `VersionMismatch` ends automatic recovery immediately, including on the first publication attempt. An unchanged apply then leaves the draft alone.
 
-Recovery is limited to that draft:
+For other publication request failures, Terraform can retry the recorded draft version without writing it again. Refresh checks that the same draft still needs publication. If the original draft write was never confirmed, Terraform has no version it can safely publish. See [recovery after a failed write](../guides/operation-timeouts#recover-after-a-failed-write).
 
-- With normal refresh, Terraform continues only while Contentful's version and publication state match the recorded draft. If that version is already published, recovery finishes without repeating publication.
-- External changes or version and publication details the provider cannot validate stop recovery without a publication request.
-- Import, refresh, or matching configuration alone does not trigger automatic publication of an external draft. If the draft write was not confirmed, an ambiguous response or interrupted operation can leave the draft unpublished.
-- With `-refresh=false`, recovery still targets only the recorded version. A `VersionMismatch` stops recovery; Terraform does not fetch and publish a newer external draft instead.
-
-## Retry and create ambiguity
-
-The provider retries Entry creation, updates, or publication after explicit rate limiting (HTTP 429), using the same request and version preconditions within the operation timeout. Connection errors and server errors (HTTP 5xx) are not automatically retried. A failed response can leave the result uncertain; inspect Contentful before retrying.
-
-When `entry_id` is omitted, Contentful generates the Entry ID. If the Create response is ambiguous, Terraform may not know whether Contentful committed the Create or what ID it assigned. A later apply may therefore create another Entry.
-
-Before applying again, inspect Contentful for the Entry that may have been created. If you identify the intended Entry and it is absent from Terraform state, use the [Import](#import) instructions to bring it under management. Import alone does not publish its draft.
+If creation failed before Terraform saved a generated `entry_id`, look for the Entry in Contentful. [Import](#import) it before retrying to avoid creating a duplicate.
 
 <!-- schema generated by tfplugindocs -->
 ## Schema
@@ -111,18 +89,14 @@ Optional:
 
 Optional:
 
-- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
-- `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
-- `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `create` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
+- `delete` (String) Includes retries and uses the duration saved in state (default `2m`, minimum provider timeout `10s`).
+- `read` (String) Includes retries and uses the duration saved in state (default `2m`, minimum provider timeout `10s`).
+- `update` (String) Duration for the complete operation, including retries, for example `30s` or `5m`. Defaults to `2m`.
 
 ## Import
 
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
-
-### Import by identity
-
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+### By identity (Terraform 1.12 or later)
 
 ```terraform
 import {
@@ -135,9 +109,7 @@ import {
 }
 ```
 
-### Import by ID
-
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+### By ID (Terraform 1.5 or later)
 
 ```terraform
 import {
@@ -146,9 +118,7 @@ import {
 }
 ```
 
-### Import with the CLI
-
-Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+### From the command line
 
 ```shell
 terraform import contentful_entry.example "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/$CONTENTFUL_ENTRY_ID"

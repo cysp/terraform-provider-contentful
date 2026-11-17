@@ -1,4 +1,4 @@
-# Wait for the existing target environment to be ready before routing requests to it.
+# This example points staging at an existing environment that is already ready.
 resource "contentful_environment_alias" "example" {
   space_id              = var.contentful_space_id
   environment_alias_id  = "staging"

@@ -11,7 +11,7 @@ import (
 
 func EnvironmentAliasResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Contentful Environment Alias, which routes requests from a stable alias ID to a selected environment. Use `contentful_environment_status_ready` to wait for a newly copied environment before directing requests to it.",
+		Description: "Manages a Contentful Environment Alias, which routes requests from a stable alias ID to a selected environment. If you create the target in the same apply, use the [environment cloning example](environment#example-usage) to wait until the copy is ready before routing requests to it.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in `space_id/environment_alias_id` form.",
@@ -38,7 +38,7 @@ func EnvironmentAliasResourceSchema(ctx context.Context) schema.Schema {
 				Description: "ID of the environment reached through this alias. Changing the target redirects subsequent requests that use the alias.",
 				Required:    true,
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }

@@ -73,7 +73,7 @@ func PreviewEnvironmentResourceSchema(ctx context.Context) schema.Schema {
 					mapvalidator.KeysAre(stringvalidator.LengthAtLeast(1)),
 				},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}
 }
