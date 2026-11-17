@@ -1,10 +1,5 @@
 # Testing
 
-Tests use Go's `testing` package, Testify assertions, and
-`terraform-plugin-testing`. The module versions in `go.mod` are authoritative.
-Keep tests beside the code they exercise and use the same Contentful and
-Terraform terminology as the implementation.
-
 ## Suite layout
 
 | Location | Purpose |
@@ -26,45 +21,13 @@ after inputs or expected behavior so `go test -run` can select them. Use named
 table fields for behavior; do not branch on the case name or derive expected
 results from the implementation being tested.
 
-Use the external `provider_test` or client test package when testing exported
-behavior. Use the implementation package when a test needs unexported behavior,
-and document that need where the package choice is not evident. The
-`*_internal_test.go` suffix makes this access explicit; existing same-package
-`*_test.go` files can keep their names. Do not export production symbols solely
-for tests. Ordinary tests of exported behavior can remain in `*_test.go` or
-focused `*_unit_test.go` files in the external test package. Keep focused helpers
-near their tests.
-Group shared setup in a corresponding `*_support_test.go` file; keep substantial
-fixtures, fault injection, and HTTP recorders in clearly named `*_fixture_test.go`,
-`*_faults_test.go`, and `*_recorder_test.go` files. The provider acceptance harness
-owns provider factories and mock/live execution setup.
+Use external test packages for exported behavior. When tests need unexported symbols, keep the symbols private and put the tests in the implementation package, conventionally in `*_internal_test.go`. Keep test-specific helpers beside their callers. Use `*_support_test.go` for shared setup and name larger fixtures, fault injectors, and recorders for their purpose.
 
 ## Go test structure
 
-- Use `t.Parallel()` for independent tests and subtests. Tests that change
-  process environment with `t.Setenv` must remain sequential. Live acceptance
-  tests share account quotas and are serialized by the harness.
-- Use `t.Context()` for work owned by a test, `t.TempDir()` for temporary files,
-  and `t.Cleanup()` for helper-owned resources. Cleanup runs after subtests;
-  register HTTP server cleanup as soon as the server starts. Cleanup that must
-  make requests after the test ends needs its own bounded context because the
-  test context is canceled before cleanup begins.
-- Mark helpers accepting `*testing.T` or `testing.TB` with `t.Helper()` when
-  they report a failure. Stop on prerequisites with `require.NoError`,
-  `require.NotNil`, `require.Len`, or checked type assertions before accessing
-  results. Use `assert` to report independent value mismatches together.
-- Do not call `require`, `t.Fatal`, or `t.FailNow` in HTTP handlers or worker
-  goroutines. Return or record the error and assert it in the test goroutine;
-  join workers before inspecting their results.
-- Prefer deterministic fixtures, explicit synchronization, and controllable
-  clocks to sleeps.
-- Keep property and fuzz tests for combinations that examples cannot cover
-  economically. Keep seed cases readable and expectations independent of the
-  production conversion logic. Ordinary `go test` runs fuzz seeds; sustained
-  fuzzing is a separate command.
+Run independent tests in parallel. Let the acceptance harness serialize live account access. Register server cleanup when the server starts. Use a separate bounded context for cleanup requests because Go cancels `t.Context()` before cleanup runs.
 
-These conventions follow the [Go testing package](https://pkg.go.dev/testing)
-and [Go test review guidance](https://go.dev/wiki/TestComments).
+Record HTTP handler and worker errors and check them in the test goroutine after the workers finish. Synchronize on events or use controlled clocks for timing-sensitive tests. See the [Go testing package](https://pkg.go.dev/testing) and [test review guidance](https://go.dev/wiki/TestComments).
 
 ## Terraform acceptance tests
 

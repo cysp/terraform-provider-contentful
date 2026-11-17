@@ -1,12 +1,6 @@
-# Content preview platform configuration and reconciliation
+# Content preview platforms and live preview variables
 
-This document describes how `contentful_preview_environment` represents a
-Contentful content preview platform and constructs its requests. The platform
-belongs to a space; it is not a Contentful environment. The
-[API research](../research/content-preview-environments.md) records the
-independently observed HTTP behavior. Shared mutation consistency and recovery
-rules remain in
-[Terraform value semantics](terraform-value-semantics.md#lifecycle-ownership-and-plan-consistency).
+`contentful_preview_environment` manages a space's preview URLs. `contentful_live_preview_variables` owns the [custom preview tokens](#live-preview-variables) for one environment. The [platform API observations](../research/content-preview-environments.md) document Contentful's behavior. Both resources follow the [shared mutation consistency rules](terraform-value-semantics.md#lifecycle-ownership-and-plan-consistency).
 
 ## Request and response projection
 
@@ -80,3 +74,22 @@ remote Content Type existence, or account entitlements. Permissive client types
 and mock behavior do not establish those API contracts. Retained live
 observations support the undocumented endpoint behavior; deterministic mock
 tests exercise broader provider lifecycles.
+
+## Live preview variables
+
+The required normalized JSON `variables` attribute owns the complete document.
+Request conversion uses the effective Plan and shares structural validation with
+configuration validation: an object whose values are strings, null, or locale
+maps of strings/nulls. Empty root objects remain present documents. Omitted keys
+are deletions, and null, empty string, and empty locale maps are not equivalent.
+Unknown required values stop mutation.
+
+Response projection checks JSON validity but does not impose request-shape
+validation on readable remote data. Mutation reconciliation retains the supplied
+endpoint identity, diagnoses contradictory links or variables, and checkpoints
+representable response data before reporting consistency errors. Private `version`
+is retained or revoked under the [endpoint identity policy](terraform-value-semantics.md#mutation-endpoint-identity).
+Exact planned JSON is preserved only after all reconciliation checks pass.
+Read validates the addressed identity before publishing remote values and the
+returned version, following the shared [Read identity contract](terraform-value-semantics.md#read-identity). See the
+[endpoint evidence and limitations](../research/live-preview-variables.md).

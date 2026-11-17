@@ -1,15 +1,6 @@
 # App Framework resources, APIs, and behavior
 
-The App Framework connects organization-owned app configuration with space/environment
-installations, event delivery, action execution, deployment, identity, and external
-resources. These concerns share references but have different identities, data shapes,
-and lifecycles.
-
-Use this reference to find the API paths, request and response shapes, and lifecycle
-limits for each resource family. Published contracts, pinned first-party source, and
-observed behavior are identified separately. For the subset available through Terraform,
-see the [provider documentation](../../index.md); this API inventory is not a provider
-feature list.
+An App Definition belongs to an organization. Its installations belong to individual environments. Use the [relationship diagram](#resource-relationships) and [API inventory](#api-inventory) to find which object owns a setting, which credentials can read it, and which requests change it. The [provider reference](../../index.md) documents the subset managed by Terraform.
 
 ## Reading map
 
@@ -26,16 +17,7 @@ feature list.
 
 ## Scope and evidence
 
-This research covers the public CMA resource families and first-party SDK operations
-connected to event subscription, app execution, deployment, identity, distribution, and
-observability. It does not assert that undocumented internal APIs are absent, or
-inventory every CRUD operation for every entity capable of emitting an event. Coverage
-follows each related family's addressing scope, operations, request and response data,
-relationships, lifecycle behavior, and operational limits. Source gaps remain explicit
-rather than being filled by analogy to another resource.
-
-The [research terminology](../README.md#terminology-and-scope) and [evidence and
-redaction conventions](../README.md#evidence-and-redaction) apply throughout this family.
+The inventory covers published CMA routes and the pinned first-party SDK operations listed below. Other routes may exist. The [research conventions](../README.md#evidence-and-redaction) describe how to interpret the observations and source revisions below.
 
 ### Source metadata
 
@@ -113,14 +95,7 @@ flowchart TD
 | AppActionCall and FunctionLog | Execution and diagnostic data addressed within an installation and action or Function. | These are runtime records, distinct from reusable configuration. |
 | AppAccessToken and AppSignedRequest | Generated through an installation-scoped POST. | These yield credentials or headers, not another installed app or mutable configuration object. |
 
-These relationships follow the endpoint and entity sources in the [API
-inventory](#api-inventory) and the family-specific contracts in the
-[reading map](#reading-map). An app definition owns configuration shared across
-installations. Installation selects the
-space/environment in which it operates. Subscription changes apply to existing and
-future installations. AppInstallation events describe changes to that app's own
-installation, not every app installed in the environment. Sources: [App Events][events],
-[installation events][installation-events].
+Subscription changes apply to existing and future installations. AppInstallation events describe changes to the app’s own installation. [App Events][events] and [installation events][installation-events].
 
 Execution connects those structural resources in different ways:
 
@@ -230,25 +205,9 @@ adapter][provider-sdk], [type adapter][type-sdk].
 
 ### Identity and recoverable data
 
-AppEventSubscription and AppDetails are addressed by the organization/app definition
-tuple. AppAction and AppBundle add their own system ID; AppKey uses its fingerprint. An
-installation's identity additionally includes space and environment. Subscription
-identity does not imply that all singletons lack `sys.id`: ResourceProvider has an
-explicit provider ID. Parent links in responses describe the addressed relationship; a
-contradictory link cannot establish another resource's identity. [Subscription
-entity][event-entity], [details entity][details-entity], [action entity][action-entity],
-[bundle entity][bundle-entity], [key adapter][key-sdk].
+Use the [resource relationships](#resource-relationships) to identify the parent and child IDs for a request. An App Definition can have one ResourceProvider, addressed through the parent even though its response carries its own provider ID. [Resource Provider identity](native-external-references.md#resourceprovider-resourcetype-and-resource)
 
-Read responses have different reconstruction limits. Subscription target/topics are
-returned configuration. A signing secret read returns only a suffix; a key read does not
-recover private key material. Bundle metadata does not reconstruct the upload archive.
-Declared Secret installation parameters have [credential-dependent
-redaction](configuration.md#appdefinition-and-appinstallation-data). Environment action
-and installation Function discovery can return reduced projections, as their focused
-references describe.
-Call status and log records are generated runtime data. These differences remain
-relevant to backup, export, reconciliation, and drift analysis regardless of the client
-managing them.
+A subscription read returns its target and topics. A signing secret read returns only a suffix, an AppKey read returns public material, and AppBundle metadata cannot reconstruct the upload archive. For AppInstallation Secret parameters, [the caller’s credentials determine what a read reveals](configuration.md#appdefinition-and-appinstallation-data). These limits matter when reconstructing configuration for a backup or migration.
 
 ### Replacement, deletion, and concurrency
 
@@ -288,14 +247,11 @@ affected resource.
 [definition-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-definition.ts
 [installation-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-installation.ts
 [action-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-action.ts
-[action-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/app-action.ts
 [categories]: https://www.contentful.com/developers/docs/references/content-management-api/app-action-categories/get-app-action-categories/
 [call-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-action-call.ts
 [details-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-details.ts
-[details-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/app-details.ts
 [upload-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-upload.ts
 [bundle-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-bundle.ts
-[bundle-entity]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/entities/app-bundle.ts
 [function-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/function.ts
 [log-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/function-log.ts
 [secret-sdk]: https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/app-signing-secret.ts
