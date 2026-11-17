@@ -1,176 +1,23 @@
-# Terraform provider documentation practices
+# Writing provider documentation
 
-Use this guide when writing or reviewing repository and Registry documentation.
-Practitioner documentation should help readers predict what Terraform will
-configure, change, preserve, and delete. Contributor documentation should explain
-how the provider implements and verifies those contracts. Authoring and
-verification commands live in
-[Development](../../DEVELOPMENT.md#documentation-authoring).
+Use schema descriptions for information someone needs while editing configuration. Put a resource's workflow in its page template and a workflow spanning resources in a guide. The [authoring map](../../DEVELOPMENT.md#documentation-authoring) identifies the source for each page.
 
-## Organize around the reader's task
+## What belongs on a resource page
 
-| Reader and task | Best home |
-| --- | --- |
-| Evaluate the provider and find setup instructions | Repository README and provider overview |
-| Configure one resource, data source, or list resource | Generated Registry reference |
-| Complete a workflow spanning resources or commands | Practitioner guide |
-| Build, test, or release the provider | Development, testing, and release documentation |
-| Change lifecycle behavior or evaluate external evidence | Design and research documentation |
+Lead with the Contentful object and its scope. Explain choices with different remote effects, especially omission versus clearing, replacement of existing objects, publication, and what import can recover. Put the consequence beside the example or attribute that triggers it. Link to HashiCorp for standard Terraform mechanics when readers need that background. Use the Contentful system ID or composite import ID by name where readers could confuse them.
 
-For practitioner documentation, retain a note when it changes how the reader
-configures the provider, what they expect it to do, or how they recover. Explain
-omission, destructive changes, import, and recovery consequences even when
-validation rejects related invalid configurations. Remove implementation
-narration and prerequisites already evident from the example or schema.
-
-Lead with what the reader can do. Use plain language in setup instructions,
-examples, and recovery steps. Keep precise Contentful and Terraform terms where
-they distinguish behavior: an environment is different from an environment
-alias, for example, and a composite Terraform identifier is different from a
-Contentful system ID. Reserve internal functions, algorithms, and test machinery
-for contributor documentation.
-
-Keep each contract in its authoritative source and link to it when another page
-needs more detail. Practitioner pages should explain the consequence without
-requiring readers to understand the implementation. Design notes should state
-current invariants and limitations; research notes should distinguish published
-contracts from dated observations and interpretations. Follow the terminology
-and evidence rules in [AGENTS.md](../../AGENTS.md) and the
-[design evidence boundaries](README.md#evidence-boundaries).
-
-## Make setup and authentication explicit
-
-The provider overview should identify the API it uses, show provider
-configuration, and link to authentication instructions. Describe credential
-precedence so a reader knows which value wins when both configuration and an
-environment variable are set. Keep credentials out of example literals and
-explain state persistence where a resource handles secrets.
-
-An overview needs enough setup to get started. A resource reference can assume
-that setup and focus on its own prerequisites. HashiCorp recommends an overview,
-example, and configuration reference for the provider, with usage, inputs, and
-outputs for each resource. Retain the schema headings supplied by the generator.
-See [HashiCorp's documentation structure](https://developer.hashicorp.com/terraform/registry/providers/docs#headers).
-
-## Describe decisions, not just attribute names
-
-Write short attribute contracts in schema descriptions. Explain the details
-that change how a reader uses the attribute:
-
-- What the value controls or reports, using the established Contentful name.
-- What omission means, including defaults or values learned from the API.
-- Units, formats, supported values, and conflicts.
-- Whether a change replaces the resource or changes what Terraform manages.
-- Whether an empty value clears something and how it differs from null.
-- State, refresh, or import consequences.
-
-Check each claim against schema, conversion, and lifecycle code. `Optional`
-alone does not establish a default, and `Sensitive` does not mean a value is
-absent from state. Do not describe a password omitted by the API as a Terraform
-write-only argument unless its schema actually uses `WriteOnly`.
-See [Framework attribute semantics](https://developer.hashicorp.com/terraform/plugin/framework/handling-data/attributes/string#configurability)
-and [sensitivity](https://developer.hashicorp.com/terraform/plugin/framework/handling-data/attributes/string#sensitive).
-
-Keep longer workflows in templates and guides so schema help remains readable.
-Schema descriptions also appear in editor integrations; they should make sense
-without the surrounding generated page.
+Keep generated schema help useful in an editor. Describe units, defaults, and consequential constraints there. Let the generated headings communicate type and configurability. Link to a guide for shared procedures such as credential rotation or recovery after an uncertain write.
 
 ## Make examples usable
 
-Explain prerequisites that affect successful use, such as required locale
-settings or Content Type activation. Keep addresses, variables, and IDs consistent
-across configuration, identity import, string-ID import, and CLI import examples within each resource
-directory; explain any intentional difference and required context. Label
-alternative import forms so readers do not combine them into one configuration.
-Prefer `jsonencode` for structured JSON strings when that matches the schema.
+Write resource and data-source examples as snippets for an already configured provider. Use a guide for a complete workflow and identify what the reader needs before starting and what a successful run produces. Keep HCL and shell examples in `examples/`. To include HCL in a guide with `tffile`, use a `.md.tmpl` source in `templates/guides/`. The generator copies plain `.md` guides verbatim. Use consistent addresses and IDs across resource, identity import, string-ID import, and CLI examples. When an example depends on another example, link to it and name any required Contentful configuration. Use `jsonencode` for structured JSON strings.
 
-Resource examples in this repository are reference snippets. Include enough
-context to fit a snippet into an existing configuration. Put complete setup and
-multi-step examples in workflow guides, including provider setup, variables,
-commands, and an expected outcome.
-HashiCorp's [provider overview format](https://developer.hashicorp.com/terraform/registry/providers/docs#index-headers)
-expects a provider configuration example.
-
-## Explain lifecycle and import consequences
-
-For publication, activation, cloning, drift, import, and destroy, state the
-triggering condition, remote effect, Terraform state result, and available
-recovery action. Cover warnings as well as successful operations. When an
-operation may have committed despite an ambiguous
-response, explain how to inspect and recover the object. Keep the actionable
-consequence on the resource page and link to design evidence for the underlying
-retry or reconciliation behavior.
-
-An import section should distinguish the Contentful object ID from the composite
-Terraform ID and resource identity attributes. Explain any values that the API
-cannot recover during import and what configuring them later will do. State
-Terraform version requirements next to version-dependent syntax.
-
-## Maintain generated sources and navigation
-
-Edit descriptions, examples, or templates according to the
-[authoritative-input map](../../DEVELOPMENT.md#documentation-authoring), then
-follow [Code generation](../../DEVELOPMENT.md#code-generation). Do not copy
-generated attribute lists into manual prose. Keep resource templates close to the
-pinned generator's default structure: description, examples, schema, and import.
-Use `templates/resources.md.tmpl` for the common layout and
-`templates/resources/<name>.md.tmpl` for resources that need additional narrative.
-The filename omits the `contentful_` prefix. Each resource-specific template is a
-complete page template; the pinned generator does not support shared partials.
-Keep its common sections aligned with the generic template, including the import
-method headings, shell-variable guidance, and identity schema after the examples.
-
-The pinned [tfplugindocs reference](https://github.com/hashicorp/terraform-plugin-docs/blob/v0.25.0/README.md#conventional-paths)
-documents the `templates/`, `examples/`, and `docs/` conventions used by this
-repository. The [generation directives](../../main.go) and
-[dependency pin](../../go.mod) determine the local workflow.
-
-Use recognizable tasks and established domain terms for page titles. Registry
-guide titles come from front matter; use `subcategory` only when grouping makes
-the navigation easier to scan.
-See [Registry navigation](https://developer.hashicorp.com/terraform/registry/providers/docs#navigation-hierarchy).
-
-Registry pages use extensionless relative links, such as `../resources/entry`,
-to stay within the selected provider version. Check those links against the
-corresponding generated `.md` files. Handwritten repository documentation uses
-file links with extensions so that navigation works on GitHub. Check template
-links from the generated page's location, not from `templates/`.
+The pinned generator reads complete resource templates. Keep specialized templates aligned with the [common layout](../../templates/resources.md.tmpl), including version labels on import alternatives. [tfplugindocs template conventions](https://github.com/hashicorp/terraform-plugin-docs/blob/v0.25.0/README.md#conventional-paths)
 
 ## Verify the claims and the rendered result
 
-[tfplugindocs validation](https://github.com/hashicorp/terraform-plugin-docs/blob/v0.25.0/README.md#validate-subcommand)
-checks Registry filenames, front matter, and agreement with the provider schema.
-Handwritten design, research, testing, and release documentation are excluded. The
-validator does not establish prose accuracy, working examples, or generation
-freshness.
+Follow [documentation verification](../../DEVELOPMENT.md#documentation-verification). Check descriptions against lifecycle code and examples against the provider schema. Keep empirical Contentful claims tied to the scope of the [API evidence](../research/README.md#evidence-and-redaction).
 
-Review representative pages in the [Registry preview tool](https://registry.terraform.io/tools/doc-preview), including a long resource reference, import alternatives, and guide tables. Registry's “On this page” navigation lists level-two headings: give major tasks such as field removal and recovery their own sections. Keep the generated schema hierarchy intact and put identity schema after the import alternatives.
+Use extensionless relative links within Registry pages so readers stay on their selected provider version. Use filenames with extensions in contributor docs for navigation on GitHub. Check Registry links from the generated page's location, including section anchors.
 
-Use short notes for consequences that affect the reader's next action, such as secret rotation during import or destructive omission. Keep attribute format, omission, and essential import behavior in schema help for editor users; link to task sections for detailed procedures. Shorten table cells where the linked prose already supplies the qualifications, and format HCL expressions and identifiers as inline code.
-
-Review rendered pages for usable links and navigation. Check their claims
-against provider behavior and primary Contentful evidence, and their examples
-against the [example conventions](#make-examples-usable). Use focused behavior tests when a
-documentation claim needs verification. Follow the
-[documentation verification workflow](../../DEVELOPMENT.md#documentation-verification)
-for validator commands, generation reproducibility, and runnable example checks.
-
-Registry documentation is versioned with the provider. Updates to a released
-page require another release; the Registry preview tool can check rendering
-before publication. See [documentation publication](https://developer.hashicorp.com/terraform/registry/providers/docs#publishing)
-and the repository's [release process](../releasing.md).
-
-## Supporting provider examples
-
-These pinned examples informed the practices above. They illustrate documentation
-structure, not Contentful behavior, and were not run against their services.
-
-| Practice | Example |
-| --- | --- |
-| Separate contributor tasks from practitioner reference | [AWS contributor index](https://github.com/hashicorp/terraform-provider-aws/blob/d987ba0fd9ec754b958ca7cb18f63d1fd3522a06/docs/index.md) |
-| Explain credential precedence | [AWS provider overview](https://github.com/hashicorp/terraform-provider-aws/blob/d987ba0fd9ec754b958ca7cb18f63d1fd3522a06/website/docs/index.html.markdown#authentication-and-configuration) |
-| Connect examples and import to the next operation | [Random password template](https://github.com/hashicorp/terraform-provider-random/blob/36122169cd489f1e8c2799c42e6be2caaa4db81c/templates/resources/password.md.tmpl) |
-| Explain destructive options and import consequences | [Google Storage Bucket reference](https://github.com/hashicorp/terraform-provider-google/blob/3fdfc360c44ff1d4a4b87cb18d073fbbfdb10f71/website/docs/r/storage_bucket.html.markdown) |
-
-HashiCorp's general documentation links track its maintained guidance. Recheck
-external requirements when changing the generator or release workflow.
+Inspect long pages, tables, and import examples with the [Registry preview](https://registry.terraform.io/tools/doc-preview) when changing their layout. The validator checks document structure and schema coverage. An example still needs Terraform validation, and a link still needs a destination. [HashiCorp provider documentation](https://developer.hashicorp.com/terraform/registry/providers/docs)

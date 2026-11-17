@@ -1,10 +1,6 @@
 # Development
 
-Use this guide to change, test, and document the provider. Start with the
-[validation scope](#validation-scope) for your change, then use the relevant
-commands: [tests](#tests), [generation](#code-generation),
-[documentation verification](#documentation-verification), or [linting](#linting).
-For release publishing, see [Provider releases](docs/releasing.md).
+For a provider change, start with the [validation scope](#validation-scope). For test design, see [Testing](docs/testing.md).
 
 ## Prerequisites
 
@@ -13,18 +9,7 @@ Tool requirements come from [`go.mod`](go.mod) (Go and generators),
 [the test workflow](.github/workflows/test.yml). Root documentation generation
 requires Terraform on `PATH`; acceptance-test options are under [Tests](#tests).
 
-## Repository guidance
-
-Keep broadly applicable repository guidance in [AGENTS.md](AGENTS.md), which
-[CLAUDE.md](CLAUDE.md) and [GEMINI.md](GEMINI.md) import. Keep task-specific
-development instructions, including commit conventions, here. Design contracts
-belong in `docs/design/`; link them from the instructions with the conditions
-that require reading them.
-See the [design documentation map](docs/design/README.md) for the distinction
-between provider-wide invariants and resource-specific contracts.
-
-For change reviews, follow [Reviewing changes](docs/reviewing.md), which covers
-requirements, adversarial reasoning, proportionate verification, and readiness.
+Repository-wide guidance lives in [AGENTS.md](AGENTS.md). Use the [design index](docs/design/README.md) for resource contracts and [Reviewing changes](docs/reviewing.md) for code review.
 
 ## Commit conventions
 
@@ -37,20 +22,7 @@ requirements, adversarial reasoning, proportionate verification, and readiness.
 
 ## Repository map
 
-- `internal/provider/contentful_provider.go`, `resource_*.go`, `data_source_*.go`,
-  and `list_resource_*.go` define provider configuration, schemas, and Terraform
-  lifecycle methods.
-- `internal/provider/*_model_request.go` converts Terraform values to CMA request
-  payloads; `*_model_response.go` projects CMA responses into Terraform values.
-  Shared `request_*.go` and `response_*.go` helpers implement value conversion.
-- `internal/provider/*_test.go` exercises those boundaries.
-  `contentful_provider_acceptance_support_test.go` wires the mocked/live acceptance-test
-  harness; `internal/contentful-management-go/testing/` implements the in-process
-  CMA server and fixtures.
-- `internal/contentful-management-go/` contains the generated Contentful
-  Management API client and its OpenAPI generation inputs.
-- Documentation inputs and generated outputs are mapped under
-  [Documentation authoring](#documentation-authoring).
+The provider schemas, Terraform lifecycle methods, and request and response models live in [internal/provider](internal/provider/). The [management client](internal/contentful-management-go/) contains the OpenAPI inputs, generated code, and [in-process CMA server](internal/contentful-management-go/testing/).
 
 ## Validation scope
 
@@ -94,11 +66,7 @@ the information being documented, then [regenerate](#code-generation) and
 | Test conventions and verification patterns | `docs/testing.md` |
 | Release process | `docs/releasing.md` |
 
-`tfplugindocs` replaces `docs/index.md`, `docs/resources/`, `docs/data-sources/`,
-`docs/list-resources/`, and `docs/guides/`. These are generated pages, not just
-generated schema fragments. Keep handwritten `docs/design/`, `docs/research/`,
-`docs/testing.md`, and `docs/releasing.md`; never clear the entire `docs/` tree to
-regenerate.
+Keep handwritten contributor pages at the top level of `docs/` or in `docs/design/` and `docs/research/`. During generation, `tfplugindocs` replaces `docs/index.md` and clears every directory it manages, even if the provider has no pages of that kind. [Directories managed by the pinned generator](https://github.com/hashicorp/terraform-plugin-docs/blob/v0.25.0/internal/provider/generate.go#L102-L115)
 
 ## Documentation verification
 
@@ -125,59 +93,17 @@ runnable examples in an isolated configuration:
 
 ## Code generation
 
-The commands below implement the
-[generation requirement](AGENTS.md#documentation-and-workflow).
-
-Running the root generator requires Terraform on `PATH` because it formats
-Terraform examples before regenerating provider documentation. The narrower
-management API client generator does not require Terraform.
-
-Full generation command, run from the repository root:
+Run full generation from the repository root with Terraform on `PATH`:
 
 ```sh
 go generate ./...
 ```
 
-The full generation command runs the package-local `go:generate` directives:
+For a quicker iteration, `go generate .` formats examples and builds the Registry pages. `go generate ./internal/contentful-management-go` rebuilds the client from its OpenAPI definition and `ogen.yml` and can run without Terraform.
 
-- `go generate .` formats Terraform examples under `examples/` and regenerates
-  provider documentation with `tfplugindocs`.
-- `go generate ./internal/contentful-management-go` regenerates the Contentful
-  Management API client from
-  `internal/contentful-management-go/openapi/openapi.yml` using
-  `internal/contentful-management-go/ogen.yml`.
+Use named OpenAPI schema references for nested request and response values with the same contract. Reusing inline objects through `allOf` generates a separate Go type for each parent. Keep separate schemas when requiredness, nullability, or writable fields differ, and keep conversions that normalize responses.
 
-For faster iteration on one generated surface:
-
-```sh
-go generate .
-go generate ./internal/contentful-management-go
-```
-
-Use named, referenced OpenAPI schemas for nested request and response values
-with the same contract. Inline objects reused through `allOf` produce separate
-Go types for each parent, requiring redundant conversions. Keep separate schemas
-where requiredness, nullability, or writable fields differ, and retain conversions
-that model response normalization.
-
-Generated files include `internal/contentful-management-go/oas_*_gen.go` and
-the managed Registry documentation described in
-[Documentation authoring](#documentation-authoring). Edit their sources rather
-than the rendered output.
-
-To check reproducibility, rerun the generators in a clean checkout containing
-the intended input and generated changes. Use a separate checkout if the working
-directory contains unrelated changes. The same cleanliness check as CI prints
-short status, including untracked output, before failing when generation causes
-drift:
-
-```sh
-generated_status="$(git status --short --untracked-files=all)"
-if [ -n "$generated_status" ]; then
-  printf '%s\n' "$generated_status"
-  exit 1
-fi
-```
+To check reproducibility, run full generation again in a clean checkout containing your intended changes. Inspect `git status --short --untracked-files=all` for changes and new files. [Generation CI](.github/workflows/gogenerate.yml) enforces a clean result.
 
 ## Tests
 
@@ -278,36 +204,13 @@ Mocked acceptance tests use isolated local HTTP servers. Mock-only tests always
 use those servers; live-capable tests use them when `TF_ACC_MOCKED` is nonempty.
 Check the affected test before treating an unset `TF_ACC_MOCKED` as evidence that
 it ran live.
-The App Action lifecycle uses the same organization fixture as App Definition tests
-and creates a temporary App Definition and actions. It requires no additional
-environment variables. It covers Function-link import and transitions between
-endpoint and Function targets, exercising definition management, not Function
-execution.
-The live-only App Key test skips in mocked mode. Live-capable harness calls
-serialize access to the shared account and quota; do not remove that serialization
-merely to speed up tests. Query tests require Terraform 1.14 and skip on 1.13.
+The live-only App Key test skips in mocked mode. Live-capable tests serialize access to shared account quotas. Query tests require Terraform 1.14 or later.
 
 ### CI coverage
 
-The [test workflow](.github/workflows/test.yml) defines the Terraform version
-matrix. CI runs the full ordinary suite with cross-package coverage, race
-detection, and randomized test order, mocked acceptance tests on the two
-newest stable Terraform minors, and live acceptance on the newest stable minor.
-Main and manually dispatched CI require live acceptance credentials; PRs without
-the repository secret skip live tests. The explicit minor ranges
-select the latest patch in each minor; update them together through review when
-a new stable minor is released. This matrix defines CI coverage, not a minimum
-supported Terraform version. See the workflow for the ordinary, mocked, and live
-coverage flags.
-The ordinary suite includes the Contentful client; Codecov reports its coverage
-through the path-based component in `codecov.yml`.
+The [test workflow](.github/workflows/test.yml) defines the Terraform matrix and coverage flags. Main and manually dispatched CI require live credentials. PRs without the repository secret skip live tests. The matrix describes CI coverage.
 
-The `ci` gate in the [CI workflow](.github/workflows/ci.yml) requires every
-prerequisite workflow to succeed, including short fuzz campaigns. It runs even
-after a prerequisite fails and rejects failed, cancelled, or skipped prerequisite
-workflows. GitHub's Terraform-managed required check is `ci`, so changes to the
-test matrix do not require infrastructure changes. Codecov and CodeQL have
-separate merge requirements. Automated release creation uses the same `ci` gate.
+The [CI workflow](.github/workflows/ci.yml) owns the required `ci` check, including short fuzz campaigns. The gate requires every prerequisite job to succeed. A skipped or cancelled prerequisite also fails the gate. Codecov and CodeQL have separate merge requirements. See [release publishing](docs/releasing.md) for the checks required before creating a tag.
 
 ### Diagnosing failures
 

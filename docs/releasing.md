@@ -24,27 +24,15 @@
    checks that commit, then Release Please creates the version tag and a draft
    GitHub release and dispatches the [publisher](../.github/workflows/release.yml)
    on the tag.
-4. Watch the separate `Publish release` run. GoReleaser builds the artifacts and
-   uploads them as assets to the draft release. The workflow verifies local signed
-   checksums, generates build provenance attestations, then publishes the GitHub
-   release. Successful CI alone does not mean GitHub publication completed.
+4. After CI succeeds, watch the separate `Publish release` run. GoReleaser builds
+   and uploads the artifacts to the draft. The workflow verifies the signed checksums
+   against the local files, attests build provenance, and publishes the GitHub release.
+   It trusts successful uploads. Remote byte comparisons and GitHub release
+   immutability are outside its checks.
 5. Before announcing the release, confirm its version and rendered documentation
    in the [Terraform Registry](https://registry.terraform.io/providers/cysp/contentful).
 
-The `ci` gate requires every prerequisite workflow declared in
-[CI](../.github/workflows/ci.yml) to succeed before tag and draft creation,
-including the short fuzz campaigns. It is also the Terraform-managed required
-CI check for PRs; CodeQL and Codecov have separate merge requirements. A version
-tag is created only for a release PR merged at the checked commit, and its commit
-is verified before dispatching the publisher. Only `main` is supported, including hotfixes; later
-merges need not wait for GitHub publication.
-
-The publisher runs in tag context: the workflow is dispatched with the version
-tag as its ref, without repeating CI. GitHub rules forbid version-tag updates
-and deletion, including tags associated with draft releases. GoReleaser preserves
-Release Please's notes and uploads assets to the draft release; successful
-uploads are trusted without remote byte comparisons. GitHub release immutability
-is optional and is not checked by the workflow.
+Only release PRs merged into `main` can publish, including hotfixes. The `ci` gate checks the merged commit before Release Please creates its tag and draft. The publisher runs against that tag and preserves the approved notes. Later merges can proceed while publication runs.
 
 ## Recover a failed release
 
@@ -76,7 +64,7 @@ release PR if it remains. Release Please can create the draft before failing to
 update the PR's labels; a merged PR with that label prevents Release Please from
 opening the next release PR.
 
-Never move or reuse a version tag or replace published assets. Once a tag exists,
+GitHub rules protect version tags from updates and deletion, including while the release is a draft. Never move or reuse a tag or replace published assets. Once a tag exists,
 a source or workflow fix needs a higher version: reruns use the tagged workflow.
 Do not rerun legacy release jobs from before this workflow; they replace assets
 on published releases. When recovering an older unpublished version, check

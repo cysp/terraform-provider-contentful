@@ -1,27 +1,12 @@
 # Contentful API research
 
-These references help engineers understand Contentful's resource models, HTTP requests,
-responses, and lifecycle behavior. They distinguish published API contracts from
-first-party client behavior and direct observations.
-
-Research coverage extends beyond the APIs implemented by this provider. For supported
-Terraform resources and configuration, start with the [provider documentation](../index.md).
-For decisions about how the provider uses these APIs, see [provider design](../design/README.md).
+Use these notes to check Contentful request shapes, version preconditions, and observed lifecycle behavior. For Terraform support, see the [provider reference](../index.md). For decisions based on this evidence, see [provider design](../design/README.md).
 
 ## Reading map
 
 | Topic | Reference and questions covered |
 | --- | --- |
-| App Framework | [Resource relationships and API inventory](app-framework/README.md): ownership, installation scope, identity, transport, and collection forms |
-| App configuration | [Definitions, installations, and sharing](app-framework/configuration.md): AppDefinition, AppInstallation, AppDetails, AppAccessGrant, and installation eligibility |
-| App installation secrets | [Secret parameter observations](app-framework/secret-installation-parameters.md): PAT masking, App Identity verification, replacement, preservation placeholders, and deletion |
-| App deployment | [Uploads, bundles, and activation](app-framework/deployment.md): AppUpload, AppBundle, selected bundles, and Function deployment |
-| App Events | [Subscriptions, topics, and payloads](app-framework/events.md): HTTP targets, Function roles, topic validation, and event data |
-| App Actions | [Definitions, invocation, and outcomes](app-framework/actions.md): parameter schemas, calls, status, and raw responses |
-| App Identity | [Keys and access tokens](app-framework/identity.md): AppKey, AppAccessToken, credential exchange, and installation scope |
-| App request signing | [Secrets, signed requests, and verification](app-framework/request-signing.md): AppSigningSecret, AppSignedRequest, rotation, and reconstruction limits |
-| Native external references | [Providers, types, and resources](app-framework/native-external-references.md): ResourceProvider, ResourceType, Resource, and Function resolution |
-| Functions and availability | [Runtime, logs, usage, and availability](app-framework/functions.md): execution limits, plan distinctions, log shapes, and usage queries |
+| App Framework | [App Framework reference](app-framework/README.md): definitions, installations, deployment, events, actions, identity, request signing, Functions, and external resources |
 | Webhooks | [Configuration, delivery, and observability](webhooks.md): topics, headers, Basic authentication, signing settings, retries, and activity logs |
 | Entries and Content Types | [PUT header semantics](entry-and-content-type-put-headers.md): create/update selection and absent-target behavior |
 | Entry lifecycle | [Publication, versions, and deletion](entry-lifecycle.md): version locking, published versions, unpublish, and delete preconditions |
@@ -75,6 +60,8 @@ not inferred solely from the presence of `sys.id`.
 
 ## Evidence and redaction
 
+Record endpoint behavior and its sources in the relevant research note. Keep decisions about how the provider uses that behavior in [provider design](../design/README.md), and deliberate fixture behavior in [test-server conformance](../design/cma-test-server-conformance.md).
+
 | Evidence class | What it establishes |
 | --- | --- |
 | Published Contentful reference | The contract stated by the cited page; examples and prose can disagree. |
@@ -88,13 +75,7 @@ scope or observation matrix. If the date is unknown, mark it as unrecorded; reta
 record date only when it supplies otherwise unavailable provenance. Never infer an
 experiment date from a documentation commit.
 
-For mutable published sources, keep useful review dates in compact source metadata,
-especially when documenting changing limits or source disagreements. A pinned code
-revision identifies source evidence without a separate evaluation date. Editorial and
-re-examination dates belong in Git history. Neither an edit nor a mock test refreshes
-service evidence. Dates that form part of a contract, such as a sunset deadline, remain
-in the relevant contract. Keep contradictory sources visible at the affected operation
-and state which questions remain unverified.
+Date mutable sources where limits or contracts may change. Keep disagreements and unverified cases beside the affected operation. An editorial change or mock test does not refresh service evidence.
 
 Examples and retained observations exclude tenant identifiers, credentials and secret
 fragments, names, content, URLs, local paths, actor/timestamp metadata, inventory, usage,
@@ -106,27 +87,3 @@ status codes, and version comparisons needed to reproduce the reasoning. The bui
 documented public plan limits, experiment counts, observation dates, and public source
 revisions are not tenant inventory. Locale examples must be synthetic or describe a
 configured locale without disclosing the original locale inventory.
-
-## Document organization
-
-Keep one authoritative account of each API behavior. Name files for the entity or
-concept they document; use headings to delimit focused coverage. Split when distinct
-reader questions, representations, or lifecycle boundaries benefit from separate
-references. Do not split every entity automatically or retain a split solely because
-its observations came from separate experiments.
-
-A focused reference leads with its subject, then states scope and evidence, addressing
-and representation, mutation/lifecycle behavior, and unresolved cases as relevant. Keep
-observation matrices near the behavior they explain. Group related references under a
-family directory when a shared relationship map is useful. This README defines shared
-conventions; a family overview records its shared study scope and sources. Individual
-references link to that context and retain their specific limitations, definitions, and
-citations. Summaries may orient readers, but detailed contract explanations belong in
-one reference. Update this index and inbound links when moving material.
-
-Provider schemas, implementation status, private state, recovery policy, test coverage,
-and mock conventions belong in [provider design](../design/README.md). The [CMA
-test-server conformance reference](../design/cma-test-server-conformance.md) links those
-choices back to API evidence. Practitioner configuration belongs in [provider
-documentation](../index.md). These separate audiences can share links without
-duplicating each other's contracts or turning research into a work plan.
