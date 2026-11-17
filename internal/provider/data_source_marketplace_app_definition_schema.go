@@ -17,34 +17,34 @@ func MarketplaceAppDefinitionDataSourceSchema(ctx context.Context) schema.Schema
 				Computed:    true,
 			},
 			"organization_id": schema.StringAttribute{
-				Description: "ID of the organization that owns the marketplace app definition.",
+				Description: "ID of the organization that owns the Marketplace app definition.",
 				Computed:    true,
 			},
 			"app_definition_id": schema.StringAttribute{
-				Description: "The unique identifier for the marketplace app definition.",
+				Description: "System ID of the Marketplace App Definition.",
 				Required:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "The name of the marketplace app.",
+				Description: "The name of the Marketplace app.",
 				Computed:    true,
 			},
 			"src": schema.StringAttribute{
-				Description: "The URL where the marketplace app is hosted.",
+				Description: "The URL where the Marketplace app is hosted.",
 				Computed:    true,
 			},
 			"bundle_id": schema.StringAttribute{
-				Description: "The bundle identifier for the marketplace app.",
+				Description: "Bundle ID of the Marketplace app.",
 				Computed:    true,
 			},
 			"locations": schema.ListNestedAttribute{
-				Description: "Locations where the marketplace app can be rendered in the Contentful web app.",
+				Description: "Locations where the Marketplace app can be rendered in the Contentful web app.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: appDefinitionDataSourceLocationAttributes(),
 				},
 				Computed: true,
 			},
 			"parameters": schema.SingleNestedAttribute{
-				Description: "Parameter definitions for configuring the marketplace app.",
+				Description: "Parameter definitions for configuring the Marketplace app.",
 				Attributes: map[string]schema.Attribute{
 					"installation": schema.ListNestedAttribute{
 						Description: "Parameter definitions for each app installation.",
@@ -63,7 +63,7 @@ func MarketplaceAppDefinitionDataSourceSchema(ctx context.Context) schema.Schema
 				},
 				Computed: true,
 			},
-			"timeouts": timeouts.Attributes(ctx),
+			"timeouts": timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription}),
 		},
 	}
 }

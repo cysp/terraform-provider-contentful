@@ -55,13 +55,13 @@ resource "contentful_content_type" "author" {
 
 ## Lifecycle behavior
 
-Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. The read-only `published_version` reports Contentful `sys.publishedVersion`. See [Operation timeouts](../guides/operation-timeouts) for defaults and deadline precedence.
+Creating a Content Type, or changing its managed draft through Terraform, activates the exact draft returned by that operation. Changes that only affect Terraform state or timeouts do not write or activate the Content Type. The read-only `published_version` reports Contentful `sys.publishedVersion`.
 
 ## Drift and ignored changes
 
 Managed updates write the complete draft, including values retained by `ignore_changes`. An external draft whose changes are all ignored is left untouched. Deactivating outside Terraform is reflected in state; Terraform does not reactivate until a later managed change writes a draft eligible for activation.
 
-Configuration must pass validation even when destroying. If validation rejects an older configuration, correct it before destroying; no intermediate apply is needed. Imported values remain readable, but an update must satisfy validation for all fields it sends, including ignored values.
+Imported values remain readable, but an update must satisfy validation for all fields it sends, including ignored values.
 
 ## Remove a field
 
@@ -222,18 +222,16 @@ Optional:
 
 Optional:
 
-- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
-- `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
-- `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `create` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`.
+- `delete` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`. Uses the value saved in state, with a minimum of `10s`.
+- `read` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`. Uses the value saved in state, with a minimum of `10s`.
+- `update` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`.
 
 ## Import
 
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
-
 ### Import by identity
 
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+Terraform 1.12 or later:
 
 ```terraform
 import {
@@ -248,7 +246,7 @@ import {
 
 ### Import by ID
 
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+Terraform 1.5 or later:
 
 ```terraform
 import {
@@ -259,7 +257,7 @@ import {
 
 ### Import with the CLI
 
-Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+Set the shell variables to your Contentful IDs:
 
 ```shell
 terraform import contentful_content_type.author "$CONTENTFUL_SPACE_ID/$CONTENTFUL_ENVIRONMENT_ID/author"

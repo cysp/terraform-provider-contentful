@@ -1,47 +1,18 @@
 # Terraform value semantics
 
 This contract is for maintainers changing schemas, planning, request conversion,
-response projection, or state publication. The shared rules apply across the
-provider; the named resource sections define their narrower contracts. The
-implementation uses the Framework version pinned in [`go.mod`](../../go.mod).
-
-## Reading map
-
-| Concern | Sections |
-| --- | --- |
-| Shared Terraform value handling | [Value states](#value-states), [request conversion](#request-conversion), [response projection](#response-projection), [plan consistency](#lifecycle-ownership-and-plan-consistency), and [local state publication](#diagnostics-and-local-publication) |
-| Content Type lifecycle | [Activation ownership](#content-type-activation-ownership) |
-| Entry lifecycle | [Create and Update request selection](#entry-specified-id-request-selection), [publication and fields](#entry-publication-ownership-and-partial-field-ownership), and [destroy](#entry-destroy-lifecycle) |
-| Mutation reconciliation | [Role](#role-mutation-decisions), [Editor Interface](#editor-interface-mutation-decisions), and [Webhook](#webhook-mutation-decisions) |
-| App Installation parameters | [Redacted responses, complete-object ownership, and import](app-installation-secret-parameters.md#response-contract) |
-| Locking and retries | [Editor Interface preconditions](#editor-interface-version-preconditions), [private optimistic-lock barrier](#provider-private-optimistic-lock-barrier), [taxonomy locking](#taxonomy-optimistic-version-locking), and [HTTP retry policy](contentful-http-retry-policy.md) |
-| Taxonomy values | [Collection ownership](#taxonomy-optionalcomputed-collection-ownership) and [response canonicalization](#taxonomy-response-canonicalization) |
-| Other resource contracts | [App Definition configuration](#app-definition-configuration), [App Action identity](#app-action-identity), [Webhook signing secret](webhook-signing-secret.md), [Webhook password](#webhook-basic-password), [Delivery API key environments](#delivery-api-key-environments), [Extension sources](#extension-sources), [Space Enablements](#space-enablements), and [Live Preview variables](#live-preview-variables) |
-
-`Config`, `Plan`, and `State` in the tables refer to Terraform configuration, the
-effective plan after lifecycle processing, and prior state. A known planned value is
-**plan-constrained**: the provider must return an equivalent value after apply.
-A value is **response-owned** only where the effective plan permits Contentful's
-response to supply it. See the [evidence boundaries](README.md#evidence-boundaries)
-before treating a service observation as a permanent API guarantee.
+response projection, or state publication. Use the [design map](README.md) for
+resource-specific contracts. `Config`, `Plan`, and `State` refer to configuration,
+the effective plan after lifecycle processing, and prior state. A response-owned
+value can come from Contentful only where the effective Plan permits it.
 
 ## Value states
 
-Provider conversion distinguishes known non-null values, null, and unknown.
-Null is itself known in Terraform; it represents absence. A known empty string,
-list, set, or map is non-null. Conversion must not rewrite it as null or
-unknown. The response-reconciliation rules below define when API
-canonicalization permits restoration of the exact planned or prior value.
-
-| Value state | Boundary meaning |
-| --- | --- |
-| Known, non-null | May be converted to an API value or written to state. |
-| Null | Absence. The schema and API contract decide whether this means omission, clearing, or an explicit null. |
-| Unknown | Deferred until a later Terraform phase. It must not be read through a primitive accessor. |
-
-These rules also apply to collection elements and object attributes. Conversion
-must inspect both the container and each child before reading primitive values.
-Diagnostics for invalid children must retain their exact attribute paths.
+Keep Terraform values intact until conversion: inspect containers and their
+children before using primitive accessors, and retain attribute paths in errors.
+Do not turn known empty values into null. Each API member needs an explicit policy
+for omission, null, and empty values; the [Framework value guarantees](https://developer.hashicorp.com/terraform/plugin/framework/handling-data/accessing-values#when-can-a-value-be-unknown-or-null)
+supply the lifecycle context.
 
 ## Request conversion
 
@@ -80,84 +51,6 @@ mutation payload containing unresolved values. Harmless required-known identity
 or version parameter objects may already have been constructed; a partially
 converted payload is never sent.
 
-### Taxonomy Optional+Computed collection ownership
-
-For both taxonomy concepts and concept schemes, configuration determines
-durable ownership of the affected Optional+Computed collections. During an
-actual mutation, omitted collections remain unknown unless a known plan or
-default explicitly constrains them. Known plans are never discarded: they are
-sent and constrain the returned state. Clean no-change plans remain stable;
-response values fill unknown plans.
-
-The ownership rules are:
-
-- Omitted collections are response-owned, so state may reflect Contentful.
-- Any known configured value, including an explicit empty collection, is
-  configuration-owned and must be preserved after Create or Update.
-- Explicit empty collections are accepted input and remain distinct from
-  omission.
-
-For a concept scheme request, omitted `top_concept_ids` and `concept_ids` are
-left absent on the wire. Explicit empty collections are sent as `[]`. The
-response schema still requires both collections; current CMA observations show
-them as present empty arrays after an omitted request.
-
-The affected concept collections are `alt_labels`, `hidden_labels`,
-`notations`, `broader_concept_ids`, and `related_concept_ids`. The affected
-scheme collections are `top_concept_ids` and `concept_ids`.
-
-### App Definition configuration
-
-Configuration validation checks known location and parameter values. Create/Update
-validate the final Plan before model decoding or mutation, including values retained
-by `ignore_changes`. Read/import preserve representable responses without imposing
-write restrictions. Shared UI Extension conversion does not acquire App Definition
-validation rules. Location and field-type collection uniqueness is left to CMA;
-the provider preserves duplicate entries in requests. Recognized field relationships
-share validation with Extensions, descending only into known Array definitions.
-Unrecognized field types, including ResourceLink, remain semantically opaque;
-request knownness and representability checks still apply. App Definition option
-cardinality follows the [shared JSON interpretation](#json-normalization), without
-an exception for duplicate keys. The original request JSON is not rewritten.
-
-Validation must preserve valid replacement replanning. Terraform can first propose
-an update using ignored prior state, then select replacement and replan creation from
-Config. Rejecting that intermediate proposal would block a valid replacement, so
-checks of effective values run before Create/Update writes. See
-[Terraform replacement planning](https://github.com/hashicorp/terraform/blob/v1.17.1/internal/terraform/node_resource_abstract_instance.go#L953-L1157)
-and the [replacement tests](../../internal/provider/resource_app_definition_locations_lifecycle_test.go).
-An unrelated update retaining invalid state can consequently fail at apply before its
-own write, after independent resources may have changed.
-
-Configuration validation also runs during ordinary destroy, even with
-`ignore_changes`. Correcting Config permits deletion of representable irregular
-State without first applying the correction remotely. See the
-[destroy recovery tests](../../internal/provider/resource_app_definition_parameters_lifecycle_test.go)
-and [practitioner recovery steps](../resources/app_definition.md#updating-existing-definitions).
-
-### App Action category parameters
-
-The App Action resource's `parameters` attribute represents writable Custom
-parameter definitions. It is null for built-in categories; data sources expose
-their complete returned definitions. Resource projection follows the response's
-actual category, including after a contradictory mutation response.
-
-### App Action identity
-
-`app_action_id` is Optional+Computed. Create sends the known planned ID in the
-POST body when configured; otherwise Contentful assigns the ID. The provider
-does not restrict the ID by action type. Contentful currently accepts a
-caller-supplied ID for a `function-invocation` action and rejects one for an
-`endpoint` action. Update never sends an ID in its body. Removing a configured
-ID retains the existing identity, and changing it requires replacement. A
-Function action updated to an endpoint retains its ID, including when that ID
-remains configured; a subsequent Create with that endpoint configuration would
-currently be rejected by Contentful.
-
-Create posts directly with the configured ID. Contentful may overwrite an
-existing Function action with that ID; the tested conditional headers did not
-prevent this. See the [App Action API evidence](../research/app-framework/actions.md).
-
 ## Response projection
 
 Response conversion projects remote data into the Terraform schema; it does not
@@ -194,88 +87,14 @@ character. A valid surrogate pair following an unpaired surrogate is preserved:
 `"\ud800\ud800\udc00"` normalizes to `"�𐀀"`. Object keys that become equal after
 decoding follow the same last-value rule as duplicate keys. A malformed key
 and an explicit replacement-character key can collide; the last value in
-document order wins. This standard-library policy can change both malformed
-string values and collision winners compared with the former JX normalization
-pass.
+document order wins.
 
 App Installation and Extension parameters, Role policy constraints, and Editor
 Interface settings use the checked normalization operation and report failures
 at their attribute paths. Missing response members remain Terraform null; an
 explicit JSON `null` remains a known JSON string. The existing fallback
 normalizers retain the original input on failure for callers that own their
-validation or preserve opaque values. Neither fallback performs an additional
-decode after successful normalization.
-
-### Taxonomy response canonicalization
-
-For concept `alt_labels` and `hidden_labels`, Contentful may currently add
-known-empty entries for locales present in `pref_label`. After Create or Update,
-the provider preserves the configured representation only for that narrow
-response-added canonicalization. On refresh it preserves the prior state
-representation for the same canonicalization; a first Read with no prior value,
-including import, takes the complete response. It does not treat arbitrary
-missing and empty locales as equivalent: nonpreferred empty or nonempty values,
-list ordering, and remote omission of a previously present empty value remain
-meaningful. Read and import therefore expose meaningful remote labels and drift.
-
-Omission remains valid and delegates current CMA canonicalization. When the
-provider explicitly sends `altLabels` or `hiddenLabels`, it supplies an array
-for each `pref_label` locale because CMA rejects explicit maps missing a
-preferred-locale entry.
-
-For the Optional localized maps `note`, `change_note`, `definition`,
-`editorial_note`, `example`, `history_note`, and `scope_note` on a concept, and
-`definition` on a concept scheme, CMA currently canonicalizes an explicitly
-sent `{}` to `null`. This is a narrow exception to the usual distinction
-between null and known empty values: after a mutation, the provider publishes
-the planned `{}` only after verifying a returned `null`; on Read, it preserves
-prior `{}` only for the same returned-null case. Import or prior null with a
-returned null remains null; otherwise Read and import publish the remote map,
-including nonempty drift. This is an observed CMA behavior, not a documented
-CMA guarantee, so its focused mock and lifecycle tests are upgrade guards.
-
-The repository mock models only the directly observed effective `en-US`
-taxonomy locale behavior for `prefLabel`, `altLabels`, `hiddenLabels`, and all
-observed localized concept and scheme fields:
-unsupported locales are discarded when `en-US` is present, and requests without
-an effective `en-US` preferred label, or with an explicitly supplied label map
-without an effective `en-US` entry, are rejected. It does
-not model secondary taxonomy locale enablement or provider-side locale
-validation.
-
-### Webhook Basic password
-
-Contentful accepts `httpBasicPassword` on Webhook Create and Update but omits
-the property from successful mutation and GET responses. The generated client
-distinguishes absence (`Set` is false) from explicit JSON `null` (`Set` and
-`Null` are true). Only absence receives the password fallback; explicit null
-and returned values remain response truth.
-
-| Operation | Config | Effective Plan | Prior State | CMA password response | Request password | Terraform password state | Diagnostic |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Create | configured | known | none | absent | Plan value | exact Plan value | none |
-| Create or Update | configured | unknown | any | not reached | no request | unchanged | attribute error |
-| Read/refresh | any | n/a | known managed value | absent | none | exact prior value | none; equality is not established |
-| Read/import | omitted or configured | n/a | imported null | absent | none | null | none |
-| Read | any | n/a | any | explicit null or returned value | none | response value | none |
-| Ordinary Update or rotation | configured | known | any | absent | effective Plan value | exact Plan value | none |
-| Update with `ignore_changes` | changed | prior value retained | known | absent | effective Plan value | exact effective Plan value | none |
-| Credential removal | explicit null for both Basic credentials | null for both | known | absent | null for both | null | none |
-| Update after omission | omitted | null | known or null | absent | null | null | none |
-| Post-import ownership | configured | known | imported null | absent | effective Plan value | exact Plan value | intentional Update |
-| Mutation contradiction | configured | known | any | explicit null or different returned value | effective Plan value | response value | Terraform consistency error |
-
-Mutation state starts from the complete CMA response. Only an absent password
-property restores a known, non-null effective Plan value. Read similarly
-preserves only a known, non-null prior state value; import has no such value and
-therefore leaves the password null. The fallback never copies Config or another
-planned attribute and never introduces an unknown value into state.
-
-Contentful does not expose the stored password. Preserving prior Terraform
-state therefore prevents false drift but is not evidence that the remote
-password is equal. Refresh cannot detect another actor rotating or removing
-the password. Import likewise cannot discover or claim ownership of it; later
-password configuration is an intentional update.
+validation or preserve opaque values.
 
 ## Lifecycle ownership and plan consistency
 
@@ -329,412 +148,19 @@ for its state-to-plan configuration delta, and the
 [API research](../research/content-preview-environments.md#concurrency-and-errors)
 for observed version-locking limits.
 
-Apply-time authority follows the effective Plan at the individual attribute,
-including attributes nested inside known objects:
+Known effective Plan values constrain apply results, including defaults,
+computed values retained by plan modifiers, and values retained by `ignore_changes`.
+Only unknown planned values can take an unconstrained response value. Endpoint
+identity and provider-local `timeouts` remain outside the API-value overlay:
+identity retains the addressed target; timeouts retain the effective Plan.
 
-- Optional values, including known null and known empty values, are
-  Plan-constrained.
-- Configuration omission permits an Optional+Computed value to be
-  response-owned only while its effective Plan remains unknown. A known value
-  supplied by a default, a plan modifier, prior state, or `ignore_changes` is
-  Plan-constrained for that apply.
-- Computed-only values are response-owned while their effective Plan is unknown.
-  A known computed-only Plan value is constrained in the same way as any other
-  known Plan value.
-- Plan modifiers may preserve prior state for unknown computed plans. Once they
-  do, the resulting known Plan value is constrained and must not be replaced by
-  a different response value.
+Terraform 1.15.8 with Framework v1.19.0 was exercised with provider comparisons
+removed. Core rejected contradictory defaults and `UseStateForUnknown` values
+for Webhook `active`, `headers`, `headers[*].secret`, and Editor Interface
+`sidebar[*].disabled`. A contradictory Create retained returned values in tainted
+recovery state. Recheck these observations when upgrading Core or Framework.
 
-Null, omission, and known empty values remain distinct throughout request and
-response conversion.
-
-Terraform 1.15.8 with `terraform-plugin-framework` v1.19.0 was exercised with
-the provider-side comparison temporarily removed so contradictory mutation
-state reached Terraform Core directly. Core rejected known Plan values produced
-by static defaults and `UseStateForUnknown` for Webhook `active`, `headers`, and
-`headers[*].secret`, and Editor Interface `sidebar[*].disabled`. A contradictory
-Create also retained the returned value in tainted recovery state. These are
-version-specific observations, so the upgrade triggers below still apply.
-Sanitized direct CMA observations for the affected Webhook and Editor Interface
-values are recorded in
-[Webhook observations](../research/webhooks.md#direct-configuration-observations) and
-[Editor Interface observations](../research/editor-interfaces.md).
-
-The tables below use these common rules:
-
-- `ignore_changes` may replace changed Config with prior State in the effective
-  Plan; reconciliation always uses that effective Plan and never copies Config.
-- A known null or empty Plan is compared as a real value. An unknown Plan takes
-  the response. A required value that remains null or unknown cannot reach a
-  successful mutation because request conversion fails first.
-- A semantically equivalent response restores the exact Plan representation.
-  A meaningful difference or unsupported/lossy projection retains the complete
-  response projection and adds the listed attribute error. Any such mismatch
-  prevents every otherwise valid API-backed Plan overlay for that resource.
-- Endpoint identity and provider-local `timeouts` are outside that atomic
-  overlay. Endpoint identity remains the mutation target; `timeouts` has no CMA
-  projection and always retains its effective Plan representation.
-
-The six Role, Editor Interface, and Webhook callers below differ where the
-endpoint supplies identity or the request needs Config to decide omission.
-Each publishes response-derived state and handles its private version under the
-[endpoint identity policy](#mutation-endpoint-identity) before appending consistency
-diagnostics, allowing Terraform to retain recovery state when apply reports the
-error. Other resources have the separate contracts named in the
-[reading map](#reading-map).
-
-| Resource caller | Mutation and identity | Inputs to request conversion | Reconciliation boundary |
-| --- | --- | --- | --- |
-| Role Create | `POST` to the planned `space_id`; CMA allocates `role_id`. | Effective Plan. | Unknown created identity comes from response; all known Plan values are compared. |
-| Role Update | `PUT` to planned `space_id/role_id` with prior private version. | Effective Plan. | Both endpoint identities are pinned; all known Plan values are compared. |
-| Editor Interface Create | Versioned `PUT` to planned `space_id/environment_id/content_type_id`. | Effective Plan. | All identity is endpoint-owned and pinned; all known Plan values are compared. |
-| Editor Interface Update | Versioned `PUT` to the same planned endpoint, including any version offset. | Effective Plan. | Same reconciliation as Create; prior private version affects only the request lock. |
-| Webhook Create | `POST` to planned `space_id`; CMA allocates `webhook_id`. | Effective Plan values; Config is consulted only for Optional+Computed request omission. | Reconciliation receives the effective Plan, not Config. Unknown created identity and unknown Optional+Computed values come from response. |
-| Webhook Update | Versioned `PUT` to planned `space_id/webhook_id`. | Effective Plan values; Config is consulted only for Optional+Computed request omission. | Endpoint identity is pinned. Defaults, `UseStateForUnknown`, and `ignore_changes` constrain every known Plan value. |
-
-Role, Editor Interface, and Webhook Read callers do not use mutation
-reconciliation. They project the current response, retain only documented
-write-only fallbacks, and thereby expose meaningful remote drift.
-
-### Content Type activation ownership
-
-Content Type publication metadata is observation, not activation authority.
-`contentful_content_type` activates only the exact draft returned by a
-successful Create or modeled Update. After the complete truthful draft state
-and optimistic-lock version are checkpointed and the response identity,
-positive version, draft tuple, and plan consistency are validated, private
-state records that exact version as pending activation authority. Read, import,
-legacy state, external deactivation, external drafts, matching configuration,
-and field equality never create that authority.
-
-A modeled Update uses the exact current Contentful version and the effective
-Terraform plan. This includes refreshed values protected by `ignore_changes`.
-When planning preserves omitted metadata taxonomy from prior state, that known
-planned taxonomy also constrains both the draft and activation responses. A
-contradictory draft response is checkpointed as recovery state and revokes any
-earlier activation authority, even if its returned version matches the pending
-version. Unknown planned taxonomy remains response-owned.
-After Contentful accepts the draft, the provider checkpoints its returned state
-and version before recording the pending marker and activating that exact
-version. Confirmed activation checkpoints the returned state/version and clears
-the marker. An explicit or ambiguous activation failure retains the truthful
-draft and marker; an unchanged later operation is deliberately planned as an
-Update and activates only the marked version without another draft PUT.
-
-Read preserves the marker only while the current `sys.version` exactly equals
-the marker and the observed publication tuple exactly equals the checkpointed
-draft tuple. Observing the marked version already activated clears the marker
-without another activation.
-Observing any other current version or publication state revokes authority and
-does not mutate. With refresh disabled, recovery still submits only the marked
-version; `VersionMismatch` revokes the marker and never causes a GET-and-retry
-against a newer version.
-
-During Create, once the provider has checkpointed and marked the exact returned
-draft, an unconfirmed activation is reported as a warning. This lets Terraform
-retain the truthful untainted draft and schedule exact-version recovery without
-repeating the Create PUT. Failures before the draft is validated and marked
-remain errors and grant no activation authority.
-
-No activation path fetches or retries a newer draft. Concurrent draft changes
-therefore fail Contentful's optimistic-concurrency check instead of publishing
-another actor's version.
-
-A nominally successful activation response is accepted only when its
-`sys.publishedVersion` equals the exact version sent in the activation request
-and its returned `sys.version` is positive and greater. The normally observed
-one-version-newer response receives no special treatment; any greater current
-version confirms activation and never becomes new authority. Likewise, a
-successful draft PUT may return any positive exact version on Create or Update.
-Its `publishedVersion` must be known or null and, when present, non-negative and
-less than the returned version before that version can be used as the activation
-lock token. The provider checkpoints the complete returned response before
-reporting a contradiction and revokes authority, so state remains truthful even
-when apply fails.
-
-`published_version` did not exist in state written by older provider versions.
-A normal post-upgrade refresh projects `sys.publishedVersion`. With
-`-refresh=false`, Terraform decodes the missing legacy Computed value as null,
-but no pending activation marker exists, so publication remains observational
-and the unchanged transition is a no-op.
-
-### Role mutation decisions
-
-Role resource and data-source models use native maps, slices, and policy pointers
-with Framework scalar values. Nil containers and pointers represent null;
-allocated empty containers remain known empty values. Whole-container and
-whole-policy unknown values fail with attribute-path diagnostics during model
-decoding. Unknown scalar children remain representable and are rejected by
-request conversion before mutation. Role has no model-decoding planning hook;
-adding one would require a representation that preserves deferred containers.
-
-| Attribute | Schema and identity | Config, effective Plan, and prior State | Response projection and equivalence | State and diagnostic |
-| --- | --- | --- | --- | --- |
-| `id` | Computed legacy identity | Config cannot set it. Create Plan is unknown; Update may preserve prior State. | Derived as `space_id/role_id`; no independent CMA field. | Use the endpoint-derived identity. If a known Plan `id` conflicts with that identity, retain the endpoint identity and add an `id` error. |
-| `space_id` | Required endpoint identity | Config must be known and non-null. Replacement and `ignore_changes` are already reflected in Plan; prior State otherwise has no authority. | Exact comparison with `sys.space.sys.id`. | Always retain the requested endpoint value. A different response adds a `space_id` error and cannot retarget the resource. |
-| `role_id` | Computed response-owned identity on Create; endpoint identity on Update | Config cannot set it. Create Plan is unknown; Update normally preserves prior State. | Exact comparison with `sys.id` when Plan is known. | Create retains the allocated response ID, including when a known or null Plan produces a consistency error. Update retains the endpoint ID and reports a mismatch at `role_id`. |
-| `name` | Required | Config and effective Plan must be known; prior State matters only through `ignore_changes`. Empty is a known value. | Exact scalar comparison. | Equivalent response restores Plan. Difference retains response and adds a `name` error. |
-| `description` | Optional | Omitted Config produces known null; explicit empty remains empty. Effective Plan, including prior State selected by `ignore_changes`, is authoritative. | Exact nullable scalar comparison; null and empty are distinct. | Equivalent response restores Plan. Difference retains response and adds a `description` error. |
-| `permissions` | Required map of lists | Null/unknown cannot reach mutation. Empty map and empty action lists are known. Effective Plan may come from `ignore_changes`. | Map keys are exact; each action list is unordered while duplicate multiplicity is preserved. Unsupported permission variants make projection lossy. | Equivalent response restores the exact map/list Plan representation. Difference adds a `permissions` error; lossy projection retains its warning and adds the same scoped consistency error. |
-| `policies` | Required list of objects | Null/unknown cannot reach mutation; an empty list is known. Effective Plan may come from `ignore_changes`. | Policy order is insignificant while duplicate multiplicity is preserved. Each policy matches only when all nested attributes below are equivalent. Unsupported policy variants make projection lossy. | Equivalent response restores exact Plan order and representation. Difference adds a `policies` error; lossy projection also retains its warning. |
-| `policies[].actions` | Required list | Null/unknown cannot reach mutation; empty is known when accepted by validation. | Unordered string comparison preserving duplicates; Contentful scalar `"all"` and Terraform `["all"]` are the established request/response projection. | Participates in the parent `policies` decision and diagnostic. |
-| `policies[].constraint` | Optional normalized JSON string | Omitted is null; known JSON, including `{}` or `[]`, remains distinct from null. | JSON semantic comparison normalizes representation; array order remains meaningful. Unsupported JSON projection prevents equivalence. | Exact Plan JSON text is restored only when equivalent; otherwise the complete policies response remains with a `policies` error. |
-| `policies[].effect` | Required | Must be known and non-null; empty remains a known scalar if it passes earlier validation. | Exact scalar comparison. | Participates in the parent `policies` decision and diagnostic. |
-| `timeouts` | Optional provider-local object | Omitted is null; configured children and values selected by `ignore_changes` are known Plan values. | No CMA projection or comparison. | Always retain exact Plan. No mutation-consistency diagnostic. |
-| `timeouts.create`, `timeouts.read`, `timeouts.update`, `timeouts.delete` | Optional provider-local strings | Omitted children are null; configured durations remain exact Plan strings. | Parsed only for the corresponding operation; never returned by CMA. | Retained inside `timeouts`; invalid durations fail validation before mutation. |
-
-### Editor Interface version preconditions
-
-Create sends `X-Contentful-Version: 1` plus the provider's counted Content Type
-activations. This permits management of the initial automatically created
-interface, including after a subsequent activation in the same apply. Update
-uses the private `version` last observed by Read or an interface mutation, plus
-the same count. A version conflict fails without fetching a newer version or
-retrying; adopting an existing modified interface requires import. A mismatch
-alone does not establish its cause or whether import is necessary.
-
-The count is in-memory, scoped to one provider configuration, and keyed by
-`space_id`, `environment_id`, and `content_type_id`. Resources changing together
-must use the same provider configuration and a Terraform dependency. Separate
-aliases do not share counts, even with identical credentials. Read and successful
-Create/Update checkpoint the actual response version and reset the count before
-reporting mutation consistency errors. Restart discards the count; refresh
-supplies a new observed baseline. Counting does not schedule or order writes.
-
-Only activation of an already published Content Type advances an existing
-interface. Determine this from the known, response-derived `published_version`
-**before activation**, including recovery through Update. An unpublished draft
-has no interface, so activation creates version 1 and contributes no offset.
-Count the increment after checkpointing the activation response and before
-reporting consistency or activation diagnostics; failed activation responses do
-not reach this checkpoint.
-
-Direct CMA experiments establish the lifecycle expectations used by the tests:
-
-| Content Type operation | Editor Interface observation |
-| --- | --- |
-| Create an unpublished draft | GET returns 404. |
-| First activation | Interface starts at version 1. |
-| Update the draft before activation | Interface version is unchanged. |
-| Activate an already published type, including unchanged content or description-only, field-name, and added-field changes | Interface version increments once. |
-| Deactivate | GET returns 404. |
-| Reactivate after deactivation | Default interface at version 1; previous widget settings are absent. |
-
-The mock follows these observations. Read removes a missing interface from
-Terraform state; this grants no authority to reactivate an externally deactivated
-Content Type. Editor Interface Delete only relinquishes Terraform ownership.
-
-### Editor Interface mutation decisions
-
-| Attribute | Schema and identity | Config, effective Plan, and prior State | Response projection and equivalence | State and diagnostic |
-| --- | --- | --- | --- | --- |
-| `id` | Computed legacy identity | Config cannot set it. Create Plan is unknown; Update may preserve prior State. | Derived as `space_id/environment_id/content_type_id`; no independent CMA field. | Use the endpoint-derived identity. A conflicting known Plan adds an `id` error. |
-| `space_id`, `environment_id`, `content_type_id` | Required endpoint identity | Each Config value must be known and non-null. Replacement and `ignore_changes` are already reflected in Plan. | Exact comparison with the corresponding `sys` link. | Always retain each requested endpoint value. A different response adds an error at that identity path and cannot retarget the resource. |
-| `editor_layout` | Optional ordered list | Omitted is null; explicit `[]` is distinct. A known Plan, including one selected by `ignore_changes`, is authoritative; unknown takes response. | Ordered, exact structural comparison. The schema cannot represent top-level field layout items, so such a response is lossy. | Equivalent response restores exact Plan. Difference adds an `editor_layout` error. Lossy projection retains its warning and adds the same scoped consistency error when Plan is known. |
-| `editor_layout[].group` | Required object | Required whenever the parent element is present. | Exact object structure. | Participates in `editor_layout`; mismatch is reported at `editor_layout`. |
-| `editor_layout[].group.group_id`, `editor_layout[].group.name` | Required strings | Must be known and non-null; empty is still a known scalar. | Exact comparison. | Participates in `editor_layout`. |
-| `editor_layout[].group.items` | Required ordered list | Must be known; `[]` is valid and distinct from null. | Ordered structural comparison. | Participates in `editor_layout`. |
-| `editor_layout[].group.items[].field`, `editor_layout[].group.items[].group` | Optional exclusive objects | Exactly one must be configured. Null marks the unselected alternative; unknown cannot reach request conversion. | Exact selected-alternative and structure comparison. | Participates in `editor_layout`; unsupported alternatives cannot manufacture equivalence. |
-| `editor_layout[].group.items[].field.field_id` | Required string | Must be known and non-null. | Exact comparison. | Participates in `editor_layout`. |
-| `editor_layout[].group.items[].group.group_id`, `editor_layout[].group.items[].group.name` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `editor_layout`. |
-| `editor_layout[].group.items[].group.items` | Required ordered list | Must be known; `[]` is distinct from null. | Ordered structural comparison. | Participates in `editor_layout`. |
-| `editor_layout[].group.items[].group.items[].field` | Required object | Must be present and known. | Exact structure comparison. | Participates in `editor_layout`. |
-| `editor_layout[].group.items[].group.items[].field.field_id` | Required string | Must be known and non-null. | Exact comparison. | Participates in `editor_layout`. |
-| `controls` | Optional ordered list | Omitted is null; `[]` is known. Unknown takes response; known Plan may reflect `ignore_changes`. | Ordered element comparison; nested `settings` uses JSON semantics. | Equivalent response restores exact Plan. Difference or lossy projection adds a `controls` error and retains response. |
-| `controls[].field_id` | Required string | Must be known and non-null. | Exact comparison. | Participates in `controls`. |
-| `controls[].widget_namespace`, `controls[].widget_id` | Optional strings | Omitted is null; empty remains distinct. | Exact nullable scalar comparison. | Participates in `controls`. |
-| `controls[].settings` | Optional normalized JSON string | Omitted is null; known JSON remains distinct from null. | JSON semantic comparison; array order remains meaningful. | Equivalent response restores exact Plan JSON representation; otherwise `controls` fails atomically. |
-| `group_controls` | Optional ordered list | Omitted is null; `[]` is known. Unknown takes response; known Plan may reflect `ignore_changes`. | Ordered element comparison; nested `settings` uses JSON semantics. | Equivalent response restores exact Plan. Difference or lossy projection adds a `group_controls` error and retains response. |
-| `group_controls[].group_id` | Required string | Must be known and non-null. | Exact comparison. | Participates in `group_controls`. |
-| `group_controls[].widget_namespace`, `group_controls[].widget_id` | Optional strings | Omitted is null; empty remains distinct. | Exact nullable scalar comparison. | Participates in `group_controls`. |
-| `group_controls[].settings` | Optional normalized JSON string | Omitted is null; known JSON remains distinct from null. | JSON semantic comparison. | Equivalent response restores exact Plan JSON representation; otherwise `group_controls` fails atomically. |
-| `sidebar` | Optional ordered list | Omitted is null; `[]` is known. Unknown takes response; known Plan may reflect `ignore_changes`. | Ordered element comparison; nested `settings` uses JSON semantics and `disabled` is exact. | Equivalent response restores exact Plan. Difference or lossy projection adds a `sidebar` error and retains response. |
-| `sidebar[].widget_namespace`, `sidebar[].widget_id` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `sidebar`. |
-| `sidebar[].settings` | Optional normalized JSON string | Omitted is null; known JSON remains distinct from null. | JSON semantic comparison. | Equivalent response restores exact Plan JSON representation; otherwise `sidebar` fails atomically. |
-| `sidebar[].disabled` | Optional+Computed with static `false` default | Omission normally yields known `false`, so prior State or a differing response cannot override it during apply. Only an actually unknown effective Plan is response-owned. | Exact boolean comparison. CMA has been observed to omit the property when it was not sent and to return explicit `false` when sent by the provider. | Equivalent response restores Plan. Difference retains response and adds a `sidebar` error. |
-| `timeouts` | Optional provider-local object | Omitted is null; configured children and `ignore_changes` results are Plan-owned. | No CMA projection. | Always retain exact Plan without a consistency diagnostic. |
-| `timeouts.create`, `timeouts.read`, `timeouts.update` | Optional provider-local strings | Omitted children are null; configured durations remain exact Plan strings. | Parsed only for the corresponding operation. | Retained inside `timeouts`; invalid durations fail before mutation. |
-
-### Webhook mutation decisions
-
-| Attribute | Schema and identity | Config, effective Plan, and prior State | Response projection and equivalence | State and diagnostic |
-| --- | --- | --- | --- | --- |
-| `id` | Computed legacy identity | Config cannot set it. Create Plan is unknown; Update may preserve prior State. | Derived as `space_id/webhook_id`; no independent CMA field. | Use endpoint-derived identity. A conflicting known Plan adds an `id` error. |
-| `space_id` | Required endpoint identity | Must be known and non-null. Replacement and `ignore_changes` are already reflected in Plan. | Exact comparison with `sys.space.sys.id`. | Always retain requested endpoint value. Difference adds a `space_id` error and cannot retarget the resource. |
-| `webhook_id` | Computed response-owned identity on Create; endpoint identity on Update | Config cannot set it. Create Plan is unknown; Update normally preserves prior State. | Exact comparison with `sys.id` when Plan is known. | Create retains the allocated response ID, including when a known or null Plan produces a consistency error. Update retains the endpoint ID and reports a mismatch at `webhook_id`. |
-| `active` | Optional+Computed with static `true` default | Omitted Config normally yields known `true`; explicit Config, prior State selected by planning, and `ignore_changes` likewise produce the effective Plan. Only an actually unknown Plan is response-owned. | Exact boolean comparison. CMA has also been observed to default an omitted raw request member to `true`; the provider normally sends its known default explicitly. | Equivalent response restores Plan. Difference retains response and adds an `active` error. |
-| `name`, `url` | Required strings | Must be known and non-null; empty remains a known value. Prior State matters only through `ignore_changes`. | Exact scalar comparison. | Equivalent response restores Plan. Difference retains response and adds an error at `name` or `url`. |
-| `topics` | Required non-empty ordered list of strings | Null, unknown, empty, or null-element values fail validation or request conversion before mutation. The known non-empty effective Plan, including a value selected by `ignore_changes`, is authoritative. | Exact ordered comparison; duplicates remain meaningful. | Equivalent response restores the exact effective Plan. Difference retains response and adds a `topics` error. |
-| `filters` | Optional unordered list of operator objects | Omitted is null; explicit `[]` is distinct. Unknown takes response; known Plan may reflect `ignore_changes`. | Outer order is insignificant while duplicate multiplicity is preserved. Exactly one recognized operator must project for each element. Unknown operators make projection lossy. | Equivalent response restores exact Plan order and representation. Difference adds a `filters` error; lossy projection retains its warning and adds the scoped consistency error when Plan is known. |
-| `filters[].not`, `filters[].equals`, `filters[].in`, `filters[].regexp` | Optional exclusive objects | Exactly one must be selected; unselected alternatives are null. Unknown cannot reach request conversion. | Selected operator and all nested values must match. | Participates in `filters`; unsupported or multiple response operators cannot establish equivalence. |
-| `filters[].not.equals`, `filters[].not.in`, `filters[].not.regexp` | Optional exclusive objects | Exactly one nested negated operator must be selected. | Same operator-specific rules as their non-negated forms. | Participates in `filters`. |
-| `filters[].equals.doc`, `filters[].equals.value`, `filters[].not.equals.doc`, `filters[].not.equals.value` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `filters`. |
-| `filters[].in.doc`, `filters[].not.in.doc` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `filters`. |
-| `filters[].in.values`, `filters[].not.in.values` | Required lists | Must be known; `[]` is distinct from null. | Unordered string comparison preserving duplicate multiplicity. | Participates in `filters`; equivalent response restores the exact Plan order. |
-| `filters[].regexp.doc`, `filters[].regexp.pattern`, `filters[].not.regexp.doc`, `filters[].not.regexp.pattern` | Required strings | Must be known and non-null. | Exact comparison. | Participates in `filters`. |
-| `http_basic_username` | Optional string | Omitted is null; empty is known. Effective Plan, including `ignore_changes`, is authoritative. | Exact nullable scalar comparison. | Equivalent response restores Plan. Difference retains response and adds an `http_basic_username` error. |
-| `http_basic_password` | Optional sensitive string; the API omits it from responses | Omitted and explicit null remain null; configured, rotated, prior-State, and `ignore_changes` cases use the effective Plan. Unknown configured input fails before mutation. | Apply the established password table above: only property absence permits the narrow known non-null Plan fallback; explicit null or a returned value is response truth. | Absent property restores the known non-null Plan even when another attribute mismatches. Explicit contradiction retains response and adds an `http_basic_password` error. Read continues to use prior-state preservation without claiming remote equality. |
-| `headers` | Optional+Computed map | Omitted Create commonly leaves Plan unknown and therefore response-owned. On Update, `UseStateForUnknown`, explicit Config, or `ignore_changes` may make Plan known and constrained. Preserving a known prior value avoids CMA's observed behavior of clearing headers when an Update omits the member; `{}` remains the explicit clear operation. Known null and `{}` remain distinct. | Map keys and complete header objects compare exactly after the established secret-value fallback. CMA has returned `[]` for omitted raw Create and Update members. | Unknown Plan takes response. Equivalent known Plan restores its exact representation. Difference adds a `headers` error. |
-| `headers[*].value` | Required string | Must be known for configured headers. Prior State may supply a secret value through the known `headers` Plan. | Exact comparison when CMA returns it. For a secret header whose value CMA omits, response projection uses only the corresponding Plan value as the established narrow fallback. | Fallback value is retained even during another contradiction because CMA supplies no competing value. A returned different value causes the parent `headers` error. |
-| `headers[*].secret` | Optional+Computed with static `false` default and `UseStateForUnknown` | Omission inside a configured header normally yields known `false`; prior State may be preserved when planning leaves it unknown. Any known effective Plan is constrained. | Exact boolean comparison; response projection treats an absent flag as `false`. CMA has returned an ordinary header value with the flag absent and has echoed explicit `false`. | Difference causes the parent `headers` error; equivalence restores exact Plan. |
-| `transformation` | Optional object | Omitted is null; a known object may contain null children. Unknown takes response; `ignore_changes` may select prior State. | Object comparison uses exact scalars and JSON semantics for `body`. | Equivalent response restores exact Plan. Difference or lossy projection adds a `transformation` error and retains response. |
-| `transformation.method`, `transformation.content_type`, `transformation.include_content_length` | Optional scalars | Omitted children are null; empty strings and explicit booleans are known. | Exact nullable scalar comparison. | Participates in `transformation`. |
-| `transformation.body` | Optional normalized JSON string | Omitted is null; known JSON remains distinct from null. | JSON semantic comparison; array order remains meaningful. | Equivalent response restores exact Plan JSON text; otherwise `transformation` fails atomically. |
-| `timeouts` | Optional provider-local object | Omitted is null; configured children and `ignore_changes` results are Plan-owned. | No CMA projection. | Always retain exact Plan without a consistency diagnostic. |
-| `timeouts.create`, `timeouts.read`, `timeouts.update`, `timeouts.delete` | Optional provider-local strings | Omitted children are null; configured durations remain exact Plan strings. | Parsed only for the corresponding operation. | Retained inside `timeouts`; invalid durations fail before mutation. |
-
-### CMA transport retry safety
-
-The [Contentful HTTP retry policy](contentful-http-retry-policy.md) owns the
-retry classification, deadline, and backoff rules for all CMA calls. A transport
-failure or ordinary 5xx does not establish whether a mutation committed.
-Transparent replay could repeat a write or reuse a stale optimistic-lock version.
-
-Entry Create, specified-ID Create, Update, and Publish and Content Type Create,
-Update, and Activate retry explicit 429 responses with the same body and version
-preconditions within the deadline. Only a validated draft response grants
-exact-version mutation authority; retries never fetch a newer version or grant
-authority from an error response.
-
-### Entry specified-ID request selection
-
-The Entry specified-ID endpoint serves both Create and Update, so the provider
-selects the operation through its request headers. Create sends
-`X-Contentful-Content-Type` and no `X-Contentful-Version`. A collision must fail
-without mutating, publishing, or adopting the existing Entry. Update sends the
-exact prior `sys.version` in `X-Contentful-Version` and omits
-`X-Contentful-Content-Type`.
-
-If an Entry disappears after refresh, or refresh is skipped and Terraform state
-is stale, the Update request therefore fails instead of recreating the absent
-Entry and proceeding toward publication. A preflight existence read cannot
-provide this boundary because another writer can change target existence
-between the read and the `PUT`. The Contentful contract and direct CMA evidence
-are recorded in
-[Entry and Content Type PUT header semantics](../research/entry-and-content-type-put-headers.md).
-
-### Entry publication ownership and partial field ownership
-
-`contentful_entry` publishes only the exact draft returned by the same Create or
-Terraform-managed Update. It checkpoints a successful, plan-consistent draft
-response and its `sys.version` before sending that version to Publish. Import,
-Read, refresh, an external draft, external unpublish, and Terraform resource state
-are observations only and never grant publication authority. A previously
-recorded private pending-version marker can retain authority under the recovery
-rules below.
-
-A returned draft supersedes earlier publication authority, even when its version
-matches the pending marker. A contradictory response retains its representable
-state but cannot inherit the previous draft's authority.
-
-After the complete truthful draft state and optimistic-lock version are
-checkpointed and the response identity, positive version, draft tuple, and
-plan consistency are validated, private state records only that exact version
-as pending publication authority. The provider attempts Publish with that
-version in the same operation. Confirmed publication checkpoints the returned
-state/version and clears the marker. An explicit or ambiguous publication
-failure retains the truthful draft and marker; an unchanged later operation is
-deliberately planned as an Update and publishes only the marker version without
-another draft PUT. During Create, an unconfirmed Publish after this checkpoint
-is reported as a warning so Terraform retains the untainted draft and marker;
-failures before that boundary remain errors and grant no publication authority.
-
-Read preserves the marker only while current `sys.version` exactly equals the
-marker and the observed publication tuple exactly equals the checkpointed draft
-tuple. Observing the marker as published clears it without replay. A different
-current version or publication state revokes authority without mutation. With
-refresh disabled, recovery sends only the marker version; `VersionMismatch`
-revokes it and never causes a fetch and publication of a newer version.
-
-An ambiguous draft-mutation failure likewise grants no publication authority.
-The client does not replay the mutation automatically, and the provider does not
-infer draft ownership from a later GET whose fields happen to match the plan.
-This fail-closed rule avoids publishing an indistinguishable concurrent editor
-version.
-
-Within an Entry `fields` map, Terraform null means request omission. A known
-JSON null produced by `jsonencode(null)` remains a value and is sent as JSON
-null. CMA omits that raw JSON-null field from mutation and read responses, so
-the provider restores its exact planned or prior representation only when the
-response omits it; a present response value wins. A localized object such as
-`{"en-US":null}` remains ordinary response data and receives no fallback.
-Change detection compares the effective plan and prior state after the same
-request projection. Adding or removing an omitted Terraform-null key may
-therefore require a state-only Update, but it does not write or publish an
-Entry; the provider stores the effective plan representation in Terraform state
-while retaining the prior response-owned `published_version`. The direct
-evidence is recorded in
-[Entry null and omission behavior](../research/entry-fields.md).
-
-Entry Read is authoritative for `fields`, including additions and removals,
-except for configured request omissions and Contentful's observed empty-field
-canonicalization. When Contentful omits a key whose prior value is Terraform
-null or raw JSON null, the provider retains that exact representation; a
-returned value always takes precedence and exposes drift. When Contentful
-omits the entire `fields` member for a known empty map, or omits a localized
-field whose prior value contains only empty arrays, the provider retains that
-known empty value. It does not extend fallback to localized null, other scalar
-or object values, or nonempty arrays, so a remote removal of meaningful data
-remains observable.
-
-Terraform's effective plan, after lifecycle processing such as `ignore_changes`,
-is the mutation request and consistency boundary. This lets ignored remote map
-paths survive a later managed update while ensuring an ignored-only external
-draft remains untouched. Mutation responses may restore a known empty map when
-the entire `fields` member is omitted, but omission cannot stand in for a nonempty
-effective plan. They may also restore planned Terraform-null, raw JSON-null, or
-localized all-empty-array fields when the response omits those individual keys.
-Other partial or changed maps remain response truth and a plan contradiction.
-
-Entry metadata tags and taxonomy concepts retain their public List schema.
-Configured values must be unique. Comparison ignores order but remains
-multiplicity-sensitive for response/state data so irregular remote duplicates
-are not hidden. A configuration-only reorder changes only Terraform's stored
-list representation; it does not write or publish an Entry.
-
-Contentful may apply Content Type default values to fields omitted during Entry
-creation. A Create response may therefore add response-only field keys,
-including a value for a Terraform-null key omitted from the request, but every
-sent field must still be present and semantically equal after the recognized
-empty-array and raw-JSON-null omission fallbacks above. Update uses full-body
-replacement and Contentful does not apply defaults to Entry updates, so an
-Update response must have exactly the sent field keys and values after those
-same fallbacks. Create publication responses retain the same creation-default
-projection used for the Create draft response; Update and recovery publication
-responses require the exact effective-plan field keys. Field ownership does not
-depend on publication-version arithmetic.
-
-After those checks succeed, mutation state restores the exact effective-plan
-`fields`, `metadata`, and `timeouts`; identity and lifecycle values remain
-response-owned where the plan does not already establish an endpoint identity.
-A later Read remains authoritative and can expose Contentful-added defaults,
-which `ignore_changes` can preserve through a subsequent managed update. When
-Contentful contradicts a planned field, metadata, content type, or endpoint
-identity, the provider reports an error and checkpoints the representable
-response `fields`, `metadata`, and `content_type_id`, while retaining the requested
-endpoint identity. The content type is a related-resource reference, not part of
-the Entry endpoint. A refresh-disabled retry can plan replacement for a
-contradictory content type; cleanup still addresses the intended Entry. A
-successful refresh can instead restore the actual content type without granting
-publication authority. Response-only field additions cannot become
-configuration-owned values or new publication authority.
-
-A Create or Update draft response grants authority to any positive exact
-returned version in a plan-consistent response. Either response may omit
-`publishedVersion` or contain a non-negative older publication
-(`publishedVersion < version`); equal, future, negative, or unknown publication
-values are contradictory.
-
-Publish must report the submitted version as `publishedVersion`. The repeatedly
-observed normal response has `version` equal to the submitted version plus one,
-but the provider applies no policy to that arithmetic: any greater current
-version confirms publication. A current version equal to or below the published
-version is contradictory. Missing or different `publishedVersion` and
-nonpositive current versions remain errors. Read cannot use a malformed or
-changed tuple to preserve publication authority. The computed
-`published_version` attribute exposes the authoritative CMA value; `version` in
-resource private state records the same response version only when the response
-confirms the endpoint, under the [endpoint identity policy](#mutation-endpoint-identity).
+Resource-specific comparison rules are in [mutation reconciliation](mutation-reconciliation.md).
 
 ### Provider-private optimistic-lock barrier
 
@@ -749,88 +175,9 @@ zero. Taxonomy Delete is the one absence-handling exception: when Terraform
 omits private data for a tainted replacement, the provider obtains the current
 version with a GET before deleting.
 
-Pending Entry publication and Content Type activation markers are a narrower
-mutation-authority boundary, not ordinary optimistic-lock forwarding. A marker
-must decode to a positive exact draft version; zero, negative, malformed, or
-missing marker data cannot authorize Publish or Activate.
-
-Publish or Activate confirmation requires `publishedVersion` equal to the
-submitted exact version and a positive current `version` greater than it. The
-normally observed `V+1` tuple receives no special treatment. Any greater current
-version is checkpointed truthfully and accepted, but it never replaces the
-marker or becomes new mutation authority. A missing or wrong
-`publishedVersion`, or current `version <= V`, is contradictory and revokes
-authority after the complete response is checkpointed.
-
-All Entry Create, specified-ID Create, Update, and Publish requests and Content
-Type Create, Update, and Activate requests follow the shared explicit-429 retry
-policy while rejecting redirects. Transport failures and ordinary 5xx responses
-stop without replay. A terminal `VersionMismatch` revokes existing authority
-after a rate-limit retry just as it does on the first attempt.
-
-### Entry destroy lifecycle
-
-Entry destroy consumes no private `version`, performs no recovery GET, and
-sends neither `X-Contentful-Version` nor `If-Match`. It always requests
-whole-Entry unpublish before delete. A 404 response is benign, as is an exact
-HTTP 400 response with `sys.id` `BadRequest` and message `Not published`;
-destroy continues to delete after either result. Any other unpublish error
-stops destroy before delete. Because Contentful does not enforce preconditions
-on these operations, an Entry changed outside Terraform can still be deleted.
-This policy is limited to Entry destroy; Entry update, Entry publish, and other
-endpoints are out of scope.
-
-See [Entry unpublish and delete evidence](../research/entry-lifecycle.md#unpublish-and-delete-preconditions).
-
-### Taxonomy optimistic version locking
-
-Taxonomy resources record Contentful `sys.version` in provider-private state,
-matching the provider's other versioned resources. Update sends the prior
-private-state value supplied at apply. Delete also sends that value when it is
-present. A remote change for which CMA advances the resource's `sys.version` is
-therefore rejected instead of being overwritten. Create, Read, and Update store
-the integer version returned for a confirmed endpoint, including alongside
-recovery state when configuration values differ from the plan. Identity
-contradictions follow the [shared version policy](#mutation-endpoint-identity).
-
-Terraform does not supply prior private data to Delete while replacing a
-tainted resource. This applies both to recovery state published alongside an
-errored Create and to a resource manually marked tainted after successful
-updates. Only when private version data is genuinely absent, Delete performs
-one GET for the requested resource and validates its organization and resource
-identity before using its `sys.version` in the DELETE request. A contradictory
-response stops deletion and retains state for a subsequent confirmed read. A 404
-from this GET means the resource is already absent. This narrow
-apply-time fallback lets tainted replacement delete resources above version
-`1`; a concurrent change between GET and DELETE still produces CMA
-`VersionMismatch` instead of a blind deletion. Valid private data takes the
-direct DELETE path without a preliminary GET. Malformed private version data
-remains an error and does not trigger the fallback; decoded zero and negative
-values are sent to CMA.
-
-Because no prior lock token exists in the fallback case, Delete cannot detect a
-remote change that occurred before its GET; it deliberately authorizes deletion
-of the version current at that point. Optimistic locking then covers the
-GET-to-DELETE interval.
-
-CMA documents the version header as required. Direct concept and concept-scheme
-PATCH and DELETE experiments rejected omitted, zero, negative, and stale
-versions without changing or deleting the resource. This observed positive,
-exact-current constraint is enforced by CMA rather than duplicated as provider
-policy.
-
-Deleting a concept can remove references from other concepts and schemes
-without advancing those referencing resources' versions, so their version
-headers cannot detect that cascade. Field-scoped patches avoid rewriting
-unrelated cascaded fields; CMA and post-mutation response consistency checks
-still govern fields the provider explicitly changes.
-
-The repository mock and direct CMA creation experiments returned an initial
-version of `1`; that observation is modeled for service fidelity but is not a
-permanent schema promise. The documented contract and raw observations are
-recorded in the
-[taxonomy version note](../research/taxonomy.md). Use Contentful's
-established `version` and `sys.version` terminology.
+Pending Entry publication and Content Type activation have a stricter,
+positive-version authority contract; see [content publication](content-publication.md).
+All requests use the [HTTP retry policy](contentful-http-retry-policy.md).
 
 ### Delivery API key environments
 
@@ -855,34 +202,6 @@ empty input valid and treats the canonicalization conflict as a known
 limitation. The supporting observations and their date are recorded in the
 [Delivery API key environments note](../research/delivery-api-keys.md).
 
-### Extension sources
-
-Every Contentful Extension mutation request requires exactly one of
-`extension.src` or `extension.srcdoc`. HCL may omit both for an imported or
-otherwise response-owned source; planning preserves the sole prior-state source
-in that case. An empty `src` is invalid, while an explicitly empty `srcdoc` is
-accepted and round-trips. The provider does not silently rewrite either
-explicit value to omission. The first-party contract and live CMA observations
-are recorded in the
-[Extension configuration note](../research/ui-extensions.md).
-
-Extension field-type and parameter-definition validation is scoped to
-`extension.field_types` and `extension.parameters`; it does not validate the
-resource-level installation values. Configuration validation defers unknowns.
-Create and Update validate the effective Plan before decoding the native model
-and sending a mutation, including definitions retained by `ignore_changes`.
-Read/import preserve representable definitions without imposing request rules.
-Validation is not performed during plan modification, so replacement planning
-can select configuration values after an intermediate plan retaining old state.
-
-Extension state version zero is decoded with its own historical schema and
-models, including nested field types, parameter definitions, and timeouts. The
-decoder does not reuse current Extension or App Definition schema builders.
-Conversion preserves every value except the legacy unused empty source, which
-becomes null; an explicitly empty `srcdoc` remains empty. When the current state
-representation changes, update the conversion without changing the historical
-decoding contract.
-
 ### Space enablements
 
 All four Space Enablements attributes are independent Optional+Computed values.
@@ -897,25 +216,6 @@ policy a Terraform configuration invariant: it sends the planned members
 without inferring a sibling or requiring equality, and surfaces any CMA
 validation response. The first-party contract and live CMA observations are
 recorded in the [Space Enablements request values note](../research/space-enablements.md).
-
-### Live preview variables
-
-The required normalized JSON `variables` attribute owns the complete document.
-Request conversion uses the effective Plan and shares structural validation with
-configuration validation: an object whose values are strings, null, or locale
-maps of strings/nulls. Empty root objects remain present documents. Omitted keys
-are deletions, and null, empty string, and empty locale maps are not equivalent.
-Unknown required values stop mutation.
-
-Response projection checks JSON validity but does not impose request-shape
-validation on readable remote data. Mutation reconciliation retains the supplied
-endpoint identity, diagnoses contradictory links or variables, and checkpoints
-representable response data before reporting consistency errors. Private `version`
-is retained or revoked under the [endpoint identity policy](#mutation-endpoint-identity).
-Exact planned JSON is preserved only after all reconciliation checks pass.
-Read validates the addressed identity before publishing remote values and the
-returned version, following the shared [Read identity contract](#read-identity). See the
-[endpoint evidence and limitations](../research/live-preview-variables.md).
 
 ## Read identity
 

@@ -47,7 +47,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"environments": schema.ListAttribute{
-				Description: "Contentful environment IDs that the token can access. Omission uses Contentful defaults on creation and retains observed environments on later updates. An explicit [] is sent to Contentful, which has been observed to replace it with the default environment, causing an inconsistent-result error. An empty list is therefore not a reliable way to revoke all access.",
+				Description: "Contentful environment IDs that the token can access. Omission uses Contentful defaults on creation and retains observed environments on later updates. An explicit `[]` is sent to Contentful, which has been observed to replace it with the default environment, causing an inconsistent-result error. An empty list is therefore not a reliable way to revoke all access.",
 				ElementType: types.StringType,
 				CustomType:  NewTypedListNull[types.String]().CustomType(ctx),
 				Optional:    true,
@@ -74,7 +74,7 @@ func DeliveryAPIKeyResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
 		},
 	}
 }

@@ -47,7 +47,7 @@ resource "contentful_app_key" "this" {
 
 - `created_at` (String) RFC 3339 timestamp when the app key was created.
 - `id` (String) Composite Terraform resource identifier in `organization_id/app_definition_id/key_kid` form.
-- `key_kid` (String) Contentful App Key sys.id. This equals jwk.kid and jwk.x5t.
+- `key_kid` (String) Contentful App Key `sys.id`, equal to `jwk.kid` and `jwk.x5t`.
 - `last_used_at` (String) RFC 3339 timestamp when the app key was last used.
 - `updated_at` (String) RFC 3339 timestamp when the app key was last updated.
 
@@ -56,12 +56,12 @@ resource "contentful_app_key" "this" {
 
 Required:
 
-- `alg` (String) JWK algorithm. Must be RS256.
-- `kid` (String) JWK key identifier. This becomes the Contentful app key ID and must match the x5c fingerprint.
-- `kty` (String) JWK key type. Must be RSA.
-- `use` (String) JWK public key use. Must be sig.
+- `alg` (String) JWK algorithm. Must be `RS256`.
+- `kid` (String) JWK key identifier. This becomes the Contentful app key ID and must match the `x5c` fingerprint.
+- `kty` (String) JWK key type. Must be `RSA`.
+- `use` (String) JWK public key use. Must be `sig`.
 - `x5c` (List of String) Single public-key value in standard base64 encoding, without carriage returns or line feeds. The decoded bytes must match the fingerprint in `kid` and `x5t`.
-- `x5t` (String) JWK key thumbprint. This must be the unpadded base64url-encoded SHA-256 digest of the decoded bytes in x5c[0].
+- `x5t` (String) JWK key thumbprint. This must be the unpadded base64url-encoded SHA-256 digest of the decoded bytes in `x5c[0]`.
 
 
 <a id="nestedatt--timeouts"></a>
@@ -69,17 +69,15 @@ Required:
 
 Optional:
 
-- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
-- `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
+- `create` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`.
+- `delete` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`. Uses the value saved in state, with a minimum of `10s`.
+- `read` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`. Uses the value saved in state, with a minimum of `10s`.
 
 ## Import
 
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
-
 ### Import by identity
 
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+Terraform 1.12 or later:
 
 ```terraform
 import {
@@ -94,7 +92,7 @@ import {
 
 ### Import by ID
 
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+Terraform 1.5 or later:
 
 ```terraform
 import {
@@ -105,7 +103,7 @@ import {
 
 ### Import with the CLI
 
-Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+Set the shell variables to your Contentful IDs:
 
 ```shell
 terraform import contentful_app_key.this "$CONTENTFUL_ORGANIZATION_ID/$CONTENTFUL_APP_DEFINITION_ID/$CONTENTFUL_APP_KEY_KID"

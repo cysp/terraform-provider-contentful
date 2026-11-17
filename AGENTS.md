@@ -27,7 +27,7 @@
 
 ## Documentation and workflow
 
-- When writing or reviewing documentation, read the [documentation practices](docs/design/provider-documentation.md).
+- When writing or reviewing documentation, read the [documentation practices](docs/documentation.md).
 - Keep durable documentation current: record user-visible contracts, invariants, evidence, and limitations; do not retain dated audit inventories, cleanup chronology, or completed plans.
 - Leave unrelated concerns out of each change, preserve unrelated worktree changes, and use a separate worktree and pull request when concurrently pursuing an independent concern; keep history reviewable.
 - When changing generated code or generated documentation, use [Code generation](DEVELOPMENT.md#code-generation) and, for documentation, [Documentation authoring](DEVELOPMENT.md#documentation-authoring) to locate and edit the authoritative inputs. After changing a schema or another generation input, run `go generate ./...` and inspect both tracked changes and untracked output.

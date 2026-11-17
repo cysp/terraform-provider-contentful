@@ -39,32 +39,12 @@ fixtures, fault injection, and HTTP recorders in clearly named `*_fixture_test.g
 `*_faults_test.go`, and `*_recorder_test.go` files. The provider acceptance harness
 owns provider factories and mock/live execution setup.
 
-## Go test structure
+## Test isolation
 
-- Use `t.Parallel()` for independent tests and subtests. Tests that change
-  process environment with `t.Setenv` must remain sequential. Live acceptance
-  tests share account quotas and are serialized by the harness.
-- Use `t.Context()` for work owned by a test, `t.TempDir()` for temporary files,
-  and `t.Cleanup()` for helper-owned resources. Cleanup runs after subtests;
-  register HTTP server cleanup as soon as the server starts. Cleanup that must
-  make requests after the test ends needs its own bounded context because the
-  test context is canceled before cleanup begins.
-- Mark helpers accepting `*testing.T` or `testing.TB` with `t.Helper()` when
-  they report a failure. Stop on prerequisites with `require.NoError`,
-  `require.NotNil`, `require.Len`, or checked type assertions before accessing
-  results. Use `assert` to report independent value mismatches together.
-- Do not call `require`, `t.Fatal`, or `t.FailNow` in HTTP handlers or worker
-  goroutines. Return or record the error and assert it in the test goroutine;
-  join workers before inspecting their results.
-- Prefer deterministic fixtures, explicit synchronization, and controllable
-  clocks to sleeps.
-- Keep property and fuzz tests for combinations that examples cannot cover
-  economically. Keep seed cases readable and expectations independent of the
-  production conversion logic. Ordinary `go test` runs fuzz seeds; sustained
-  fuzzing is a separate command.
-
-These conventions follow the [Go testing package](https://pkg.go.dev/testing)
-and [Go test review guidance](https://go.dev/wiki/TestComments).
+Live acceptance tests share account quotas and are serialized by the harness.
+Keep mock-only cases independent. Cleanup that makes HTTP requests needs a
+separate bounded context because `t.Context()` is canceled before cleanup runs.
+For ordinary Go test structure, follow the [Go test review guidance](https://go.dev/wiki/TestComments).
 
 ## Terraform acceptance tests
 

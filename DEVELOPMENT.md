@@ -70,13 +70,12 @@ credentials alone do not establish that authorization.
 | A claim about live Contentful behavior | Use primary documentation or an authorized live experiment; mocked tests establish provider behavior against the fixture, not CMA conformance. |
 
 If a check cannot run, record the command and concrete blocker. Distinguish a
-passing check from a skipped test or an environment failure. Local verification
-does not establish that remote CI passed.
+passing check from a skipped test or an environment failure.
 
 ## Documentation authoring
 
 Practitioner-facing Registry documentation is generated with
-`terraform-plugin-docs`. Follow the [documentation practices](docs/design/provider-documentation.md)
+`terraform-plugin-docs`. Follow the [documentation practices](docs/documentation.md)
 for editorial rules and supporting evidence. Change the authoritative input for
 the information being documented, then [regenerate](#code-generation) and
 [verify the output](#documentation-verification):
@@ -94,11 +93,11 @@ the information being documented, then [regenerate](#code-generation) and
 | Test conventions and verification patterns | `docs/testing.md` |
 | Release process | `docs/releasing.md` |
 
-`tfplugindocs` replaces `docs/index.md`, `docs/resources/`, `docs/data-sources/`,
-`docs/list-resources/`, and `docs/guides/`. These are generated pages, not just
-generated schema fragments. Keep handwritten `docs/design/`, `docs/research/`,
-`docs/testing.md`, and `docs/releasing.md`; never clear the entire `docs/` tree to
-regenerate.
+Keep handwritten contributor material in `docs/design/`, `docs/research/`, or
+the contributor Markdown files directly under `docs/`. During generation,
+`tfplugindocs` replaces `docs/index.md` and removes each
+[managed directory](https://github.com/hashicorp/terraform-plugin-docs/blob/v0.25.0/internal/provider/generate.go#L102-L115)
+before writing Registry pages, even when the provider has no pages of that kind.
 
 ## Documentation verification
 
@@ -111,22 +110,19 @@ go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs \
 git diff --check
 ```
 
-Review the pages using the [content and rendering criteria](docs/design/provider-documentation.md#verify-the-claims-and-the-rendered-result),
+Review the pages using the [content and rendering criteria](docs/documentation.md#verification),
 which also explain the validator's limits. Check
 [generation reproducibility](#code-generation) separately, then validate
 runnable examples in an isolated configuration:
 
 - Initialize and validate complete workflow examples. Select one import variant
-  at a time using the [example conventions](docs/design/provider-documentation.md#make-examples-usable).
+  at a time using the [example conventions](docs/documentation.md#examples).
 - Validate `.tfquery.hcl` configurations using `terraform validate -query`; exercise
   list behavior with `terraform query`. Query tests require Terraform 1.14 or
   later. See HashiCorp's [query workflow](https://developer.hashicorp.com/terraform/language/import/bulk)
   for the general syntax and commands.
 
 ## Code generation
-
-The commands below implement the
-[generation requirement](AGENTS.md#documentation-and-workflow).
 
 Running the root generator requires Terraform on `PATH` because it formats
 Terraform examples before regenerating provider documentation. The narrower
@@ -147,23 +143,11 @@ The full generation command runs the package-local `go:generate` directives:
   `internal/contentful-management-go/openapi/openapi.yml` using
   `internal/contentful-management-go/ogen.yml`.
 
-For faster iteration on one generated surface:
-
-```sh
-go generate .
-go generate ./internal/contentful-management-go
-```
-
 Use named, referenced OpenAPI schemas for nested request and response values
 with the same contract. Inline objects reused through `allOf` produce separate
 Go types for each parent, requiring redundant conversions. Keep separate schemas
 where requiredness, nullability, or writable fields differ, and retain conversions
 that model response normalization.
-
-Generated files include `internal/contentful-management-go/oas_*_gen.go` and
-the managed Registry documentation described in
-[Documentation authoring](#documentation-authoring). Edit their sources rather
-than the rendered output.
 
 To check reproducibility, rerun the generators in a clean checkout containing
 the intended input and generated changes. Use a separate checkout if the working
@@ -233,7 +217,7 @@ as shown under [Property and fuzz campaigns](#property-and-fuzz-campaigns).
 
 Rapid properties run with the ordinary tests. To increase their iteration budget
 locally, use `RAPID_CHECKS` so packages that do not import Rapid still accept the
-ordinary suite command:
+suite command:
 
 ```sh
 RAPID_CHECKS=1000 go test -race -shuffle=on -count=1 -timeout=10m ./...
@@ -262,7 +246,7 @@ tested package. Restore a failure file there and rerun the named test, or use
 Go fuzzing writes failures beneath `testdata/fuzz/<target>/`; restore the corpus
 entry beneath `internal/provider/` and use the `-run` command printed in the log.
 Review minimized failures and retain useful cases as regression tests or corpus
-entries. A campaign that passes establishes only the inputs it exercised.
+entries.
 
 ### Terraform binary and test isolation
 
@@ -278,11 +262,6 @@ Mocked acceptance tests use isolated local HTTP servers. Mock-only tests always
 use those servers; live-capable tests use them when `TF_ACC_MOCKED` is nonempty.
 Check the affected test before treating an unset `TF_ACC_MOCKED` as evidence that
 it ran live.
-The App Action lifecycle uses the same organization fixture as App Definition tests
-and creates a temporary App Definition and actions. It requires no additional
-environment variables. It covers Function-link import and transitions between
-endpoint and Function targets, exercising definition management, not Function
-execution.
 The live-only App Key test skips in mocked mode. Live-capable harness calls
 serialize access to the shared account and quota; do not remove that serialization
 merely to speed up tests. Query tests require Terraform 1.14 and skip on 1.13.
@@ -314,9 +293,7 @@ separate merge requirements. Automated release creation uses the same `ci` gate.
 For order-dependent failures, rerun with the `-shuffle=<seed>` printed by Go.
 Add `-v` for test and subtest progress. Use `TF_LOG=DEBUG` or
 `TF_ACC_PERSIST_WORKING_DIR=1` for focused acceptance debugging; logs and
-retained Terraform state may contain credentials. To verify that a changed
-assertion executes, temporarily give it an impossible expected value, observe
-the intended failure, then restore it.
+retained Terraform state may contain credentials.
 
 ### Test conventions
 

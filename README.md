@@ -30,10 +30,8 @@ terraform {
 provider "contentful" {}
 ```
 
-Add resources from the [provider reference](https://registry.terraform.io/providers/cysp/contentful/latest/docs),
-then run `terraform init` and `terraform plan` to review the changes before
-applying. To adopt existing objects, follow the Import section on their resource
-pages. [Entry](https://registry.terraform.io/providers/cysp/contentful/latest/docs/resources/entry)
+See the [provider reference](https://registry.terraform.io/providers/cysp/contentful/latest/docs)
+for configuration and import examples. [Entry](https://registry.terraform.io/providers/cysp/contentful/latest/docs/resources/entry)
 and [Content Type](https://registry.terraform.io/providers/cysp/contentful/latest/docs/resources/content_type)
 resources publish or activate their managed changes; review their lifecycle
 guidance before applying.
@@ -44,7 +42,7 @@ guidance before applying.
 | --- | --- |
 | Configure the released provider or look up a resource | [Terraform Registry reference](https://registry.terraform.io/providers/cysp/contentful/latest/docs) |
 | Read documentation matching this checkout | [Provider overview](docs/index.md), [resources](docs/resources/), and [data sources](docs/data-sources/) |
-| Discover existing Entries and Content Types for import | [Resource discovery guide](docs/guides/resource-discovery.md) |
+| Discover Entries, Content Types, and Locales for import | [Resource discovery guide](docs/guides/resource-discovery.md) |
 | Understand credentials, redaction, and imported secrets | [Secrets and Terraform state](docs/guides/secrets-and-state.md) |
 | Configure operation timeouts and environment readiness | [Operation timeouts](docs/guides/operation-timeouts.md) |
 | Build, test, or change the provider and its docs | [Development workflow](DEVELOPMENT.md) |

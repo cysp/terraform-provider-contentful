@@ -39,7 +39,7 @@ func PreviewAPIKeyDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				Sensitive:   true,
 			},
-			"timeouts": timeouts.Attributes(ctx),
+			"timeouts": timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription}),
 		},
 	}
 }

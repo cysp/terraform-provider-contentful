@@ -6,7 +6,8 @@ description: |-
 
 # Secrets and Terraform state
 
-Terraform's `sensitive` marking redacts normal CLI output but does not keep values out of state or saved plans. Restrict access to both when using resources that manage credentials. See HashiCorp's [sensitive-data guidance](https://developer.hashicorp.com/terraform/language/manage-sensitive-data) for storage and redaction behavior.
+Use this guide when importing or rotating Contentful credentials. For Terraform
+storage and redaction, see HashiCorp's [sensitive-data guidance](https://developer.hashicorp.com/terraform/language/manage-sensitive-data).
 
 Refresh can verify a value only when Contentful returns it. Import starts without a previously stored secret, so it cannot recover values that Contentful withholds. Preserving a stored value does not detect external changes to an unreadable secret.
 
@@ -35,17 +36,19 @@ After an uncertain create, [importing without rotation](#importing-signing-secre
 
 ## App signing secrets
 
-Whenever [`contentful_app_signing_secret`](../resources/app_signing_secret) writes a secret to Contentful, it stores the complete configured `value` in Terraform state. Contentful returns only a redacted representation during reads, so refresh preserves the stored value and cannot detect a secret rotated outside Terraform.
-
-To rotate the secret through Terraform, change `value` and apply. Changing only `timeouts` leaves the remote secret unchanged, including a secret rotated outside Terraform.
+[`contentful_app_signing_secret`](../resources/app_signing_secret) manages an App Definition's signing secret. Change `value` to rotate it. Refresh preserves the last applied value because Contentful returns only a redacted representation. Changing only `timeouts` leaves the remote secret unchanged.
 
 ## Importing signing secrets
 
-Importing a webhook or app signing secret leaves `value` null because Contentful does not return the complete secret. Applying the configured value then replaces the remote secret, including during a configuration-driven import. This lets Terraform take over rotation using a value you supply.
+Import leaves `value` null. Applying a configured value replaces the remote
+secret, including during a configuration-driven import.
 
-To leave the existing value managed outside Terraform, you can set `ignore_changes = [value]`. The imported value remains null and Terraform does not write the configured value while updating that resource. Reads and deletion require only the resource identifiers and the provider's management API credentials. Changing only `timeouts` sends no mutation, so none of these operations needs the unreadable secret. Creating or rotating a secret requires the complete value to install.
-
-This setting suppresses configuration-driven rotation; it does not recover or verify the remote value. External rotation is already undetectable without it. `value` is still required in configuration, and Terraform uses it for creation or replacement, including recreation after remote deletion. [Terraform's lifecycle reference](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) explains the distinction between creation and updates. Destroy still deletes the secret. Remove the setting when ready to rotate through Terraform.
+To adopt a secret while leaving rotation outside Terraform, set
+`ignore_changes = [value]`. Reads, timeout-only updates, and deletion need no
+complete secret; the imported value stays null. This does not verify the stored
+secret, and destroy still deletes it. `value` remains required in configuration
+and is used for creation or replacement, including recreation after remote deletion. Remove `ignore_changes`
+when ready to rotate through Terraform.
 
 ## Webhook credentials and secret headers
 
@@ -99,11 +102,7 @@ Sending the exact current asterisk mask can preserve the existing secret. A stal
 
 ### Changes outside Terraform
 
-Updating an ordinary parameter resubmits the planned secrets and can overwrite a secret rotated outside Terraform, even when refresh reported no change to it.
-
-During updates, `ignore_changes = [parameters]` suppresses configured changes to the entire JSON object, including ordinary parameters and intentional secret rotation. It does not provide selective Secret management. Creation still uses the configured values.
-
-If a later update requires a write, such as a change to `marketplace`, the provider sends the complete effective plan, including any values retained by `ignore_changes`. Those values may be older plaintext or imported masks, so this setting cannot guarantee preservation of an external rotation.
+`ignore_changes = [parameters]` applies to the entire object. A later write, including a `marketplace` change, still sends the retained plaintext or imported masks. It cannot selectively preserve externally rotated secrets while updating ordinary parameters.
 
 ## Personal access tokens
 

@@ -96,7 +96,7 @@ func EditorInterfaceResourceSchema(ctx context.Context) schema.Schema {
 					listvalidator.NoNullValues(),
 				},
 			},
-			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Update: true}),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true}),
 		},
 	}
 }
@@ -108,7 +108,7 @@ func (v EditorInterfaceControlValue) SchemaAttributes(_ context.Context) map[str
 			Required:    true,
 		},
 		"widget_namespace": schema.StringAttribute{
-			Description: "Namespace of the widget (e.g., 'builtin', 'extension', 'app').",
+			Description: "Widget namespace, such as `builtin`, `extension`, or `app`.",
 			Optional:    true,
 		},
 		"widget_id": schema.StringAttribute{

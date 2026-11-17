@@ -27,7 +27,7 @@ func EnvironmentStatusReadyDataSourceSchema(ctx context.Context) schema.Schema {
 				Description: "Latest status reported for the environment.",
 				Computed:    true,
 			},
-			"timeouts": timeouts.Attributes(ctx),
+			"timeouts": timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: "Timeout for the complete readiness wait, such as `15m`. Defaults to `10m`."}),
 		},
 	}
 }

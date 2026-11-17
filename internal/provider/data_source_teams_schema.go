@@ -28,18 +28,18 @@ func TeamsDataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{
-							Description: "A human-readable name of the team.",
+							Description: "Name of the team.",
 							Computed:    true,
 						},
 						"description": schema.StringAttribute{
-							Description: "A description of the team.",
+							Description: "Description of the team.",
 							Computed:    true,
 						},
 					},
 				},
 				Computed: true,
 			},
-			"timeouts": timeouts.Attributes(ctx),
+			"timeouts": timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription}),
 		},
 	}
 }

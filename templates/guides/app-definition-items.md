@@ -1,26 +1,15 @@
 ---
-page_title: "App Definition array items"
+page_title: "Upgrade App Definition array item expressions"
 subcategory: ""
 description: |-
-  Read App Definition array item definitions and update list-based expressions.
+  Migrate App Definition data-source expressions from provider v0.0.34–v0.0.68.
 ---
 
-# App Definition array items
+# Upgrade App Definition array item expressions
 
-In the `contentful_app_definition` and `contentful_marketplace_app_definition`
-data sources, each field type's `items` attribute is an object, or null when
-Contentful omits the item definition. `locations` and `field_types` are lists
-and can also be null.
-
-Check `field.items != null` before accessing `field.items.type` or
-`field.items.link_type`. The [App Definition](../data-sources/app_definition)
-and [Marketplace App Definition](../data-sources/marketplace_app_definition)
-examples show how to traverse nullable parent lists and item definitions.
-
-## Migrating to v0.0.69
-
-Provider versions v0.0.34 through v0.0.68 declare `items` as a list in both data
-sources. Starting with v0.0.69, `items` is an object. When upgrading from an affected
+The `contentful_app_definition` and `contentful_marketplace_app_definition`
+data sources declare Array `items` as a list in v0.0.34–v0.0.68 and as an object
+from v0.0.69. When upgrading from an affected
 version to v0.0.69 or later, update consuming expressions:
 
 | v0.0.34–v0.0.68 | v0.0.69 and later |
@@ -29,4 +18,6 @@ version to v0.0.69 or later, update consuming expressions:
 | `field.items[0].link_type` | `field.items.link_type` |
 
 Replace iteration over `items` with object access, retaining the null check.
+See the [App Definition example](../data-sources/app_definition) for nullable
+locations and field types.
 The managed resource's `items` object is unchanged.

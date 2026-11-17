@@ -36,16 +36,16 @@ func TeamResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"name": schema.StringAttribute{
-				Description: "A human-readable name of the team.",
+				Description: "Name of the team.",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "A description of the team. Defaults to an empty string.",
+				Description: "Description of the team. Defaults to an empty string.",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString(""),
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
 		},
 	}
 }

@@ -86,7 +86,7 @@ func AppActionResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  jsontypes.NormalizedType{},
 				Validators:  []validator.String{appActionJSONValidator{}},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
 		},
 	}
 }

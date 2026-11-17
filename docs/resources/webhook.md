@@ -63,10 +63,10 @@ resource "contentful_webhook" "this" {
 - `active` (Boolean) Whether the webhook is active. Defaults to `true`.
 - `filters` (Attributes List) Filtering constraints applied after `topics`. Contentful combines filters with logical AND; each filter configures exactly one of `equals`, `in`, `regexp`, or `not`. Null or omitted filters default to the `master` environment; `filters = []` sends no constraints. Supported payload paths and event restrictions are defined by [Contentful webhook filters](https://www.contentful.com/developers/docs/extensibility/webhooks/filters/). (see [below for nested schema](#nestedatt--filters))
 - `headers` (Attributes Map) HTTP headers sent by the webhook, keyed by header name. When omitted on Create, Terraform adopts the headers returned by Contentful. When omitted on Update, Terraform preserves known prior headers. Set to `{}` to remove all headers. (see [below for nested schema](#nestedatt--headers))
-- `http_basic_password` (String, Sensitive) HTTP Basic authentication password; configure it together with http_basic_username. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.
-- `http_basic_username` (String) HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.
+- `http_basic_password` (String, Sensitive) HTTP Basic authentication password; configure it together with `http_basic_username`. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.
+- `http_basic_username` (String) HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless `ignore_changes` retains previously managed credentials.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `transformation` (Attributes) Customizes the outgoing webhook HTTP method, Content-Type, Content-Length header, and request body. When omitted, Contentful uses its standard webhook request behavior. Unsupported methods and content types prevent writes, including values retained by ignore_changes. Read and import preserve returned values. To destroy with unsupported configuration, correct the configuration and retry destroy; no intervening apply is required. (see [below for nested schema](#nestedatt--transformation))
+- `transformation` (Attributes) Customizes the outgoing webhook HTTP method, Content-Type, Content-Length header, and request body. When omitted, Contentful uses its standard webhook request behavior. Unsupported methods and content types prevent writes, including values retained by `ignore_changes`. Read and import preserve returned values. (see [below for nested schema](#nestedatt--transformation))
 
 ### Read-Only
 
@@ -165,10 +165,10 @@ Optional:
 
 Optional:
 
-- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
-- `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
-- `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `create` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`.
+- `delete` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`. Uses the value saved in state, with a minimum of `10s`.
+- `read` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`. Uses the value saved in state, with a minimum of `10s`.
+- `update` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`.
 
 
 <a id="nestedatt--transformation"></a>
@@ -183,11 +183,9 @@ Optional:
 
 ## Import
 
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
-
 ### Import by identity
 
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+Terraform 1.12 or later:
 
 ```terraform
 import {
@@ -201,7 +199,7 @@ import {
 
 ### Import by ID
 
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+Terraform 1.5 or later:
 
 ```terraform
 import {
@@ -212,7 +210,7 @@ import {
 
 ### Import with the CLI
 
-Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+Set the shell variables to your Contentful IDs:
 
 ```shell
 terraform import contentful_webhook.this "$CONTENTFUL_SPACE_ID/$CONTENTFUL_WEBHOOK_ID"

@@ -38,11 +38,10 @@ storage; callers must not mutate that storage while the server retains it.
 
 ## Endpoint contracts
 
-The sections below separate external evidence, default fake behavior, the
-provider contract, and test coverage for endpoints with specific conformance
-requirements. They are not an inventory of every implemented endpoint. A
-coverage statement describes what the tests exercise; it does not independently
-establish CMA conformance or report a fresh live test result.
+The sections below separate external evidence, default fake behavior, and the
+provider contract for endpoints with specific conformance
+requirements. Endpoint tests live beside the handlers; provider lifecycle tests
+live in `internal/provider/`. A passing mock test does not establish CMA conformance.
 
 ### App Definition parent scope
 
@@ -107,10 +106,6 @@ live Extension observations. Identical-payload update behavior is unverified.
 The generated server still requires a version header on Create; the provider
 sends zero. This does not model the documented optional Create header.
 
-**Coverage:** Raw HTTP tests cover changed-payload updates, stale/zero/future
-version rejection, and stored-state preservation. Mocked Extension lifecycle
-tests exercise the provider against that precondition boundary.
-
 ### Space Enablements
 
 **Evidence:** The [CMA
@@ -123,9 +118,6 @@ before storing the document.
 
 **Provider boundary:** Exact validation details remain unmodelled, and the provider
 keeps all enablements independently Optional+Computed.
-
-**Coverage:** Handler and mocked lifecycle tests cover rejection, nonmutation, and
-recovery.
 
 ### App signing secret
 
@@ -142,9 +134,6 @@ PUT and GET return that suffix, and DELETE returns no content.
 
 **Provider boundary:** Redaction exposes only the final-four suffix; the complete
 submitted value is not response data.
-
-**Coverage:** Response tests prove that PUT and subsequent GET never return the complete
-submitted value.
 
 ### Webhook signing secret
 
@@ -173,14 +162,6 @@ Shared authentication handling retains its generic invalid-token message.
 response validation, value retention, absence handling, and mutation recovery.
 Redacted metadata does not establish equality of complete secrets.
 
-**Coverage:** [Wire tests](../../internal/contentful-management-go/testing/handler_webhook_signing_secret_http_test.go)
-check status, response shape, replacement, deletion, absence, invalid-request
-classification, and rejected-create nonmutation.
-[Provider lifecycle tests](../../internal/provider/resource_webhook_signing_secret_test.go)
-verify that the provider sends no version or conditional headers, assert literal
-request bodies independently of the fake's redacted storage, and
-cover rotation, imports, ignored values, timeout changes, and scope replacement.
-
 ### Webhook topics
 
 **Evidence:** Contentful's [Webhook configuration
@@ -196,10 +177,6 @@ validation details before storing either Create or Update requests.
 unknown values during validation. Successful Create status is not established by these
 topics-validation tests.
 
-**Coverage:** Raw HTTP tests cover exact POST and PUT paths, status and response shapes,
-and failed-request nonmutation. Mocked Terraform lifecycle tests cover local omission
-and emptiness rejection before mutation plus one-topic acceptance.
-
 ### Webhook Basic password
 
 **Evidence:** Contentful's [Webhook configuration
@@ -213,9 +190,6 @@ behavior remains testable, but omits it from Create, Update, and GET responses.
 
 **Provider boundary:** The provider restores planned or prior state only when the
 response property is absent; explicit JSON null remains distinct.
-
-**Coverage:** Raw-CMA JSON and Terraform lifecycle tests cover the omission, refresh,
-update, rotation, removal, import, and `ignore_changes`.
 
 ### Content Type lifecycle and locking
 
@@ -235,11 +209,6 @@ CMA guarantees. Focused HTTP adapters model arbitrary positive Create and Update
 response versions, higher coherent activation responses, response loss, and
 contradictory tuples without changing the normal fake. Provider activation authority is
 private-state provenance, not fake state.
-
-**Coverage:** Lifecycle tests cover exact-version recovery, refresh/no-refresh,
-immediate stale-marker revocation, response loss, external transitions, 429 retries of the same request,
-arbitrary positive draft versions, high coherent confirmation, raw requests,
-deactivation, and two-phase published-field deletion.
 
 ### Entry lifecycle and locking
 
@@ -269,11 +238,6 @@ response versions, higher coherent publication responses, response loss, and
 contradictory tuples. Provider publication authority is a private integer recorded only
 after validating the provider-authored draft response.
 
-**Coverage:** Tests cover the direct member-PUT header matrix and stale/no-refresh
-non-recreation, exact-version recovery, immediate stale-marker revocation, response
-loss, external transitions, 429 retries of the same request, arbitrary positive draft versions, high
-coherent confirmation, raw requests, and unconditional whole-Entry destroy sequencing.
-
 ### Taxonomy locking
 
 **Evidence:** [CMA taxonomy
@@ -290,9 +254,6 @@ missing or zero headers (422 `ValidationFailed`) from stale positive headers (40
 **Provider boundary:** Version validation remains endpoint-specific; missing or zero
 headers and stale positive versions have different error classifications.
 
-**Coverage:** Tests preserve taxonomy-specific validation details instead of applying a
-generic conflict classification.
-
 ### Content Type and Entry collections
 
 **Evidence:** The [CMA
@@ -305,16 +266,12 @@ includes all five; content-type and entry list endpoints decode that type.
 **Default fake behavior:** The generated response types represent all five members while
 tolerating omitted pagination metadata. The fake always emits the documented metadata,
 validates skip and limit, applies filtering before total and pagination, echoes the
-requested skip and limit, and returns a stable ID-ordered page.
+requested skip and limit, and returns a stable ID-ordered page. ID ordering is a
+fixture convention, not an observed CMA default.
 
 **Provider boundary:** Runtime decoding remains deliberately tolerant because the
 first-party TypeScript type does not establish that its JavaScript client rejects a
 structurally incomplete response.
-
-**Coverage:** Conformance tests cover emitted metadata, filtering before pagination,
-invalid bounds, stable pages, and out-of-range skip echoing. Provider pagination uses
-`total` when present and otherwise continues until an empty page. ID ordering is a
-deterministic fake convention, not a claim about CMA's undocumented default ordering.
 
 ### Role updates
 
@@ -330,11 +287,6 @@ starts at version zero and each accepted Update advances the version by one;
 reusing an earlier version returns 409 `VersionMismatch` without changing the
 record. These exact versions, omission behavior, and error envelopes are fixture
 conventions, not separately observed Role mutation behavior.
-
-**Coverage:** Independent HTTP tests cover absent and deleted Roles, verify that
-failed updates leave them absent, and check description projection, version
-progression, and stale-write nonmutation through POST, PUT, and GET. Provider
-Role lifecycle tests exercise successive versioned updates after creation and import.
 
 ### Organization teams
 
@@ -352,15 +304,12 @@ returns
 **Default fake behavior:** The generated response type represents all five members while
 tolerating omitted pagination metadata. The fake validates the User Management API
 limit, reports the requested skip even when its slice start is beyond the collection,
-and returns a stable ID-ordered page.
+and returns a stable ID-ordered page. Its HTTP 200 empty page beyond the collection
+is a fixture convention; a successful out-of-range team response was not
+established by the [retained evidence](../research/collections-and-errors.md#direct-offset-observation).
 
 **Provider boundary:** Provider reads remain tolerant of a missing `total` and continue
 until an empty page.
-
-**Coverage:** Client and provider tests cover decoding and pagination without metadata;
-fake tests cover emitted metadata, the 100-item maximum, stable pages, and out-of-range
-skip echoing. A successful team-specific out-of-range response was not established by the
-retained evidence; the fake's 200 empty-page response is a fixture convention.
 
 ### Delivery API key locking
 
@@ -375,10 +324,6 @@ returns version 1; reusing version 0 returns 409 `Conflict` with a nonempty mess
 
 **Provider boundary:** An accepted update advances the version, so the same request
 version cannot authorize a second update.
-
-**Coverage:** Tests based on the retained live observations cover version progression
-and stale locking. The `Conflict` classification is endpoint-specific and is not
-generalized to unrelated resources.
 
 ### Entry response omissions
 
@@ -410,15 +355,6 @@ whole-member omission can restore a known empty plan, but it contradicts a plan
 containing meaningful fields. Individual missing keys receive only the narrow
 Terraform-null, raw JSON-null, and all-empty-array fallbacks.
 
-**Coverage:** Fake response tests cover unchanged storage and GET, list, PUT, and
-publish projection for raw JSON null, localized null, and empty arrays. Provider tests
-cover exact request/response restoration for Terraform null, raw JSON null, empty maps,
-and all-empty arrays; response-value precedence; rejection of adversarial nonempty
-whole-member omission; rejection of mixed-null fallback; and consistency errors for
-partial maps missing nonempty fields. Mocked lifecycle coverage distinguishes Terraform
-null, encoded JSON null, and deletion; live `TestAccEntryResourceMissingFields` covers
-configured empty arrays.
-
 ### Environment creation readiness
 
 **Evidence:** The [CMA environments
@@ -435,10 +371,6 @@ needed to exercise readiness behavior.
 **Provider boundary:** Generic asynchronous timing remains intentionally unmodelled. The
 provider stops immediately on the documented terminal `failed` status, while
 unrecognized future values remain pollable.
-
-**Coverage:** Unit tests cover all four documented statuses and an unrecognized future
-value. Mocked acceptance covers `queued` to `ready`, terminal `failed` after one
-request, and `inProgress` remaining pollable until its configured timeout.
 
 ### 404, version conflict, and rate-limit errors
 
@@ -458,10 +390,6 @@ within the deadline, followed by acknowledgement or a terminal failure. These
 fixtures do not establish live CMA commitment guarantees; the
 [HTTP retry policy](contentful-http-retry-policy.md) records the evidence limits.
 
-**Coverage:** Structural tests cover type, ID, nonempty message, status, and rate-limit
-headers. Generated-client and Terraform lifecycle tests independently cover
-endpoint-scoped 429 retries of the same request and marker outcomes.
-
 ### Preview environment configuration
 
 **Evidence:** The [preview environment contract](../research/content-preview-environments.md)
@@ -476,11 +404,6 @@ observed legacy create-only `contentType` alias, selected-ID deletion residue, a
 delayed read-after-delete visibility are not modeled. Version locking cannot detect
 concurrent configuration-only changes.
 
-**Coverage:** Client tests cover merge, disable, and version conflicts; provider tests
-cover re-enable, response identity aliases, exact delta requests, projection, recovery
-state, import, and lifecycle transitions. Live observations remain dated evidence, not a
-guarantee.
-
 ### Live preview variables
 
 **Evidence:** The [variables reference](../research/live-preview-variables.md) records sanitized
@@ -493,26 +416,6 @@ versions while present, recreates at version 1, and deletes unconditionally.
 **Provider boundary:** Alias routing, configurable locale inventories, update metadata,
 and parts of the HTTP surface remain outside the fake. Unicode code-point counting and
 parent cleanup are documented mock conventions.
-
-**Coverage:** Raw HTTP tests check stored documents, response details, and failed-write
-preservation. Literal client fixtures check decoding. Mocked Terraform tests check
-lifecycle behavior and recovery from service validation errors.
-
-## External evidence index
-
-Sanitized API observations live independently of test-server coverage:
-
-| Concern | API reference |
-| --- | --- |
-| Webhook topics, defaults, headers, and Basic password | [Webhooks](../research/webhooks.md#direct-configuration-observations) |
-| Editor Interface sidebar values | [Editor Interfaces](../research/editor-interfaces.md) |
-| Delivery API key versions | [Delivery API key versions](../research/delivery-api-keys.md#versioning-observations) |
-| Entry publication and deletion | [Entry lifecycle](../research/entry-lifecycle.md) |
-| Entry and team collections | [Collections and errors](../research/collections-and-errors.md) |
-| Asynchronous environment status | [Environment readiness](../research/environment-readiness.md) |
-
-These references preserve source revisions, observation or record dates, and
-unverified behavior. Updating a fake does not refresh the external evidence.
 
 ## Intentionally unmodelled behavior
 
@@ -575,13 +478,3 @@ clears the fake's subscription record as a storage convention.
 checks returned values. A contradictory or lossy response cannot establish a
 successful apply. The fixture does not establish Function execution, event delivery,
 retry/order guarantees, or compatibility of Function invocation roles.
-
-**Coverage:** Literal wire assertions cover parent paths, content type, absent
-version headers, Function link shapes and role omission. Terraform lifecycle tests
-cover import, no-op plans under independently reversed API topic order, timeout-only
-updates, topic changes, role removal/form switching, external deletion, and parent
-absence/recovery. Parent replacement checks both Terraform lifecycle orders and
-the exact mutation addresses. Recovery tests inspect Terraform's saved state after
-errored Create and Update without a refresh masking the checkpoint. Update fault
-tests also verify prior-state preservation after malformed or ambiguous responses. A
-synthetic future topic tests provider extensibility without asserting server acceptance.

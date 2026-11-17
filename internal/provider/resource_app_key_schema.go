@@ -42,7 +42,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"key_kid": schema.StringAttribute{
-				Description: "Contentful App Key sys.id. This equals jwk.kid and jwk.x5t.",
+				Description: "Contentful App Key `sys.id`, equal to `jwk.kid` and `jwk.x5t`.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -82,7 +82,7 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Read: true, Delete: true}),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Delete: true}),
 		},
 	}
 }
@@ -90,28 +90,28 @@ func AppKeyResourceSchema(ctx context.Context) schema.Schema {
 func AppKeyJWKSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"alg": schema.StringAttribute{
-			Description: "JWK algorithm. Must be RS256.",
+			Description: "JWK algorithm. Must be `RS256`.",
 			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.OneOf("RS256"),
 			},
 		},
 		"kty": schema.StringAttribute{
-			Description: "JWK key type. Must be RSA.",
+			Description: "JWK key type. Must be `RSA`.",
 			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.OneOf("RSA"),
 			},
 		},
 		"use": schema.StringAttribute{
-			Description: "JWK public key use. Must be sig.",
+			Description: "JWK public key use. Must be `sig`.",
 			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.OneOf("sig"),
 			},
 		},
 		"kid": schema.StringAttribute{
-			Description: "JWK key identifier. This becomes the Contentful app key ID and must match the x5c fingerprint.",
+			Description: "JWK key identifier. This becomes the Contentful app key ID and must match the `x5c` fingerprint.",
 			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
@@ -129,7 +129,7 @@ func AppKeyJWKSchemaAttributes(ctx context.Context) map[string]schema.Attribute 
 			},
 		},
 		"x5t": schema.StringAttribute{
-			Description: "JWK key thumbprint. This must be the unpadded base64url-encoded SHA-256 digest of the decoded bytes in x5c[0].",
+			Description: "JWK key thumbprint. This must be the unpadded base64url-encoded SHA-256 digest of the decoded bytes in `x5c[0]`.",
 			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),

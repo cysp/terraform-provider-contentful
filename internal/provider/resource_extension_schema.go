@@ -63,7 +63,7 @@ func ExtensionResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
 		},
 	}
 }
@@ -124,7 +124,7 @@ func ExtensionResourceExtensionSchemaAttributes(ctx context.Context) map[string]
 			},
 		},
 		"sidebar": schema.BoolAttribute{
-			Description: "Render the extension in the sidebar instead of replacing a field editing control. Defaults to false.",
+			Description: "Render the extension in the sidebar instead of replacing a field editing control. Defaults to `false`.",
 			Optional:    true,
 			Computed:    true,
 			Default:     booldefault.StaticBool(false),

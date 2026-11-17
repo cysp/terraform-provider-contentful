@@ -27,7 +27,7 @@ func LocaleDataSourceSchema(ctx context.Context) schema.Schema {
 	attributes["environment_id"] = schema.StringAttribute{Description: "ID of the environment or environment alias.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["locale_id"] = schema.StringAttribute{Description: "System ID of the locale, distinct from its code.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/environment_id/locale_id` form.", Computed: true}
-	attributes["timeouts"] = timeouts.Attributes(ctx)
+	attributes["timeouts"] = timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription})
 
 	return schema.Schema{Description: "Retrieves a Contentful Locale. See [Using environment aliases](../guides/existing-configuration#use-environment-aliases) for alias lookups.", Attributes: attributes}
 }
@@ -37,7 +37,7 @@ func LocalesDataSourceSchema(ctx context.Context) schema.Schema {
 	attributes["space_id"] = schema.StringAttribute{Description: "ID of the space.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["environment_id"] = schema.StringAttribute{Description: "ID of the environment or environment alias.", Required: true, Validators: []validator.String{discoveryIDValidator{}}}
 	attributes["id"] = schema.StringAttribute{Description: "Composite Terraform identifier in `space_id/environment_id` form.", Computed: true}
-	attributes["timeouts"] = timeouts.Attributes(ctx)
+	attributes["timeouts"] = timeouts.AttributesWithOpts(ctx, timeouts.Opts{ReadDescription: operationTimeoutDescription})
 	attributes["locales"] = schema.ListNestedAttribute{Description: "Locales in the environment, ordered lexicographically by `locale_id`.", Computed: true, NestedObject: schema.NestedAttributeObject{Attributes: localeDataSourceItemAttributes()}}
 
 	return schema.Schema{Description: "Retrieves all Contentful Locales in an environment. See [Using environment aliases](../guides/existing-configuration#use-environment-aliases) for alias lookups.", Attributes: attributes}

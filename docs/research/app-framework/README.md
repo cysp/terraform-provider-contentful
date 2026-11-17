@@ -26,13 +26,8 @@ feature list.
 
 ## Scope and evidence
 
-This research covers the public CMA resource families and first-party SDK operations
-connected to event subscription, app execution, deployment, identity, distribution, and
-observability. It does not assert that undocumented internal APIs are absent, or
-inventory every CRUD operation for every entity capable of emitting an event. Coverage
-follows each related family's addressing scope, operations, request and response data,
-relationships, lifecycle behavior, and operational limits. Source gaps remain explicit
-rather than being filled by analogy to another resource.
+Coverage includes published CMA endpoints, first-party SDK operations, and the
+scoped observations below. It does not establish the absence of undocumented APIs.
 
 The [research terminology](../README.md#terminology-and-scope) and [evidence and
 redaction conventions](../README.md#evidence-and-redaction) apply throughout this family.
@@ -100,27 +95,6 @@ flowchart TD
   E[Space / environment] -- contains --> I[AppInstallation]
   I -- references --> D
 ```
-
-| Resource family | Addressing and relationship | Lifecycle consequence |
-| --- | --- | --- |
-| AppDefinition | Organization-owned app with its own ID. | Its shared configuration can affect many installations. |
-| AppInstallation | One app definition in one space/environment; addressed by that definition's ID. | Installation is environment configuration, not a copy of the definition. |
-| AppEventSubscription, AppDetails, AppSigningSecret, ResourceProvider | Each has one optional singleton address below an app definition. | The parent tuple identifies the address; no collection operation exists for these singletons in the reviewed surface. |
-| AppAction, AppBundle, AppKey, AppAccessGrant | Collections below an app definition, with action/bundle IDs, key fingerprints, or grant IDs. | Changing one member is distinct from changing the definition or all installations. |
-| AppUpload | Organization-owned temporary artifact, outside the definition subtree. | Its expiry and deletion are separate from the durable bundle created from it. |
-| Function | App-scoped runtime capability identified in the deployment manifest; visible through definition and installation routes. | Deployment materializes the Function; no independent create/update/delete Function endpoint is exposed. |
-| ResourceType and Resource | Types are configured below ResourceProvider; external records are queried through an environment/type route. | A Resource response describes external content; it does not transfer ownership of that content to CMA. |
-| AppActionCall and FunctionLog | Execution and diagnostic data addressed within an installation and action or Function. | These are runtime records, distinct from reusable configuration. |
-| AppAccessToken and AppSignedRequest | Generated through an installation-scoped POST. | These yield credentials or headers, not another installed app or mutable configuration object. |
-
-These relationships follow the endpoint and entity sources in the [API
-inventory](#api-inventory) and the family-specific contracts in the
-[reading map](#reading-map). An app definition owns configuration shared across
-installations. Installation selects the
-space/environment in which it operates. Subscription changes apply to existing and
-future installations. AppInstallation events describe changes to that app's own
-installation, not every app installed in the environment. Sources: [App Events][events],
-[installation events][installation-events].
 
 Execution connects those structural resources in different ways:
 
@@ -228,47 +202,11 @@ the specific live result. [Definition adapter][definition-sdk], [installation
 adapter][installation-sdk], [event adapter][event-sdk], [provider
 adapter][provider-sdk], [type adapter][type-sdk].
 
-### Identity and recoverable data
-
-AppEventSubscription and AppDetails are addressed by the organization/app definition
-tuple. AppAction and AppBundle add their own system ID; AppKey uses its fingerprint. An
-installation's identity additionally includes space and environment. Subscription
-identity does not imply that all singletons lack `sys.id`: ResourceProvider has an
-explicit provider ID. Parent links in responses describe the addressed relationship; a
-contradictory link cannot establish another resource's identity. [Subscription
-entity][event-entity], [details entity][details-entity], [action entity][action-entity],
-[bundle entity][bundle-entity], [key adapter][key-sdk].
-
-Read responses have different reconstruction limits. Subscription target/topics are
-returned configuration. A signing secret read returns only a suffix; a key read does not
-recover private key material. Bundle metadata does not reconstruct the upload archive.
-Declared Secret installation parameters have [credential-dependent
-redaction](configuration.md#appdefinition-and-appinstallation-data). Environment action
-and installation Function discovery can return reduced projections, as their focused
-references describe.
-Call status and log records are generated runtime data. These differences remain
-relevant to backup, export, reconciliation, and drift analysis regardless of the client
-managing them.
-
-### Replacement, deletion, and concurrency
-
-Mutation and omission behavior remains resource-specific. The [subscription
-observations](events.md#observed-wire-behavior) and [App Action
-observations](actions.md) record different required fields, replacement rules, and
-validation results. The [installation parameter
-experiment](configuration.md#installation-parameter-replacement) distinguishes
-whole-field omission, required-field validation, and map replacement for its tested
-declarations. These results do not establish a common App Framework merge policy.
-
-A child GET 404 after parent deletion establishes inaccessibility through that address,
-not an internal cascade-storage policy. A 403 is an authorization or availability
-failure, not evidence of absence. A configuration write can succeed without an action
-being invocable or a bundle being activated.
-
-The reviewed surface exposes separate upload, bundle creation, activation, action
-configuration, and subscription configuration requests. No cross-resource transaction
-was established. Delivery retries, management request retries, and SDK call polling are
-separate behaviors.
+Endpoint-specific identity, omission, concurrency, and reconstruction limits are
+recorded in the linked family references. In particular, a child GET 404 after
+parent deletion establishes inaccessibility through that address, not an internal
+storage-cascade guarantee. Configuration success does not establish successful
+Function execution or event delivery.
 
 ## Unresolved behavior and source disagreements
 

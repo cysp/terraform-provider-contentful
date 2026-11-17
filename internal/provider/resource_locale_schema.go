@@ -55,19 +55,19 @@ func LocaleResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"content_delivery_api": schema.BoolAttribute{
-				Description: "Whether localized content is included in Content Delivery API and Content Preview API responses. Defaults to true. Clear dependent fallbacks before disabling delivery.",
+				Description: "Whether localized content is included in Content Delivery API and Content Preview API responses. Defaults to `true`. Clear dependent fallbacks before disabling delivery.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),
 			},
 			"content_management_api": schema.BoolAttribute{
-				Description: "Whether localized content is available through the Content Management API and for editing in the web app. Disabling it hides localized Entry and Asset fields from management reads and rejects writes containing that code; the Locale entity remains discoverable. Defaults to true.",
+				Description: "Whether localized content is available through the Content Management API and for editing in the web app. Disabling it hides localized Entry and Asset fields from management reads and rejects writes containing that code; the Locale entity remains discoverable. Defaults to `true`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),
 			},
 			"optional": schema.BoolAttribute{
-				Description: "Whether required localized fields may be empty for this locale when publishing all locales together. This does not relax required fields in the default locale. Defaults to false.",
+				Description: "Whether required localized fields may be empty for this locale when publishing all locales together. This does not relax required fields in the default locale. Defaults to `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -76,7 +76,7 @@ func LocaleResourceSchema(ctx context.Context) schema.Schema {
 				Description: "Whether this is the environment's default locale. Contentful does not allow changing this status.",
 				Computed:    true,
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
 		},
 	}
 }

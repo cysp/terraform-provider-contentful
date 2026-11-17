@@ -48,4 +48,4 @@ data "contentful_environment_status_ready" "example" {
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Timeout for the complete readiness wait, such as `15m`. Defaults to `10m`.

@@ -74,14 +74,12 @@ or target, the provider records the returned values and reports an error.
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
 
 ## Import
-
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
 {{- end }}
 {{- if .HasImportIdentityConfig }}
 
 ### Import by identity
 
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+Terraform 1.12 or later:
 
 {{tffile .ImportIdentityConfigFile }}
 {{- end }}
@@ -89,7 +87,7 @@ In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashic
 
 ### Import by ID
 
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+Terraform 1.5 or later:
 
 {{tffile .ImportIDConfigFile }}
 {{- end }}
@@ -97,7 +95,7 @@ In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashico
 
 ### Import with the CLI
 
-Use the [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import). Set the shell variables to your Contentful IDs before running it:
+Set the shell variables to your Contentful IDs:
 
 {{codefile "shell" .ImportFile }}
 {{- end }}

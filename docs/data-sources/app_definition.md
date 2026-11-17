@@ -55,7 +55,7 @@ locals {
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`.
 
 
 <a id="nestedatt--locations"></a>
@@ -72,7 +72,7 @@ Read-Only:
 
 Read-Only:
 
-- `items` (Attributes) Array item definition, or null when absent. Check for null before accessing its attributes; see [array item access and migration](../guides/app-definition-items). (see [below for nested schema](#nestedatt--locations--field_types--items))
+- `items` (Attributes) Array item definition, or null when absent. See [migration from v0.0.34–v0.0.68](../guides/app-definition-items) for the former list representation. (see [below for nested schema](#nestedatt--locations--field_types--items))
 - `link_type` (String) Type of linked resource for `Link` or `ResourceLink` fields, or null when absent.
 - `type` (String) The field type.
 

@@ -68,7 +68,7 @@ func WebhookSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 				Sensitive:           true,
 				Validators:          []validator.String{webhookSigningSecretValueValidator{}},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
 		},
 	}
 }

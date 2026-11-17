@@ -73,7 +73,7 @@ output "locale_code" {
 }
 ```
 
-Set `contentful_space_id` and, if needed, `contentful_environment_id`, then run `terraform init` and `terraform plan`. Run `terraform apply` to save the lookup results and outputs in state. These data sources do not change Contentful configuration.
+Set `contentful_space_id` and, if needed, `contentful_environment_id`.
 
 The Environment data source reports status immediately. Use [`contentful_environment_status_ready`](../data-sources/environment_status_ready) when a lookup needs to wait for an Environment to become ready.
 
@@ -81,7 +81,7 @@ The Environment data source reports status immediately. Use [`contentful_environ
 
 Filter collection results by name, locale code, or another returned attribute. To select a locale by code, use `locale.code == "en-GB"` in both the postcondition and the `one(...)` expression above. Comparisons are case-sensitive.
 
-The postcondition requires exactly one match before dependent expressions use it: `one([])` returns null, while multiple matches produce an error. Apply the same pattern to `self.spaces` and `space.name` to select a Space by name, using `organization_id` to narrow the search when needed.
+Use `organization_id` to narrow Space discovery when names are shared across organizations.
 
 Use `locale_id` for a Locale lookup and `code` for localized content. To manage a discovered Locale, import it into the [`contentful_locale` resource](../resources/locale). For bulk import and configuration generation, use the [Locale list resource](../list-resources/locale).
 

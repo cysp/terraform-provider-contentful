@@ -98,7 +98,7 @@ func TaxonomyConceptResourceSchema(ctx context.Context) schema.Schema {
 	attributes["broader_concept_ids"] = optionalComputedStringList("Ordered IDs of broader concepts.")
 	attributes["related_concept_ids"] = optionalComputedStringList("Ordered IDs of related concepts.")
 	attributes["concept_scheme_ids"] = schema.SetAttribute{Description: "IDs of schemes containing the concept.", Computed: true, ElementType: types.StringType}
-	attributes["timeouts"] = timeouts.AttributesAll(ctx)
+	attributes["timeouts"] = resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true})
 
 	return schema.Schema{Description: "Manages a Contentful taxonomy concept in an organization, including its labels, notes, and relationships to other concepts. Assign concepts to Entries through their `metadata.concepts` attribute.", Attributes: attributes}
 }
@@ -112,7 +112,7 @@ func TaxonomyConceptSchemeResourceSchema(ctx context.Context) schema.Schema {
 	attributes["top_concept_ids"] = optionalComputedStringList("Ordered IDs of top concepts. Every top concept must also occur in `concept_ids`.")
 	attributes["concept_ids"] = optionalComputedStringList("Ordered IDs of concepts in the scheme.")
 	attributes["total_concepts"] = schema.Int64Attribute{Description: "Number of concepts in the scheme.", Computed: true}
-	attributes["timeouts"] = timeouts.AttributesAll(ctx)
+	attributes["timeouts"] = resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true})
 
 	return schema.Schema{Description: "Manages a Contentful taxonomy concept scheme in an organization. A scheme groups existing concepts and identifies its top concepts.", Attributes: attributes}
 }

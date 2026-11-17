@@ -109,24 +109,8 @@ configured locale without disclosing the original locale inventory.
 
 ## Document organization
 
-Keep one authoritative account of each API behavior. Name files for the entity or
-concept they document; use headings to delimit focused coverage. Split when distinct
-reader questions, representations, or lifecycle boundaries benefit from separate
-references. Do not split every entity automatically or retain a split solely because
-its observations came from separate experiments.
-
-A focused reference leads with its subject, then states scope and evidence, addressing
-and representation, mutation/lifecycle behavior, and unresolved cases as relevant. Keep
-observation matrices near the behavior they explain. Group related references under a
-family directory when a shared relationship map is useful. This README defines shared
-conventions; a family overview records its shared study scope and sources. Individual
-references link to that context and retain their specific limitations, definitions, and
-citations. Summaries may orient readers, but detailed contract explanations belong in
-one reference. Update this index and inbound links when moving material.
-
-Provider schemas, implementation status, private state, recovery policy, test coverage,
-and mock conventions belong in [provider design](../design/README.md). The [CMA
-test-server conformance reference](../design/cma-test-server-conformance.md) links those
-choices back to API evidence. Practitioner configuration belongs in [provider
-documentation](../index.md). These separate audiences can share links without
-duplicating each other's contracts or turning research into a work plan.
+Keep each API behavior with its endpoint evidence. Split references by reader task
+or lifecycle boundary, and update the reading map and inbound links when moving
+material. Put provider policy in [design](../design/README.md), fixture conventions
+in [test-server conformance](../design/cma-test-server-conformance.md), and
+configuration workflows in [Registry documentation](../index.md).

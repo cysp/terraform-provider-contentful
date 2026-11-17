@@ -47,8 +47,8 @@ func TestTeamsDataSourceTeamSchemaMatchesTeamResource(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, "A description of the team.", itemAttributes["description"].GetDescription())
-	assert.Equal(t, "A description of the team. Defaults to an empty string.", resourceAttributes["description"].GetDescription())
+	assert.Equal(t, "Description of the team.", itemAttributes["description"].GetDescription())
+	assert.Equal(t, "Description of the team. Defaults to an empty string.", resourceAttributes["description"].GetDescription())
 }
 
 func TestReadTeamsTransportError(t *testing.T) {

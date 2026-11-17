@@ -68,10 +68,10 @@ Deletion permanently removes translations and can remove Entry locale publicatio
 
 ### Optional
 
-- `content_delivery_api` (Boolean) Whether localized content is included in Content Delivery API and Content Preview API responses. Defaults to true. Clear dependent fallbacks before disabling delivery.
-- `content_management_api` (Boolean) Whether localized content is available through the Content Management API and for editing in the web app. Disabling it hides localized Entry and Asset fields from management reads and rejects writes containing that code; the Locale entity remains discoverable. Defaults to true.
+- `content_delivery_api` (Boolean) Whether localized content is included in Content Delivery API and Content Preview API responses. Defaults to `true`. Clear dependent fallbacks before disabling delivery.
+- `content_management_api` (Boolean) Whether localized content is available through the Content Management API and for editing in the web app. Disabling it hides localized Entry and Asset fields from management reads and rejects writes containing that code; the Locale entity remains discoverable. Defaults to `true`.
 - `fallback_code` (String) Code of an existing locale to use when translated content is missing. Fallback chains cannot contain cycles. Omission sends null to clear the fallback; an empty string is sent unchanged for Contentful to validate.
-- `optional` (Boolean) Whether required localized fields may be empty for this locale when publishing all locales together. This does not relax required fields in the default locale. Defaults to false.
+- `optional` (Boolean) Whether required localized fields may be empty for this locale when publishing all locales together. This does not relax required fields in the default locale. Defaults to `false`.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -85,18 +85,16 @@ Deletion permanently removes translations and can remove Entry locale publicatio
 
 Optional:
 
-- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
-- `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
-- `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `create` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`.
+- `delete` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`. Uses the value saved in state, with a minimum of `10s`.
+- `read` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`. Uses the value saved in state, with a minimum of `10s`.
+- `update` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`.
 
 ## Import
 
-Choose one of the following methods. Match the resource address and Contentful IDs to your configuration, then review the plan before applying.
-
 ### Import by identity
 
-In Terraform v1.12.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `identity`:
+Terraform 1.12 or later:
 
 ```terraform
 import {
@@ -111,7 +109,7 @@ import {
 
 ### Import by ID
 
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) with `id`:
+Terraform 1.5 or later:
 
 ```terraform
 import {

@@ -17,7 +17,7 @@ timeouts = {
 }
 ```
 
-Check the resource or data source schema for its supported timeout attributes. See Terraform's [resource timeout syntax](https://developer.hashicorp.com/terraform/language/resources/configure#define-operation-timeouts) for more configuration examples.
+Each resource or data source lists its supported timeout attributes.
 
 ## Defaults and effective deadlines
 
@@ -50,7 +50,7 @@ data "contentful_environment_status_ready" "example" {
 
 The data source checks immediately, then polls on a 15-second interval until Contentful reports `ready`. A `failed` status ends the wait with an error. Increasing the environment resource's `timeouts.create` does not extend this separate wait.
 
-Use Terraform's [`depends_on` meta-argument](https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on) when a resource must wait for readiness but its attribute references do not express that dependency. The [environment example](../resources/environment#example-usage) shows creation, readiness, and alias configuration together.
+The [environment example](../resources/environment#example-usage) makes an alias wait for readiness before switching its target.
 
 ## Recover when a change times out
 

@@ -38,7 +38,7 @@ func EnvironmentAliasResourceSchema(ctx context.Context) schema.Schema {
 				Description: "ID of the environment reached through this alias. Changing the target redirects subsequent requests that use the alias.",
 				Required:    true,
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
 		},
 	}
 }

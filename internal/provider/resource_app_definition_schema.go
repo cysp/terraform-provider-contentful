@@ -39,7 +39,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"name": schema.StringAttribute{
-				Description: "A human-readable name of the app.",
+				Description: "Name of the app.",
 				Required:    true,
 			},
 			"src": schema.StringAttribute{
@@ -66,7 +66,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"location": schema.StringAttribute{
-							Description: "Location identifier (e.g., entry-field, entry-sidebar, app-config).",
+							Description: "Location identifier, such as `entry-field`, `entry-sidebar`, or `app-config`.",
 							Required:    true,
 						},
 						"field_types": schema.ListNestedAttribute{
@@ -74,7 +74,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"type": schema.StringAttribute{
-										Description: "Field type (e.g., Symbol, Text, Integer, Link, Array).",
+										Description: "Field type, such as `Symbol`, `Text`, `Integer`, `Link`, or `Array`.",
 										Required:    true,
 									},
 									"link_type": schema.StringAttribute{
@@ -151,7 +151,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				Optional:   true,
 				Validators: []validator.Object{appDefinitionParametersValidator{}},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
 		},
 	}
 }
@@ -163,7 +163,7 @@ func AppDefinitionParameterSchemaAttributes(ctx context.Context) map[string]sche
 			Required:    true,
 		},
 		"type": schema.StringAttribute{
-			Description: "Parameter type (e.g., Symbol, Enum, Boolean).",
+			Description: "Parameter type, such as `Symbol`, `Enum`, or `Boolean`.",
 			Required:    true,
 		},
 		"name": schema.StringAttribute{

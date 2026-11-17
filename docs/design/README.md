@@ -1,50 +1,32 @@
-# Provider design and evidence
+# Provider design
 
-These documents are for maintainers changing provider behavior or test fixtures.
-For build and verification commands, use [Development](../../DEVELOPMENT.md). For
-practitioner documentation, start with the [provider page](../index.md).
-Contentful's independent API contracts and observations are indexed in
-[Contentful API research](../research/README.md).
-
-Start with the contract for the behavior you are changing. Follow its links to
-implementation and evidence to establish which requirements each boundary
-protects. Apply the repository's design guidance when evaluating alternatives,
-and update affected design documentation alongside implementation changes.
+Read the contract for the behavior you are changing. Commands live in
+[Development](../../DEVELOPMENT.md); Contentful contracts and observations live in
+[API research](../research/README.md).
 
 ## Design contracts
 
-| Change | Read |
+| Concern | Contract |
 | --- | --- |
-| Schemas, planning, request conversion, response projection, or state publication | [Terraform value semantics](terraform-value-semantics.md) |
-| App Definition schema or validation | [Validation boundaries](terraform-value-semantics.md#app-definition-configuration) |
-| HTTP retries, deadlines, or mutation recovery | [Contentful HTTP retry policy](contentful-http-retry-policy.md) |
-| Entry publication recovery | [Entry publication contract](terraform-value-semantics.md#entry-publication-ownership-and-partial-field-ownership) and [Terraform lifecycle evidence](entry-publication-evidence.md) |
-| Content preview platform representation and requests (`contentful_preview_environment`) | [Configuration and reconciliation](content-preview-environments.md) |
-| Locale management (`contentful_locale`) | [Identity, values, and version handling](locale.md) |
-| Configuration data-source identity, traversal, alias context, or compatibility | [Configuration data sources](configuration-data-sources.md) |
-| CMA test-server behavior or tests that rely on its defaults | [CMA test-server conformance boundaries](cma-test-server-conformance.md) |
-| Practitioner and contributor documentation | [Provider documentation practices](provider-documentation.md) |
-
-The value-semantics note starts with shared rules and includes a
-[resource reading map](terraform-value-semantics.md#reading-map). Apply each named
-resource contract to that resource; special cases do not establish a general
-provider policy.
-
-The [App Installation Secret parameter contract](app-installation-secret-parameters.md)
-records response reconciliation, complete-object ownership, accepted limitations,
-and independent verification.
+| Schemas, request conversion, response projection, identity, and state | [Shared value semantics](terraform-value-semantics.md) |
+| HTTP retries and deadlines | [HTTP retry policy](contentful-http-retry-policy.md) |
+| Content Type activation and Entry publication, recovery, and fields | [Content publication](content-publication.md) |
+| Role, Editor Interface, and Webhook comparison rules | [Mutation reconciliation](mutation-reconciliation.md) |
+| Taxonomy collection ownership, canonicalization, and locking | [Taxonomy](taxonomy.md) |
+| App Definition and Extension validation; App Action identity | [App configuration](app-configuration.md) |
+| App Installation parameter masking and complete-object writes | [Secret parameters](app-installation-secret-parameters.md) |
+| Preview platforms and live preview variables | [Content preview](content-preview-environments.md) |
+| Locale management and discovery | [Locales](locale.md) |
+| Data-source identity, aliases, and pagination | [Configuration data sources](configuration-data-sources.md) |
+| Webhook signing secret ownership and acknowledgement | [Webhook signing secret](webhook-signing-secret.md) |
+| In-process CMA server fixtures and limitations | [Test-server conformance](cma-test-server-conformance.md) |
 
 ## Evidence boundaries
 
-API research retains published sources, sanitized observations, and limitations
-independently of provider implementation. Use the
-[research reading map](../research/README.md#reading-map) to find endpoint
-behavior and the [evidence conventions](../research/README.md#evidence-and-redaction)
-to distinguish a published contract, first-party client behavior, direct
-observation, and interpretation.
+Design documents state provider policy. Research records published API contracts,
+pinned client behavior, and scoped service observations using the
+[research conventions](../research/README.md#evidence-and-redaction).
+Mock tests prove behavior against fixtures; they do not establish Contentful
+compatibility. Keep deliberate faults separate from normal fixture behavior.
 
-Design documents state provider policy; research documents state what the
-external evidence establishes. Mock behavior alone does not establish Contentful
-behavior. The [test-server conformance reference](cma-test-server-conformance.md)
-connects API evidence to fixture behavior and coverage. Deliberate faults belong
-in explicit adversarial cases rather than undocumented default behavior.
+For documentation changes, use [Writing provider documentation](../documentation.md).

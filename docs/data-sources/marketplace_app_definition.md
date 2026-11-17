@@ -32,7 +32,7 @@ locals {
 
 ### Required
 
-- `app_definition_id` (String) The unique identifier for the marketplace app definition.
+- `app_definition_id` (String) System ID of the Marketplace App Definition.
 
 ### Optional
 
@@ -40,20 +40,20 @@ locals {
 
 ### Read-Only
 
-- `bundle_id` (String) The bundle identifier for the marketplace app.
+- `bundle_id` (String) Bundle ID of the Marketplace app.
 - `id` (String) Composite Terraform identifier in `organization_id/app_definition_id` form; not a Contentful system ID.
-- `locations` (Attributes List) Locations where the marketplace app can be rendered in the Contentful web app. (see [below for nested schema](#nestedatt--locations))
-- `name` (String) The name of the marketplace app.
-- `organization_id` (String) ID of the organization that owns the marketplace app definition.
-- `parameters` (Attributes) Parameter definitions for configuring the marketplace app. (see [below for nested schema](#nestedatt--parameters))
-- `src` (String) The URL where the marketplace app is hosted.
+- `locations` (Attributes List) Locations where the Marketplace app can be rendered in the Contentful web app. (see [below for nested schema](#nestedatt--locations))
+- `name` (String) The name of the Marketplace app.
+- `organization_id` (String) ID of the organization that owns the Marketplace app definition.
+- `parameters` (Attributes) Parameter definitions for configuring the Marketplace app. (see [below for nested schema](#nestedatt--parameters))
+- `src` (String) The URL where the Marketplace app is hosted.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`.
 
 
 <a id="nestedatt--locations"></a>
@@ -70,7 +70,7 @@ Read-Only:
 
 Read-Only:
 
-- `items` (Attributes) Array item definition, or null when absent. Check for null before accessing its attributes; see [array item access and migration](../guides/app-definition-items). (see [below for nested schema](#nestedatt--locations--field_types--items))
+- `items` (Attributes) Array item definition, or null when absent. See [migration from v0.0.34–v0.0.68](../guides/app-definition-items) for the former list representation. (see [below for nested schema](#nestedatt--locations--field_types--items))
 - `link_type` (String) Type of linked resource for `Link` or `ResourceLink` fields, or null when absent.
 - `type` (String) The field type.
 

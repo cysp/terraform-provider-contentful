@@ -45,7 +45,7 @@ func ResourceProviderResourceSchema(ctx context.Context) schema.Schema {
 				Description: "ID of the function that provides resources.",
 				Required:    true,
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
 		},
 	}
 }

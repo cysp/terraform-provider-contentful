@@ -57,7 +57,7 @@ resource "contentful_team_space_membership" "example" {
 
 Optional:
 
-- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+- `read` (String) Timeout for the complete operation, including retries, such as `30s` or `5m`. Defaults to `2m`.
 
 
 <a id="nestedatt--teams"></a>
@@ -65,6 +65,6 @@ Optional:
 
 Read-Only:
 
-- `description` (String) A description of the team.
-- `name` (String) A human-readable name of the team.
+- `description` (String) Description of the team.
+- `name` (String) Name of the team.
 - `team_id` (String) System ID of the team.

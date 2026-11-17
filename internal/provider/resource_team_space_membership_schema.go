@@ -56,7 +56,7 @@ func TeamSpaceMembershipResourceSchema(ctx context.Context) schema.Schema {
 					listvalidator.NoNullValues(),
 				},
 			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"timeouts": resourceTimeoutsAttribute(ctx, timeouts.Opts{Create: true, Read: true, Update: true, Delete: true}),
 		},
 	}
 }
