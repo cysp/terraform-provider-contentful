@@ -15,7 +15,6 @@ import (
 	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -93,8 +92,8 @@ func TestWebhookSigningSecretSuccessLogsRedactValues(t *testing.T) {
 			implementation := webhookSigningSecretTestClient(t, server)
 			state, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
 			plan, _ := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestUpdatedValue))
-			require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), timetypes.NewRFC3339Unknown()))
-			require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), timetypes.NewRFC3339Unknown()))
+			require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), types.StringUnknown()))
+			require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), types.StringUnknown()))
 
 			var logs bytes.Buffer
 
@@ -239,8 +238,8 @@ func TestWebhookSigningSecretFailuresRetainStateAndRedactKnownValues(t *testing.
 				implementation := webhookSigningSecretTestClient(t, server)
 				state, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
 				plan, _ := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestUpdatedValue))
-				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), timetypes.NewRFC3339Unknown()))
-				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), timetypes.NewRFC3339Unknown()))
+				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), types.StringUnknown()))
+				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), types.StringUnknown()))
 
 				identityBefore := identity.Raw.Copy()
 

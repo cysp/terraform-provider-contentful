@@ -47,16 +47,16 @@ resource "terraform_data" "timestamps" {
 				}
 				testAccMockedResource(t, fixture, resource.TestCase{
 					Steps: []resource.TestStep{
-						{Config: config(initial, ""), ConfigStateChecks: checks("2026-09-01T00:00:00Z", "2026-09-01T01:00:00Z")},
+						{Config: config(initial, ""), ConfigStateChecks: checks("2026-09-01T00:00:00.123Z", "2026-09-01T01:00:00.456Z")},
 						{
 							PreConfig: func() { fixture.requireValues(t, initial) },
 							Config:    config(initial, `timeouts={read="1m"}`),
 							ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 								plancheck.ExpectResourceAction("terraform_data.timestamps", plancheck.ResourceActionNoop),
 							}},
-							ConfigStateChecks: checks("2026-09-01T00:00:00Z", "2026-09-01T01:00:00Z"),
+							ConfigStateChecks: checks("2026-09-01T00:00:00.123Z", "2026-09-01T01:00:00.456Z"),
 						},
-						{PreConfig: func() { fixture.requireValues(t, initial) }, Config: config(changed, ""), ConfigStateChecks: checks("2026-09-02T00:00:00Z", "2026-09-02T01:00:00Z")},
+						{PreConfig: func() { fixture.requireValues(t, initial) }, Config: config(changed, ""), ConfigStateChecks: checks("2026-09-01T00:00:00.789Z", "2026-09-01T01:00:00.987Z")},
 					},
 					CheckDestroy: func(_ *terraform.State) error {
 						fixture.requireValues(t, initial, changed)
@@ -96,8 +96,8 @@ resource "terraform_data" "timestamps" {
 
 				var createdAt, updatedAt knownvalue.Check = knownvalue.Null(), knownvalue.Null()
 				if timestamps {
-					createdAt = knownvalue.StringExact("2026-09-01T00:00:00Z")
-					updatedAt = knownvalue.StringExact("2026-09-01T01:00:00Z")
+					createdAt = knownvalue.StringExact("2026-09-01T00:00:00.123Z")
+					updatedAt = knownvalue.StringExact("2026-09-01T01:00:00.456Z")
 				}
 
 				checks := func() []statecheck.StateCheck {

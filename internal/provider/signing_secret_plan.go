@@ -2,12 +2,22 @@ package provider
 
 import (
 	"context"
+	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+// Keep the fractional seconds decoded from Contentful on both mutation and refresh.
+func signingSecretTimestamp(value cm.OptDateTime) types.String {
+	if timestamp, ok := value.Get(); ok {
+		return types.StringValue(timestamp.UTC().Format(time.RFC3339Nano))
+	}
+
+	return types.StringNull()
+}
 
 // value_wo is null in both plan and state. Mark the timestamps unknown when
 // the secret may have changed so Terraform can schedule Update.
@@ -61,7 +71,7 @@ func modifySigningSecretPlan(ctx context.Context, req resource.ModifyPlanRequest
 	}
 
 	for _, name := range []string{"created_at", "updated_at"} {
-		value := timetypes.NewRFC3339Unknown()
+		value := types.StringUnknown()
 		if !possibleWrite {
 			resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root(name), &value)...)
 		}

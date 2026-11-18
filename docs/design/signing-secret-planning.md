@@ -28,6 +28,7 @@ For existing resources, the shared plan modifier follows these rules:
 | Write-only input differs, is unknown, or has no comparison value | Unknown | A write may be needed |
 | Ordinary Plan value is null and another change requires Update | Unknown | Apply-time Config may supply different write-only bytes, even when planning Config omitted them |
 
+State represents timestamps in UTC and preserves fractional seconds returned by Contentful.
 Missing API timestamps become null; they do not disable this mechanism.
 Null-to-unknown can schedule Update, and the final timestamps may resolve back
 to null. Malformed response timestamps are decoding errors.

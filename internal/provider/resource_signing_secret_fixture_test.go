@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"sync"
 	"testing"
-	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
@@ -84,41 +83,28 @@ func (s *signingSecretFixture) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var createdAt, updatedAt cm.OptDateTime
+	// Use a wire object: the generated DTO encoder writes whole-second timestamps.
+	sys := map[string]any{}
+	if s.kind == "webhook" {
+		sys["type"] = "WebhookSigningSecret"
+		sys["space"] = cm.NewSpaceLink("space")
+	} else {
+		sys["type"] = "AppSigningSecret"
+		sys["organization"] = cm.NewOrganizationLink("organization")
+		sys["appDefinition"] = cm.NewAppDefinitionLink("app")
+	}
 
 	if s.timestamps {
-		day := 1
+		sys["createdAt"] = "2026-09-01T00:00:00.123Z"
+		sys["updatedAt"] = "2026-09-01T01:00:00.456Z"
+
 		if len(s.values) > 1 {
-			day = 2
-		}
-
-		createdAt = cm.NewOptDateTime(time.Date(2026, time.September, day, 0, 0, 0, 0, time.UTC))
-		updatedAt = cm.NewOptDateTime(time.Date(2026, time.September, day, 1, 0, 0, 0, time.UTC))
-	}
-
-	var response json.Marshaler
-	if s.kind == "webhook" {
-		response = &cm.WebhookSigningSecret{
-			Sys: cm.WebhookSigningSecretSys{
-				Type:      cm.WebhookSigningSecretSysTypeWebhookSigningSecret,
-				Space:     cm.NewSpaceLink("space"),
-				CreatedAt: createdAt,
-				UpdatedAt: updatedAt,
-			},
-			RedactedValue: "opaque",
-		}
-	} else {
-		response = &cm.AppSigningSecret{
-			Sys: cm.AppSigningSecretSys{
-				Type:          cm.AppSigningSecretSysTypeAppSigningSecret,
-				Organization:  cm.NewOrganizationLink("organization"),
-				AppDefinition: cm.NewAppDefinitionLink("app"),
-				CreatedAt:     createdAt,
-				UpdatedAt:     updatedAt,
-			},
-			RedactedValue: "opaque",
+			sys["createdAt"] = "2026-09-01T00:00:00.789Z"
+			sys["updatedAt"] = "2026-09-01T01:00:00.987Z"
 		}
 	}
+
+	response := map[string]any{"sys": sys, "redactedValue": "opaque"}
 
 	err := json.NewEncoder(w).Encode(response)
 	if err != nil {

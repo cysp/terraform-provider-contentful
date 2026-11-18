@@ -13,7 +13,6 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
-	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -76,8 +75,8 @@ func TestAppSigningSecretLifecycleRuntimeOutputExcludesValues(t *testing.T) {
 	var updateModel AppSigningSecretModel
 	require.False(t, readResponse.State.Get(ctx, &updateModel).HasError())
 	updateModel.Value = types.StringValue(updatedValue)
-	updateModel.CreatedAt = timetypes.NewRFC3339Unknown()
-	updateModel.UpdatedAt = timetypes.NewRFC3339Unknown()
+	updateModel.CreatedAt = types.StringUnknown()
+	updateModel.UpdatedAt = types.StringUnknown()
 	updatePlan := appSigningSecretTestPlan(ctx, t, resourceSchema, updateModel)
 	updateResponse := resource.UpdateResponse{
 		State:    tfsdk.State{Raw: updatePlan.Raw, Schema: resourceSchema},
@@ -160,8 +159,8 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 				t.Helper()
 
 				// Import leaves value null; adopting the planned value must write.
-				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), timetypes.NewRFC3339Unknown()))
-				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), timetypes.NewRFC3339Unknown()))
+				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), types.StringUnknown()))
+				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), types.StringUnknown()))
 				require.False(t, state.SetAttribute(t.Context(), path.Root("value"), types.StringNull()).HasError())
 
 				response := resource.UpdateResponse{State: tfsdk.State(plan), Identity: identity}
