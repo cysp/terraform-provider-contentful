@@ -113,8 +113,8 @@ resource "contentful_webhook" "plan" {
 
 	assert.Regexp(t, `(?m)^\s+\+ parameters\s+= \(sensitive value\)$`, output)
 	assert.Regexp(t, `(?m)^\s+\+ http_basic_password\s+= \(sensitive value\)$`, output)
-	assert.Regexp(t, fmt.Sprintf(`(?ms)^\s+\+ "Authorization"\s+= \{\s+\+ secret\s+= true\s+\+ value\s+= %q\s+\},$`, webhookVisibleHeaderPlanSentinel), output)
-	assert.Regexp(t, `(?ms)^\s+\+ "SensitiveAuthorization"\s+= \{\s+\+ secret\s+= true\s+\+ value\s+= \(sensitive value\)\s+\},$`, output)
+	assert.Regexp(t, fmt.Sprintf(`(?ms)^\s+\+ "Authorization"\s+= \{\s+\+ secret\s+= true\s+\+ value\s+= %q\s+\+ value_wo\s+= \(sensitive, write-only attribute\)\s+\},$`, webhookVisibleHeaderPlanSentinel), output)
+	assert.Regexp(t, `(?ms)^\s+\+ "SensitiveAuthorization"\s+= \{\s+\+ secret\s+= true\s+\+ value\s+= \(sensitive value\)\s+\+ value_wo\s+= \(sensitive, write-only attribute\)\s+\},$`, output)
 }
 
 func TestAccExtensionResourceLifecycleLogsExcludeParameters(t *testing.T) {

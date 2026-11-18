@@ -42,11 +42,6 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 			plan.Active = types.BoolUnknown()
 		}
 
-		unknownHeaders := rapid.Bool().Draw(t, "response-owned headers")
-		if unknownHeaders {
-			plan.Headers = NewTypedMapUnknown[TypedObject[WebhookHeaderValue]]()
-		}
-
 		webhookID := "webhook"
 
 		if rapid.Bool().Draw(t, "generated identity") {
@@ -57,6 +52,7 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 
 		response := completeWebhookMutationResponse()
 		response.Sys.ID = webhookID
+		response.Sys.Version = 17
 		response.Filters.SetTo(reconciliationWebhookResponseFilters(returnedKinds, returnedValues, negated))
 		responseTransformation := response.Transformation.Value
 		responseTransformation.Body = []byte(returnedJSON)
@@ -64,13 +60,14 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 		response.Active = cm.NewOptBool(active)
 
 		response.Headers[0].Secret = cm.NewOptBool(secret)
-		if secret && !unknownHeaders && rapid.Bool().Draw(t, "redacted header") {
+		if secret && rapid.Bool().Draw(t, "redacted header") {
 			response.Headers[0].Value = cm.OptString{}
 		}
 
 		// The API omits the Basic password. Its Plan fallback and a redacted
 		// secret header survive even when another attribute contradicts Plan.
 		expected := WebhookModel{
+			Version:         types.Int64Value(17),
 			IDIdentityModel: NewIDIdentityModelFromMultipartID("space", webhookID),
 			SpaceID:         types.StringValue("space"), WebhookID: types.StringValue(webhookID),
 			Name:              plan.Name,

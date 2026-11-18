@@ -33,12 +33,16 @@ resource "contentful_webhook" "this" {
     },
   ]
 
+  http_basic_username    = "webhook"
+  http_basic_password_wo = var.webhook_password
+
   headers = {
     "X-Webhook-Secret" = {
-      value  = var.webhook_secret
-      secret = true
+      secret   = true
+      value_wo = var.webhook_secret
     },
   }
+
 
   transformation = {
     method                 = "POST"
@@ -60,10 +64,13 @@ resource "contentful_webhook" "this" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `active` (Boolean) Whether the webhook is active. Defaults to `true`.
 - `filters` (Attributes List) Filtering constraints applied after `topics`. Contentful combines filters with logical AND; each filter configures exactly one of `equals`, `in`, `regexp`, or `not`. Null or omitted filters default to the `master` environment; `filters = []` sends no constraints. Supported payload paths and event restrictions are defined by [Contentful webhook filters](https://www.contentful.com/developers/docs/extensibility/webhooks/filters/). (see [below for nested schema](#nestedatt--filters))
-- `headers` (Attributes Map) HTTP headers sent by the webhook, keyed by header name. When omitted on Create, Terraform adopts the headers returned by Contentful. When omitted on Update, Terraform preserves known prior headers. Set to `{}` to remove all headers. (see [below for nested schema](#nestedatt--headers))
+- `headers` (Attributes Map) HTTP headers sent by the webhook, keyed by header name. Omitting headers or setting `{}` removes all managed headers on apply. To keep externally managed headers, use `lifecycle.ignore_changes` on their keys or on the whole map. See [Secrets and Terraform state](../guides/secrets-and-state#secret-custom-headers). (see [below for nested schema](#nestedatt--headers))
 - `http_basic_password` (String, Sensitive) HTTP Basic authentication password; configure it together with http_basic_username. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.
+- `http_basic_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only alternative to `http_basic_password` for Terraform 1.11.1 or later. Configure it together with `http_basic_username`. An ephemeral input keeps the password out of saved plans. Use a randomly generated password: the stored verifier permits offline guesses. See [Secrets and Terraform state](../guides/secrets-and-state).
 - `http_basic_username` (String) HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `transformation` (Attributes) Customizes the outgoing webhook HTTP method, Content-Type, Content-Length header, and request body. When omitted, Contentful uses its standard webhook request behavior. Unsupported methods and content types prevent writes, including values retained by ignore_changes. Read and import preserve returned values. (see [below for nested schema](#nestedatt--transformation))
@@ -71,6 +78,7 @@ resource "contentful_webhook" "this" {
 ### Read-Only
 
 - `id` (String) Composite Terraform resource identifier in `space_id/webhook_id` form.
+- `version` (Number) Contentful version of this webhook definition. A possible update makes the planned version unknown, including a change to a write-only credential.
 - `webhook_id` (String) System ID of the webhook.
 
 <a id="nestedatt--filters"></a>
@@ -151,13 +159,11 @@ Required:
 <a id="nestedatt--headers"></a>
 ### Nested Schema for `headers`
 
-Required:
-
-- `value` (String) Header value. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. See [Secrets and Terraform state](../guides/secrets-and-state).
-
 Optional:
 
 - `secret` (Boolean) Whether Contentful treats the header value as secret. Defaults to `false`.
+- `value` (String) Header value. Omit it when supplying `value_wo` or preserving an existing secret header. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. See [Secrets and Terraform state](../guides/secrets-and-state).
+- `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only alternative to `value` for Terraform 1.11.1 or later. Set `secret = true` and supply a randomly generated secret through an ephemeral input. Omit both values to retain an existing secret header. See [Secrets and Terraform state](../guides/secrets-and-state#secret-custom-headers).
 
 
 <a id="nestedatt--timeouts"></a>

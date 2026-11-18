@@ -11,19 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWebhookHeadersUnknownContainerIsOmitted(t *testing.T) {
-	t.Parallel()
-
-	headers, diags := ToWebhookDefinitionHeaders(
-		path.Root("headers"),
-		NewTypedMapUnknown[TypedObject[WebhookHeaderValue]](),
-		NewTypedMapNull[TypedObject[WebhookHeaderValue]](),
-	)
-
-	assert.Nil(t, headers)
-	assert.Empty(t, diags)
-}
-
 func TestWebhookHeadersFailWithoutPartialOutputAndSortKeys(t *testing.T) {
 	t.Parallel()
 
@@ -31,7 +18,7 @@ func TestWebhookHeadersFailWithoutPartialOutputAndSortKeys(t *testing.T) {
 		"z": NewTypedObject(WebhookHeaderValue{Value: types.StringValue("last"), Secret: types.BoolValue(false)}),
 		"a": NewTypedObject(WebhookHeaderValue{Value: types.StringValue("first"), Secret: types.BoolValue(true)}),
 	})
-	result, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers, headers)
+	result, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers)
 	require.False(t, diags.HasError(), diags.Errors())
 	assert.Equal(t, cm.WebhookDefinitionHeaders{
 		{Key: "a", Value: cm.NewOptString("first"), Secret: cm.NewOptBool(true)},
@@ -43,13 +30,13 @@ func TestWebhookHeadersFailWithoutPartialOutputAndSortKeys(t *testing.T) {
 		"a":      NewTypedObject(WebhookHeaderValue{Value: types.StringValue("first"), Secret: types.BoolValue(true)}),
 		"broken": NewTypedObject(WebhookHeaderValue{Value: types.StringUnknown(), Secret: types.BoolValue(false)}),
 	})
-	result, diags = ToWebhookDefinitionHeaders(path.Root("headers"), headers, headers)
+	result, diags = ToWebhookDefinitionHeaders(path.Root("headers"), headers)
 	assert.Nil(t, result)
 	require.True(t, diags.HasError())
 	assert.Equal(t, []string{`headers["broken"].value`}, attributeDiagnosticPaths(t, diags))
 }
 
-func TestWebhookRequestPreservesResponseOwnedSecretWithoutSendingAValue(t *testing.T) {
+func TestWebhookRequestPreservesPlannedSecretWithoutSendingAValue(t *testing.T) {
 	t.Parallel()
 
 	model := validWebhookRequestModel()
@@ -60,9 +47,7 @@ func TestWebhookRequestPreservesResponseOwnedSecretWithoutSendingAValue(t *testi
 		}),
 	})
 
-	actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{
-		Headers: NewTypedMapNull[TypedObject[WebhookHeaderValue]](),
-	}, path.Empty())
+	actual, diags := model.ToWebhookDefinitionData(t.Context(), path.Empty())
 
 	require.False(t, diags.HasError(), diags.Errors())
 	require.Len(t, actual.Headers, 1)
@@ -79,7 +64,7 @@ func TestWebhookRequestPreservesConfiguredEmptyHeaderValues(t *testing.T) {
 		"secret":   NewTypedObject(WebhookHeaderValue{Value: types.StringValue(""), Secret: types.BoolValue(true)}),
 	})
 
-	actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers, headers)
+	actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), headers)
 
 	require.False(t, diags.HasError(), diags.Errors())
 	require.Len(t, actual, 2)

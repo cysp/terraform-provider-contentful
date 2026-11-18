@@ -18,12 +18,16 @@ resource "contentful_webhook" "this" {
     },
   ]
 
+  http_basic_username    = "webhook"
+  http_basic_password_wo = var.webhook_password
+
   headers = {
     "X-Webhook-Secret" = {
-      value  = var.webhook_secret
-      secret = true
+      secret   = true
+      value_wo = var.webhook_secret
     },
   }
+
 
   transformation = {
     method                 = "POST"

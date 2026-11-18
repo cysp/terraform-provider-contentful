@@ -9,7 +9,6 @@ import (
 func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
 	path path.Path,
 	key string,
-	configuredHeaders TypedMap[TypedObject[WebhookHeaderValue]],
 ) (cm.WebhookDefinitionHeader, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -25,10 +24,9 @@ func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
 		Secret: cm.NewOptBool(secret),
 	}
 
-	if v.Value.IsNull() && secret && configuredHeaders.IsNull() {
-		// Contentful redacts secret values. For response-owned imported
-		// headers, sending secret=true without value asks CMA to retain the
-		// existing secret during an update.
+	if v.Value.IsNull() && secret {
+		// The lifecycle fills new write-only values and checks that a
+		// value-less header can retain an existing secret before sending.
 		return header, diags
 	}
 

@@ -164,8 +164,8 @@ response conversion.
 Terraform 1.15.8 with `terraform-plugin-framework` v1.19.0 was exercised with
 the provider-side comparison temporarily removed so contradictory mutation
 state reached Terraform Core directly. Core rejected known Plan values produced
-by static defaults and `UseStateForUnknown` for Webhook `active`, `headers`, and
-`headers[*].secret`, and Editor Interface `sidebar[*].disabled`. A contradictory
+by static defaults and `UseStateForUnknown` for Webhook and Editor Interface
+attributes, including `active`, `headers[*].secret`, and `sidebar[*].disabled`. A contradictory
 Create also retained the returned value in tainted recovery state. These are
 version-specific observations. Recheck them on [Core or Framework upgrades](#upgrade-triggers).
 Sanitized direct CMA observations for the affected Webhook and Editor Interface

@@ -17,6 +17,10 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Description: "Manages a Contentful Webhook that sends HTTP requests when events match its topics and filters. Configure the receiving endpoint separately.",
 		Attributes: map[string]schema.Attribute{
+			"version": schema.Int64Attribute{
+				Description: "Contentful version of this webhook definition. A possible update makes the planned version unknown, including a change to a write-only credential.",
+				Computed:    true,
+			},
 			"id": schema.StringAttribute{
 				Description: "Composite Terraform resource identifier in `space_id/webhook_id` form.",
 				Computed:    true,
@@ -68,11 +72,15 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Sensitive:           true,
 			},
+			"http_basic_password_wo": schema.StringAttribute{
+				MarkdownDescription: "Write-only alternative to `http_basic_password` for Terraform 1.11.1 or later. Configure it together with `http_basic_username`. An ephemeral input keeps the password out of saved plans. Use a randomly generated password: the stored verifier permits offline guesses. See [Secrets and Terraform state](../guides/secrets-and-state).",
+				Optional:            true, Sensitive: true, WriteOnly: true,
+			},
 			"http_basic_username": schema.StringAttribute{
 				Description: "HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.",
 				Optional:    true,
 			},
-			"headers":        WebhookHeadersSchema(ctx, true),
+			"headers":        WebhookHeadersSchema(ctx),
 			"transformation": WebhookTransformationSchema(ctx, true),
 			"timeouts":       timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},

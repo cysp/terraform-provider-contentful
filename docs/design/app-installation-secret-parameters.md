@@ -23,6 +23,8 @@ post-write consistency errors. A [pinned Terraform reproduction][reproduction]
 records these failures at provider revision
 `8db2a7bc70666b6c1b1b7011c2e688373eb8ed2b`.
 
+The provider keeps `parameters` as an ordinary argument. A per-key write-only input could not safely retain an omitted sibling during full-object replacement, and a whole-object write-only input would hide ordinary parameter drift. Neither representation could acknowledge every supplied string. The service observations show that submitting the exact current mask can preserve different remote bytes.
+
 ## Response contract
 
 `parameters` is an optional normalized JSON string. Reconciliation applies only

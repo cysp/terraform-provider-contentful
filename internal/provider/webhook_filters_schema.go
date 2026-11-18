@@ -148,8 +148,14 @@ func exactlyOneWebhookFilterOperator(names ...string) []validator.Object {
 func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"value": schema.StringAttribute{
-			Description: "Header value. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. See [Secrets and Terraform state](../guides/secrets-and-state).",
-			Required:    true,
+			Description: "Header value. Omit it when supplying `value_wo` or preserving an existing secret header. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. See [Secrets and Terraform state](../guides/secrets-and-state).",
+			Optional:    true,
+		},
+		"value_wo": schema.StringAttribute{
+			MarkdownDescription: "Write-only alternative to `value` for Terraform 1.11.1 or later. Set `secret = true` and supply a randomly generated secret through an ephemeral input. Omit both values to retain an existing secret header. See [Secrets and Terraform state](../guides/secrets-and-state#secret-custom-headers).",
+			Optional:            true,
+			Sensitive:           true,
+			WriteOnly:           true,
 		},
 		"secret": schema.BoolAttribute{
 			Description: "Whether Contentful treats the header value as secret. Defaults to `false`.",

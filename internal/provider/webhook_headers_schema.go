@@ -5,27 +5,21 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 //nolint:ireturn
-func WebhookHeadersSchema(ctx context.Context, optional bool) schema.Attribute {
+func WebhookHeadersSchema(ctx context.Context) schema.Attribute {
 	return schema.MapNestedAttribute{
-		Description: "HTTP headers sent by the webhook, keyed by header name. When omitted on Create, Terraform adopts the headers returned by Contentful. When omitted on Update, Terraform preserves known prior headers. Set to `{}` to remove all headers.",
+		Description: "HTTP headers sent by the webhook, keyed by header name. Omitting headers or setting `{}` removes all managed headers on apply. To keep externally managed headers, use `lifecycle.ignore_changes` on their keys or on the whole map. See [Secrets and Terraform state](../guides/secrets-and-state#secret-custom-headers).",
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: WebhookHeaderValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookHeaderValue]().CustomType(ctx),
 		},
 		CustomType: TypedMap[TypedObject[WebhookHeaderValue]]{}.CustomType(ctx),
-		Optional:   optional,
-		Computed:   true,
+		Optional:   true,
 		Validators: []validator.Map{
 			mapvalidator.NoNullValues(),
-		},
-		PlanModifiers: []planmodifier.Map{
-			mapplanmodifier.UseStateForUnknown(),
 		},
 	}
 }

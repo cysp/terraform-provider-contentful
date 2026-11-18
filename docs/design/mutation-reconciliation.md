@@ -85,13 +85,13 @@ For controls and sidebar widgets, compare the identifiers and namespace exactly 
 | `active`, `name`, `url`, `http_basic_username` | Exact scalar comparison. The static `active` default constrains the plan to `true` when applied. A null username is distinct from an empty string. |
 | `topics` | Nonempty ordered list. Preserve duplicate counts and reject null elements. |
 | `filters` | Ignore outer order and preserve duplicate counts. Match the single selected operator, its negation if present, and all operands. Compare `in.values` without regard to order, preserving duplicates. Compare paths, equality values, and regex patterns exactly. Omission differs from an empty list. Unsupported operators make projection lossy. |
-| `headers` | Match map keys and complete header objects. The plan can preserve prior headers on Update because omitting the CMA member can clear them. An explicit empty map clears the headers. An unknown plan on Create takes the response. |
-| `headers[*].secret` and `.value` | Project an absent flag as `false`. For a secret header whose value Contentful omits, retain only the matching planned value, even on an unrelated contradiction. A returned value takes precedence. |
+| `headers` | Match the effective plan’s header names, secret flags, and ordinary values. Omitting the map or supplying an empty map clears the collection. When CMA returns no headers, preserve the plan’s null or empty representation on mutation and the prior representation on refresh. An ignored header from the refreshed state participates in the full PUT. |
+| `headers[*].secret` and `.value` | Project an absent flag as `false`. For a secret header whose value Contentful omits, retain only the matching planned value, even on an unrelated contradiction. For an ordinary value, a returned value takes precedence. Write-only paths and previously redacted credentials follow the confidentiality rules below. |
 | `transformation` | Compare optional scalar members exactly and the body as normalized JSON, preserving array order. A null body differs from a known JSON string. |
 
 Report differences at the affected top-level attribute. A lossy response cannot establish equivalence with a known plan. See the [Webhook observations](../research/webhooks.md) for Contentful's wire representations.
 
-## Webhook Basic password
+## Ordinary webhook Basic password
 
 Contentful accepts `httpBasicPassword` on Webhook Create and Update but omits
 the property from successful mutation and GET responses. The generated client
@@ -105,4 +105,16 @@ and returned values remain response truth.
 | Refresh | Retain the previously managed value. External rotation or removal is undetectable. |
 | Import | Leave the password null. Configuring credentials afterward writes them to Contentful. |
 
-When the password is present, use the returned value, even explicit null. A difference from a known plan is a consistency error at `http_basic_password`.
+When the ordinary password is present, use the returned value, even explicit null. A difference from a known plan is a consistency error at `http_basic_password`.
+
+## Write-only webhook credentials
+
+Public `headers` owns membership and the secret flag. Only `http_basic_password_wo` and `headers["name"].value_wo` supply apply-time plaintext from Config. Populate the independent CMA request after converting the effective Plan. Response reconciliation receives the unmodified public Plan. A readable response at a protected header path can expose a secret even when the server changes its spelling or reports `secret: false`.
+
+The provider uses the observed `sys.version` to schedule updates when a write-only change has no public value difference. The private version remains the optimistic-lock precondition. Storage-only migrations and unchanged apply-time inputs can resolve a planned update locally. A missing baseline requires a write. Header preservation on a full PUT requires an existing secret header with the same key. Basic authentication requires the password on each PUT. The [practitioner guide](../guides/secrets-and-state.md#webhook-credentials-and-secret-headers) covers migration, import, and recovery.
+
+The [path-bound verifier format and memory budget](signing-secret-write-only.md#private-verifier-format) are shared with signing secrets. When all prior credentials are absent or ordinary, their public state supersedes obsolete private contents. With redacted siblings, an ordinary value can supersede its own hash in a readable envelope. An invalid envelope blocks comparison because it can contain the only verifier for a sibling. A version advance by itself never acknowledges any secret.
+
+A decoded response that identifies the endpoint can still supply public recovery state and the version after a contradiction. On a failed write-only migration, retain redacted header metadata so a second readable response at the same path cannot expose the attempted value. Withhold the proposed verifiers. This can discard an old ordinary comparison value on the affected path. A transport failure supplies no such checkpoint and leaves the prior public state and verifiers intact. An unacknowledged new secret subsequently presented as ordinary readable data cannot be distinguished from ordinary drift. The [recovery tests](../../internal/provider/resource_webhook_write_only_recovery_test.go) exercise these distinctions.
+
+A successful refresh that observes removal of a redacted header, or a change to its Basic username, discards the corresponding comparison data. If the credential is recreated before any refresh observes the change, the provider still compares against its last acknowledgement.

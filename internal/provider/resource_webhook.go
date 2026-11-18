@@ -2,21 +2,22 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
-	_ resource.Resource                = (*webhookResource)(nil)
-	_ resource.ResourceWithConfigure   = (*webhookResource)(nil)
-	_ resource.ResourceWithIdentity    = (*webhookResource)(nil)
-	_ resource.ResourceWithImportState = (*webhookResource)(nil)
+	_ resource.Resource                   = (*webhookResource)(nil)
+	_ resource.ResourceWithModifyPlan     = (*webhookResource)(nil)
+	_ resource.ResourceWithValidateConfig = (*webhookResource)(nil)
+	_ resource.ResourceWithConfigure      = (*webhookResource)(nil)
+	_ resource.ResourceWithIdentity       = (*webhookResource)(nil)
+	_ resource.ResourceWithImportState    = (*webhookResource)(nil)
 )
 
 //nolint:ireturn
@@ -63,7 +64,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, path.Empty())
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -79,7 +80,13 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	defer cancel()
 
-	version := 1
+	store := writeOnlySecretVerifiers{}
+	_, prepareDiags := prepareWebhookWrite(ctx, &request, WebhookModel{}, plan, config, &store)
+	resp.Diagnostics.Append(prepareDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	params := cm.CreateWebhookDefinitionParams{
 		SpaceID: plan.SpaceID.ValueString(),
@@ -87,46 +94,16 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	response, err := r.providerData.client.CreateWebhookDefinition(ctx, &request, params)
 
-	tflog.Info(ctx, "webhook.create", map[string]any{
-		"params": params,
-		// "request": request, omitted to avoid logging sensitive values
-		// "response": response, omitted to avoid logging sensitive values
-		"err": err,
-	})
+	tflog.Info(ctx, "webhook.create")
 
-	var (
-		data              WebhookModel
-		consistencyDiags  diag.Diagnostics
-		identityConfirmed bool
-	)
+	definition, ok := response.(*cm.WebhookDefinitionStatusCode)
+	if err != nil || !ok {
+		resp.Diagnostics.AddError("Failed to create webhook", webhookMutationErrorDetail(response, err, len(store.records) != 0))
 
-	switch response := response.(type) {
-	case *cm.WebhookDefinitionStatusCode:
-		var responseDiags diag.Diagnostics
-
-		data, responseDiags, consistencyDiags, identityConfirmed = ReconcileWebhookMutationResponse(ctx, response.Response, plan, types.StringNull())
-
-		resp.Diagnostics.Append(responseDiags...)
-
-		version = response.Response.Sys.Version
-
-	default:
-		resp.Diagnostics.AddError("Failed to create webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
-	}
-
-	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	data.Timeouts = plan.Timeouts
-
-	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, webhookIdentityAttributeNames(), &data, version, identityConfirmed)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(consistencyDiags...)
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, &store, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, config, len(store.records) != 0)...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -154,11 +131,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	response, err := r.providerData.client.GetWebhookDefinition(ctx, params)
 
-	tflog.Info(ctx, "webhook.read", map[string]any{
-		"params": params,
-		// "response": response, omitted to avoid logging sensitive values
-		"err": err,
-	})
+	tflog.Info(ctx, "webhook.read")
 
 	version := 0
 
@@ -166,7 +139,14 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinition:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state.Headers.Elements())
+		sanitized, secretDiags := redactWebhookResponse(*response, state, state, WebhookModel{})
+		resp.Diagnostics.Append(secretDiags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, sanitized, state.Headers)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		if response.HttpBasicPassword.IsEmpty() && !state.HTTPBasicPassword.IsNull() && !state.HTTPBasicPassword.IsUnknown() {
@@ -178,13 +158,13 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	default:
 		if contentfulResponseIsNotFound(response) {
-			resp.Diagnostics.AddWarning("Failed to read webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.Diagnostics.AddWarning("Failed to read webhook", webhookReadErrorDetail(response, err, state))
 			resp.State.RemoveResource(ctx)
 
 			return
 		}
 
-		resp.Diagnostics.AddError("Failed to read webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to read webhook", webhookReadErrorDetail(response, err, state))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -199,7 +179,14 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, webhookIdentityAttributeNames(), &data, version)...)
+	store, pruneDiags := webhookVerifiersAfterRead(ctx, req.Private, state, data)
+	resp.Diagnostics.Append(pruneDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(publishWebhookState(ctx, resp.Private, &store, resp.Identity, &resp.State, data, version, true)...)
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -215,7 +202,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, path.Empty())
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -231,10 +218,45 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	defer cancel()
 
+	var state WebhookModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	store, hashDiags := readWebhookVerifiers(ctx, req.Private, state)
+	resp.Diagnostics.Append(hashDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	protected := len(store.records) != 0
+	needsPUT, prepareDiags := prepareWebhookWrite(ctx, &request, state, plan, config, &store)
+	resp.Diagnostics.Append(prepareDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
 	resp.Diagnostics.Append(versionDiags...)
 
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	protected = protected || len(store.records) != 0
+
+	if !needsPUT {
+		// A storage-only migration changes the Plan and verifier without changing
+		// Contentful. Computed fields resolve from the acknowledged prior state.
+		state.HTTPBasicPassword = plan.HTTPBasicPassword
+		state.Headers = plan.Headers
+		state.Timeouts = plan.Timeouts
+		resp.Diagnostics.Append(publishWebhookState(ctx, resp.Private, &store, resp.Identity, &resp.State, state, version, true)...)
+
 		return
 	}
 
@@ -246,46 +268,16 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	response, err := r.providerData.client.UpdateWebhookDefinition(ctx, &request, params)
 
-	tflog.Info(ctx, "webhook.update", map[string]any{
-		"params": params,
-		// "request": request, omitted to avoid logging sensitive values
-		// "response": response, omitted to avoid logging sensitive values
-		"err": err,
-	})
+	tflog.Info(ctx, "webhook.update")
 
-	var (
-		data              WebhookModel
-		consistencyDiags  diag.Diagnostics
-		identityConfirmed bool
-	)
+	definition, ok := response.(*cm.WebhookDefinitionStatusCode)
+	if err != nil || !ok {
+		resp.Diagnostics.AddError("Failed to update webhook", webhookMutationErrorDetail(response, err, protected))
 
-	switch response := response.(type) {
-	case *cm.WebhookDefinitionStatusCode:
-		var responseDiags diag.Diagnostics
-
-		data, responseDiags, consistencyDiags, identityConfirmed = ReconcileWebhookMutationResponse(ctx, response.Response, plan, plan.WebhookID)
-
-		resp.Diagnostics.Append(responseDiags...)
-
-		version = response.Response.Sys.Version
-
-	default:
-		resp.Diagnostics.AddError("Failed to update webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
-	}
-
-	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	data.Timeouts = plan.Timeouts
-
-	resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, webhookIdentityAttributeNames(), &data, version, identityConfirmed)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(consistencyDiags...)
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, &store, resp.Identity, &resp.State, definition.Response, state, plan, config, protected)...)
 }
 
 func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -313,22 +305,42 @@ func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest
 
 	response, err := r.providerData.client.DeleteWebhookDefinition(ctx, params)
 
-	tflog.Info(ctx, "webhook.delete", map[string]any{
-		"params": params,
-		// "response": response, omitted to avoid logging sensitive values
-		"err": err,
-	})
+	tflog.Info(ctx, "webhook.delete")
 
 	switch response := response.(type) {
 	case *cm.NoContent:
 
 	default:
 		if contentfulResponseIsNotFound(response) {
-			resp.Diagnostics.AddWarning("Webhook already deleted", util.ErrorDetailFromContentfulManagementResponse(response, err))
+			resp.Diagnostics.AddWarning("Webhook already deleted", webhookReadErrorDetail(response, err, state))
 
 			return
 		}
 
-		resp.Diagnostics.AddError("Failed to delete webhook", util.ErrorDetailFromContentfulManagementResponse(response, err))
+		resp.Diagnostics.AddError("Failed to delete webhook", webhookReadErrorDetail(response, err, state))
 	}
+}
+
+func webhookMutationErrorDetail(response any, err error, protected bool) string {
+	if protected {
+		return webhookResponseStatus(response) + "Contentful did not acknowledge the webhook write. The operation may have reached Contentful. Reads cannot confirm secret bytes. Coordinate recovery with the webhook receiver before applying again."
+	}
+
+	return util.ErrorDetailFromContentfulManagementResponse(response, err)
+}
+
+func webhookResponseStatus(response any) string {
+	if result, ok := response.(cm.StatusCodeResponse); ok {
+		return fmt.Sprintf("HTTP %d. ", result.GetStatusCode())
+	}
+
+	return ""
+}
+
+func webhookReadErrorDetail(response any, err error, state WebhookModel) string {
+	if state.Name.IsNull() || state.hasRedactedCredentials() {
+		return webhookResponseStatus(response) + "Contentful did not confirm the webhook operation."
+	}
+
+	return util.ErrorDetailFromContentfulManagementResponse(response, err)
 }

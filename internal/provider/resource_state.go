@@ -133,3 +133,36 @@ func setResourceMutationVersion(ctx context.Context, private PrivateProviderData
 
 	return SetPrivateProviderData(ctx, private, "version", version)
 }
+
+// Verifiers, public credential values and identity must move together. Encode
+// the proposed state and identity before changing private data. Framework
+// diagnostics alone do not roll back assignments to the response.
+func publishStateAfterPrivate(ctx context.Context, identity *tfsdk.ResourceIdentity, state *tfsdk.State, identityNames []string, model any, publishPrivate func() diag.Diagnostics) diag.Diagnostics {
+	stagedState := *state
+
+	var stagedIdentity *tfsdk.ResourceIdentity
+
+	if identity != nil {
+		copied := *identity
+		stagedIdentity = &copied
+	}
+
+	diags := setResourceIdentityAndState(ctx, stagedIdentity, &stagedState, identityNames, model)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(publishPrivate()...)
+
+	if diags.HasError() {
+		return diags
+	}
+
+	if identity != nil {
+		*identity = *stagedIdentity
+	}
+
+	*state = stagedState
+
+	return diags
+}
