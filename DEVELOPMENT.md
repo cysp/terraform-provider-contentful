@@ -36,9 +36,9 @@ credentials alone do not establish that authorization.
 | Change | Local verification |
 | --- | --- |
 | Agent instructions or prose only | Review instruction consistency, links, and the final diff; run `git diff --check`. |
-| Go behavior | Run tests for the affected packages and the lint and format checks. Use the [ordinary test suite](#unit-and-local-integration-tests) and `go build .` for shared behavior or when preparing for merge. |
+| Go behavior | Run tests for the affected packages and the [lint and format checks](#linting). Use the [ordinary test suite](#unit-and-local-integration-tests) and `go build .` for shared behavior or when preparing for merge. |
 | Terraform planning, state, or lifecycle | Run focused mocked acceptance tests for the affected transitions in addition to the Go checks; extend coverage where existing tests do not establish the changed behavior. |
-| Schema, examples, templates, OpenAPI, or other generation inputs | Follow the [generation requirement](AGENTS.md#documentation-and-workflow) using [Code generation](#code-generation), then follow [Documentation verification](#documentation-verification), plus checks for the affected behavior. |
+| Schema, examples, templates, OpenAPI, or other generation inputs | Follow [Code generation](#code-generation) and [Documentation verification](#documentation-verification), then run the checks for the affected behavior. |
 | A claim about live Contentful behavior | Use primary documentation or an authorized live experiment; mocked tests establish provider behavior against the fixture, not CMA conformance. |
 
 If a check cannot run, record the command and concrete blocker. Distinguish a
@@ -93,17 +93,18 @@ runnable examples in an isolated configuration:
 
 ## Code generation
 
-Run full generation from the repository root with Terraform on `PATH`:
+After changing a schema or any other generation input, run full generation from the repository root with Terraform on `PATH`. Review the tracked changes and any new files listed by Git.
 
 ```sh
 go generate ./...
+git status --short --untracked-files=all
 ```
 
 For a quicker iteration, `go generate .` formats examples and builds the Registry pages. `go generate ./internal/contentful-management-go` rebuilds the client from its OpenAPI definition and `ogen.yml` and can run without Terraform.
 
 Use named OpenAPI schema references for nested request and response values with the same contract. Reusing inline objects through `allOf` generates a separate Go type for each parent. Keep separate schemas when requiredness, nullability, or writable fields differ, and keep conversions that normalize responses.
 
-To check reproducibility, run full generation again in a clean checkout containing your intended changes. Inspect `git status --short --untracked-files=all` for changes and new files. [Generation CI](.github/workflows/gogenerate.yml) enforces a clean result.
+To check reproducibility, repeat full generation and the status check in a clean checkout containing your intended changes. The status output should be empty. [Generation CI](.github/workflows/gogenerate.yml) enforces a clean result.
 
 ## Tests
 
