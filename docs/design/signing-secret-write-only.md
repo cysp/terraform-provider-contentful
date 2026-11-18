@@ -62,27 +62,21 @@ before and after Argon2, which cannot be interrupted once running.
 
 ## Memory use
 
-The fixed 64 MiB Argon2 memory parameter does not bound provider process RSS:
-concurrent calculations and garbage collection can leave earlier allocations
-resident. Lowering Terraform `-parallelism` for both plan and apply can reduce
-memory use and may increase elapsed time; a time penalty is not inevitable.
+A single semaphore in the provider process admits one Argon2 calculation at a
+time across App and Webhook Signing Secrets. Comparing an existing verifier and
+preparing its replacement acquire the semaphore separately. The four Argon2
+lanes share the calculation's 64 MiB workspace. HTTP requests and state
+publication run outside the semaphore.
 
-In measurements on 2026-10-05, 50 signing secrets reached approximately 1448 MiB
-peak provider RSS during saved rotation apply at parallelism 10, versus 352 MiB
-at parallelism 1. These were maxima across six samples per setting (App and
-Webhook resources, three repetitions each), using Terraform 1.16.0 and Go 1.27.1
-on darwin/arm64, an Apple M5 with 10 CPUs and 24 GiB RAM. Each sample reports the
-largest individual provider-process peak, not a sum, Terraform RSS, or machine
-memory use. The synthetic local HTTP fixture omits Contentful latency and rate
-limits; these observations are neither a performance guarantee nor a prescribed
-parallelism setting.
+A queued calculation can be cancelled before it allocates the workspace. Time
+in the queue counts toward the calling operation's deadline. An active calculation
+holds its place until Argon2 returns, including when its caller cancels.
 
-The [historical measurement report](https://github.com/cysp/terraform-provider-contentful/blob/0d48ce06dcc818932521b2d2c137c14994dd7f7b/docs/design/signing-secret-memory.md)
-links the runner and raw samples retained as evidence for this decision. Although
-the report says no memory-limit or garbage-collection overrides were set, the
-runner neither enforced nor recorded `GOGC`,
-`GOMEMLIMIT`, or `GOMAXPROCS`. The samples therefore do not establish a controlled
-default runtime environment or performance on other workloads and machines.
+Total provider RSS can exceed 64 MiB because the Go runtime can retain completed
+allocations and other provider work also uses memory. Separate provider
+processes each have their own semaphore. The
+[original concurrent-hashing measurements](https://github.com/cysp/terraform-provider-contentful/blob/0d48ce06dcc818932521b2d2c137c14994dd7f7b/docs/design/signing-secret-memory.md)
+include the Terraform workload used to measure peak provider RSS and elapsed time.
 
 ## Invalid private state
 

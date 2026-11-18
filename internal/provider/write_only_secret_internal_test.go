@@ -5,6 +5,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"testing/synctest"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -123,6 +124,50 @@ func TestWriteOnlySecretCancellationDoesNotPrepareOrPublish(t *testing.T) {
 	require.True(t, verifier.set(ctx, types.StringValue(strings.Repeat("b", 64))).HasError())
 	assert.JSONEq(t, writeOnlyTestPrivate, string(verifier.prepared))
 	assert.Zero(t, private.writes)
+}
+
+//nolint:paralleltest // This test occupies the process-wide Argon2 slot.
+func TestSigningSecretQueuedHashesRespectCancellation(t *testing.T) {
+	require.True(t, signingSecretHashSlot.TryAcquire(1))
+	defer signingSecretHashSlot.Release(1)
+
+	synctest.Test(t, func(t *testing.T) {
+		data := []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: writeOnlyTestHash}}))
+		private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: data}}
+		verifier, diags := readSigningSecretVerifier(t.Context(), private, types.StringNull())
+		require.Empty(t, diags)
+
+		replacement := verifier
+
+		ctx, cancel := context.WithCancel(t.Context())
+		defer cancel()
+
+		var (
+			matched                 bool
+			comparison, preparation diag.Diagnostics
+		)
+
+		go func() {
+			matched, comparison = verifier.matches(ctx, types.StringValue(strings.Repeat("a", 64)))
+		}()
+		go func() {
+			preparation = replacement.set(ctx, types.StringValue(strings.Repeat("b", 64)))
+		}()
+
+		synctest.Wait()
+		cancel()
+		synctest.Wait()
+
+		assert.False(t, matched)
+
+		for _, result := range []diag.Diagnostics{comparison, preparation} {
+			require.Len(t, result.Errors(), 1)
+			assert.Equal(t, "Write-only secret operation cancelled", result.Errors()[0].Summary())
+			assert.Equal(t, context.Canceled.Error(), result.Errors()[0].Detail())
+		}
+
+		assert.Equal(t, data, replacement.prepared)
+	})
 }
 
 func TestSigningSecretPublicationFailurePreservesAcknowledgedState(t *testing.T) {

@@ -37,7 +37,7 @@ Use cryptographically generated signing secrets and protect Terraform state, sav
 
 Terraform retains an Argon2 hash for comparison with the last successfully applied secret. This adds protection against guessing, but it is not encryption or a guarantee that weak secrets cannot be recovered. Someone with access to state can test guesses. Refresh cannot detect external rotation. Historical state snapshots can still contain ordinary values saved before migration.
 
-Managing many write-only signing secrets can require substantial memory during both plan and apply. On a memory-constrained runner, reduce Terraform's `-parallelism` for both commands. This also reduces concurrency for other resources in that operation.
+Each provider process hashes one signing secret at a time, so you can keep Terraform's usual parallelism for other resources. When many secrets change together, hashing can take longer. Time spent waiting counts toward the resource's create or update timeout.
 
 ## Migrating signing-secret values
 

@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"golang.org/x/crypto/argon2"
+	"golang.org/x/sync/semaphore"
 )
 
 const (
@@ -28,6 +29,9 @@ const (
 	writeOnlySecretTime             = 1
 	writeOnlySecretParallelism      = 4
 )
+
+// Share the Argon2 memory budget across resources and provider instances in this process.
+var signingSecretHashSlot = semaphore.NewWeighted(1) //nolint:gochecknoglobals
 
 type writeOnlySecretHashRecord struct {
 	Path string `json:"path"`
@@ -167,11 +171,18 @@ func parseWriteOnlySecretHash(encoded string) ([]byte, []byte, string) {
 	return salt, key, ""
 }
 
-func writeOnlySecretKey(value types.String, salt []byte) []byte {
+func writeOnlySecretKey(ctx context.Context, value types.String, salt []byte) ([]byte, diag.Diagnostics) {
+	err := signingSecretHashSlot.Acquire(ctx, 1)
+	if err != nil {
+		return nil, writeOnlySecretContextDiagnostics(ctx)
+	}
+	defer signingSecretHashSlot.Release(1)
+
 	// Bind a verifier to its canonical Terraform attribute path.
 	preimage := []byte("value_wo\x00" + value.ValueString())
+	key := argon2.IDKey(preimage, salt, writeOnlySecretTime, writeOnlySecretMemory, writeOnlySecretParallelism, writeOnlySecretKeyLength)
 
-	return argon2.IDKey(preimage, salt, writeOnlySecretTime, writeOnlySecretMemory, writeOnlySecretParallelism, writeOnlySecretKeyLength)
+	return key, writeOnlySecretContextDiagnostics(ctx)
 }
 
 func writeOnlySecretContextDiagnostics(ctx context.Context) diag.Diagnostics {
@@ -187,18 +198,14 @@ func (s *signingSecretVerifier) matches(ctx context.Context, value types.String)
 		return false, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(path.Root("value_wo"), "Unresolved signing secret", "The secret must be known and non-null before comparison.")}
 	}
 
-	diags := writeOnlySecretContextDiagnostics(ctx)
+	if s.key == nil {
+		return false, writeOnlySecretContextDiagnostics(ctx)
+	}
+
+	actual, diags := writeOnlySecretKey(ctx, value, s.salt)
 	if diags.HasError() {
 		return false, diags
 	}
-
-	if s.key == nil {
-		return false, diags
-	}
-
-	actual := writeOnlySecretKey(value, s.salt)
-
-	diags.Append(writeOnlySecretContextDiagnostics(ctx)...)
 
 	return subtle.ConstantTimeCompare(actual, s.key) == 1, diags
 }
@@ -210,19 +217,11 @@ func (s *signingSecretVerifier) set(ctx context.Context, value types.String) dia
 		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(path.Root("value_wo"), "Invalid write-only secret verifier input", "A verifier requires a known non-null signing secret.")}
 	}
 
-	diags := writeOnlySecretContextDiagnostics(ctx)
-	if diags.HasError() {
-		return diags
-	}
-
 	salt := make([]byte, writeOnlySecretSaltLength)
 
 	rand.Read(salt)
 
-	key := writeOnlySecretKey(value, salt)
-
-	diags.Append(writeOnlySecretContextDiagnostics(ctx)...)
-
+	key, diags := writeOnlySecretKey(ctx, value, salt)
 	if diags.HasError() {
 		return diags
 	}
