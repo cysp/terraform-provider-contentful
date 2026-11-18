@@ -33,10 +33,6 @@ func main() {
 		Paths: flag.Args(),
 		Write: write,
 	})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
 
 	for _, change := range report.Changes {
 		action := "would update"
@@ -49,6 +45,11 @@ func main() {
 
 	for _, skip := range report.Skips {
 		fmt.Fprintf(os.Stderr, "skipped: %s: %s: %s\n", skip.Path, skip.Address, skip.Reason)
+	}
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	if check && (len(report.Skips) > 0 || (!write && len(report.Changes) > 0)) {
