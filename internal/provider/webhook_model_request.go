@@ -9,7 +9,7 @@ import (
 )
 
 func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, config WebhookModel, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
-	diags := rejectUnknownConfigurationOwnedRequestValue(model.Headers, config.Headers, path.AtName("headers"))
+	var diags diag.Diagnostics
 
 	name, nameDiags := requestRequiredString(model.Name, path.AtName("name"))
 	diags.Append(nameDiags...)

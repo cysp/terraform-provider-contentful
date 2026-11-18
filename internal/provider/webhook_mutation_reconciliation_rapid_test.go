@@ -57,6 +57,7 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 
 		response := completeWebhookMutationResponse()
 		response.Sys.ID = webhookID
+		response.Sys.Version = 17
 		response.Filters.SetTo(reconciliationWebhookResponseFilters(returnedKinds, returnedValues, negated))
 		responseTransformation := response.Transformation.Value
 		responseTransformation.Body = []byte(returnedJSON)
@@ -71,6 +72,7 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 		// The API omits the Basic password. Its Plan fallback and a redacted
 		// secret header survive even when another attribute contradicts Plan.
 		expected := WebhookModel{
+			Version:         types.Int64Value(17),
 			IDIdentityModel: NewIDIdentityModelFromMultipartID("space", webhookID),
 			SpaceID:         types.StringValue("space"), WebhookID: types.StringValue(webhookID),
 			Name:              plan.Name,

@@ -13,13 +13,12 @@ func ToWebhookDefinitionHeaders(
 	model TypedMap[TypedObject[WebhookHeaderValue]],
 	configured TypedMap[TypedObject[WebhookHeaderValue]],
 ) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
+	diags := rejectUnknownConfigurationOwnedRequestValue(model, configured, path)
 	if model.IsNull() || model.IsUnknown() {
 		// The lifecycle rejects configuration-owned unknown plans. A remaining
 		// unknown represents response-owned, omitted Optional+Computed headers.
-		return nil, nil
+		return nil, diags
 	}
-
-	diags := diag.Diagnostics{}
 
 	headers := make(cm.WebhookDefinitionHeaders, len(model.Elements()))
 
@@ -59,7 +58,7 @@ func ToWebhookDefinitionHeaders(
 			continue
 		}
 
-		header, headerDiags := headerValue.ToWebhookDefinitionHeader(headerPath, key, configured)
+		header, headerDiags := headerValue.ToWebhookDefinitionHeader(headerPath, key)
 		diags.Append(headerDiags...)
 
 		if !headerDiags.HasError() {

@@ -38,7 +38,7 @@ cover representation changes and the resulting requests.
 
 ## Private verifier format
 
-Each signing-secret resource stores one verifier for `value_wo` under the private
+The shared comparison store uses a JSON array of path and hash records. Webhook definitions address the Basic password by `http_basic_password_wo` and individual headers by paths such as `header_values_wo["X-Token"]`. Duplicate or unsupported paths are invalid. Each signing-secret resource stores one verifier for `value_wo` under the private
 key `write_only_secret_hashes`. A single-record JSON array containing `path`
 and `hash` preserves the signing-secret encoding across provider builds. An
 absent value or empty array supplies no verifier. Additional records and other
@@ -48,12 +48,12 @@ compatibility decision for previously acknowledged secrets.
 Each hash uses PHC encoding with Argon2id v19, 65536 KiB memory, one iteration,
 four lanes, a random 16-byte salt, and 32-byte output. Input is the UTF-8 path,
 NUL, then the exact value. The reader validates fixed parameters, salt and key
-encoding and lengths, the `value_wo` path, and a 1 MiB input size limit. It rejects
+encoding and lengths, resource-specific paths, and a 1 MiB input size limit. It rejects
 unknown JSON fields and unsupported parameters. Stored hashes permit offline
 guesses of the secret; they do not make state safe to disclose. Use cryptographically generated
 signing secrets and protect Terraform state, saved plans, and backups. Argon2 adds
 protection against guessing; it is not encryption or a quantified guarantee for
-weak secrets. Validation still enforces only the API's 64-character alphabet
+weak secrets. Signing-secret validation enforces only its API's 64-character alphabet
 rule, so format-valid low-entropy values remain accepted.
 
 A changed write-only value gets a new hash and salt. Hash preparation precedes
@@ -63,7 +63,7 @@ before and after Argon2, which cannot be interrupted once running.
 ## Memory use
 
 A single semaphore in the provider process admits one Argon2 calculation at a
-time across App and Webhook Signing Secrets. Comparing an existing verifier and
+time across both signing-secret resources and all webhook credentials. Comparing an existing verifier and
 preparing its replacement acquire the semaphore separately. The four Argon2
 lanes share the calculation's 64 MiB workspace. HTTP requests and state
 publication run outside the semaphore.
@@ -77,6 +77,15 @@ allocations and other provider work also uses memory. Separate provider
 processes each have their own semaphore. The
 [original concurrent-hashing measurements](https://github.com/cysp/terraform-provider-contentful/blob/0d48ce06dcc818932521b2d2c137c14994dd7f7b/docs/design/signing-secret-memory.md)
 include the Terraform workload used to measure peak provider RSS and elapsed time.
+
+In a local Terraform 1.17.1 fixture at parallelism 10, 10 App Signing Secrets,
+10 Webhook Signing Secrets and 30 Webhooks held 110 write-only values. Each
+Webhook used Basic authentication and two secret headers. Across three runs the
+median unchanged plan took 1.263 s at 232 MiB peak provider RSS, the rotation
+plan took 0.672 s at 293 MiB, and applying the saved plan took 2.999 s at
+301 MiB (232–342 MiB across apply runs). Each plan issued zero mutations and
+each rotation applied 50 PUTs. A process interrupt after the first PUT left
+49 writes for the next apply. These are workload measurements, not memory caps.
 
 ## Invalid private state
 

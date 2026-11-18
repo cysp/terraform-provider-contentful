@@ -8,6 +8,7 @@ import (
 	"testing/synctest"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -53,7 +54,7 @@ func TestSigningSecretReadsAcknowledgedVerifier(t *testing.T) {
 	private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: data}}
 	verifier, diags := readSigningSecretVerifier(t.Context(), private, types.StringNull())
 	require.Empty(t, diags)
-	matched, diags := verifier.matches(t.Context(), types.StringValue(strings.Repeat("a", 64)))
+	matched, diags := verifier.matches(t.Context(), path.Root("value_wo"), types.StringValue(strings.Repeat("a", 64)))
 	require.Empty(t, diags)
 	require.True(t, matched)
 	require.Empty(t, verifier.publish(t.Context(), private))
@@ -75,8 +76,8 @@ func TestWriteOnlySecretRejectsInvalidPrivateData(t *testing.T) {
 		"truncated":              {data: []byte(`[`), reason: "non-null JSON array"},
 		"trailing":               {data: []byte(writeOnlyTestPrivate + `[]`), reason: "Unexpected data follows"},
 		"unknown field":          {data: []byte(testJSON([]map[string]any{{"path": "value_wo", "hash": writeOnlyTestHash, "unexpected": 42}})), reason: "no additional fields"},
-		"empty path":             {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "", Hash: writeOnlyTestHash}})), reason: "not supported by this signing-secret resource"},
-		"duplicate path":         {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: writeOnlyTestHash}, {Path: "value_wo", Hash: writeOnlyTestHash}})), reason: "at most one signing secret verifier"},
+		"empty path":             {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "", Hash: writeOnlyTestHash}})), reason: "not supported by this resource"},
+		"duplicate path":         {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: writeOnlyTestHash}, {Path: "value_wo", Hash: writeOnlyTestHash}})), reason: "Duplicate verifier paths"},
 		"unsupported algorithm":  {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: strings.Replace(writeOnlyTestHash, "argon2id", "argon2i", 1)}})), reason: "unsupported algorithm, version, or parameter encoding"},
 		"unsupported parameters": {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: strings.Replace(writeOnlyTestHash, "m=65536", "m=4294967295", 1)}})), reason: "unsupported algorithm, version, or parameter encoding"},
 		"invalid key":            {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: strings.Replace(writeOnlyTestHash, "8fzTBn/", "!!!!!!!", 1)}})), reason: "invalid salt or key encoding or length"},
@@ -105,7 +106,7 @@ func TestWriteOnlySecretMissingIsNotCorrupt(t *testing.T) {
 		private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: data}}
 		verifier, diags := readSigningSecretVerifier(t.Context(), private, types.StringNull())
 		require.Empty(t, diags)
-		matched, diags := verifier.matches(t.Context(), types.StringValue(strings.Repeat("a", 64)))
+		matched, diags := verifier.matches(t.Context(), path.Root("value_wo"), types.StringValue(strings.Repeat("a", 64)))
 		require.Empty(t, diags)
 		assert.False(t, matched)
 	}
@@ -121,15 +122,15 @@ func TestWriteOnlySecretCancellationDoesNotPrepareOrPublish(t *testing.T) {
 	require.Empty(t, diags)
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
-	require.True(t, verifier.set(ctx, types.StringValue(strings.Repeat("b", 64))).HasError())
+	require.True(t, verifier.set(ctx, path.Root("value_wo"), types.StringValue(strings.Repeat("b", 64))).HasError())
 	assert.JSONEq(t, writeOnlyTestPrivate, string(verifier.prepared))
 	assert.Zero(t, private.writes)
 }
 
 //nolint:paralleltest // This test occupies the process-wide Argon2 slot.
 func TestSigningSecretQueuedHashesRespectCancellation(t *testing.T) {
-	require.True(t, signingSecretHashSlot.TryAcquire(1))
-	defer signingSecretHashSlot.Release(1)
+	require.True(t, writeOnlySecretHashSlot.TryAcquire(1))
+	defer writeOnlySecretHashSlot.Release(1)
 
 	synctest.Test(t, func(t *testing.T) {
 		data := []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: writeOnlyTestHash}}))
@@ -148,10 +149,10 @@ func TestSigningSecretQueuedHashesRespectCancellation(t *testing.T) {
 		)
 
 		go func() {
-			matched, comparison = verifier.matches(ctx, types.StringValue(strings.Repeat("a", 64)))
+			matched, comparison = verifier.matches(ctx, path.Root("value_wo"), types.StringValue(strings.Repeat("a", 64)))
 		}()
 		go func() {
-			preparation = replacement.set(ctx, types.StringValue(strings.Repeat("b", 64)))
+			preparation = replacement.set(ctx, path.Root("value_wo"), types.StringValue(strings.Repeat("b", 64)))
 		}()
 
 		synctest.Wait()
@@ -203,7 +204,7 @@ func TestSigningSecretPublicationFailurePreservesAcknowledgedState(t *testing.T)
 
 			private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(privateData)}, fail: test.failPrivateWrite}
 
-			var verifier signingSecretVerifier
+			var verifier writeOnlySecretVerifiers
 
 			var diags diag.Diagnostics
 			if test.discardObsolete {
@@ -212,7 +213,7 @@ func TestSigningSecretPublicationFailurePreservesAcknowledgedState(t *testing.T)
 			} else {
 				verifier, diags = readSigningSecretVerifier(ctx, private, types.StringNull())
 				require.Empty(t, diags)
-				require.Empty(t, verifier.set(ctx, types.StringValue(strings.Repeat("b", 64))))
+				require.Empty(t, verifier.set(ctx, path.Root("value_wo"), types.StringValue(strings.Repeat("b", 64))))
 			}
 
 			changed := appSigningSecretTestModel(strings.Repeat("b", 64))
@@ -254,7 +255,52 @@ func TestSigningSecretRejectsOtherVerifierPaths(t *testing.T) {
 	private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "other", Hash: writeOnlyTestHash}}))}}
 	_, diags := readSigningSecretVerifier(t.Context(), private, types.StringNull())
 	require.True(t, diags.HasError())
-	assert.Contains(t, diags.Errors()[0].Detail(), "not supported by this signing-secret resource")
+	assert.Contains(t, diags.Errors()[0].Detail(), "not supported by this resource")
 	assert.NotContains(t, diags.Errors()[0].Detail(), writeOnlyTestHash)
 	assert.Zero(t, private.writes)
+}
+
+// These vectors use literal path bytes, a zero separator, "synthetic vector"
+// and salt bytes 0..15. They were calculated without the provider's path or hash helpers.
+func TestWebhookReadsPathBoundVerifiers(t *testing.T) {
+	t.Parallel()
+
+	const (
+		prefix = "$argon2id$v=19$m=65536,t=1,p=4$AAECAwQFBgcICQoLDA0ODw$"
+		name   = `header_values_wo["X-Token.v1"]`
+	)
+
+	header := writeOnlySecretHashRecord{Path: name, Hash: prefix + "IMTdSikMg+GmIJzi23Mhfp5QPrz1HqZHiwzlkt7ZUiQ"}
+	password := writeOnlySecretHashRecord{Path: "http_basic_password_wo", Hash: prefix + "qqP0DUR5bh6Y/bn2EDM6q1GrzOdoOsV4ePVotxYcnF8"}
+	data := []byte(testJSON([]writeOnlySecretHashRecord{header, password}))
+	private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: data}}
+	store, diags := readWriteOnlySecretVerifiers(t.Context(), private, webhookVerifierPath, nil)
+	require.Empty(t, diags)
+
+	value := types.StringValue("synthetic vector")
+	for _, p := range []path.Path{webhookHeaderVerifierPath("X-Token.v1"), path.Root("http_basic_password_wo")} {
+		match, diags := store.matches(t.Context(), p, value)
+		require.Empty(t, diags)
+		require.True(t, match)
+	}
+
+	require.Empty(t, store.publish(t.Context(), private))
+	require.Zero(t, private.writes)
+
+	header.Hash = password.Hash
+	private.data[writeOnlySecretHashesPrivateKey] = []byte(testJSON([]writeOnlySecretHashRecord{header, password}))
+	store, diags = readWriteOnlySecretVerifiers(t.Context(), private, webhookVerifierPath, nil)
+	require.Empty(t, diags)
+	match, diags := store.matches(t.Context(), webhookHeaderVerifierPath("X-Token.v1"), value)
+	require.Empty(t, diags)
+	require.False(t, match)
+
+	// A known ordinary password supersedes only its own damaged verifier.
+	password.Hash = "obsolete"
+	private.data[writeOnlySecretHashesPrivateKey] = []byte(testJSON([]writeOnlySecretHashRecord{header, password}))
+	store, diags = readWriteOnlySecretVerifiers(t.Context(), private, webhookVerifierPath, func(p string) bool { return p == password.Path })
+	require.Empty(t, diags)
+	require.Equal(t, []string{name}, store.paths())
+	require.Empty(t, store.publish(t.Context(), private))
+	require.JSONEq(t, testJSON([]writeOnlySecretHashRecord{header}), string(private.data[writeOnlySecretHashesPrivateKey]))
 }

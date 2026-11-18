@@ -81,7 +81,7 @@ func (r *webhookSigningSecretResource) Create(ctx context.Context, req resource.
 
 	defer cancel()
 
-	verifier := signingSecretVerifier{}
+	verifier := writeOnlySecretVerifiers{}
 
 	_, valuePath, _ := resolveSigningSecretValue(plan.Value, plan.ValueWO, path.Empty())
 	_, prepareDiags := prepareSigningSecretValue(ctx, &verifier, types.StringNull(), types.StringValue(request.Value), valuePath)
@@ -183,7 +183,7 @@ func (r *webhookSigningSecretResource) Update(ctx context.Context, req resource.
 	// Ordinary fields retain their effective values in Plan, including ignores.
 	if plan.ValueWO.IsNull() && !plan.Value.IsUnknown() && plan.Value.Equal(state.Value) {
 		if !plan.Value.IsNull() {
-			verifier.clear()
+			resp.Diagnostics.Append(verifier.remove(path.Root("value_wo"))...)
 		}
 
 		state.Timeouts = plan.Timeouts

@@ -27,7 +27,7 @@ func resolveSigningSecretValue(value, valueWO types.String, modelPath path.Path)
 
 // A known ordinary value is the authoritative baseline. An obsolete verifier
 // must never override a different known ordinary value.
-func signingSecretValueMatches(ctx context.Context, verifier *signingSecretVerifier, priorValue, value types.String) (bool, diag.Diagnostics) {
+func signingSecretValueMatches(ctx context.Context, verifier *writeOnlySecretVerifiers, priorValue, value types.String) (bool, diag.Diagnostics) {
 	if value.IsNull() || value.IsUnknown() || priorValue.IsUnknown() {
 		return false, diag.Diagnostics{diag.NewErrorDiagnostic("Unresolved signing secret comparison", "Secret comparison requires a known non-null candidate and a known or null prior value.")}
 	}
@@ -36,59 +36,34 @@ func signingSecretValueMatches(ctx context.Context, verifier *signingSecretVerif
 		return priorValue.Equal(value), nil
 	}
 
-	return verifier.matches(ctx, value)
+	return verifier.matches(ctx, path.Root("value_wo"), value)
 }
 
 // Prepare hash changes before PUT so hashing cannot fail after changing the
 // remote secret. The caller saves these changes after a successful PUT,
 // or when no PUT is needed.
-func prepareSigningSecretValue(ctx context.Context, verifier *signingSecretVerifier, priorValue, value types.String, valuePath path.Path) (bool, diag.Diagnostics) {
+func prepareSigningSecretValue(ctx context.Context, verifier *writeOnlySecretVerifiers, priorValue, value types.String, valuePath path.Path) (bool, diag.Diagnostics) {
 	matches, diags := signingSecretValueMatches(ctx, verifier, priorValue, value)
 	if diags.HasError() {
 		return false, diags
 	}
 
+	writeOnly := types.StringNull()
 	if valuePath.Equal(path.Root("value_wo")) {
-		if !matches || !priorValue.IsNull() {
-			diags.Append(verifier.set(ctx, value)...)
-		}
-	} else {
-		verifier.clear()
+		writeOnly = value
 	}
+
+	diags.Append(verifier.prepareValue(ctx, path.Root("value_wo"), priorValue, writeOnly, matches)...)
 
 	return matches, diags
 }
 
 // Encode public state and identity before publishing the prepared private
 // value. Diagnostics do not roll back Framework response mutations.
-func publishSigningSecretState(ctx context.Context, private PrivateProviderData, verifier *signingSecretVerifier, identity *tfsdk.ResourceIdentity, state *tfsdk.State, identityNames []string, model any) diag.Diagnostics {
-	stagedState := *state
-
-	var stagedIdentity *tfsdk.ResourceIdentity
-
-	if identity != nil {
-		copied := *identity
-		stagedIdentity = &copied
-	}
-
-	diags := setResourceIdentityAndState(ctx, stagedIdentity, &stagedState, identityNames, model)
-	if diags.HasError() {
-		return diags
-	}
-
-	diags.Append(verifier.publish(ctx, private)...)
-
-	if diags.HasError() {
-		return diags
-	}
-
-	if identity != nil {
-		*identity = *stagedIdentity
-	}
-
-	*state = stagedState
-
-	return diags
+func publishSigningSecretState(ctx context.Context, private PrivateProviderData, verifier *writeOnlySecretVerifiers, identity *tfsdk.ResourceIdentity, state *tfsdk.State, identityNames []string, model any) diag.Diagnostics {
+	return publishStateAfterPrivate(ctx, identity, state, identityNames, model, func() diag.Diagnostics {
+		return verifier.publish(ctx, private)
+	})
 }
 
 func maskSigningSecretValues(ctx context.Context, values ...types.String) context.Context {

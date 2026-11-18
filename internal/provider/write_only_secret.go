@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 	"unicode/utf8"
 
@@ -31,7 +32,7 @@ const (
 )
 
 // Share the Argon2 memory budget across resources and provider instances in this process.
-var signingSecretHashSlot = semaphore.NewWeighted(1) //nolint:gochecknoglobals
+var writeOnlySecretHashSlot = semaphore.NewWeighted(1) //nolint:gochecknoglobals
 
 type writeOnlySecretHashRecord struct {
 	Path string `json:"path"`
@@ -39,11 +40,10 @@ type writeOnlySecretHashRecord struct {
 }
 
 // Prepare the verifier before PUT; publish it only with acknowledged state.
-type signingSecretVerifier struct {
+type writeOnlySecretVerifiers struct {
 	original []byte
 	prepared []byte
-	salt     []byte
-	key      []byte
+	records  []writeOnlySecretHashRecord
 }
 
 // Invalid verifier contents can prevent comparison during planning without
@@ -75,23 +75,34 @@ func invalidWriteOnlySecretHashes(reason string) diag.Diagnostics {
 	return diag.Diagnostics{invalidWriteOnlySecretHashesDiagnostic{reason: reason}}
 }
 
-func readSigningSecretVerifier(ctx context.Context, private PrivateProviderData, priorValue types.String) (signingSecretVerifier, diag.Diagnostics) {
-	store := signingSecretVerifier{}
+func readSigningSecretVerifier(ctx context.Context, private PrivateProviderData, priorValue types.String) (writeOnlySecretVerifiers, diag.Diagnostics) {
+	if !priorValue.IsNull() && !priorValue.IsUnknown() {
+		return readSupersededWriteOnlySecretVerifiers(ctx, private)
+	}
 
+	return readWriteOnlySecretVerifiers(ctx, private, func(p string) bool { return p == "value_wo" }, nil)
+}
+
+// All prior comparison values are known in ordinary state. Stage removal of
+// even unreadable verifier contents without concealing a private-data access error.
+func readSupersededWriteOnlySecretVerifiers(ctx context.Context, private PrivateProviderData) (writeOnlySecretVerifiers, diag.Diagnostics) {
+	if private == nil {
+		return writeOnlySecretVerifiers{}, nil
+	}
+
+	data, diags := private.GetKey(ctx, writeOnlySecretHashesPrivateKey)
+
+	return writeOnlySecretVerifiers{original: bytes.Clone(data)}, diags
+}
+
+func readWriteOnlySecretVerifiers(ctx context.Context, private PrivateProviderData, validPath, obsolete func(string) bool) (writeOnlySecretVerifiers, diag.Diagnostics) {
+	var store writeOnlySecretVerifiers
 	if private == nil {
 		return store, nil
 	}
 
 	data, diags := private.GetKey(ctx, writeOnlySecretHashesPrivateKey)
 	if diags.HasError() || len(data) == 0 {
-		return store, diags
-	}
-
-	// An ordinary value supplies the comparison. Retain obsolete private data
-	// only to stage its removal or replacement at publication.
-	if !priorValue.IsNull() && !priorValue.IsUnknown() {
-		store.original = bytes.Clone(data)
-
 		return store, diags
 	}
 
@@ -118,25 +129,37 @@ func readSigningSecretVerifier(ctx context.Context, private PrivateProviderData,
 		return store, invalidWriteOnlySecretHashes("Unexpected data follows the verifier records.")
 	}
 
-	if len(records) > 1 {
-		return store, invalidWriteOnlySecretHashes("Expected at most one signing secret verifier.")
-	}
+	seen := make(map[string]bool, len(records))
 
-	if len(records) == 1 {
-		if records[0].Path != "value_wo" {
-			return store, invalidWriteOnlySecretHashes("A verifier path is not supported by this signing-secret resource.")
+	retained := records[:0]
+	for _, record := range records {
+		if !validPath(record.Path) {
+			return store, invalidWriteOnlySecretHashes("A verifier path is not supported by this resource.")
 		}
 
-		salt, key, reason := parseWriteOnlySecretHash(records[0].Hash)
-		if reason != "" {
+		if seen[record.Path] {
+			return store, invalidWriteOnlySecretHashes("Duplicate verifier paths are not supported.")
+		}
+
+		seen[record.Path] = true
+		if obsolete != nil && obsolete(record.Path) {
+			continue
+		}
+
+		if _, _, reason := parseWriteOnlySecretHash(record.Hash); reason != "" {
 			return store, invalidWriteOnlySecretHashes(reason)
 		}
 
-		store.salt, store.key = salt, key
+		retained = append(retained, record)
 	}
 
+	store.records = retained
 	store.original = bytes.Clone(data)
+
 	store.prepared = store.original
+	if len(retained) < len(records) {
+		diags.Append(store.prepare(retained)...)
+	}
 
 	return store, diags
 }
@@ -171,15 +194,15 @@ func parseWriteOnlySecretHash(encoded string) ([]byte, []byte, string) {
 	return salt, key, ""
 }
 
-func writeOnlySecretKey(ctx context.Context, value types.String, salt []byte) ([]byte, diag.Diagnostics) {
-	err := signingSecretHashSlot.Acquire(ctx, 1)
+func writeOnlySecretKey(ctx context.Context, attributePath path.Path, value types.String, salt []byte) ([]byte, diag.Diagnostics) {
+	err := writeOnlySecretHashSlot.Acquire(ctx, 1)
 	if err != nil {
 		return nil, writeOnlySecretContextDiagnostics(ctx)
 	}
-	defer signingSecretHashSlot.Release(1)
+	defer writeOnlySecretHashSlot.Release(1)
 
 	// Bind a verifier to its canonical Terraform attribute path.
-	preimage := []byte("value_wo\x00" + value.ValueString())
+	preimage := []byte(attributePath.String() + "\x00" + value.ValueString())
 	key := argon2.IDKey(preimage, salt, writeOnlySecretTime, writeOnlySecretMemory, writeOnlySecretParallelism, writeOnlySecretKeyLength)
 
 	return key, writeOnlySecretContextDiagnostics(ctx)
@@ -193,62 +216,125 @@ func writeOnlySecretContextDiagnostics(ctx context.Context) diag.Diagnostics {
 	return nil
 }
 
-func (s *signingSecretVerifier) matches(ctx context.Context, value types.String) (bool, diag.Diagnostics) {
-	if value.IsNull() || value.IsUnknown() {
-		return false, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(path.Root("value_wo"), "Unresolved signing secret", "The secret must be known and non-null before comparison.")}
+func (s *writeOnlySecretVerifiers) paths() []string {
+	paths := make([]string, 0, len(s.records))
+	for _, record := range s.records {
+		paths = append(paths, record.Path)
 	}
 
-	if s.key == nil {
+	return paths
+}
+
+func (s *writeOnlySecretVerifiers) index(attributePath path.Path) int {
+	name := attributePath.String()
+
+	return slices.IndexFunc(s.records, func(record writeOnlySecretHashRecord) bool { return record.Path == name })
+}
+
+func (s *writeOnlySecretVerifiers) has(attributePath path.Path) bool {
+	return s.index(attributePath) >= 0
+}
+
+func (s *writeOnlySecretVerifiers) matches(ctx context.Context, attributePath path.Path, value types.String) (bool, diag.Diagnostics) {
+	if value.IsNull() || value.IsUnknown() {
+		return false, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(attributePath, "Unresolved write-only secret", "The secret must be known and non-null before comparison.")}
+	}
+
+	index := s.index(attributePath)
+	if index < 0 {
 		return false, writeOnlySecretContextDiagnostics(ctx)
 	}
 
-	actual, diags := writeOnlySecretKey(ctx, value, s.salt)
+	salt, expected, _ := parseWriteOnlySecretHash(s.records[index].Hash) // Validated on read or prepared locally.
+
+	actual, diags := writeOnlySecretKey(ctx, attributePath, value, salt)
 	if diags.HasError() {
 		return false, diags
 	}
 
-	return subtle.ConstantTimeCompare(actual, s.key) == 1, diags
+	return subtle.ConstantTimeCompare(actual, expected) == 1, diags
 }
 
-// set prepares a replacement with a fresh salt. Callers compare first when
-// equality should preserve the existing verifier. A failure leaves the store unchanged.
-func (s *signingSecretVerifier) set(ctx context.Context, value types.String) diag.Diagnostics {
+// A storage-only migration to write-only still needs a fresh verifier. Keep
+// exactly the existing salt when both representations are already write-only.
+func (s *writeOnlySecretVerifiers) prepareValue(ctx context.Context, attributePath path.Path, prior, writeOnly types.String, matches bool) diag.Diagnostics {
+	if writeOnly.IsNull() {
+		return s.remove(attributePath)
+	}
+
+	if matches && prior.IsNull() {
+		return nil
+	}
+
+	return s.set(ctx, attributePath, writeOnly)
+}
+
+func (s *writeOnlySecretVerifiers) set(ctx context.Context, attributePath path.Path, value types.String) diag.Diagnostics {
 	if value.IsNull() || value.IsUnknown() {
-		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(path.Root("value_wo"), "Invalid write-only secret verifier input", "A verifier requires a known non-null signing secret.")}
+		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(attributePath, "Invalid write-only secret verifier input", "A verifier requires a known non-null secret.")}
 	}
 
 	salt := make([]byte, writeOnlySecretSaltLength)
-
 	rand.Read(salt)
 
-	key, diags := writeOnlySecretKey(ctx, value, salt)
+	key, diags := writeOnlySecretKey(ctx, attributePath, value, salt)
 	if diags.HasError() {
 		return diags
 	}
 
 	encoded := fmt.Sprintf("%s%s$%s", writeOnlySecretHashPrefix(), base64.RawStdEncoding.EncodeToString(salt), base64.RawStdEncoding.EncodeToString(key))
-	// Preserve the single-record encoding used by earlier signing-secret builds.
-	data, err := json.Marshal([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: encoded}})
-	if err != nil {
-		return invalidWriteOnlySecretHashes("The verifier could not be encoded.")
+	records := slices.Clone(s.records)
+
+	record := writeOnlySecretHashRecord{Path: attributePath.String(), Hash: encoded}
+	if i := s.index(attributePath); i >= 0 {
+		records[i] = record
+	} else {
+		records = append(records, record)
 	}
 
-	s.salt, s.key, s.prepared = salt, key, data
+	return s.prepare(records)
+}
+
+func (s *writeOnlySecretVerifiers) remove(attributePath path.Path) diag.Diagnostics {
+	index := s.index(attributePath)
+	if index < 0 {
+		return nil
+	}
+
+	return s.prepare(slices.Delete(slices.Clone(s.records), index, index+1))
+}
+
+// Finish encoding and enforcing the size bound before making a remote mutation.
+func (s *writeOnlySecretVerifiers) prepare(records []writeOnlySecretHashRecord) diag.Diagnostics {
+	var data []byte
+
+	if len(records) > 0 {
+		slices.SortFunc(records, func(a, b writeOnlySecretHashRecord) int { return strings.Compare(a.Path, b.Path) })
+
+		var err error
+
+		data, err = json.Marshal(records)
+		if err != nil {
+			return invalidWriteOnlySecretHashes("The verifiers could not be encoded.")
+		}
+
+		if len(data) > writeOnlySecretHashesMaxLength {
+			return invalidWriteOnlySecretHashes("Verifier data exceeds the size limit.")
+		}
+	}
+
+	s.records, s.prepared = records, data
 
 	return nil
 }
 
-func (s *signingSecretVerifier) clear() {
-	s.salt, s.key, s.prepared = nil, nil, nil
-}
-
-func (s *signingSecretVerifier) publish(ctx context.Context, private PrivateProviderData) diag.Diagnostics {
+func (s *writeOnlySecretVerifiers) publish(ctx context.Context, private PrivateProviderData) diag.Diagnostics {
 	if bytes.Equal(s.original, s.prepared) {
 		return nil
 	}
 
 	if private == nil {
-		return diag.Diagnostics{diag.NewErrorDiagnostic("Missing private state", "The provider cannot publish the acknowledged signing secret verifier.")}
+		return diag.Diagnostics{diag.NewErrorDiagnostic("Missing private state", "The provider cannot publish the acknowledged secret verifiers.")}
 	}
 
 	diags := private.SetKey(ctx, writeOnlySecretHashesPrivateKey, s.prepared)

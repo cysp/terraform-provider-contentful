@@ -28,6 +28,7 @@ func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 		WebhookID:       types.StringValue(webhookID),
 	}
 
+	model.Version = types.Int64Value(int64(webhookDefinition.Sys.Version))
 	model.Name = types.StringValue(webhookDefinition.Name)
 
 	model.URL = types.StringValue(webhookDefinition.URL)
