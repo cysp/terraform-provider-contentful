@@ -34,12 +34,10 @@ func TestAccWebhookResourceWriteOnlyLifecycle(t *testing.T) {
 	write := func(name, color, key, passwordArg string, ordinaryToken bool) {
 		t.Helper()
 
-		value := ""
-		writeOnly := `, "X-Token" = var.token`
+		value := "value_wo = var.token"
 
 		if ordinaryToken {
-			value = fmt.Sprintf(", value = sensitive(%q)", nextToken)
-			writeOnly = ""
+			value = fmt.Sprintf("value = sensitive(%q)", nextToken)
 		}
 
 		runtime.writeConfig(t, fmt.Sprintf(`
@@ -67,13 +65,12 @@ resource "contentful_webhook" "test" {
  %s
  headers = {
    "X-Color" = { value = %q }
-   %q = { secret = true }
-   "X-Token" = { secret = true %s }
+   %q = { secret = true, value_wo = var.sibling }
+   "X-Token" = { secret = true, %s }
  }
- header_values_wo = { %q = var.sibling %s }
  lifecycle { ignore_changes = [headers["X-Color"].value] }
 }
-`, name, passwordArg, color, key, value, key, writeOnly))
+`, name, passwordArg, color, key, value))
 	}
 	cli := func(command, password, header string, args ...string) string {
 		t.Helper()

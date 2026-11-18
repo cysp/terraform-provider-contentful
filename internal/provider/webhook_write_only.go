@@ -12,16 +12,17 @@ import (
 )
 
 const (
-	webhookPasswordWO     = "http_basic_password_wo" // #nosec G101 -- Terraform attribute name.
-	webhookHeaderValuesWO = "header_values_wo"
+	webhookPasswordWO = "http_basic_password_wo" // #nosec G101 -- Terraform attribute name.
+	// This path is part of the private Argon2 preimage, including for earlier draft states.
+	webhookHeaderVerifierRoot = "header_values_wo"
 )
 
 func webhookHeaderVerifierPath(key string) path.Path {
-	return path.Root(webhookHeaderValuesWO).AtMapKey(key)
+	return path.Root(webhookHeaderVerifierRoot).AtMapKey(key)
 }
 
 func webhookHeaderVerifierKey(encoded string) (string, bool) {
-	quoted, ok := strings.CutPrefix(encoded, webhookHeaderValuesWO+"[")
+	quoted, ok := strings.CutPrefix(encoded, webhookHeaderVerifierRoot+"[")
 	if !ok {
 		return "", false
 	}
@@ -90,8 +91,8 @@ func prepareWebhookCredential(ctx context.Context, store *writeOnlySecretVerifie
 // write-only plaintext; response reconciliation receives the untouched Plan.
 func prepareWebhookWrite(ctx context.Context, request *cm.WebhookDefinitionData, state, plan, config WebhookModel, store *writeOnlySecretVerifiers) (bool, diag.Diagnostics) {
 	diags := validateWebhookWriteOnly(plan, config)
-	if config.HeaderValuesWO.IsUnknown() {
-		diags.AddAttributeError(path.Root(webhookHeaderValuesWO), "Unresolved webhook header values", "The write-only header map must be known before the webhook can be written.")
+	if config.Headers.IsUnknown() {
+		diags.AddAttributeError(path.Root("headers"), "Unresolved webhook headers", "Configured headers must be known before the webhook can be written.")
 	}
 
 	if diags.HasError() {
@@ -105,7 +106,7 @@ func prepareWebhookWrite(ctx context.Context, request *cm.WebhookDefinitionData,
 		return false, diags
 	}
 
-	needsPUT := passwordChanged || plan.Headers.IsUnknown() ||
+	needsPUT := passwordChanged ||
 		!plan.Name.Equal(state.Name) || !plan.URL.Equal(state.URL) || !plan.Active.Equal(state.Active) ||
 		!plan.Topics.Equal(state.Topics) || !plan.Filters.Equal(state.Filters) || !plan.Transformation.Equal(state.Transformation) ||
 		len(request.Headers) != len(state.Headers.Elements())
@@ -152,15 +153,16 @@ func prepareWebhookHeader(ctx context.Context, store *writeOnlySecretVerifiers, 
 	credentialPath := webhookHeaderVerifierPath(wire.Key)
 	prior, present := state.Headers.Elements()[wire.Key].GetValue()
 	planned := plan.Headers.Elements()[wire.Key].Value()
-	writeOnly, supplied := config.HeaderValuesWO.Elements()[wire.Key]
+	configured := config.Headers.Elements()[wire.Key]
+	writeOnly := configured.Value().ValueWO
 	wasSecret := present && prior.Secret.ValueBool()
 	changed := !present || !planned.Secret.Equal(prior.Secret)
 
-	if supplied && writeOnly.IsNull() {
-		return false, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(credentialPath, "Null write-only webhook header value", "Supply a non-null value, or omit the map entry to retain an existing secret header.")}
+	if configured.IsUnknown() || writeOnly.IsUnknown() {
+		return false, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(path.Root("headers").AtMapKey(wire.Key).AtName("value_wo"), "Unresolved webhook header credential", "The write-only value must be known before the webhook can be written.")}
 	}
 
-	if !supplied && planned.Value.IsNull() {
+	if writeOnly.IsNull() && planned.Value.IsNull() {
 		if !wasSecret {
 			return false, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(path.Root("headers").AtMapKey(wire.Key).AtName("value"), "Missing webhook header value", "Supply a value for a new header. A value-less secret header can retain only an existing secret with the same name.")}
 		}
@@ -169,7 +171,7 @@ func prepareWebhookHeader(ctx context.Context, store *writeOnlySecretVerifiers, 
 	}
 
 	equal, diags := prepareWebhookCredential(ctx, store, credentialPath, prior.Value, planned.Value, writeOnly, present && (!prior.Value.IsNull() || wasSecret))
-	if supplied && (!equal || !wasSecret) {
+	if !writeOnly.IsNull() && (!equal || !wasSecret) {
 		wire.Value = cm.NewOptString(writeOnly.ValueString())
 	}
 

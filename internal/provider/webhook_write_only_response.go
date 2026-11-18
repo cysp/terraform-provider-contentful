@@ -61,7 +61,7 @@ func redactWebhookResponse(response cm.WebhookDefinition, state, plan, config We
 
 func protectedWebhookHeaderNames(headers cm.WebhookDefinitionHeaders, state, plan, config WebhookModel) map[string]bool {
 	protected := make(map[string]bool)
-	for key := range config.HeaderValuesWO.Elements() {
+	for key := range config.writeOnlyHeaderValues() {
 		protected[strings.ToLower(key)] = true
 	}
 
@@ -100,7 +100,7 @@ func retainUnconfirmedWebhookCredentials(data *WebhookModel, state, config Webho
 		}
 	}
 
-	for key := range config.HeaderValuesWO.Elements() {
+	for key := range config.writeOnlyHeaderValues() {
 		name := strings.ToLower(key)
 		if !protected[name] {
 			// An ambiguous ordinary-to-write-only migration can no longer use

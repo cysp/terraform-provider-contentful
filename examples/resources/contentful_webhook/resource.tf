@@ -23,13 +23,11 @@ resource "contentful_webhook" "this" {
 
   headers = {
     "X-Webhook-Secret" = {
-      secret = true
+      secret   = true
+      value_wo = var.webhook_secret
     },
   }
 
-  header_values_wo = {
-    "X-Webhook-Secret" = var.webhook_secret
-  }
 
   transformation = {
     method                 = "POST"

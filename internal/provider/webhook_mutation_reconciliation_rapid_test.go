@@ -42,11 +42,6 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 			plan.Active = types.BoolUnknown()
 		}
 
-		unknownHeaders := rapid.Bool().Draw(t, "response-owned headers")
-		if unknownHeaders {
-			plan.Headers = NewTypedMapUnknown[TypedObject[WebhookHeaderValue]]()
-		}
-
 		webhookID := "webhook"
 
 		if rapid.Bool().Draw(t, "generated identity") {
@@ -65,7 +60,7 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 		response.Active = cm.NewOptBool(active)
 
 		response.Headers[0].Secret = cm.NewOptBool(secret)
-		if secret && !unknownHeaders && rapid.Bool().Draw(t, "redacted header") {
+		if secret && rapid.Bool().Draw(t, "redacted header") {
 			response.Headers[0].Value = cm.OptString{}
 		}
 

@@ -12,6 +12,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// Keep unknown header objects as candidates until Terraform resolves their values.
+func (config *WebhookModel) writeOnlyHeaderValues() map[string]types.String {
+	values := make(map[string]types.String)
+
+	for key, header := range config.Headers.Elements() {
+		if header.IsUnknown() {
+			values[key] = types.StringUnknown()
+		} else if value := header.Value().ValueWO; !value.IsNull() {
+			values[key] = value
+		}
+	}
+
+	return values
+}
+
 // Config supplies write-only inputs. All ordinary values, including header
 // membership, must use the effective Plan in Create and Update.
 func validateWebhookWriteOnly(plan, config WebhookModel) diag.Diagnostics {
@@ -27,17 +42,17 @@ func validateWebhookWriteOnly(plan, config WebhookModel) diag.Diagnostics {
 		}
 	}
 
-	if plan.Headers.IsUnknown() || config.HeaderValuesWO.IsUnknown() {
+	if plan.Headers.IsUnknown() || config.Headers.IsUnknown() {
 		return diags
 	}
 
-	for _, key := range slices.Sorted(maps.Keys(config.HeaderValuesWO.Elements())) {
-		credentialPath := webhookHeaderVerifierPath(key)
+	for _, key := range slices.Sorted(maps.Keys(config.writeOnlyHeaderValues())) {
+		credentialPath := path.Root("headers").AtMapKey(key).AtName("value_wo")
 
 		header, ok := plan.Headers.Elements()[key]
 		switch {
 		case !ok || header.IsNull():
-			diags.AddAttributeError(credentialPath, "Missing webhook header", "Each write-only header value must have an exact matching key in headers.")
+			diags.AddAttributeError(credentialPath, "Missing webhook header", "The effective plan must contain this header to apply its write-only value. Check ignore_changes for this key.")
 		case header.IsUnknown():
 			continue
 		default:
@@ -94,13 +109,14 @@ func (r *webhookResource) ModifyPlan(ctx context.Context, req resource.ModifyPla
 		return
 	}
 
-	if !candidate.Raw.Equal(req.State.Raw) || config.HeaderValuesWO.IsUnknown() || config.HTTPBasicPasswordWO.IsUnknown() {
+	if !candidate.Raw.Equal(req.State.Raw) || config.Headers.IsUnknown() || config.HTTPBasicPasswordWO.IsUnknown() {
 		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("version"), types.Int64Unknown())...)
 
 		return
 	}
 
-	if config.HTTPBasicPasswordWO.IsNull() && len(config.HeaderValuesWO.Elements()) == 0 {
+	headerValues := config.writeOnlyHeaderValues()
+	if config.HTTPBasicPasswordWO.IsNull() && len(headerValues) == 0 {
 		resp.Plan = candidate
 
 		return
@@ -127,13 +143,13 @@ func (r *webhookResource) ModifyPlan(ctx context.Context, req resource.ModifyPla
 		changed = !equal
 	}
 
-	for _, key := range slices.Sorted(maps.Keys(config.HeaderValuesWO.Elements())) {
+	for _, key := range slices.Sorted(maps.Keys(headerValues)) {
 		if changed || resp.Diagnostics.HasError() {
 			break
 		}
 
 		prior, known := state.Headers.Elements()[key].GetValue()
-		equal, d := webhookSecretMatches(ctx, &store, webhookHeaderVerifierPath(key), prior.Value, config.HeaderValuesWO.Elements()[key], known && prior.Secret.ValueBool())
+		equal, d := webhookSecretMatches(ctx, &store, webhookHeaderVerifierPath(key), prior.Value, headerValues[key], known && prior.Secret.ValueBool())
 		resp.Diagnostics.Append(d...)
 
 		changed = !equal

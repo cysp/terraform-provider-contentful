@@ -103,7 +103,7 @@ For replacement recovery, review the plan and require destruction of the old ins
 
 ## Webhook credentials and secret headers
 
-Use Terraform 1.11.1 or later and ephemeral inputs for `http_basic_password_wo` and `header_values_wo`. Use randomly generated webhook credentials. The provider stores a salted Argon2id verifier for each acknowledged write-only value. Anyone with state access can test guesses, including guesses for short passwords. The two signing-secret resources and webhook credentials share one hashing slot per provider process. [Webhook example](../resources/webhook#example-usage)
+Use Terraform 1.11.1 or later and ephemeral inputs for `http_basic_password_wo` and `headers["name"].value_wo`. Use randomly generated webhook credentials. The provider stores a salted Argon2id verifier for each acknowledged write-only value. Anyone with state access can test guesses, including guesses for short passwords. The two signing-secret resources and webhook credentials share one hashing slot per provider process. [Webhook example](../resources/webhook#example-usage)
 
 ### Basic authentication
 
@@ -113,13 +113,17 @@ Import leaves the password null. Supply a password before updating a webhook tha
 
 ### Secret custom headers
 
-Declare each managed header in `headers`. Set `secret = true` and supply either its ordinary `value` or an entry in `header_values_wo` with the exact same name. Each name has an independent verifier. An ordinary header can coexist with write-only headers. Use a sensitive expression for an ordinary secret value if you want Terraform to redact it from CLI output. Ordinary values remain in state.
+Declare each managed header in `headers`. Set `secret = true` and supply either its ordinary `value` or its write-only `value_wo`. Each name has an independent verifier. An ordinary header can coexist with write-only headers. Use a sensitive expression for an ordinary secret value if you want Terraform to redact it from CLI output. Ordinary values remain in state.
 
 On a full webhook update, the outcome depends on the header declaration.
 
 - A new or renamed secret header needs its value, even if the new name differs only in capitalization. Include only one spelling of each name.
 - A retained secret header can be sent with its exact key and `secret = true`, omitting the value. Contentful keeps the existing remote bytes. This also works after import, when Terraform has neither the value nor a verifier. Supplying a write-only value after import installs it.
-- Removing only the write-only map entry while retaining the header declaration preserves the remote header and any previous verifier. A later comparison still uses the last acknowledged value. To delete the remote header, remove its key from an explicitly configured `headers` map. Set `headers = {}` to clear all headers. Omitting `headers` retains previously managed or imported headers. [Contentful custom header updates](https://www.contentful.com/developers/docs/extensibility/webhooks/headers/#custom-headers)
+- Removing only `value_wo` while retaining the header declaration preserves the remote header and any previous verifier. A later comparison still uses the last acknowledged value. To delete the remote header, remove its key from `headers`. Omitting the map or setting `headers = {}` clears all headers unless a lifecycle rule retains them. [Contentful custom header updates](https://www.contentful.com/developers/docs/extensibility/webhooks/headers/#custom-headers)
+
+**Upgrading a webhook with omitted headers.** Earlier provider versions automatically retained existing headers when the map was omitted. Before upgrading, add `lifecycle { ignore_changes = [headers] }` if another system manages the entire collection. This also preserves imported headers on subsequent updates. To delegate just one header while managing its siblings, omit that key from configuration and add it to `ignore_changes`, for example `headers["X-External"]`. Terraform keeps the refreshed header in the plan for the full webhook PUT. To manage the collection in Terraform, declare the headers to keep and review the first plan for removals.
+
+To delegate rotation of an existing secret, remove its `value_wo` from configuration. Ignoring a configured `value_wo` can suppress a rotation-only plan, but any update triggered by another attribute can still send its apply-time value. An ignored header must have a value at creation if configuration declares it. [Terraform lifecycle rules](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes)
 
 ### Migration, rotation, and recovery
 

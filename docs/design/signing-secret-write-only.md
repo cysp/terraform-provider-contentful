@@ -38,7 +38,7 @@ cover representation changes and the resulting requests.
 
 ## Private verifier format
 
-The shared comparison store uses a JSON array of path and hash records. Webhook definitions address the Basic password by `http_basic_password_wo` and individual headers by paths such as `header_values_wo["X-Token"]`. Duplicate or unsupported paths are invalid. Each signing-secret resource stores one verifier for `value_wo` under the private
+The shared comparison store uses a JSON array of path and hash records. Webhook definitions address the Basic password by `http_basic_password_wo` and individual `headers["X-Token"].value_wo` inputs by stable private paths such as `header_values_wo["X-Token"]`. Duplicate or unsupported paths are invalid. Each signing-secret resource stores one verifier for `value_wo` under the private
 key `write_only_secret_hashes`. A single-record JSON array containing `path`
 and `hash` preserves the signing-secret encoding across provider builds. An
 absent value or empty array supplies no verifier. Additional records and other
@@ -81,9 +81,9 @@ include the Terraform workload used to measure peak provider RSS and elapsed tim
 In a local Terraform 1.17.1 fixture at parallelism 10, 10 App Signing Secrets,
 10 Webhook Signing Secrets and 30 Webhooks held 110 write-only values. Each
 Webhook used Basic authentication and two secret headers. Across three runs the
-median unchanged plan took 1.263 s at 232 MiB peak provider RSS, the rotation
-plan took 0.672 s at 293 MiB, and applying the saved plan took 2.999 s at
-301 MiB (232–342 MiB across apply runs). Each plan issued zero mutations and
+median unchanged plan took 1.241 s at 295 MiB peak provider RSS, the rotation
+plan took 0.648 s at 245 MiB, and applying the saved plan took 2.749 s at
+358 MiB (298–360 MiB across apply runs). Each plan issued zero mutations and
 each rotation applied 50 PUTs. A process interrupt after the first PUT left
 49 writes for the next apply. These are workload measurements, not memory caps.
 

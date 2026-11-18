@@ -16,7 +16,6 @@ type WebhookModel struct {
 
 	Version             types.Int64                                `tfsdk:"version"`
 	HTTPBasicPasswordWO types.String                               `tfsdk:"http_basic_password_wo"`
-	HeaderValuesWO      TypedMap[types.String]                     `tfsdk:"header_values_wo"`
 	Name                types.String                               `tfsdk:"name"`
 	URL                 types.String                               `tfsdk:"url"`
 	Topics              TypedList[types.String]                    `tfsdk:"topics"`

@@ -42,7 +42,7 @@ resource "contentful_webhook" "test" {
 	output, err = apply("-refresh-only")
 	require.NoError(t, err, output)
 	instance := readWebhookRecoveryInstance(t, runtime)
-	require.Equal(t, map[string]any{"X-Ordinary": map[string]any{"secret": false, "value": "changed-public-value"}}, instance.Attributes["headers"])
+	require.Equal(t, map[string]any{"X-Ordinary": map[string]any{"secret": false, "value": "changed-public-value", "value_wo": nil}}, instance.Attributes["headers"])
 	require.Len(t, fixture.mutations(), 1)
 
 	fixture.onNextResponse(http.MethodPut, returnedHeader(true, "contradictory-public-value"))
@@ -51,7 +51,7 @@ resource "contentful_webhook" "test" {
 	require.Error(t, err, output)
 	require.Contains(t, output, "Contentful returned different webhook headers")
 	instance = readWebhookRecoveryInstance(t, runtime)
-	require.Equal(t, map[string]any{"X-Ordinary": map[string]any{"secret": true, "value": "contradictory-public-value"}}, instance.Attributes["headers"])
+	require.Equal(t, map[string]any{"X-Ordinary": map[string]any{"secret": true, "value": "contradictory-public-value", "value_wo": nil}}, instance.Attributes["headers"])
 
 	mutations := fixture.mutations()
 	require.Len(t, mutations, 2)

@@ -10,13 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, fallbackHeaderValues map[string]TypedObject[WebhookHeaderValue]) (WebhookModel, diag.Diagnostics) {
-	model, diags, _ := newWebhookResourceModelFromResponse(ctx, webhookDefinition, fallbackHeaderValues)
+func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, referenceHeaders TypedMap[TypedObject[WebhookHeaderValue]]) (WebhookModel, diag.Diagnostics) {
+	model, diags, _ := newWebhookResourceModelFromResponse(ctx, webhookDefinition, referenceHeaders)
 
 	return model, diags
 }
 
-func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, fallbackHeaderValues map[string]TypedObject[WebhookHeaderValue]) (WebhookModel, diag.Diagnostics, diag.Diagnostics) {
+func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, referenceHeaders TypedMap[TypedObject[WebhookHeaderValue]]) (WebhookModel, diag.Diagnostics, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	spaceID := webhookDefinition.Sys.Space.Sys.ID
@@ -43,7 +43,7 @@ func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 	model.HTTPBasicUsername = types.StringPointerValue(webhookDefinition.HttpBasicUsername.ValueStringPointer())
 	model.HTTPBasicPassword = types.StringPointerValue(webhookDefinition.HttpBasicPassword.ValueStringPointer())
 
-	headersList, headersListDiags := ReadHeaderValueMapFromResponse(ctx, path.Root("headers"), webhookDefinition.Headers, fallbackHeaderValues)
+	headersList, headersListDiags := ReadHeaderValueMapFromResponse(ctx, path.Root("headers"), webhookDefinition.Headers, referenceHeaders)
 	diags.Append(headersListDiags...)
 
 	model.Headers = headersList
@@ -61,7 +61,7 @@ func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 // always remains the requested Terraform target. Password and secret-header
 // response omissions retain their established narrow fallbacks.
 func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, plan WebhookModel, endpointID types.String) (WebhookModel, diag.Diagnostics, diag.Diagnostics, bool) {
-	state, responseDiags, filtersDiags := newWebhookResourceModelFromResponse(ctx, webhookDefinition, plan.Headers.Elements())
+	state, responseDiags, filtersDiags := newWebhookResourceModelFromResponse(ctx, webhookDefinition, plan.Headers)
 	reconciler := mutationResponseReconciler{resourceName: "webhook"}
 	reconciler.pinIdentity(path.Root("space_id"), plan.SpaceID, state.SpaceID, &state.SpaceID)
 	reconciler.pinCreatedIdentity(path.Root("webhook_id"), endpointID, plan.WebhookID, state.WebhookID, &state.WebhookID)

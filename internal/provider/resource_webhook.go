@@ -64,7 +64,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, path.Empty())
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -146,7 +146,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 			return
 		}
 
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, sanitized, state.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, sanitized, state.Headers)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		if response.HttpBasicPassword.IsEmpty() && !state.HTTPBasicPassword.IsNull() && !state.HTTPBasicPassword.IsUnknown() {
@@ -202,7 +202,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, path.Empty())
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

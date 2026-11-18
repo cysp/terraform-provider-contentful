@@ -147,15 +147,18 @@ func TestAccWebhookResourcePreservesImportedSecretHeadersOnUpdate(t *testing.T) 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
-	server.SetWebhookDefinition("space", "imported-webhook", cm.WebhookDefinitionData{
-		Name: "Imported webhook",
-		URL:  "https://example.com/webhook",
+
+	imported := cm.WebhookDefinitionData{
+		Name:   "Imported webhook",
+		Active: cm.NewOptBool(true),
+		URL:    "https://example.com/webhook",
 		Headers: cm.WebhookDefinitionHeaders{
 			{Key: "X-Ordinary", Value: cm.NewOptString("ordinary"), Secret: cm.NewOptBool(false)},
 			{Key: "X-Secret", Value: cm.NewOptString("existing-secret"), Secret: cm.NewOptBool(true)},
 		},
 		Topics: []string{"Entry.publish"},
-	})
+	}
+	server.SetWebhookDefinition("space", "imported-webhook", imported)
 
 	recorder := &webhookUpdateRecorder{next: server}
 	config := func(name, headers string) string {
@@ -180,7 +183,16 @@ resource "contentful_webhook" "test" {
 				ImportStatePersist: true,
 			},
 			{
-				Config: config("Updated webhook", ""),
+				Config:             config("Imported webhook", ""),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config:   config("Imported webhook", "lifecycle { ignore_changes = [headers] }"),
+				PlanOnly: true,
+			},
+			{
+				Config: config("Updated webhook", "lifecycle { ignore_changes = [headers] }"),
 				Check: resource.ComposeTestCheckFunc(
 					recorder.checkPreservedHeadersRequest(),
 					func(*terraform.State) error {
@@ -224,6 +236,29 @@ resource "contentful_webhook" "test" {
 						return nil
 					},
 				),
+			},
+			{
+				PreConfig: func() { server.SetWebhookDefinition("space", "imported-webhook", imported) },
+				Config:    config("Imported webhook", ""),
+				Check: func(*terraform.State) error {
+					recorder.mu.Lock()
+					defer recorder.mu.Unlock()
+
+					if len(recorder.bodies) != 3 {
+						return fmt.Errorf("%w: recorded %d updates, want 3", errWebhookUpdateMismatch, len(recorder.bodies))
+					}
+
+					if _, sent := recorder.bodies[2]["headers"]; sent {
+						return fmt.Errorf("%w: omitted headers appeared in the request", errWebhookUpdateMismatch)
+					}
+
+					stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
+					if !ok || len(stored.Headers) != 0 {
+						return fmt.Errorf("%w: omitted headers did not clear the remote collection", errWebhookUpdateMismatch)
+					}
+
+					return nil
+				},
 			},
 		},
 	})

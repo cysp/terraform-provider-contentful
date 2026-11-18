@@ -74,7 +74,7 @@ func TestWriteOnlySecretCreatesShareCancellation(t *testing.T) {
 			implementation: &webhookResource{providerData: providerData},
 			schema:         WebhookResourceSchema(t.Context()),
 			planned:        header,
-			writeOnly:      map[string]any{"header_values_wo": map[string]string{"X-Key": "synthetic-header"}},
+			writeOnly:      map[string]any{"headers": map[string]any{"X-Key": map[string]any{"secret": true, "value_wo": "synthetic-header"}}},
 		},
 	}
 

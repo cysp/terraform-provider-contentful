@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, config WebhookModel, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
+func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	name, nameDiags := requestRequiredString(model.Name, path.AtName("name"))
@@ -55,7 +55,7 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, config W
 
 	req.Filters = filters
 
-	headersList, headersListDiags := ToWebhookDefinitionHeaders(path.AtName("headers"), model.Headers, config.Headers)
+	headersList, headersListDiags := ToWebhookDefinitionHeaders(path.AtName("headers"), model.Headers)
 	diags.Append(headersListDiags...)
 
 	req.Headers = headersList

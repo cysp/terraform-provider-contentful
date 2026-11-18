@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -77,17 +76,11 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Write-only alternative to `http_basic_password` for Terraform 1.11.1 or later. Configure it together with `http_basic_username`. An ephemeral input keeps the password out of saved plans. Use a randomly generated password: the stored verifier permits offline guesses. See [Secrets and Terraform state](../guides/secrets-and-state).",
 				Optional:            true, Sensitive: true, WriteOnly: true,
 			},
-			"header_values_wo": schema.MapAttribute{
-				MarkdownDescription: "Write-only secret header values for Terraform 1.11.1 or later. Each key must match a header with `secret = true` and without an ordinary `value`. Omit both value arguments for an existing secret header to retain its remote value. Use ephemeral inputs and randomly generated secrets. See [Secrets and Terraform state](../guides/secrets-and-state).",
-				ElementType:         types.StringType, CustomType: TypedMap[types.String]{}.CustomType(ctx),
-				Optional: true, Sensitive: true, WriteOnly: true,
-				Validators: []validator.Map{mapvalidator.NoNullValues()},
-			},
 			"http_basic_username": schema.StringAttribute{
 				Description: "HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.",
 				Optional:    true,
 			},
-			"headers":        WebhookHeadersSchema(ctx, true),
+			"headers":        WebhookHeadersSchema(ctx),
 			"transformation": WebhookTransformationSchema(ctx, true),
 			"timeouts":       timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},

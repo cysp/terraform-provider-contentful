@@ -193,8 +193,8 @@ func TestAccWebhookResourceWriteOnlyCaseRenameToOrdinary(t *testing.T) {
 
 	instance := readWebhookRecoveryInstance(t, runtime)
 	require.Equal(t, map[string]any{
-		"X-Sibling": map[string]any{"secret": true, "value": nil},
-		"x-managed": map[string]any{"secret": false, "value": "public-replacement"},
+		"X-Sibling": map[string]any{"secret": true, "value": nil, "value_wo": nil},
+		"x-managed": map[string]any{"secret": false, "value": "public-replacement", "value_wo": nil},
 	}, instance.Attributes["headers"])
 }
 
@@ -202,25 +202,16 @@ func TestAccWebhookResourceWriteOnlyHeaderRecreatedAfterRefresh(t *testing.T) {
 	t.Parallel()
 
 	runtime, fixture, first := importWebhookRecoveryFixture(t)
-	externalHeaders := func(version int, headers cm.WebhookDefinitionHeaders) {
-		t.Helper()
-		response, err := fixture.server.Handler().UpdateWebhookDefinition(t.Context(), &cm.WebhookDefinitionData{
-			Name: "Imported", URL: "https://example.invalid/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
-			HttpBasicUsername: cm.NewOptNilString("user"), HttpBasicPassword: cm.NewOptNilString(webhookPriorPassword),
-			Headers: headers,
-		}, cm.UpdateWebhookDefinitionParams{SpaceID: "space", WebhookDefinitionID: "imported", XContentfulVersion: version})
-		require.NoError(t, err)
-		require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
-	}
+
 	sibling := cm.WebhookDefinitionHeader{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptString(webhookSiblingHeader)}
-	externalHeaders(2, cm.WebhookDefinitionHeaders{sibling})
+	fixture.updateRemoteHeaders(t, 2, cm.WebhookDefinitionHeaders{sibling})
 
 	output, err := runWebhookRecoveryCLI(t, runtime, webhookPriorPassword, webhookPriorHeader, "apply", "-refresh-only", "-auto-approve")
 	require.NoError(t, err, output)
-	require.Equal(t, map[string]any{"X-Sibling": map[string]any{"secret": true, "value": nil}}, readWebhookRecoveryInstance(t, runtime).Attributes["headers"])
+	require.Equal(t, map[string]any{"X-Sibling": map[string]any{"secret": true, "value": nil, "value_wo": nil}}, readWebhookRecoveryInstance(t, runtime).Attributes["headers"])
 	fixture.requirePuts(t, first)
 
-	externalHeaders(3, cm.WebhookDefinitionHeaders{{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-recreated-secret")}, sibling})
+	fixture.updateRemoteHeaders(t, 3, cm.WebhookDefinitionHeaders{{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-recreated-secret")}, sibling})
 
 	output, err = runWebhookRecoveryCLI(t, runtime, webhookPriorPassword, webhookPriorHeader, "apply", "-auto-approve")
 	require.NoError(t, err, output)
@@ -257,4 +248,48 @@ resource "contentful_webhook" "test" {
 	require.True(t, exists)
 	require.Equal(t, "Imported", stored.Name)
 	require.Equal(t, cm.NewOptNilString(webhookPriorPassword), stored.HttpBasicPassword)
+}
+
+func (fixture *webhookSecretRecoveryFixture) updateRemoteHeaders(t *testing.T, version int, headers cm.WebhookDefinitionHeaders) {
+	t.Helper()
+	response, err := fixture.server.Handler().UpdateWebhookDefinition(t.Context(), &cm.WebhookDefinitionData{
+		Name: "Imported", URL: "https://example.invalid/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
+		HttpBasicUsername: cm.NewOptNilString("user"), HttpBasicPassword: cm.NewOptNilString(webhookPriorPassword),
+		Headers: headers,
+	}, cm.UpdateWebhookDefinitionParams{SpaceID: "space", WebhookDefinitionID: "imported", XContentfulVersion: version})
+	require.NoError(t, err)
+	require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
+}
+
+func TestAccWebhookResourceDelegatesHeaderByName(t *testing.T) {
+	t.Parallel()
+	runtime, fixture, first := importWebhookRecoveryFixture(t)
+
+	const outside = "synthetic-externally-rotated-sibling"
+	fixture.updateRemoteHeaders(t, 2, cm.WebhookDefinitionHeaders{
+		{Key: "X-Managed", Secret: cm.NewOptBool(true)},
+		{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptString(outside)},
+	})
+
+	runtime.writeConfig(t, webhookRecoveryHeaderConfig("", "", `lifecycle { ignore_changes = [headers["X-Sibling"]] }`))
+	output, err := runWebhookRecoveryCLI(t, runtime, webhookPriorPassword, webhookRotatedHeader, "apply", "-auto-approve")
+	require.NoError(t, err, output)
+	fixture.requirePuts(t, first, webhookExpectedRecoveryPut("3", webhookPriorPassword, webhookRotatedHeader, true))
+	stored, exists := fixture.server.StoredWebhookDefinition("space", "imported")
+	require.True(t, exists)
+	require.Equal(t, cm.WebhookDefinitionHeaders{
+		{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptString(webhookRotatedHeader)},
+		{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptString(outside)},
+	}, stored.Headers)
+	output, err = runWebhookRecoveryCLI(t, runtime, webhookPriorPassword, webhookRotatedHeader, "plan", "-detailed-exitcode")
+	require.NoError(t, err, output)
+
+	// Ignoring the write-only leaf suppresses a rotation-only plan. An update
+	// scheduled by a different argument still receives apply-time Config.
+	runtime.writeConfig(t, webhookRecoveryHeaderConfig("", "", `lifecycle { ignore_changes = [headers["X-Sibling"], headers["X-Managed"].value_wo] }`))
+	output, err = runWebhookRecoveryCLI(t, runtime, webhookPriorPassword, webhookPriorHeader, "plan", "-detailed-exitcode")
+	require.NoError(t, err, output)
+	output, err = runWebhookRecoveryCLI(t, runtime, webhookRotatedPassword, webhookPriorHeader, "apply", "-auto-approve")
+	require.NoError(t, err, output)
+	fixture.requirePuts(t, first, webhookExpectedRecoveryPut("3", webhookPriorPassword, webhookRotatedHeader, true), webhookExpectedRecoveryPut("4", webhookRotatedPassword, webhookPriorHeader, true))
 }

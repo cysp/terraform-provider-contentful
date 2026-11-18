@@ -201,7 +201,7 @@ func writeOnlySecretKey(ctx context.Context, attributePath path.Path, value type
 	}
 	defer writeOnlySecretHashSlot.Release(1)
 
-	// Bind a verifier to its canonical Terraform attribute path.
+	// Bind a verifier to its stable private path.
 	preimage := []byte(attributePath.String() + "\x00" + value.ValueString())
 	key := argon2.IDKey(preimage, salt, writeOnlySecretTime, writeOnlySecretMemory, writeOnlySecretParallelism, writeOnlySecretKeyLength)
 

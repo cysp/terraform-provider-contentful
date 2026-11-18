@@ -60,7 +60,7 @@ func TestWebhookModelRejectsUnresolvedScalarRequestValues(t *testing.T) {
 			model := validWebhookRequestModel()
 			test.setValue(&model)
 
-			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
+			actual, diags := model.ToWebhookDefinitionData(t.Context(), path.Empty())
 
 			require.True(t, diags.HasError())
 			assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, diags))
@@ -112,7 +112,7 @@ func TestWebhookModelTopicsRequestValues(t *testing.T) {
 			model := validWebhookRequestModel()
 			model.Topics = test.topics
 
-			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
+			actual, diags := model.ToWebhookDefinitionData(t.Context(), path.Empty())
 
 			if len(test.expectedPaths) > 0 {
 				require.True(t, diags.HasError())
@@ -132,24 +132,29 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 	ctx := t.Context()
 
 	validHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringValue("value"),
-		"secret": types.BoolValue(false),
+		"value":    types.StringValue("value"),
+		"value_wo": types.StringNull(),
+		"secret":   types.BoolValue(false),
 	}))
 	unknownValueHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringUnknown(),
-		"secret": types.BoolValue(false),
+		"value":    types.StringUnknown(),
+		"value_wo": types.StringNull(),
+		"secret":   types.BoolValue(false),
 	}))
 	unknownSecretHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringValue("value"),
-		"secret": types.BoolUnknown(),
+		"value":    types.StringValue("value"),
+		"value_wo": types.StringNull(),
+		"secret":   types.BoolUnknown(),
 	}))
 	nullValueHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringNull(),
-		"secret": types.BoolValue(false),
+		"value":    types.StringNull(),
+		"value_wo": types.StringNull(),
+		"secret":   types.BoolValue(false),
 	}))
 	nullSecretHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringValue("value"),
-		"secret": types.BoolNull(),
+		"value":    types.StringValue("value"),
+		"value_wo": types.StringNull(),
+		"secret":   types.BoolNull(),
 	}))
 
 	tests := map[string]struct {
@@ -160,8 +165,9 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 		"null is omitted": {
 			headers: NewTypedMapNull[TypedObject[WebhookHeaderValue]](),
 		},
-		"computed unknown is omitted": {
-			headers: NewTypedMapUnknown[TypedObject[WebhookHeaderValue]](),
+		"unknown is rejected": {
+			headers:       NewTypedMapUnknown[TypedObject[WebhookHeaderValue]](),
+			expectedPaths: []string{"headers"},
 		},
 		"empty is preserved": {
 			headers:  NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
@@ -220,8 +226,7 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			// Headers are response-owned in the computed-unknown case.
-			actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), test.headers, NewTypedMapNull[TypedObject[WebhookHeaderValue]]())
+			actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), test.headers)
 
 			if len(test.expectedPaths) > 0 {
 				require.True(t, diags.HasError())

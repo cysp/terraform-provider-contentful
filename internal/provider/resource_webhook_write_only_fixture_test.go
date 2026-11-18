@@ -136,12 +136,14 @@ func webhookRecoveryConfig(includeSibling bool, ordinaryKey string) string {
 		sibling = `"X-Sibling" = { secret=true }`
 	}
 
-	managed := `"X-Managed" = { secret=true }`
-	writeOnly := `header_values_wo = { "X-Managed" = var.header }`
+	return webhookRecoveryHeaderConfig(sibling, ordinaryKey, "")
+}
+
+func webhookRecoveryHeaderConfig(sibling, ordinaryKey, lifecycle string) string {
+	managed := `"X-Managed" = { secret=true, value_wo=var.header }`
 
 	if ordinaryKey != "" {
 		managed = fmt.Sprintf(`%q = { secret=false, value="public-replacement" }`, ordinaryKey)
-		writeOnly = ""
 	}
 
 	return fmt.Sprintf(`
@@ -169,7 +171,7 @@ resource "contentful_webhook" "test" {
   }
   %s
 }
-`, managed, sibling, writeOnly)
+`, managed, sibling, lifecycle)
 }
 
 func runWebhookRecoveryCLI(t *testing.T, runtime *terraformTestRuntime, password, header, command string, args ...string) (string, error) {
