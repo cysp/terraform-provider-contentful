@@ -73,39 +73,13 @@ are recorded in
 
 ## Entry publication ownership and partial field ownership
 
-Within an Entry `fields` map, Terraform null means request omission. A known
-JSON null produced by `jsonencode(null)` remains a value and is sent as JSON
-null. CMA omits that raw JSON-null field from mutation and read responses, so
-the provider restores its exact planned or prior representation only when the
-response omits it; a present response value wins. A localized object such as
-`{"en-US":null}` remains ordinary response data and receives no fallback.
-Change detection compares the effective plan and prior state after the same
-request projection. Adding or removing an omitted Terraform-null key may
-therefore require a state-only Update, but it does not write or publish an
-Entry; the provider stores the effective plan representation in Terraform state
-while retaining the prior response-owned `published_version`. The direct
-evidence is recorded in
-[Entry null and omission behavior](../research/entry-fields.md).
+Entry fields are a required map of field IDs to maps of locale codes and JSON strings. Terraform-null field and locale elements are omitted from the CMA request. A known per-locale `jsonencode(null)` is sent as JSON null. Change detection compares the effective plan and prior state after projecting those omissions. Adding or removing an omitted element can update Terraform state without writing or publishing an Entry. The stored `published_version` remains response-owned. See the [CMA null and omission observations](../research/entry-fields.md).
 
-Entry Read is authoritative for `fields`, including additions and removals,
-except for configured request omissions and Contentful's observed empty-field
-canonicalization. When Contentful omits a key whose prior value is Terraform
-null or raw JSON null, the provider retains that exact representation; a
-returned value always takes precedence and exposes drift. When Contentful
-omits the entire `fields` member for a known empty map, or omits a localized
-field whose prior value contains only empty arrays, the provider retains that
-known empty value. It does not extend fallback to localized null, other scalar
-or object values, or nonempty arrays, so a remote removal of meaningful data
-remains observable.
+Read exposes returned field and locale values, including additions and removals. It retains a prior Terraform-null element when the corresponding key is absent. A returned value takes precedence. A formerly nonempty localized field is not reconstructed solely from omitted child locales. The provider also retains a known empty fields map when CMA omits the entire member and a field containing only empty localized arrays when CMA omits that field. A localized JSON-null value receives no omission fallback.
 
-Terraform's effective plan, after lifecycle processing such as `ignore_changes`,
-is the mutation request and consistency boundary. This lets ignored remote map
-paths survive a later managed update while ensuring an ignored-only external
-draft remains untouched. Mutation responses may restore a known empty map when
-the entire `fields` member is omitted, but omission cannot stand in for a nonempty
-effective plan. They may also restore planned Terraform-null, raw JSON-null, or
-localized all-empty-array fields when the response omits those individual keys.
-Other partial or changed maps remain response truth and a plan contradiction.
+The effective plan after `ignore_changes` controls the complete mutation payload. Paths can identify a whole field or a single locale. An ignored-only external draft remains untouched. A subsequent managed write includes the ignored values observed during refresh. Mutation response checks apply the same omission and empty-array rules as Read.
+
+The v0 decoder preserves supported state, including Terraform-null elements and metadata. The legacy whole-field JSON null cannot be represented in the nested map. Upgrading such state emits a diagnostic at the field path and stops before publishing any upgraded state.
 
 Entry metadata tags and taxonomy concepts retain their public List schema.
 Configured values must be unique. Comparison ignores order but remains
@@ -117,7 +91,7 @@ Contentful may apply Content Type default values to fields omitted during Entry
 creation. A Create response may therefore add response-only field keys,
 including a value for a Terraform-null key omitted from the request, but every
 sent field must still be present and semantically equal after the recognized
-empty-array and raw-JSON-null omission fallbacks above. Update uses full-body
+omission and empty-array fallbacks above. Update uses full-body
 replacement and Contentful does not apply defaults to Entry updates, so an
 Update response must have exactly the sent field keys and values after those
 same fallbacks. Create publication responses retain the same creation-default

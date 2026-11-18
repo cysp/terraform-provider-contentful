@@ -99,7 +99,7 @@ func versionedMutationIdentityCases(t *testing.T) []versionedMutationIdentityCas
 			name: "entry update", typeName: "contentful_entry", method: http.MethodPut,
 			endpoint: "/spaces/space/environments/environment/entries/entry", schema: EntryResourceSchema(ctx),
 			prior:   map[string]any{"id": "space/environment/entry", "space_id": "space", "environment_id": "environment", "entry_id": "entry", "content_type_id": "content-type", "fields": map[string]any{}, "metadata": map[string]any{"concepts": []any{}, "tags": []any{}}},
-			changes: map[string]any{"fields": map[string]any{"managed": testJSON(map[string]any{"en-US": "changed"})}},
+			changes: map[string]any{"fields": map[string]any{"managed": map[string]any{"en-US": testJSON("changed")}}},
 			body:    readEndpointBody("Entry", map[string]any{"fields": map[string]any{}}),
 		},
 		{

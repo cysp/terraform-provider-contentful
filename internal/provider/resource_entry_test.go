@@ -40,7 +40,7 @@ func TestAccEntryResourceImport(t *testing.T) {
 	}
 
 	server.SetEntry("0p38pssr0fi3", "test", "test", "entry", cm.EntryRequest{
-		Fields: cm.NewOptEntryFields(cm.EntryFields{"foo": []byte(testJSON("bar"))}),
+		Fields: cm.NewOptEntryFields(cm.EntryFields{"foo": []byte(testJSON(map[string]any{"en-US": "bar"}))}),
 		Metadata: cm.NewOptEntryMetadata(cm.EntryMetadata{
 			Concepts: []cm.TaxonomyConceptLink{},
 			Tags:     []cm.TagLink{},
@@ -158,7 +158,7 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 		"entry_id":        config.StringVariable(entryID),
 		"content_type_id": config.StringVariable("author"),
 		"fields": config.MapVariable(map[string]config.Variable{
-			"name": config.StringVariable(testJSON(map[string]any{"en-AU": "name"})),
+			"name": config.MapVariable(map[string]config.Variable{"en-AU": config.StringVariable(testJSON("name"))}),
 		}),
 	}
 
@@ -185,8 +185,8 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 		"fields": config.MapVariable(map[string]config.Variable{
-			"name":  config.StringVariable(testJSON(map[string]any{"en-AU": "name"})),
-			"blurb": config.StringVariable(testJSON(map[string]any{"en-AU": map[string]any{"nodeType": "document", "data": map[string]any{}, "content": []any{}}})),
+			"name":  config.MapVariable(map[string]config.Variable{"en-AU": config.StringVariable(testJSON("name"))}),
+			"blurb": config.MapVariable(map[string]config.Variable{"en-AU": config.StringVariable(testJSON(map[string]any{"nodeType": "document", "data": map[string]any{}, "content": []any{}}))}),
 		}),
 	}
 
@@ -195,17 +195,17 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 		"fields": config.MapVariable(map[string]config.Variable{
-			"name":  config.StringVariable(testJSON(map[string]any{"en-AU": "name (updated)"})),
-			"blurb": config.StringVariable(testJSON(map[string]any{"en-AU": map[string]any{"nodeType": "document", "data": map[string]any{}, "content": []any{}}})),
+			"name":  config.MapVariable(map[string]config.Variable{"en-AU": config.StringVariable(testJSON("name (updated)"))}),
+			"blurb": config.MapVariable(map[string]config.Variable{"en-AU": config.StringVariable(testJSON(map[string]any{"nodeType": "document", "data": map[string]any{}, "content": []any{}}))}),
 		}),
 	}
 
 	expectEntryFields := func(name string) plancheck.PlanCheck {
 		return plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields"), knownvalue.MapExact(map[string]knownvalue.Check{
-			"name": knownvalue.StringExact(name),
-			"blurb": knownvalue.StringFunc(func(actual string) error {
-				return checkJSONEqual(testJSON(map[string]any{"en-AU": map[string]any{"nodeType": "document", "data": map[string]any{}, "content": []any{}}}), actual)
-			}),
+			"name": knownvalue.MapExact(map[string]knownvalue.Check{"en-AU": knownvalue.StringExact(name)}),
+			"blurb": knownvalue.MapExact(map[string]knownvalue.Check{"en-AU": knownvalue.StringFunc(func(actual string) error {
+				return checkJSONEqual(testJSON(map[string]any{"nodeType": "document", "data": map[string]any{}, "content": []any{}}), actual)
+			})}),
 		}))
 	}
 
@@ -220,11 +220,11 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 					},
 					PostApplyPreRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
-						expectEntryFields(testJSON(map[string]any{"en-AU": "name"})),
+						expectEntryFields(testJSON("name")),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("entry_id"), knownvalue.NotNull()),
-						expectEntryFields(testJSON(map[string]any{"en-AU": "name"})),
+						expectEntryFields(testJSON("name")),
 					},
 				},
 			},
@@ -238,10 +238,10 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 						plancheck.ExpectUnknownValue("contentful_entry.test", tfjsonpath.New("published_version")),
 					},
 					PostApplyPreRefresh: []plancheck.PlanCheck{
-						expectEntryFields(testJSON(map[string]any{"en-AU": "name (updated)"})),
+						expectEntryFields(testJSON("name (updated)")),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
-						expectEntryFields(testJSON(map[string]any{"en-AU": "name (updated)"})),
+						expectEntryFields(testJSON("name (updated)")),
 					},
 				},
 			},
@@ -264,7 +264,7 @@ resource "contentful_entry" "test" {
   environment_id  = "test"
   content_type_id = "author"
   fields = {
-    name = jsonencode({ "en-AU" = "name" })
+    name = { "en-AU" = jsonencode("name") }
   }
 }
 `,
@@ -285,7 +285,7 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 		"environment_id":  config.StringVariable("test"),
 		"content_type_id": config.StringVariable("author"),
 		"entry_fields": config.MapVariable(map[string]config.Variable{
-			"name": config.StringVariable(testJSON(map[string]any{"en-AU": "name"})),
+			"name": config.MapVariable(map[string]config.Variable{"en-AU": config.StringVariable(testJSON("name"))}),
 		}),
 	}
 
@@ -393,12 +393,12 @@ func TestAccEntryResourceMissingFields(t *testing.T) {
 
 	configVariables2 := maps.Clone(configVariables)
 	configVariables2["entry_fields"] = config.MapVariable(map[string]config.Variable{
-		"b": config.StringVariable(testJSON(map[string]any{"en-AU": "b"})),
+		"b": config.MapVariable(map[string]config.Variable{"en-AU": config.StringVariable(testJSON("b"))}),
 	})
 
 	configVariables3 := maps.Clone(configVariables)
 	configVariables3["entry_fields"] = config.MapVariable(map[string]config.Variable{
-		"c": config.StringVariable(testJSON(map[string]any{"en-AU": []any{}})),
+		"c": config.MapVariable(map[string]config.Variable{"en-AU": config.StringVariable(testJSON([]any{}))}),
 	})
 
 	testAccMockableResource(t, server, resource.TestCase{

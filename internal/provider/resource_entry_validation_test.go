@@ -28,7 +28,7 @@ func TestAccEntryResourceRejectsMalformedJSONBeforeHTTP(t *testing.T) {
   environment_id  = "master"
   content_type_id = "article"
   entry_id        = "entry"
-  fields          = { title = "{" }
+  fields          = { title = { "en-US" = "{" } }
 }`)
 
 	validateOutput, validateErr := runtime.run(t.Context(), "validate", "-no-color")

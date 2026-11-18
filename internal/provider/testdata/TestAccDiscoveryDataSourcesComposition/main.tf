@@ -46,6 +46,6 @@ resource "contentful_entry" "localized" {
   content_type_id = "article"
   entry_id        = "example"
   fields = {
-    title = jsonencode({ (local.default_locale.code) = "Hello" })
+    title = { (local.default_locale.code) = jsonencode("Hello") }
   }
 }

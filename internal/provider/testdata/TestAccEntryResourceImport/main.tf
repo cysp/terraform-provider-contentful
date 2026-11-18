@@ -17,6 +17,6 @@ resource "contentful_entry" "test" {
 
   content_type_id = "test"
   fields = {
-    "foo" = jsonencode("bar")
+    "foo" = { "en-US" = jsonencode("bar") }
   }
 }

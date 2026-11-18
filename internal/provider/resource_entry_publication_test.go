@@ -444,7 +444,7 @@ resource "contentful_entry" "test" {
   space_id        = "space"
   environment_id  = "environment"
   content_type_id = "article"
-  fields = { managed = jsonencode({ "en-US" = "one" }) }
+  fields = { managed = { "en-US" = jsonencode("one") } }
 }
 `,
 			draftMethod: http.MethodPost,
@@ -678,7 +678,7 @@ func TestAccEntryResourceHigherPostPublishVersionIsAccepted(t *testing.T) {
 				Config: config("two"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("published_version"), knownvalue.Int64Exact(3)),
-					statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields").AtMapKey("managed"), knownvalue.StringExact(testJSON(map[string]any{"en-US": "two"}))),
+					statecheck.ExpectKnownValue("contentful_entry.test", tfjsonpath.New("fields").AtMapKey("managed").AtMapKey("en-US"), knownvalue.StringExact(testJSON("two"))),
 				},
 			},
 			{
@@ -915,8 +915,8 @@ func TestAccEntryResourceContradictoryDraftRevokesPendingPublication(t *testing.
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					expectResponseStateInPlan{
 						address:   "contentful_entry.test",
-						valuePath: tfjsonpath.New("fields").AtMapKey("managed"),
-						value:     `{"en-US":"contradictory"}`,
+						valuePath: tfjsonpath.New("fields").AtMapKey("managed").AtMapKey("en-US"),
+						value:     testJSON("contradictory"),
 					},
 				}},
 				Check: func(*terraform.State) error {

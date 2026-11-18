@@ -8,6 +8,7 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -42,23 +43,57 @@ func NewEntryResourceModelFromResponse(ctx context.Context, entry cm.Entry) (Ent
 	return model, diags
 }
 
-func NewEntryFieldsFromResponse(_ context.Context, _ path.Path, fields cm.OptEntryFields) (TypedMap[jsontypes.Normalized], diag.Diagnostics) {
+func NewEntryFieldsFromResponse(_ context.Context, path path.Path, fields cm.OptEntryFields) (TypedMap[TypedMap[jsontypes.Normalized]], diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if !fields.IsSet() {
-		return NewTypedMapNull[jsontypes.Normalized](), diags
+		return NewTypedMapNull[TypedMap[jsontypes.Normalized]](), diags
 	}
 
-	elements := map[string]jsontypes.Normalized{}
-	for k, v := range fields.Value {
-		elements[k] = NewNormalizedJSONValue(v)
+	elements := map[string]TypedMap[jsontypes.Normalized]{}
+
+	for fieldID, fieldValue := range fields.Value {
+		localizedValues, localizedValuesDiags := entryLocalizedFieldFromJSON(path.AtMapKey(fieldID), fieldValue)
+		diags.Append(localizedValuesDiags...)
+
+		if localizedValuesDiags.HasError() {
+			continue
+		}
+
+		elements[fieldID] = localizedValues
 	}
 
 	return NewTypedMap(elements), diags
 }
 
-func mergeEntryFieldsWithFallback(responseFields, fallbackFields TypedMap[jsontypes.Normalized]) TypedMap[jsontypes.Normalized] {
-	elements := make(map[string]jsontypes.Normalized, len(responseFields.Elements())+len(fallbackFields.Elements()))
+func entryLocalizedFieldFromJSON(path path.Path, raw []byte) (TypedMap[jsontypes.Normalized], diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	var localizedValues map[string]json.RawMessage
+
+	err := json.Unmarshal(raw, &localizedValues)
+	if err != nil {
+		diags.AddAttributeError(path, "Invalid Entry Field Value", fmt.Sprintf("Expected a JSON object keyed by locale: %s", err))
+
+		return NewTypedMapNull[jsontypes.Normalized](), diags
+	}
+
+	if localizedValues == nil {
+		diags.AddAttributeError(path, "Unrepresentable Entry field", "The localized Entry fields schema cannot represent a whole-field JSON null. A Terraform-null field omits the field from the request. A JSON-null translation belongs under its locale code.")
+
+		return NewTypedMapNull[jsontypes.Normalized](), diags
+	}
+
+	elements := make(map[string]jsontypes.Normalized, len(localizedValues))
+	for locale, value := range localizedValues {
+		elements[locale] = NewNormalizedJSONValue(value)
+	}
+
+	return NewTypedMap(elements), diags
+}
+
+func mergeEntryFieldsWithFallback(responseFields, fallbackFields TypedMap[TypedMap[jsontypes.Normalized]]) TypedMap[TypedMap[jsontypes.Normalized]] {
+	elements := make(map[string]TypedMap[jsontypes.Normalized], len(responseFields.Elements())+len(fallbackFields.Elements()))
 
 	maps.Copy(elements, responseFields.Elements())
 
@@ -87,49 +122,43 @@ func entryMetadataEquivalent(left, right TypedObject[EntryMetadataValue]) bool {
 		unorderedStringListsEquivalent(left.Value().Tags, right.Value().Tags)
 }
 
-func entryFieldsEquivalent(ctx context.Context, left, right TypedMap[jsontypes.Normalized]) (bool, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	left = entryFieldsRequestProjection(left)
-	right = entryFieldsRequestProjection(right)
-
-	if left.IsNull() || left.IsUnknown() || right.IsNull() || right.IsUnknown() {
-		return left.Equal(right), diags
-	}
-
-	leftElements := left.Elements()
-
-	rightElements := right.Elements()
-	if len(leftElements) != len(rightElements) {
-		return false, diags
-	}
-
-	for key, leftElement := range leftElements {
-		rightElement, ok := rightElements[key]
-		if !ok {
-			return false, diags
-		}
-
-		if leftElement.IsNull() || leftElement.IsUnknown() || rightElement.IsNull() || rightElement.IsUnknown() {
-			if !leftElement.Equal(rightElement) {
-				return false, diags
-			}
-
-			continue
-		}
-
-		equivalent, elementDiags := leftElement.StringSemanticEquals(ctx, rightElement)
-		diags.Append(elementDiags...)
-
-		if diags.HasError() || !equivalent {
-			return false, diags
-		}
-	}
-
-	return true, diags
+func entryFieldsEquivalent(ctx context.Context, left, right TypedMap[TypedMap[jsontypes.Normalized]]) (bool, diag.Diagnostics) {
+	return entryMapValuesEquivalent(entryFieldsRequestProjection(left), entryFieldsRequestProjection(right), func(left, right TypedMap[jsontypes.Normalized]) (bool, diag.Diagnostics) {
+		return entryMapValuesEquivalent(left, right, func(left, right jsontypes.Normalized) (bool, diag.Diagnostics) {
+			return normalizedJSONEquivalent(ctx, left, right)
+		})
+	})
 }
 
-func mergeEntryResponseFieldsWithOmissionFallback(response, fallback TypedMap[jsontypes.Normalized]) TypedMap[jsontypes.Normalized] {
+func entryMapValuesEquivalent[T attr.Value](left, right TypedMap[T], equal func(T, T) (bool, diag.Diagnostics)) (bool, diag.Diagnostics) {
+	if left.IsNull() || left.IsUnknown() || right.IsNull() || right.IsUnknown() {
+		return left.Equal(right), nil
+	}
+
+	if len(left.Elements()) != len(right.Elements()) {
+		return false, nil
+	}
+
+	var diagnostics diag.Diagnostics
+
+	for key, value := range left.Elements() {
+		other, ok := right.Elements()[key]
+		if !ok {
+			return false, diagnostics
+		}
+
+		equivalent, diags := equal(value, other)
+		diagnostics.Append(diags...)
+
+		if !equivalent || diagnostics.HasError() {
+			return false, diagnostics
+		}
+	}
+
+	return true, diagnostics
+}
+
+func mergeEntryResponseFieldsWithOmissionFallback(response, fallback TypedMap[TypedMap[jsontypes.Normalized]]) TypedMap[TypedMap[jsontypes.Normalized]] {
 	if response.IsUnknown() || fallback.IsNull() || fallback.IsUnknown() {
 		return response
 	}
@@ -138,14 +167,22 @@ func mergeEntryResponseFieldsWithOmissionFallback(response, fallback TypedMap[js
 		return fallback
 	}
 
-	responseElements := make(map[string]jsontypes.Normalized, len(response.Elements())+len(fallback.Elements()))
+	responseElements := make(map[string]TypedMap[jsontypes.Normalized], len(response.Elements())+len(fallback.Elements()))
 	maps.Copy(responseElements, response.Elements())
 
 	changed := false
 
 	for fieldID, value := range fallback.Elements() {
-		if _, exists := responseElements[fieldID]; exists ||
-			(!value.IsNull() && !entryFieldIsRawJSONNull(value) && !entryFieldHasOnlyEmptyLocalizedArrays(value)) {
+		if returned, exists := responseElements[fieldID]; exists {
+			if merged, restored := restoreOmittedEntryLocales(returned, value); restored {
+				responseElements[fieldID] = merged
+				changed = true
+			}
+
+			continue
+		}
+
+		if !value.IsNull() && !entryLocalizedFieldHasOnlyEmptyArrays(value) {
 			continue
 		}
 
@@ -160,43 +197,56 @@ func mergeEntryResponseFieldsWithOmissionFallback(response, fallback TypedMap[js
 	return NewTypedMap(responseElements)
 }
 
-func entryFieldIsRawJSONNull(value jsontypes.Normalized) bool {
-	if value.IsNull() || value.IsUnknown() {
-		return false
+func restoreOmittedEntryLocales(response, prior TypedMap[jsontypes.Normalized]) (TypedMap[jsontypes.Normalized], bool) {
+	if response.IsNull() || response.IsUnknown() {
+		return response, false
 	}
 
-	var decoded any
+	var restored map[string]jsontypes.Normalized
 
-	return json.Unmarshal([]byte(value.ValueString()), &decoded) == nil && decoded == nil
+	for code, value := range prior.Elements() {
+		if _, present := response.Elements()[code]; present || !value.IsNull() {
+			continue
+		}
+
+		if restored == nil {
+			restored = make(map[string]jsontypes.Normalized, len(response.Elements())+1)
+			maps.Copy(restored, response.Elements())
+		}
+
+		restored[code] = value
+	}
+
+	if restored == nil {
+		return response, false
+	}
+
+	return NewTypedMap(restored), true
 }
 
-func entryFieldHasOnlyEmptyLocalizedArrays(value jsontypes.Normalized) bool {
-	if value.IsNull() || value.IsUnknown() {
-		return false
-	}
+func entryLocalizedFieldHasOnlyEmptyArrays(value TypedMap[jsontypes.Normalized]) bool {
+	sent := false
 
-	var localized map[string]json.RawMessage
+	for _, locale := range value.Elements() {
+		if locale.IsNull() {
+			continue
+		}
 
-	err := json.Unmarshal([]byte(value.ValueString()), &localized)
-	if err != nil || len(localized) == 0 {
-		return false
-	}
-
-	for _, localeValue := range localized {
-		var decoded any
-
-		err = json.Unmarshal(localeValue, &decoded)
-		if err != nil {
+		if locale.IsUnknown() {
 			return false
 		}
 
-		items, ok := decoded.([]any)
-		if !ok || len(items) != 0 {
+		var array []json.RawMessage
+
+		err := json.Unmarshal([]byte(locale.ValueString()), &array)
+		if err != nil || array == nil || len(array) != 0 {
 			return false
 		}
+
+		sent = true
 	}
 
-	return true
+	return sent
 }
 
 type entryResponseFieldPolicy uint8
@@ -257,7 +307,7 @@ func projectEntryMutationResponse(
 
 func entryResponseFieldsConsistent(
 	ctx context.Context,
-	plan, response TypedMap[jsontypes.Normalized],
+	plan, response TypedMap[TypedMap[jsontypes.Normalized]],
 	policy entryResponseFieldPolicy,
 ) (bool, diag.Diagnostics) {
 	if policy != entryResponseFieldsCreationDefaults {
@@ -269,7 +319,7 @@ func entryResponseFieldsConsistent(
 	}
 
 	plan = entryFieldsRequestProjection(plan)
-	responsePlanFields := make(map[string]jsontypes.Normalized, len(plan.Elements()))
+	responsePlanFields := make(map[string]TypedMap[jsontypes.Normalized], len(plan.Elements()))
 
 	responseElements := response.Elements()
 	for fieldID := range plan.Elements() {

@@ -169,7 +169,7 @@ resource "contentful_entry" "test" {
   environment_id = "master"
   content_type_id = "log-type"
   entry_id = %s
-  fields = { secret = jsonencode({ "en-US" = var.content }) }
+  fields = { secret = { "en-US" = jsonencode(var.content) } }
 }
 `, content, entryID)
 }

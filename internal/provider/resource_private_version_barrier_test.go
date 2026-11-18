@@ -300,7 +300,7 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 		ID:                 types.StringValue("space/environment/entry"),
 		EntryIdentityModel: NewEntryIdentityModel("space", "environment", "entry"),
 		ContentTypeID:      types.StringValue("content-type"),
-		Fields:             NewTypedMap(map[string]jsontypes.Normalized{}),
+		Fields:             NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{}),
 		Metadata: NewTypedObject(EntryMetadataValue{
 			Concepts: NewTypedList([]types.String{}),
 			Tags:     NewTypedList([]types.String{}),
@@ -308,8 +308,8 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 		Timeouts: TimeoutsNull(),
 	}
 	plannedEntry := entry
-	plannedEntry.Fields = NewTypedMap(map[string]jsontypes.Normalized{
-		"managed": jsontypes.NewNormalizedValue(testJSON(map[string]any{"en-US": "changed"})),
+	plannedEntry.Fields = NewTypedMap(map[string]TypedMap[jsontypes.Normalized]{
+		"managed": NewTypedMap(map[string]jsontypes.Normalized{"en-US": jsontypes.NewNormalizedValue(testJSON("changed"))}),
 	})
 	previewEnvironment := previewEnvironmentModel(map[string]string{
 		"page": "https://preview.invalid/page",
