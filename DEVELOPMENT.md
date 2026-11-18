@@ -35,7 +35,7 @@ credentials alone do not establish that authorization.
 
 | Change | Local verification |
 | --- | --- |
-| Agent instructions or prose only | Review instruction consistency, links, and the final diff; run `git diff --check`. |
+| Agent instructions or prose outside generation inputs | Review instruction consistency, links, and the final diff; run `git diff --check`. |
 | Go behavior | Run tests for the affected packages and the [lint and format checks](#linting). Use the [ordinary test suite](#unit-and-local-integration-tests) and `go build .` for shared behavior or when preparing for merge. |
 | Terraform planning, state, or lifecycle | Run focused mocked acceptance tests for the affected transitions in addition to the Go checks; extend coverage where existing tests do not establish the changed behavior. |
 | Schema, examples, templates, OpenAPI, or other generation inputs | Follow [Code generation](#code-generation) and [Documentation verification](#documentation-verification), then run the checks for the affected behavior. |
