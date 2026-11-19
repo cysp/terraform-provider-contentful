@@ -18,6 +18,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/ogen-go/ogen v1.25.0
 	github.com/stretchr/testify v1.12.1
+	golang.org/x/text v0.44.0
 	pgregory.net/rapid v1.3.0
 )
 
@@ -102,7 +103,6 @@ require (
 	golang.org/x/net v0.63.0 // indirect
 	golang.org/x/sync v0.25.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
-	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/tools v0.53.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20261118221215-c8830f628b3f // indirect

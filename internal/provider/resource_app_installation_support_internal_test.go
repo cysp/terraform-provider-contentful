@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func appInstallationTestPlan(t *testing.T, parameters string) tfsdk.Plan {
+func appInstallationTestPlan(t *testing.T, parameters map[string]string) tfsdk.Plan {
 	t.Helper()
 	schema := AppInstallationResourceSchema(t.Context())
 	raw, err := tftypes.ValueFromJSONWithOpts([]byte(testJSON(map[string]any{

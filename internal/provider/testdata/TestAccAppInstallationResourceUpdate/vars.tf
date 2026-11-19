@@ -12,6 +12,6 @@ variable "app_definition_id" {
 }
 
 variable "parameters" {
-  type    = string
+  type    = map(string)
   default = null
 }

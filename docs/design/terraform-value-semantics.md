@@ -82,11 +82,14 @@ document order wins. This standard-library policy can change both malformed
 string values and collision winners compared with the former JX normalization
 pass.
 
-App Installation and Extension parameters, Role policy constraints, and Editor
-Interface settings use the checked normalization operation and report failures
-at their attribute paths. Missing response members remain Terraform null; an
-explicit JSON `null` remains a known JSON string. The existing fallback
-normalizers retain the original input on failure for callers that own their
+App Installation and Extension parameters, Role policy constraints,
+and Editor Interface settings use the checked normalization operation and report failures
+at their attribute paths. Missing response members remain Terraform null. An
+explicit JSON `null` remains a known JSON string inside an App Installation map
+or another JSON string attribute. For App Installation, an omitted or JSON
+`null` parameters document becomes a Terraform null map. An empty object
+becomes an empty map. The existing fallback normalizers
+retain the original input on failure for callers that own their
 validation or preserve opaque values. Neither fallback performs an additional
 decode after successful normalization.
 
