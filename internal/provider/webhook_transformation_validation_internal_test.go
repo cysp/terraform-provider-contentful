@@ -111,7 +111,7 @@ func TestWebhookTransformationInvalidPlanStopsWrites(t *testing.T) {
 			require.Equal(t, []string{"transformation." + attribute}, mutationDiagnosticPaths(t, create.Diagnostics))
 
 			update := resource.UpdateResponse{State: tfsdk.State{Schema: plan.Schema}}
-			implementation.Update(t.Context(), resource.UpdateRequest{Plan: plan, Config: config}, &update)
+			implementation.Update(t.Context(), resource.UpdateRequest{Plan: plan, Config: config, State: tfsdk.State(config)}, &update)
 			require.Equal(t, []string{"transformation." + attribute}, mutationDiagnosticPaths(t, update.Diagnostics))
 			require.Zero(t, count.Load())
 		})

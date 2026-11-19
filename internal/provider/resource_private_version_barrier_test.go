@@ -240,6 +240,8 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 	webhook.SpaceID = types.StringValue("space")
 	webhook.WebhookID = types.StringValue("webhook")
 	webhook.Timeouts = TimeoutsNull()
+	plannedWebhook := webhook
+	plannedWebhook.Name = types.StringValue("Updated webhook")
 
 	extension := validExtensionRequestModel()
 	extension.ID = types.StringValue("space/environment/extension")
@@ -366,7 +368,7 @@ func requiredPrivateVersionResourceCases(t *testing.T) []requiredPrivateVersionR
 				Timeouts:        TimeoutsNull(),
 			},
 		},
-		{name: "webhook update", typeName: "contentful_webhook", resourceSchema: WebhookResourceSchema(t.Context()), model: webhook},
+		{name: "webhook update", typeName: "contentful_webhook", resourceSchema: WebhookResourceSchema(t.Context()), model: webhook, plannedModel: plannedWebhook},
 		{name: "extension update", typeName: "contentful_extension", resourceSchema: ExtensionResourceSchema(t.Context()), model: extension},
 		{
 			name:           "space enablements update",
