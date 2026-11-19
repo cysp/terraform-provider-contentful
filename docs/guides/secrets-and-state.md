@@ -72,19 +72,19 @@ Use `jsonencode` with sensitive Terraform inputs for credentials. A `Secret` dec
 
 ## App Installation secrets
 
-An [App Installation](../resources/app_installation) sends the complete `parameters` object on every write. Include each value you want to keep. Omitted keys are removed on a successful write, and Contentful can reject a missing required parameter. An empty object or an omitted `parameters` attribute can clear existing values.
+With a personal access token, Contentful masks Secret values with asterisks. When a top-level parameter comes back as a string of asterisks, Terraform can retain its planned value after a write or its previous value on refresh. An ordinary string changed to literal asterisks can look like a masked secret too. [Contentful Secret installation parameters](https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/#secret-installation-parameters)
 
 ### Rotation and changes outside Terraform
 
-With a personal access token, Contentful masks Secret values with asterisks. For a top-level value made entirely of asterisks, the provider can retain the planned value after a write or the previous value on refresh. Even an ordinary string changed to literal asterisks can be hidden. This fallback applies only to returned top-level keys. [Contentful Secret installation parameters](https://www.contentful.com/developers/docs/extensibility/app-framework/app-parameters/#secret-installation-parameters)
-
-To rotate a secret, supply its new value and apply. Updating an ordinary parameter or a `marketplace` acknowledgment resends all planned secrets, including any stale value after an external rotation. Changing only `timeouts` skips the write. With `ignore_changes = [parameters]`, another change can still resend the stored object, including old plaintext or imported masks.
+If someone rotates `apiKey` in Contentful, refresh can keep the old key in state. Changing `editor` or a `marketplace` acknowledgment then sends the whole object and can restore the old key, even with `ignore_changes = [parameters["apiKey"]]`. See [Updating parameters](../resources/app_installation#updating-parameters) for how the provider writes the planned map.
 
 ### Importing an installation
 
 Import retains the masks that Contentful returns. Supply the actual values before applying. Sending the exact current mask can preserve the existing secret, even when you meant to set a literal string of asterisks. A stale mask can become the literal secret.
 
-If a write fails or Terraform reports an inconsistent result, inspect the installation before retrying. Contentful may have accepted the change, and a masked response cannot confirm which secret it stored.
+### Recovering after a failed write
+
+Inspect the installation before retrying a failed write. Contentful may have accepted it. If Terraform can read the returned parameters but they differ from the plan after masking is handled, it reports the mismatch and keeps the returned map in state. If Terraform cannot read the parameters, a failed create can leave an installation in Contentful without a corresponding resource in state. Once the installation is readable, import it before applying again. A mask alone cannot confirm which secret Contentful stored.
 
 ## Personal access tokens
 

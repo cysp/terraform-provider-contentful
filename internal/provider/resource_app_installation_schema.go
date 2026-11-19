@@ -16,6 +16,7 @@ import (
 
 func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Version:     1,
 		Description: "Installs a Contentful app in an environment and manages its installation parameters.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -56,9 +57,10 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 					setvalidator.NoNullValues(),
 				},
 			},
-			"parameters": schema.StringAttribute{
-				Description: "Complete installation parameter object encoded with `jsonencode(...)`. Configure every value you want to retain. Omission sends no parameter object and can clear existing values on apply, including after import. For redacted responses, the provider can preserve values from the plan or prior state; external secret changes may remain undetected. Supply secrets through sensitive expressions. See [App Installation secrets](../guides/secrets-and-state#app-installation-secrets).",
-				CustomType:  jsontypes.NormalizedType{},
+			"parameters": schema.MapAttribute{
+				Description: "Installation parameters keyed by parameter ID. Use `jsonencode` for each value. See [Updating parameters](#updating-parameters) for the effects of omitting or ignoring a key.",
+				ElementType: jsontypes.NormalizedType{},
+				Validators:  []validator.Map{installationParameterValuesValidator{}},
 				Optional:    true,
 			},
 			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),

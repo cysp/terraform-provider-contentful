@@ -294,7 +294,7 @@ func readEndpointCases(t *testing.T) []readEndpointCase {
 		{
 			name:     "app_installation",
 			schema:   AppInstallationResourceSchema(ctx),
-			prior:    map[string]any{"parameters": testJSON(map[string]string{"value": "planned"})},
+			prior:    map[string]any{"parameters": map[string]string{"value": `"planned"`}},
 			body:     readEndpointBody("AppInstallation", map[string]any{"parameters": map[string]string{"value": "returned"}}),
 			endpoint: "/spaces/space/environments/environment/app_installations/app",
 			id:       "space/environment/app",

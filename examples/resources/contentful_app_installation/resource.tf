@@ -6,9 +6,9 @@ resource "contentful_app_installation" "custom" {
 
   app_definition_id = var.app_definition_id
 
-  parameters = jsonencode({
-    apiKey = var.app_api_key
-  })
+  parameters = {
+    apiKey = jsonencode(var.app_api_key)
+  }
 }
 
 resource "contentful_app_installation" "marketplace" {

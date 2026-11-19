@@ -36,7 +36,7 @@ func TestAccAppInstallationResourceTimeoutOnlyPreservesRemoteRotation(t *testing
 lifecycle { ignore_changes = [parameters] }`),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionUpdate)}},
 			ConfigStateChecks: []statecheck.StateCheck{
-				statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters"), knownvalue.StringExact(testJSON(intended))),
+				statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters"), installationParameterCheck(intended)),
 				statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("timeouts"), change.timeouts),
 				statecheck.ExpectIdentityValueMatchesState(appInstallationTestAddress, tfjsonpath.New("space_id")),
 				statecheck.ExpectIdentityValueMatchesState(appInstallationTestAddress, tfjsonpath.New("environment_id")),
@@ -79,7 +79,8 @@ func TestAccAppInstallationResourceImportedTimeoutOnlyPreservesRemoteRotation(t 
 			ImportStateCheck: func(states []*terraform.InstanceState) error {
 				require.Len(t, states, 1)
 				assert.Equal(t, "0", states[0].Attributes["marketplace.#"], "import records an empty set")
-				assert.JSONEq(t, testJSON(map[string]any{"secret": "******", "visible": "one"}), states[0].Attributes["parameters"], "import retains original mask")
+				assert.Equal(t, `"******"`, states[0].Attributes["parameters.secret"], "import retains original mask")
+				assert.Equal(t, `"one"`, states[0].Attributes["parameters.visible"])
 
 				return nil
 			},
@@ -90,7 +91,7 @@ func TestAccAppInstallationResourceImportedTimeoutOnlyPreservesRemoteRotation(t 
 lifecycle { ignore_changes = [parameters] }`),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionUpdate)}},
 			ConfigStateChecks: []statecheck.StateCheck{
-				statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters"), knownvalue.StringExact(testJSON(map[string]any{"secret": "******************", "visible": "one"}))),
+				statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters"), installationParameterCheck(map[string]any{"secret": "******************", "visible": "one"})),
 				statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("timeouts"), knownvalue.ObjectExact(map[string]knownvalue.Check{"create": knownvalue.Null(), "read": knownvalue.Null(), "update": knownvalue.StringExact("3m"), "delete": knownvalue.Null()})),
 				statecheck.ExpectIdentityValueMatchesState(appInstallationTestAddress, tfjsonpath.New("space_id")),
 				statecheck.ExpectIdentityValueMatchesState(appInstallationTestAddress, tfjsonpath.New("environment_id")),

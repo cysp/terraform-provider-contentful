@@ -149,7 +149,7 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 	stepVariables1 := maps.Clone(configVariables)
 
 	stepVariables2 := maps.Clone(configVariables)
-	stepVariables2["parameters"] = config.StringVariable(testJSON(map[string]any{"foo": "bar"}))
+	stepVariables2["parameters"] = config.MapVariable(map[string]config.Variable{"foo": config.StringVariable(`"bar"`)})
 
 	stepVariables3 := maps.Clone(configVariables)
 
@@ -168,7 +168,7 @@ func TestAccAppInstallationResourceUpdate(t *testing.T) {
 				ConfigVariables: stepVariables2,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("contentful_app_installation.test", tfjsonpath.New("id"), knownvalue.StringExact("0p38pssr0fi3/master/1WkQ2J9LERPtbMTdUfSHka")),
-					statecheck.ExpectKnownValue("contentful_app_installation.test", tfjsonpath.New("parameters"), knownvalue.StringExact(testJSON(map[string]any{"foo": "bar"}))),
+					statecheck.ExpectKnownValue("contentful_app_installation.test", tfjsonpath.New("parameters"), knownvalue.MapExact(map[string]knownvalue.Check{"foo": knownvalue.StringExact(`"bar"`)})),
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

@@ -21,18 +21,30 @@ The [App Definition example](app_definition#example-usage) declares the `apiKey`
 {{- end }}
 {{- end }}
 
-## Parameter ownership
+## Updating parameters
 
-Configure every parameter you want to keep. Writes replace the complete object. Changing an ordinary parameter or a `marketplace` acknowledgment can overwrite a secret rotated elsewhere. Omitting `parameters` can clear existing values. Changing only `timeouts` skips the write.
+Changing a parameter or a `marketplace` acknowledgment sends every parameter in the plan to Contentful, including keys listed in `ignore_changes`. A write can overwrite edits made since refresh. It can restore an externally rotated secret even when the plan shows no change to that key. See [App Installation secrets](../guides/secrets-and-state#app-installation-secrets).
 
-Contentful can mask secrets even when a refresh appears to match the plan. See [App Installation secrets](../guides/secrets-and-state#app-installation-secrets) for rotation and import.
+Omitting a key from the planned map can remove that parameter, including an optional Secret. An empty map sends `{}`, which Contentful can reject if the app requires a parameter. A null map omits the entire parameter object and can clear existing values. To send a JSON null, use `jsonencode(null)`. Contentful rejects JSON null for a declared Secret. A bare Terraform null at a key is invalid.
+
+## Upgrading from the single JSON string
+
+Replace `parameters = jsonencode(local.settings)` with `parameters = { for id, value in local.settings : id => jsonencode(value) }`. If `local.settings` can be null, use `local.settings == null ? null : { for id, value in local.settings : id => jsonencode(value) }`.
+
+A module output that returns `parameters` directly changes from a JSON string to a map of JSON-encoded strings, even when the installation has no planned changes. If `local.params` refers to `contentful_app_installation.custom.parameters`, use `jsondecode(local.params["editor"])` for one key, or `local.params == null ? null : { for id, encoded in local.params : id => jsondecode(encoded) }` for the whole object.
+
+Terraform upgrades saved state locally. With equivalent values and no remote drift, the upgrade requires no PUT. JSON formatting alone can still produce a local state change. An omitted or JSON `null` document becomes a null map. An empty object stays empty, and a key whose value is JSON `null` retains that value.
+
+The upgrade stops if the saved document is invalid JSON, has a root other than an object or null, or contains a parameter ID Terraform would change during Unicode normalization. If Contentful holds representable parameters and the previous provider can read the saved state, review and apply a refresh-only plan with the previous provider and configuration.
+
+If refresh cannot read the old state, back it up before removing the old state binding and importing the existing installation with the new provider. Correct any unrepresentable remote parameters before import. Keep a compatible state snapshot if you need to roll back.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if or .HasImport .HasImportIDConfig .HasImportIdentityConfig }}
 
 ## Import
 
-Configure the complete `parameters` object you want to retain before applying an imported installation. Import cannot recover Secret values; supply the values Terraform should manage. See [parameter ownership](#parameter-ownership) for omission behavior.
+Import records the values Contentful returns, including any masks. Before applying changes, configure the values you want Terraform to manage.
 {{- end }}
 {{- if .HasImportIdentityConfig }}
 

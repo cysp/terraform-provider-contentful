@@ -27,23 +27,7 @@ func (model *AppInstallationModel) ToXContentfulMarketplaceHeaderValue() (cm.Opt
 }
 
 func (model *AppInstallationModel) ToAppInstallationData() (cm.AppInstallationData, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+	parameters, diags := encodeInstallationParameters(path.Root("parameters"), model.Parameters)
 
-	fields := cm.AppInstallationData{}
-
-	switch {
-	case model.Parameters.IsUnknown():
-		diags.AddAttributeError(
-			path.Root("parameters"),
-			"Unexpected unknown app installation parameters",
-			"App installation parameters must be known before they can be sent to Contentful.",
-		)
-
-		return cm.AppInstallationData{}, diags
-	case model.Parameters.IsNull():
-	default:
-		fields.Parameters = []byte(model.Parameters.ValueString())
-	}
-
-	return fields, diags
+	return cm.AppInstallationData{Parameters: parameters}, diags
 }

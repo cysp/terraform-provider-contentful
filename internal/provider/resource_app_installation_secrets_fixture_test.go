@@ -14,6 +14,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,10 +26,9 @@ type appInstallationSecretFixture struct {
 	mu                  sync.Mutex
 	server              *cmt.Server
 	maskOverride        string
-	putResponseOverride map[string]any
+	putResponseOverride json.RawMessage
 	failPut             bool
 	requests            []appInstallationSecretRequest
-	storedAfterPut      []map[string]any
 	methods             []string
 	err                 error
 }
@@ -95,20 +95,6 @@ func (f *appInstallationSecretFixture) ServeHTTP(w http.ResponseWriter, r *http.
 
 	response := httptest.NewRecorder()
 	f.server.ServeHTTP(response, r)
-
-	if r.Method == http.MethodPut && response.Code == http.StatusOK {
-		stored, _ := f.server.StoredAppInstallation("space", "master", "app")
-
-		var parameters map[string]any
-		if len(stored.Parameters) != 0 {
-			err := json.Unmarshal(stored.Parameters, &parameters)
-			if err != nil {
-				f.err = err
-			}
-		}
-
-		f.storedAfterPut = append(f.storedAfterPut, parameters)
-	}
 
 	maps.Copy(w.Header(), response.Header())
 	w.Header().Set("Content-Type", "application/json")
@@ -216,7 +202,7 @@ func (f *appInstallationSecretFixture) setStored(parameters map[string]any) {
 func appInstallationSecretConfig(parameters map[string]any, extra string) string {
 	encoded := "null"
 	if parameters != nil {
-		encoded = fmt.Sprintf("%q", testJSON(parameters))
+		encoded = fmt.Sprintf("{ for id, v in %s : id => jsonencode(v) }", testJSON(parameters))
 	}
 
 	return fmt.Sprintf(`
@@ -242,4 +228,14 @@ func appInstallationSecretPut(parameters map[string]any, marketplace string) app
 	}
 
 	return request
+}
+
+//nolint:ireturn
+func installationParameterCheck(values map[string]any) knownvalue.Check {
+	checks := make(map[string]knownvalue.Check, len(values))
+	for key, value := range values {
+		checks[key] = knownvalue.StringExact(testJSON(value))
+	}
+
+	return knownvalue.MapExact(checks)
 }

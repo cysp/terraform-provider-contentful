@@ -5,77 +5,45 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// reconcileAppInstallationParameters preserves intended top-level string values
-// when Contentful returns a possible Secret mask. This does not verify the
-// underlying plaintext. Callers supply the effective Plan after a successful
-// write, or prior State during Read.
-func reconcileAppInstallationParameters(response, reference jsontypes.Normalized) (jsontypes.Normalized, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
+// Only a returned top-level string may represent a Secret mask. After a write
+// the reference is the effective plan. On refresh it is the previous state.
+func reconcileAppInstallationParameters(response, reference types.Map) types.Map {
 	if response.IsNull() || response.IsUnknown() || reference.IsNull() || reference.IsUnknown() {
-		return response, diags
+		return response
 	}
 
-	// Raw members retain unrelated numeric tokens without converting to float64.
-	var responseObject, referenceObject map[string]json.RawMessage
-
-	for _, value := range []struct {
-		input  jsontypes.Normalized
-		object *map[string]json.RawMessage
-	}{
-		{response, &responseObject},
-		{reference, &referenceObject},
-	} {
-		raw := []byte(value.input.ValueString())
-		if !json.Valid(raw) {
-			diags.AddAttributeError(path.Root("parameters"), "Failed to reconcile app installation parameters", "App installation parameters could not be decoded as JSON.")
-
-			return response, diags
-		}
-
-		if !strings.HasPrefix(strings.TrimSpace(string(raw)), "{") {
-			return response, diags
-		}
-
-		err := json.Unmarshal(raw, value.object)
-		if err != nil {
-			diags.AddAttributeError(path.Root("parameters"), "Failed to reconcile app installation parameters", "App installation parameters could not be decoded as a JSON object.")
-
-			return response, diags
-		}
-	}
-
-	changed := false
-
-	for key, raw := range responseObject {
-		var returned, intended string
-
-		if json.Unmarshal(raw, &returned) != nil || returned == "" || strings.Trim(returned, "*") != "" {
+	elements, prior := response.Elements(), reference.Elements()
+	for key, element := range elements {
+		returned := decodedParameterString(element)
+		if returned == "" || strings.Trim(returned, "*") != "" {
 			continue
 		}
 
-		if json.Unmarshal(referenceObject[key], &intended) != nil || intended == "" || strings.Trim(intended, "*") == "" {
-			continue
+		referenceText := decodedParameterString(prior[key])
+		if strings.Trim(referenceText, "*") != "" {
+			elements[key] = prior[key]
 		}
-
-		responseObject[key] = referenceObject[key]
-		changed = true
 	}
 
-	if !changed {
-		return response, diags
+	return types.MapValueMust(jsontypes.NormalizedType{}, elements)
+}
+
+func decodedParameterString(element attr.Value) string {
+	value, ok := element.(jsontypes.Normalized)
+	if !ok || value.IsUnknown() || value.IsNull() {
+		return ""
 	}
 
-	reconciled, err := json.Marshal(responseObject)
+	var decoded string
+
+	err := json.Unmarshal([]byte(value.ValueString()), &decoded)
 	if err != nil {
-		diags.AddAttributeError(path.Root("parameters"), "Failed to reconcile app installation parameters", "App installation parameters could not be encoded as JSON.")
-
-		return response, diags
+		return ""
 	}
 
-	return NewNormalizedJSONValue(reconciled), diags
+	return decoded
 }

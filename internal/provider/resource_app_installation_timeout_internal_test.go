@@ -21,16 +21,18 @@ import (
 func TestAppInstallationTimeoutOnlyUpdate(t *testing.T) {
 	t.Parallel()
 
+	priorParameters := types.MapValueMust(jsontypes.NormalizedType{}, map[string]attr.Value{"visible": jsontypes.NewNormalizedValue(`"one"`), "secret": jsontypes.NewNormalizedValue(`"alpha"`)})
+
 	for _, test := range []struct {
 		name, updateTimeout string
-		parameters          jsontypes.Normalized
+		parameters          types.Map
 		marketplace         types.Set
 		diagnostic          string
 	}{
-		{name: "normalized JSON and unordered acknowledgments", updateTimeout: "3m", parameters: jsontypes.NewNormalizedValue(`{ "visible": "one", "secret": "alpha" }`), marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("terms"), types.StringValue("privacy")})},
-		{name: "invalid timeout", updateTimeout: "invalid", parameters: jsontypes.NewNormalizedValue(`{"secret":"alpha","visible":"one"}`), marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("privacy"), types.StringValue("terms")}), diagnostic: "Timeout Cannot Be Parsed"},
-		{name: "unknown parameters", updateTimeout: "3m", parameters: jsontypes.NewNormalizedUnknown(), marketplace: types.SetNull(types.StringType), diagnostic: "Unexpected unknown app installation parameters"},
-		{name: "unknown acknowledgments", updateTimeout: "3m", parameters: jsontypes.NewNormalizedValue(`{"secret":"alpha","visible":"one"}`), marketplace: types.SetUnknown(types.StringType), diagnostic: "Unexpected unknown string set"},
+		{name: "normalized JSON and unordered acknowledgments", updateTimeout: "3m", parameters: types.MapValueMust(jsontypes.NormalizedType{}, map[string]attr.Value{"visible": jsontypes.NewNormalizedValue(` "one" `), "secret": jsontypes.NewNormalizedValue(`"alpha"`)}), marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("terms"), types.StringValue("privacy")})},
+		{name: "invalid timeout", updateTimeout: "invalid", parameters: priorParameters, marketplace: types.SetValueMust(types.StringType, []attr.Value{types.StringValue("privacy"), types.StringValue("terms")}), diagnostic: "Timeout Cannot Be Parsed"},
+		{name: "unknown parameters", updateTimeout: "3m", parameters: types.MapUnknown(jsontypes.NormalizedType{}), marketplace: types.SetNull(types.StringType), diagnostic: "Unexpected unknown app installation parameters"},
+		{name: "unknown acknowledgments", updateTimeout: "3m", parameters: priorParameters, marketplace: types.SetUnknown(types.StringType), diagnostic: "Unexpected unknown string set"},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
@@ -46,7 +48,7 @@ func TestAppInstallationTimeoutOnlyUpdate(t *testing.T) {
 			require.NoError(t, err)
 
 			implementation := appInstallationResource{providerData: ContentfulProviderData{client: client}}
-			state := tfsdk.State(appInstallationTestPlan(t, `{"secret":"alpha","visible":"one"}`))
+			state := tfsdk.State(appInstallationTestPlan(t, map[string]string{"secret": `"alpha"`, "visible": `"one"`}))
 			marketplace := types.SetValueMust(types.StringType, []attr.Value{types.StringValue("privacy"), types.StringValue("terms")})
 			require.Empty(t, state.SetAttribute(t.Context(), path.Root("marketplace"), marketplace))
 			plan := tfsdk.Plan(state)
@@ -74,7 +76,9 @@ func TestAppInstallationTimeoutOnlyUpdate(t *testing.T) {
 
 			var actual AppInstallationModel
 			require.Empty(t, response.State.Get(t.Context(), &actual))
-			assert.JSONEq(t, `{"secret":"alpha","visible":"one"}`, actual.Parameters.ValueString())
+			raw, diags := encodeInstallationParameters(path.Root("parameters"), actual.Parameters)
+			require.Empty(t, diags)
+			assert.JSONEq(t, `{"secret":"alpha","visible":"one"}`, string(raw))
 			assert.True(t, actual.Marketplace.Equal(marketplace))
 			assert.True(t, actual.Timeouts.Object.Equal(timeouts))
 		})

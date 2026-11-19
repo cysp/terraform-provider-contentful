@@ -97,7 +97,7 @@ func testMutationEndpoint(t *testing.T, test mutationEndpointCase, operation str
 		}
 
 		if _, exists := values["parameters"]; exists {
-			previous["parameters"] = testJSON(map[string]string{"value": "prior"})
+			previous["parameters"] = map[string]string{"value": `"prior"`}
 		}
 
 		prior = mutationEndpointDynamicValue(t, test.schema, previous)
@@ -175,15 +175,10 @@ func assertMutationEndpoint(t *testing.T, test mutationEndpointCase, result *tfp
 	require.NoError(t, raw.As(&stateAttributes))
 
 	for name, expected := range test.returned {
-		if text, ok := expected.(string); ok {
-			var actual string
-			require.NoError(t, stateAttributes[name].As(&actual))
-			assert.Equal(t, text, actual, name)
-		} else {
-			var actual bool
-			require.NoError(t, stateAttributes[name].As(&actual))
-			assert.Equal(t, expected, actual, name)
-		}
+		actual := stateAttributes[name]
+		want, err := tftypes.ValueFromJSONWithOpts([]byte(testJSON(expected)), actual.Type(), tftypes.ValueFromJSONOpts{})
+		require.NoError(t, err)
+		assert.True(t, want.Equal(actual), "returned attribute %s: want %s, got %s", name, want, actual)
 	}
 
 	if test.versioned {
@@ -254,7 +249,7 @@ func mutationEndpointCases(t *testing.T) []mutationEndpointCase {
 		{
 			name:              "app_installation",
 			schema:            AppInstallationResourceSchema(ctx),
-			plan:              map[string]any{"space_id": "space", "environment_id": "environment", "app_definition_id": "app", "parameters": testJSON(map[string]string{"value": "planned"})},
+			plan:              map[string]any{"space_id": "space", "environment_id": "environment", "app_definition_id": "app", "parameters": map[string]string{"value": `"planned"`}},
 			body:              mutationEndpointBody("AppInstallation", map[string]any{"parameters": map[string]string{"value": "returned"}}),
 			createMethod:      "PUT",
 			createPath:        "/spaces/space/environments/environment/app_installations/app",
@@ -265,7 +260,7 @@ func mutationEndpointCases(t *testing.T) []mutationEndpointCase {
 			updateDiagnostics: []string{"space_id", "environment_id", "app_definition_id"},
 			createID:          "space/environment/app",
 			updateID:          "space/environment/app",
-			returned:          map[string]any{"parameters": testJSON(map[string]string{"value": "returned"})},
+			returned:          map[string]any{"parameters": map[string]string{"value": `"returned"`}},
 		},
 		{
 			name:              "app_key",
