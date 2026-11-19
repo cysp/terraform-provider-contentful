@@ -14,9 +14,9 @@
    merging the release PR, run Prepare release PR again so its notes include those
    changes. This workflow does not publish a version; the release PR runs normal CI.
 2. Review the release PR's version, changes, `CHANGELOG.md`, and notes. Add any
-   compatibility or migration guidance. The project's patch-increment policy
-   applies to features and breaking changes too; maintenance and dependency
-   changes appear in the notes. Use a
+   compatibility or migration guidance. Before v1.0.0, features and marked
+   breaking changes increment the minor version. Other releases increment the
+   patch version. Maintenance and dependency changes appear in the notes. Use a
    [Release-As override](https://github.com/googleapis/release-please/blob/v17.6.0/README.md#how-do-i-change-the-version-number)
    to select another version. Publish or abandon any earlier unpublished version
    first.
