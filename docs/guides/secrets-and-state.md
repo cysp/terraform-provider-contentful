@@ -50,7 +50,7 @@ Import leaves `value` null. Choose who will manage rotation before applying:
 
 For [`contentful_webhook`](../resources/webhook), Contentful does not return the HTTP Basic authentication password. Refresh preserves a previously managed `http_basic_password` but cannot detect changes made outside Terraform. Import leaves the password null and does not change the remote credentials.
 
-On a later update, omitting both `http_basic_username` and `http_basic_password` clears Basic authentication, including on an imported webhook. `ignore_changes` can retain previously managed credentials, but it cannot recover an unreadable imported password. To set credentials after import, configure both the username and password.
+On a later update, omitting both `http_basic_username` and `http_basic_password` clears Basic authentication, including on an imported webhook. To keep Basic authentication when updating an imported webhook, supply both credentials. Terraform can read the webhook and report no changes with just the imported username. If an update would send that username alone, the provider reports a missing password before sending the request. `ignore_changes` can retain a previously managed password only when Terraform already has it in state.
 
 ### Secret custom headers
 

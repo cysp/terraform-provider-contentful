@@ -26,6 +26,16 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, config W
 	httpBasicPassword, httpBasicPasswordDiags := requestNullableString(model.HTTPBasicPassword, path.AtName("http_basic_password"))
 	diags.Append(httpBasicPasswordDiags...)
 
+	if _, hasUsername := httpBasicUsername.Get(); hasUsername && httpBasicPassword.IsNull() {
+		diags.AddAttributeError(path.AtName("http_basic_password"), "Missing webhook Basic password",
+			"Supply a password with the username, or omit both credentials to clear Basic authentication.")
+	}
+
+	if _, hasPassword := httpBasicPassword.Get(); hasPassword && httpBasicUsername.IsNull() {
+		diags.AddAttributeError(path.AtName("http_basic_username"), "Missing webhook Basic username",
+			"Supply a username with the password, or omit both credentials to clear Basic authentication.")
+	}
+
 	req := cm.WebhookDefinitionData{
 		Name:              name,
 		URL:               url,
