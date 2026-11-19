@@ -76,6 +76,14 @@ func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 					appSigningSecretValueValidator{},
 				},
 			},
+			"created_at": schema.StringAttribute{
+				Description: "Contentful creation timestamp in UTC (RFC 3339), or null when omitted. It can change when the signing secret is replaced.",
+				Computed:    true,
+			},
+			"updated_at": schema.StringAttribute{
+				Description: "Contentful update timestamp in UTC (RFC 3339), or null when omitted.",
+				Computed:    true,
+			},
 			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},
 	}

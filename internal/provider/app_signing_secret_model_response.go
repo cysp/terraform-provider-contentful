@@ -10,13 +10,13 @@ func NewAppSigningSecretResourceModelFromResponse(res cm.AppSigningSecret) AppSi
 	organizationID := res.Sys.Organization.Sys.ID
 	appDefinitionID := res.Sys.AppDefinition.Sys.ID
 
-	model := AppSigningSecretModel{
+	return AppSigningSecretModel{
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, appDefinitionID),
 		OrganizationID:  types.StringValue(organizationID),
 		AppDefinitionID: types.StringValue(appDefinitionID),
+		CreatedAt:       signingSecretTimestamp(res.Sys.CreatedAt),
+		UpdatedAt:       signingSecretTimestamp(res.Sys.UpdatedAt),
 	}
-
-	return model
 }
 
 // A response from another singleton does not acknowledge the secret sent to the

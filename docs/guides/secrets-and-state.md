@@ -35,6 +35,8 @@ Contentful supports one webhook signing secret per space and one app signing sec
 
 After an uncertain write, Contentful can confirm that a signing secret exists but cannot return its full value. Refresh preserves the last value Terraform wrote, so an external rotation can go undetected.
 
+The computed `created_at` and `updated_at` attributes show the timestamps Contentful returned on the latest successful read or write. Either can be null. Replacing a signing secret can change both, including `created_at`. The timestamps cannot tell you whether the stored key matches your configured value.
+
 Import leaves `value` null. Choose who will manage rotation before applying:
 
 - **Terraform.** Configure the complete secret to install. Applying can replace the existing value in the same operation as the import.

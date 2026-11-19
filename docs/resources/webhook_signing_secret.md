@@ -27,7 +27,7 @@ A replacement in the same space with `create_before_destroy` can delete the newl
 ### Required
 
 - `space_id` (String) ID of the space for which the signing secret is created. Changing this value replaces the resource.
-- `value` (String, Sensitive) Symmetric key shared between Contentful and webhook receivers in the space. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Refresh cannot detect external rotation. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value. See [importing signing secrets](../guides/secrets-and-state#importing-signing-secrets).
+- `value` (String, Sensitive) Symmetric key shared between Contentful and webhook receivers in the space. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Refresh retains the stored value because Contentful returns only a redacted value. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value. See [importing signing secrets](../guides/secrets-and-state#importing-signing-secrets).
 
 ### Optional
 
@@ -35,7 +35,9 @@ A replacement in the same space with `create_before_destroy` can delete the newl
 
 ### Read-Only
 
+- `created_at` (String) Contentful creation timestamp in UTC (RFC 3339), or null when omitted. It can change when the signing secret is replaced.
 - `id` (String) Terraform resource identifier, equal to `space_id`.
+- `updated_at` (String) Contentful update timestamp in UTC (RFC 3339), or null when omitted.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

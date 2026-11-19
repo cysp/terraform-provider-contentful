@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-const webhookSigningValueDescription = "Symmetric key shared between Contentful and webhook receivers in the space. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Refresh cannot detect external rotation. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value."
+const webhookSigningValueDescription = "Symmetric key shared between Contentful and webhook receivers in the space. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Refresh retains the stored value because Contentful returns only a redacted value. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value."
 
 const webhookSigningSecretValueConstraint = "The webhook signing secret must be exactly 64 characters matching ^[0-9a-zA-Z+/=_-]+$."
 
@@ -67,6 +67,14 @@ func WebhookSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Sensitive:           true,
 				Validators:          []validator.String{webhookSigningSecretValueValidator{}},
+			},
+			"created_at": schema.StringAttribute{
+				Description: "Contentful creation timestamp in UTC (RFC 3339), or null when omitted. It can change when the signing secret is replaced.",
+				Computed:    true,
+			},
+			"updated_at": schema.StringAttribute{
+				Description: "Contentful update timestamp in UTC (RFC 3339), or null when omitted.",
+				Computed:    true,
 			},
 			"timeouts": timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},

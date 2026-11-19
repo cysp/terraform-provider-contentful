@@ -16,5 +16,8 @@ type AppSigningSecretModel struct {
 
 	Value types.String `tfsdk:"value"`
 
+	CreatedAt types.String `tfsdk:"created_at"`
+	UpdatedAt types.String `tfsdk:"updated_at"`
+
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
