@@ -30,6 +30,7 @@ reference](https://www.contentful.com/developers/docs/references/content-managem
 The documented GET and PUT response examples contain `sys` and `redactedValue`. In both
 examples, `redactedValue` is the final four characters of the secret. The submitted
 `value` is absent. The documented DELETE response has no content.
+For the observed system fields and version-header probe, see the [signing secret metadata study](../signing-secret-versions.md#appsigningsecret-metadata-and-replacement).
 
 Sources:
 
