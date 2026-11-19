@@ -12,12 +12,12 @@ import (
 
 const appSigningValueDescription = "Symmetric key shared between Contentful and an app backend. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value."
 
-const appSigningSecretValueConstraint = "app signing secret must be exactly 64 characters and contain only letters, digits, +, /, =, _, or -"
+const appSigningValueConstraint = "app signing secret must be exactly 64 characters and contain only letters, digits, +, /, =, _, or -"
 
 type appSigningSecretValueValidator struct{}
 
 func (appSigningSecretValueValidator) Description(_ context.Context) string {
-	return appSigningSecretValueConstraint
+	return appSigningValueConstraint
 }
 
 func (v appSigningSecretValueValidator) MarkdownDescription(ctx context.Context) string {

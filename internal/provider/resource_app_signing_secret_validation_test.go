@@ -17,6 +17,8 @@ import (
 func TestAppSigningSecretRejectsInvalidResolvedValueBeforeMutation(t *testing.T) {
 	t.Parallel()
 
+	const typeName = "contentful_app_signing_secret"
+
 	for _, test := range []struct {
 		name  string
 		value string
@@ -29,11 +31,12 @@ func TestAppSigningSecretRejectsInvalidResolvedValueBeforeMutation(t *testing.T)
 			t.Parallel()
 
 			var requests atomic.Int64
+
 			server := configuredProtocolServer(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				requests.Add(1)
 				w.WriteHeader(http.StatusBadRequest)
 			}))
-			const typeName = "contentful_app_signing_secret"
+
 			schema := provider.AppSigningSecretResourceSchema(t.Context())
 			model := provider.AppSigningSecretModel{
 				OrganizationID:  types.StringValue("org"),
@@ -52,12 +55,14 @@ func TestAppSigningSecretRejectsInvalidResolvedValueBeforeMutation(t *testing.T)
 			config = resourceModelDynamicValue(t, schema, model)
 			model.ID = types.StringUnknown()
 			prior := nullResourceDynamicValue(t, schema)
+
 			if test.prior {
 				model.ID = types.StringValue("org/app")
 				old := model
 				old.Value = types.StringValue(strings.Repeat("a", 64))
 				prior = resourceModelDynamicValue(t, schema, old)
 			}
+
 			planned := resourceModelDynamicValue(t, schema, model)
 			result, err := server.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{
 				TypeName: typeName, PriorState: &prior, PlannedState: &planned, Config: &config,
