@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -13,33 +12,25 @@ import (
 
 const appSigningValueDescription = "Symmetric key shared between Contentful and an app backend. Must be exactly 64 characters matching `^[0-9a-zA-Z+/=_-]+$`. Stored in Terraform state. Import leaves `value` null; applying the configured value can rotate the secret. Timeout-only updates preserve the secret and stored value."
 
-var appSigningSecretValuePattern = regexp.MustCompile(`^[0-9a-zA-Z+/=_-]+$`)
+const appSigningSecretValueConstraint = "app signing secret must be exactly 64 characters and contain only letters, digits, +, /, =, _, or -"
 
 type appSigningSecretValueValidator struct{}
 
 func (appSigningSecretValueValidator) Description(_ context.Context) string {
-	return "app signing secret must be exactly 64 characters and contain only letters, digits, +, /, =, _, or -"
+	return appSigningSecretValueConstraint
 }
 
 func (v appSigningSecretValueValidator) MarkdownDescription(ctx context.Context) string {
 	return v.Description(ctx)
 }
 
-func (v appSigningSecretValueValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+func (appSigningSecretValueValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
 	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
 		return
 	}
 
-	value := req.ConfigValue.ValueString()
-	if len(value) == 64 && appSigningSecretValuePattern.MatchString(value) {
-		return
-	}
-
-	resp.Diagnostics.AddAttributeError(
-		req.Path,
-		"Invalid app signing secret value",
-		v.Description(ctx)+".",
-	)
+	_, diags := newAppSigningSecretRequest(req.ConfigValue.ValueString(), req.Path)
+	resp.Diagnostics.Append(diags...)
 }
 
 func AppSigningSecretResourceSchema(ctx context.Context) schema.Schema {
