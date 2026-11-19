@@ -75,7 +75,6 @@ func TestAppSigningSecretLifecycleRuntimeOutputExcludesValues(t *testing.T) {
 	var updateModel AppSigningSecretModel
 	require.False(t, readResponse.State.Get(ctx, &updateModel).HasError())
 	updateModel.Value = types.StringValue(updatedValue)
-	updateModel.CreatedAt = types.StringUnknown()
 	updateModel.UpdatedAt = types.StringUnknown()
 	updatePlan := appSigningSecretTestPlan(ctx, t, resourceSchema, updateModel)
 	updateResponse := resource.UpdateResponse{
@@ -159,7 +158,6 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 				t.Helper()
 
 				// Import leaves value null; adopting the planned value must write.
-				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), types.StringUnknown()))
 				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), types.StringUnknown()))
 				require.False(t, state.SetAttribute(t.Context(), path.Root("value"), types.StringNull()).HasError())
 

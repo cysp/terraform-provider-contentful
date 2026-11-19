@@ -70,7 +70,6 @@ See [secret protection](../guides/secrets-and-state#write-only-signing-secrets) 
 
 ### Read-Only
 
-- `created_at` (String) Contentful creation timestamp in RFC 3339 format, or null when omitted. It can change when the signing secret is replaced. Write-only updates can make this unknown during planning and trigger downstream replacement even without a secret write.
 - `id` (String) Composite Terraform resource identifier in `organization_id/app_definition_id` form.
 - `updated_at` (String) Contentful update timestamp in RFC 3339 format, or null when omitted. Write-only updates can make this unknown during planning and trigger downstream replacement even without a secret write.
 

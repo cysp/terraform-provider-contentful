@@ -15,7 +15,6 @@ type WebhookSigningSecretModel struct {
 
 	Value     types.String   `tfsdk:"value"`
 	ValueWO   types.String   `tfsdk:"value_wo"`
-	CreatedAt types.String   `tfsdk:"created_at"`
 	UpdatedAt types.String   `tfsdk:"updated_at"`
 	Timeouts  timeouts.Value `tfsdk:"timeouts"`
 }

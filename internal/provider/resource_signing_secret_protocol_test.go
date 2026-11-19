@@ -61,7 +61,6 @@ func signingSecretDynamicValue(t *testing.T, kind string, valueWO any) (schema.S
 	}
 
 	values["value_wo"] = tftypes.NewValue(tftypes.String, valueWO)
-	values["created_at"] = tftypes.NewValue(tftypes.String, tftypes.UnknownValue)
 	values["updated_at"] = tftypes.NewValue(tftypes.String, tftypes.UnknownValue)
 	result, err := tfprotov6.NewDynamicValue(typ, tftypes.NewValue(typ, values))
 	require.NoError(t, err)
@@ -86,7 +85,7 @@ func testSigningSecretWriteOnlyAcknowledgement(t *testing.T, kind string) {
 	t.Helper()
 
 	initial, changed := strings.Repeat("a", 64), strings.Repeat("b", 64)
-	fixture := &signingSecretFixture{kind: kind, timestamps: true}
+	fixture := &signingSecretFixture{kind: kind, withUpdatedAt: true}
 
 	type failureCase struct {
 		name, summary, attribute               string
@@ -140,7 +139,7 @@ func testSigningSecretWriteOnlyAcknowledgement(t *testing.T, kind string) {
 
 		if fault.invalidTimestamp {
 			response = mutateTestJSON(response, func(document map[string]any) {
-				document["sys"].(map[string]any)["createdAt"] = "invalid"
+				document["sys"].(map[string]any)["updatedAt"] = "invalid"
 			})
 		}
 
@@ -219,7 +218,6 @@ func testSigningSecretWriteOnlyAcknowledgement(t *testing.T, kind string) {
 
 			var plannedAttrs map[string]tftypes.Value
 			require.NoError(t, plannedRaw.As(&plannedAttrs))
-			assert.False(t, plannedAttrs["created_at"].IsKnown())
 			assert.False(t, plannedAttrs["updated_at"].IsKnown())
 		}
 
@@ -266,7 +264,7 @@ func TestSigningSecretReadAbsentIdentity(t *testing.T) {
 				identity := map[string]string{"organization_id": "organization", "app_definition_id": "app"}
 				state := map[string]any{
 					"id": "organization/app", "organization_id": "organization", "app_definition_id": "app",
-					"value": nil, "value_wo": nil, "created_at": nil, "updated_at": nil, "timeouts": nil,
+					"value": nil, "value_wo": nil, "updated_at": nil, "timeouts": nil,
 				}
 				identityType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"organization_id": tftypes.String, "app_definition_id": tftypes.String}}
 
@@ -275,7 +273,7 @@ func TestSigningSecretReadAbsentIdentity(t *testing.T) {
 					identity = map[string]string{"space_id": "space"}
 					state = map[string]any{
 						"id": "space", "space_id": "space",
-						"value": nil, "value_wo": nil, "created_at": nil, "updated_at": nil, "timeouts": nil,
+						"value": nil, "value_wo": nil, "updated_at": nil, "timeouts": nil,
 					}
 					identityType = tftypes.Object{AttributeTypes: map[string]tftypes.Type{"space_id": tftypes.String}}
 				}

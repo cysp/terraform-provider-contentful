@@ -1,51 +1,47 @@
 # Signing secret planning
 
-App and Webhook Signing Secret resources use `created_at` and `updated_at` to
-schedule updates for changed write-only inputs. Their values must also allow any
-metadata that a possible PUT can return. This note explains those planning rules;
-the [value contract](signing-secret-write-only.md) owns comparison, verifier
+App and Webhook Signing Secret resources expose Contentful's optional
+`sys.updatedAt` as `updated_at`. Terraform also uses this computed attribute to
+schedule updates for changed write-only inputs. The
+[value contract](signing-secret-write-only.md) defines comparison, verifier
 storage, and acknowledgement.
 
-## Why timestamps can be unknown
+## When updated_at is unknown
 
 Terraform keeps write-only arguments null in Plan and State, and their Config
 values can differ between plan and apply. A write-only argument cannot itself
 produce a plan difference. These are [Framework constraints](https://developer.hashicorp.com/terraform/plugin/framework/resources/write-only-arguments).
 
-The provider marks both timestamps unknown when a secret write is possible.
-This schedules Update without a separate rotation counter, and permits Contentful
-to return changed timestamps. Both are necessary: observed replacements changed
-`createdAt` as well as `updatedAt`, including a same-value webhook PUT. See the
-[metadata evidence](../research/signing-secret-versions.md).
+The provider marks `updated_at` unknown when a secret write is possible.
+This schedules Update without a separate rotation counter and allows the PUT
+response to supply a new timestamp. Contentful returned a new `updatedAt` even
+for a same-value webhook PUT in the [endpoint experiment](../research/signing-secret-versions.md).
 
-For existing resources, the shared plan modifier follows these rules:
+For existing resources, the shared plan modifier follows these rules.
 
-| Effective inputs | Timestamp plan | Reason |
+| Effective inputs | `updated_at` plan | Reason |
 | --- | --- | --- |
-| Ordinary `value` unchanged; no configured write-only input | Preserve prior values | A timeout-only update cannot write the ordinary secret |
+| Ordinary `value` unchanged, no configured write-only input | Preserve prior value | A timeout-only update cannot write the ordinary secret |
 | Ordinary `value` changed or removed | Unknown | Apply may write a secret or migrate its representation |
-| Write-only input matches the comparison value and the rest of Plan equals State | Preserve prior values | No update is needed |
+| Write-only input matches the comparison value and the rest of Plan equals State | Preserve prior value | No update is needed |
 | Write-only input differs, is unknown, or has no comparison value | Unknown | A write may be needed |
 | Ordinary Plan value is null and another change requires Update | Unknown | Apply-time Config may supply different write-only bytes, even when planning Config omitted them |
 
-State represents timestamps in UTC and preserves fractional seconds returned by Contentful.
-Missing API timestamps become null; they do not disable this mechanism.
-Null-to-unknown can schedule Update, and the final timestamps may resolve back
-to null. Malformed response timestamps are decoding errors.
+State records `updated_at` in UTC and preserves fractional seconds. If Contentful
+omits `sys.updatedAt`, the result is null. A change from null to unknown can
+still schedule Update, and the result can resolve back to null. A malformed
+`sys.updatedAt` is a decoding error.
 
-A timeout-only update with unchanged `value_wo` still marks both timestamps
-unknown because the apply-time secret could differ. A downstream resource using
-them in `triggers_replace` can therefore be replaced even when the provider sends
-no secret PUT and the final timestamps equal their prior values (including null).
-This is an accepted consequence of allowing apply-time write-only inputs;
-timestamps are observations, not a rotation counter or proof of secret equality.
+A timeout-only update with unchanged `value_wo` still marks `updated_at` unknown
+because the apply-time secret could differ. A downstream resource using
+`updated_at` in `triggers_replace` can therefore be replaced even when the
+provider skips the secret PUT and the timestamp keeps its prior value, including null.
 
 [Timestamp tests](../../internal/provider/resource_signing_secret_timestamps_test.go)
 and [timeout-update tests](../../internal/provider/resource_signing_secret_timeout_update_test.go)
-cover these constraints, including unchanged ordinary values, changed write-only
-values, dependent replacement with unchanged write-only bytes, and responses
-with or without timestamps. The dependent-replacement test compares persisted
-IDs and exact secret PUT sequences, not only the proposed plan.
+cover unchanged ordinary values, changed write-only values, and downstream
+replacement with unchanged write-only bytes, with and without `sys.updatedAt`.
+The downstream replacement test checks persisted IDs and the exact secret PUT sequence.
 
 ## Saved plans and ignored inputs
 
@@ -66,7 +62,7 @@ this ignore rule. Ordinary `value` continues to use the effective Plan.
 Removing ordinary `value` while ignoring the new `value_wo` can leave both inputs
 null during planning. The ordinary value's removal still schedules Update.
 Apply-time Config supplies the write-only input, which is compared against the
-prior ordinary value. Timestamps must allow a write if those bytes differ.
+prior ordinary value. The plan leaves `updated_at` unknown so a PUT can return a new value if those bytes differ.
 
 Ignoring ordinary `value` during the same migration can instead retain it in
 Plan alongside configured `value_wo`. Update rejects this conflict before PUT.

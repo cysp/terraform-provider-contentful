@@ -77,10 +77,6 @@ func WebhookSigningSecretResourceSchema(ctx context.Context) schema.Schema {
 				WriteOnly:           true,
 				Validators:          []validator.String{webhookSigningSecretValueValidator{}},
 			},
-			"created_at": schema.StringAttribute{
-				Description: "Contentful creation timestamp in RFC 3339 format, or null when omitted. It can change when the signing secret is replaced. Write-only updates can make this unknown during planning and trigger downstream replacement even without a secret write.",
-				Computed:    true,
-			},
 			"updated_at": schema.StringAttribute{
 				Description: "Contentful update timestamp in RFC 3339 format, or null when omitted. Write-only updates can make this unknown during planning and trigger downstream replacement even without a secret write.",
 				Computed:    true,

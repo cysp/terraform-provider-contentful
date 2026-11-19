@@ -49,7 +49,7 @@ Remove any `ignore_changes` rule for these arguments before migrating. An ignore
 
 Create a fresh plan when rotating a write-only secret. The secret supplied at apply can differ from the one supplied during planning. If the resource has a planned update, the provider compares the apply-time secret with the last successfully applied value and writes it only when it differs or no comparison value exists. This includes updates caused by a timeout change.
 
-During a write-only timeout update, `created_at` and `updated_at` become unknown in the plan even when the supplied secret is unchanged. Resources that use these timestamps as replacement triggers can be replaced even though the provider sends no secret PUT and the final timestamps remain unchanged. Treat timestamps as observations, not a rotation counter or proof of secret equality.
+If you change a timeout while using `value_wo`, Terraform plans `updated_at` as unknown because the secret can change at apply. A downstream resource using `updated_at` as a replacement trigger can therefore be replaced even when the provider skips the secret PUT and the timestamp stays the same.
 
 Applying a saved **no-op** plan does not update the resource. Supplying a different ephemeral secret when applying that plan cannot rotate it.
 
@@ -75,7 +75,7 @@ Before selecting a provider version that does not support `value_wo`, migrate ba
 
 1. Replace `value_wo` with `value`, supplying exactly the same secret Terraform last successfully applied. Remove any `ignore_changes` rule that would suppress this migration. Ordinary `value` cannot use an ephemeral variable; remove `ephemeral = true` from that input and keep `sensitive = true`.
 2. Plan and apply the storage change. The complete secret is stored in state again; protect state, saved plans, and their backups accordingly.
-3. Remove references to attributes unsupported by the target version. For example, v0.0.69 does not expose `created_at` or `updated_at` on signing-secret resources.
+3. Remove references to attributes unsupported by the target version. For example, v0.0.69 does not expose `updated_at` on signing-secret resources.
 4. Select the older provider version, run `terraform init -upgrade` to update the dependency lock file, and review a fresh plan before applying.
 
 A direct downgrade from write-only state can rotate the secret because the older provider cannot compare it with the stored hash. This behavior was verified with v0.0.69. Resolve any [uncertain write](#recovering-an-uncertain-signing-secret-write) before downgrading. Check the target version's documentation for other resource constraints.

@@ -6005,12 +6005,6 @@ func (s *AppSigningSecretSys) encodeFields(e *jx.Encoder) {
 		s.AppDefinition.Encode(e)
 	}
 	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
 		if s.UpdatedAt.Set {
 			e.FieldStart("updatedAt")
 			s.UpdatedAt.Encode(e, json.EncodeDateTime)
@@ -6018,12 +6012,11 @@ func (s *AppSigningSecretSys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfAppSigningSecretSys = [5]string{
+var jsonFieldsNameOfAppSigningSecretSys = [4]string{
 	0: "organization",
 	1: "type",
 	2: "appDefinition",
-	3: "createdAt",
-	4: "updatedAt",
+	3: "updatedAt",
 }
 
 // Decode decodes AppSigningSecretSys from json.
@@ -6064,16 +6057,6 @@ func (s *AppSigningSecretSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"appDefinition\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
 			}
 		case "updatedAt":
 			if err := func() error {
@@ -32686,12 +32669,6 @@ func (s *WebhookSigningSecretSys) encodeFields(e *jx.Encoder) {
 		s.Space.Encode(e)
 	}
 	{
-		if s.CreatedAt.Set {
-			e.FieldStart("createdAt")
-			s.CreatedAt.Encode(e, json.EncodeDateTime)
-		}
-	}
-	{
 		if s.UpdatedAt.Set {
 			e.FieldStart("updatedAt")
 			s.UpdatedAt.Encode(e, json.EncodeDateTime)
@@ -32699,11 +32676,10 @@ func (s *WebhookSigningSecretSys) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfWebhookSigningSecretSys = [4]string{
+var jsonFieldsNameOfWebhookSigningSecretSys = [3]string{
 	0: "type",
 	1: "space",
-	2: "createdAt",
-	3: "updatedAt",
+	2: "updatedAt",
 }
 
 // Decode decodes WebhookSigningSecretSys from json.
@@ -32734,16 +32710,6 @@ func (s *WebhookSigningSecretSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"space\"")
-			}
-		case "createdAt":
-			if err := func() error {
-				s.CreatedAt.Reset()
-				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"createdAt\"")
 			}
 		case "updatedAt":
 			if err := func() error {

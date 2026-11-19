@@ -31,7 +31,7 @@ Equal bytes can still require a state change:
 
 Clearing the verifier when ordinary value becomes active prevents it from
 suppressing a later write. Refresh preserves the acknowledged comparison value;
-it cannot infer equality from redacted text or timestamps. Create always writes,
+it cannot infer equality from redacted text or the update timestamp. Create always writes,
 including replacement and recreation after remote deletion, and prepares its own
 state. The [lifecycle tests](../../internal/provider/resource_signing_secret_write_only_test.go)
 cover representation changes and the resulting requests.
@@ -98,7 +98,7 @@ prior private data intact.
 
 Without a known ordinary value, Update rejects invalid verifier data before
 mutation. Read and Delete do not inspect the verifier. During planning, invalid
-verifier contents produce a warning and unknown timestamps when comparison of a
+verifier contents produce a warning and an unknown `updated_at` when comparison of a
 configured write-only value depends on that verifier. Private-data access errors
 and cancellation remain errors.
 

@@ -22,7 +22,7 @@ func TestAccSigningSecretCorruptVerifierRecovery(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
 
-			fixture := &signingSecretFixture{kind: kind, timestamps: true}
+			fixture := &signingSecretFixture{kind: kind, withUpdatedAt: true}
 			server := httptest.NewServer(fixture)
 			t.Cleanup(server.Close)
 			runtime := newTerraformTestRuntime(t)
@@ -90,7 +90,7 @@ func TestAccSigningSecretOrdinaryValueDiscardsObsoleteVerifier(t *testing.T) {
 			t.Run(kind+"/"+test.name, func(t *testing.T) {
 				t.Parallel()
 
-				fixture := &signingSecretFixture{kind: kind, timestamps: true}
+				fixture := &signingSecretFixture{kind: kind, withUpdatedAt: true}
 				server := httptest.NewServer(fixture)
 				t.Cleanup(server.Close)
 				runtime := newTerraformTestRuntime(t)

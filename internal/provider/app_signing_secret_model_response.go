@@ -33,7 +33,6 @@ func NewAppSigningSecretResourceModelFromResponse(res cm.AppSigningSecret, organ
 		AppDefinitionID: types.StringValue(appDefinitionID),
 	}
 
-	model.CreatedAt = signingSecretTimestamp(res.Sys.CreatedAt)
 	model.UpdatedAt = signingSecretTimestamp(res.Sys.UpdatedAt)
 
 	return model, diags

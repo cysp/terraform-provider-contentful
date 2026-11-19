@@ -92,7 +92,6 @@ func TestWebhookSigningSecretSuccessLogsRedactValues(t *testing.T) {
 			implementation := webhookSigningSecretTestClient(t, server)
 			state, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
 			plan, _ := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestUpdatedValue))
-			require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), types.StringUnknown()))
 			require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), types.StringUnknown()))
 
 			var logs bytes.Buffer
@@ -238,7 +237,6 @@ func TestWebhookSigningSecretFailuresRetainStateAndRedactKnownValues(t *testing.
 				implementation := webhookSigningSecretTestClient(t, server)
 				state, identity := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestValue))
 				plan, _ := webhookSigningSecretTestState(t, types.StringValue(webhookSigningSecretTestUpdatedValue))
-				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("created_at"), types.StringUnknown()))
 				require.Empty(t, plan.SetAttribute(t.Context(), path.Root("updated_at"), types.StringUnknown()))
 
 				identityBefore := identity.Raw.Copy()

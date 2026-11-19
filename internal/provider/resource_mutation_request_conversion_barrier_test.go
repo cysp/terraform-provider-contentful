@@ -317,8 +317,7 @@ func TestUpdateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 			},
 			resourceSchema: AppSigningSecretResourceSchema(ctx),
 			update: func(client *cm.Client, request resource.UpdateRequest, response *resource.UpdateResponse) {
-				require.Empty(t, request.Plan.SetAttribute(ctx, path.Root("created_at"), timetypes.NewRFC3339Unknown()))
-				require.Empty(t, request.Plan.SetAttribute(ctx, path.Root("updated_at"), timetypes.NewRFC3339Unknown()))
+				require.Empty(t, request.Plan.SetAttribute(ctx, path.Root("updated_at"), types.StringUnknown()))
 				// Prior state contains a known secret; the unknown plan must be
 				// rejected as a mutation rather than treated as an unchanged value.
 				stateDiags := request.State.SetAttribute(ctx, path.Root("value"), types.StringValue("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"))

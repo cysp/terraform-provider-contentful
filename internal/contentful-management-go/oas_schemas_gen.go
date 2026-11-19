@@ -2465,7 +2465,6 @@ type AppSigningSecretSys struct {
 	// Merged property.
 	Type          AppSigningSecretSysType `json:"type"`
 	AppDefinition AppDefinitionLink       `json:"appDefinition"`
-	CreatedAt     OptDateTime             `json:"createdAt"`
 	UpdatedAt     OptDateTime             `json:"updatedAt"`
 }
 
@@ -2482,11 +2481,6 @@ func (s *AppSigningSecretSys) GetType() AppSigningSecretSysType {
 // GetAppDefinition returns the value of AppDefinition.
 func (s *AppSigningSecretSys) GetAppDefinition() AppDefinitionLink {
 	return s.AppDefinition
-}
-
-// GetCreatedAt returns the value of CreatedAt.
-func (s *AppSigningSecretSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
 }
 
 // GetUpdatedAt returns the value of UpdatedAt.
@@ -2507,11 +2501,6 @@ func (s *AppSigningSecretSys) SetType(val AppSigningSecretSysType) {
 // SetAppDefinition sets the value of AppDefinition.
 func (s *AppSigningSecretSys) SetAppDefinition(val AppDefinitionLink) {
 	s.AppDefinition = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *AppSigningSecretSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
 }
 
 // SetUpdatedAt sets the value of UpdatedAt.
@@ -15017,7 +15006,6 @@ type WebhookSigningSecretSys struct {
 	// Merged property.
 	Type      WebhookSigningSecretSysType `json:"type"`
 	Space     SpaceLink                   `json:"space"`
-	CreatedAt OptDateTime                 `json:"createdAt"`
 	UpdatedAt OptDateTime                 `json:"updatedAt"`
 }
 
@@ -15029,11 +15017,6 @@ func (s *WebhookSigningSecretSys) GetType() WebhookSigningSecretSysType {
 // GetSpace returns the value of Space.
 func (s *WebhookSigningSecretSys) GetSpace() SpaceLink {
 	return s.Space
-}
-
-// GetCreatedAt returns the value of CreatedAt.
-func (s *WebhookSigningSecretSys) GetCreatedAt() OptDateTime {
-	return s.CreatedAt
 }
 
 // GetUpdatedAt returns the value of UpdatedAt.
@@ -15049,11 +15032,6 @@ func (s *WebhookSigningSecretSys) SetType(val WebhookSigningSecretSysType) {
 // SetSpace sets the value of Space.
 func (s *WebhookSigningSecretSys) SetSpace(val SpaceLink) {
 	s.Space = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *WebhookSigningSecretSys) SetCreatedAt(val OptDateTime) {
-	s.CreatedAt = val
 }
 
 // SetUpdatedAt sets the value of UpdatedAt.

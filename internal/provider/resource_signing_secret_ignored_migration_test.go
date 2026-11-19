@@ -30,7 +30,7 @@ func TestAccSigningSecretIgnoredMigration(t *testing.T) {
 					expectedWrites = append(expectedWrites, candidate)
 				}
 
-				fixture := &signingSecretFixture{kind: kind, timestamps: true}
+				fixture := &signingSecretFixture{kind: kind, withUpdatedAt: true}
 				address := "contentful_" + kind + "_signing_secret.test"
 				nullValues := []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("value"), knownvalue.Null()),
@@ -77,7 +77,7 @@ func TestAccSigningSecretIgnoredMigrationReplacement(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
 
-			fixture := &signingSecretFixture{kind: kind, timestamps: true}
+			fixture := &signingSecretFixture{kind: kind, withUpdatedAt: true}
 			server := httptest.NewServer(fixture)
 			t.Cleanup(server.Close)
 			runtime := newTerraformTestRuntime(t)

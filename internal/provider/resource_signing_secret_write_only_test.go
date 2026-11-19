@@ -18,11 +18,11 @@ func TestAccSigningSecretWriteOnlyLifecycle(t *testing.T) {
 	t.Parallel()
 
 	for _, kind := range []string{"app", "webhook"} {
-		for _, timestamps := range []bool{true, false} {
-			t.Run(fmt.Sprintf("%s/timestamps=%t", kind, timestamps), func(t *testing.T) {
+		for _, withUpdatedAt := range []bool{true, false} {
+			t.Run(fmt.Sprintf("%s/updated_at=%t", kind, withUpdatedAt), func(t *testing.T) {
 				t.Parallel()
 
-				fixture := &signingSecretFixture{kind: kind, timestamps: timestamps}
+				fixture := &signingSecretFixture{kind: kind, withUpdatedAt: withUpdatedAt}
 				initial, changed, third := strings.Repeat("a", 64), strings.Repeat("b", 64), strings.Repeat("c", 64)
 				address := "contentful_" + kind + "_signing_secret.test"
 				step := func(attribute, value, extra string, priorRequests []string) resource.TestStep {
@@ -101,7 +101,7 @@ func TestAccSigningSecretWriteOnlyImport(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
 
-			fixture := &signingSecretFixture{kind: kind, exists: true, timestamps: true}
+			fixture := &signingSecretFixture{kind: kind, exists: true, withUpdatedAt: true}
 			value := strings.Repeat("a", 64)
 			config := signingSecretConfig(kind, fmt.Sprintf("value_wo=%q", value))
 
@@ -128,7 +128,7 @@ func TestAccSigningSecretUnknownWriteOnlyValue(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
 
-			fixture := &signingSecretFixture{kind: kind, timestamps: true}
+			fixture := &signingSecretFixture{kind: kind, withUpdatedAt: true}
 			initial, changed := strings.Repeat("a", 64), strings.Repeat("b", 64)
 			config := func(value string, nonce int) string {
 				return fmt.Sprintf(`resource "terraform_data" "secret" {

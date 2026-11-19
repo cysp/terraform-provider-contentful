@@ -28,7 +28,6 @@ func NewWebhookSigningSecretResourceModelFromResponse(response cm.WebhookSigning
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(response.Sys.Space.Sys.ID),
 		SpaceID:         types.StringValue(response.Sys.Space.Sys.ID),
 		Value:           value,
-		CreatedAt:       signingSecretTimestamp(response.Sys.CreatedAt),
 		UpdatedAt:       signingSecretTimestamp(response.Sys.UpdatedAt),
 	}, diags
 }

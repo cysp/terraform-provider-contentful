@@ -21,7 +21,7 @@ func TestAccSigningSecretLostAcknowledgementRecovery(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
 
-			fixture := &signingSecretFixture{kind: kind, timestamps: true}
+			fixture := &signingSecretFixture{kind: kind, withUpdatedAt: true}
 
 			var loseAcknowledgement atomic.Bool
 

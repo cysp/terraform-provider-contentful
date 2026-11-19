@@ -19,7 +19,7 @@ func signingSecretTimestamp(value cm.OptDateTime) types.String {
 	return types.StringNull()
 }
 
-// value_wo is null in both plan and state. Mark the timestamps unknown when
+// value_wo is null in both plan and state. Mark updated_at unknown when
 // the secret may have changed so Terraform can schedule Update.
 func modifySigningSecretPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
@@ -70,12 +70,16 @@ func modifySigningSecretPlan(ctx context.Context, req resource.ModifyPlanRequest
 		}
 	}
 
-	for _, name := range []string{"created_at", "updated_at"} {
-		value := types.StringUnknown()
-		if !possibleWrite {
-			resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root(name), &value)...)
-		}
+	updatedAtPath := path.Root("updated_at")
+	updatedAt := types.StringUnknown()
 
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(name), value)...)
+	if !possibleWrite {
+		resp.Diagnostics.Append(req.State.GetAttribute(ctx, updatedAtPath, &updatedAt)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
+
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, updatedAtPath, updatedAt)...)
 }

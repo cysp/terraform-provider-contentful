@@ -18,10 +18,10 @@ func TestAccSigningSecretWriteOnlyTimeoutUpdate(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
 
-			for _, timestamps := range []bool{true, false} {
+			for _, withUpdatedAt := range []bool{true, false} {
 				for _, changed := range []bool{false, true} {
-					t.Run(fmt.Sprintf("timestamps=%t/changed=%t", timestamps, changed), func(t *testing.T) {
-						fixture := &signingSecretFixture{kind: kind, timestamps: timestamps}
+					t.Run(fmt.Sprintf("updated_at=%t/changed=%t", withUpdatedAt, changed), func(t *testing.T) {
+						fixture := &signingSecretFixture{kind: kind, withUpdatedAt: withUpdatedAt}
 						server := httptest.NewServer(fixture)
 						t.Cleanup(server.Close)
 						runtime := newTerraformTestRuntime(t)

@@ -12,15 +12,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// The fixture returns independent, fixed timestamp values for successive writes.
-// It also supports absent metadata, which is valid for both API models.
+// The fixture includes createdAt even when it omits updatedAt.
+// Each PUT can return a new updatedAt with fractional seconds.
 type signingSecretFixture struct {
-	mu         sync.Mutex
-	kind       string
-	timestamps bool
-	exists     bool
-	values     []string
-	mutations  []string
+	mu            sync.Mutex
+	kind          string
+	withUpdatedAt bool
+	exists        bool
+	values        []string
+	mutations     []string
 }
 
 func (s *signingSecretFixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +84,7 @@ func (s *signingSecretFixture) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Use a wire object: the generated DTO encoder writes whole-second timestamps.
-	sys := map[string]any{}
+	sys := map[string]any{"createdAt": "2026-09-01T00:00:00.123Z"}
 	if s.kind == "webhook" {
 		sys["type"] = "WebhookSigningSecret"
 		sys["space"] = cm.NewSpaceLink("space")
@@ -94,13 +94,11 @@ func (s *signingSecretFixture) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		sys["appDefinition"] = cm.NewAppDefinitionLink("app")
 	}
 
-	if s.timestamps {
-		sys["createdAt"] = "2026-09-01T00:00:00.123Z"
-		sys["updatedAt"] = "2026-09-01T01:00:00.456Z"
+	if s.withUpdatedAt {
+		sys["updatedAt"] = "2026-09-01T11:00:00.456+10:00"
 
 		if len(s.values) > 1 {
-			sys["createdAt"] = "2026-09-01T00:00:00.789Z"
-			sys["updatedAt"] = "2026-09-01T01:00:00.987Z"
+			sys["updatedAt"] = "2026-09-01T01:00:00.987654321Z"
 		}
 	}
 
