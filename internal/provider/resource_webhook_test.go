@@ -230,23 +230,32 @@ resource "contentful_webhook" "test" {
 }
 
 type webhookUpdateRecorder struct {
-	next   http.Handler
-	mu     sync.Mutex
-	bodies []map[string]json.RawMessage
+	next    http.Handler
+	mu      sync.Mutex
+	updates []webhookUpdateRequest
+}
+
+type webhookUpdateRequest struct {
+	version string
+	body    map[string]json.RawMessage
 }
 
 func (r *webhookUpdateRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodPut && request.URL.Path == "/spaces/space/webhook_definitions/imported-webhook" {
+		var decoded map[string]json.RawMessage
 		body, err := io.ReadAll(request.Body)
 		if err == nil {
 			request.Body = io.NopCloser(bytes.NewReader(body))
+			err = json.Unmarshal(body, &decoded)
+		}
 
-			var decoded map[string]json.RawMessage
-			if json.Unmarshal(body, &decoded) == nil {
-				r.mu.Lock()
-				r.bodies = append(r.bodies, decoded)
-				r.mu.Unlock()
-			}
+		r.mu.Lock()
+		r.updates = append(r.updates, webhookUpdateRequest{version: request.Header.Get("X-Contentful-Version"), body: decoded})
+		r.mu.Unlock()
+
+		if err != nil {
+			http.Error(responseWriter, "invalid webhook update body", http.StatusBadRequest)
+			return
 		}
 	}
 
@@ -258,13 +267,13 @@ func (r *webhookUpdateRecorder) checkPreservedHeadersRequest() resource.TestChec
 		r.mu.Lock()
 		defer r.mu.Unlock()
 
-		if len(r.bodies) != 1 {
-			return fmt.Errorf("%w: recorded %d updates, want exactly 1", errWebhookUpdateMismatch, len(r.bodies))
+		if len(r.updates) != 1 {
+			return fmt.Errorf("%w: recorded %d updates, want exactly 1", errWebhookUpdateMismatch, len(r.updates))
 		}
 
 		var headers []map[string]json.RawMessage
 
-		err := json.Unmarshal(r.bodies[0]["headers"], &headers)
+		err := json.Unmarshal(r.updates[0].body["headers"], &headers)
 		if err != nil {
 			return fmt.Errorf("decode webhook headers: %w", err)
 		}
@@ -307,11 +316,11 @@ func (r *webhookUpdateRecorder) checkEmptyHeadersRequest() resource.TestCheckFun
 		r.mu.Lock()
 		defer r.mu.Unlock()
 
-		if len(r.bodies) != 2 {
-			return fmt.Errorf("%w: recorded %d updates, want exactly 2", errWebhookUpdateMismatch, len(r.bodies))
+		if len(r.updates) != 2 {
+			return fmt.Errorf("%w: recorded %d updates, want exactly 2", errWebhookUpdateMismatch, len(r.updates))
 		}
 
-		if body, ok := r.bodies[1]["headers"]; !ok || string(body) != "[]" {
+		if body, ok := r.updates[1].body["headers"]; !ok || string(body) != "[]" {
 			return fmt.Errorf("%w: explicit empty headers did not produce an empty array", errWebhookUpdateMismatch)
 		}
 
