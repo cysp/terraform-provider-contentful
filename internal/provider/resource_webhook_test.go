@@ -243,6 +243,7 @@ type webhookUpdateRequest struct {
 func (r *webhookUpdateRecorder) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodPut && request.URL.Path == "/spaces/space/webhook_definitions/imported-webhook" {
 		var decoded map[string]json.RawMessage
+
 		body, err := io.ReadAll(request.Body)
 		if err == nil {
 			request.Body = io.NopCloser(bytes.NewReader(body))
@@ -255,6 +256,7 @@ func (r *webhookUpdateRecorder) ServeHTTP(responseWriter http.ResponseWriter, re
 
 		if err != nil {
 			http.Error(responseWriter, "invalid webhook update body", http.StatusBadRequest)
+
 			return
 		}
 	}

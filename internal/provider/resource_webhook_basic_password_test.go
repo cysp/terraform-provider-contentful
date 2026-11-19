@@ -200,14 +200,18 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 	defer recorder.mu.Unlock()
 
 	require.Len(t, recorder.updates, 2)
+
 	body := map[string]any{
 		"name": "Imported webhook", "url": "https://example.com/webhook", "topics": []string{"Entry.publish"},
 		"active": true, "filters": nil, "headers": []any{}, "transformation": nil,
 		"httpBasicUsername": "user", "httpBasicPassword": "configured-after-import",
 	}
+
 	require.Equal(t, "1", recorder.updates[0].version)
 	require.JSONEq(t, testJSON(body), testJSON(recorder.updates[0].body))
+
 	body["httpBasicUsername"], body["httpBasicPassword"] = nil, nil
+
 	require.Equal(t, "2", recorder.updates[1].version)
 	require.JSONEq(t, testJSON(body), testJSON(recorder.updates[1].body))
 }
