@@ -118,8 +118,9 @@ func versionedMutationIdentityCases(t *testing.T) []versionedMutationIdentityCas
 		{
 			name: "webhook update", typeName: "contentful_webhook", method: http.MethodPut,
 			endpoint: "/spaces/space/webhook_definitions/webhook", schema: WebhookResourceSchema(ctx),
-			prior: map[string]any{"id": "space/webhook", "space_id": "space", "webhook_id": "webhook", "name": "Prior", "url": "https://example.com/webhook", "active": true},
-			body:  readEndpointBody("WebhookDefinition", map[string]any{"name": "Returned", "url": "https://example.test/returned", "topics": []any{"Entry.delete"}}),
+			prior:   map[string]any{"id": "space/webhook", "space_id": "space", "webhook_id": "webhook", "name": "Prior", "url": "https://example.com/webhook", "topics": []string{"Entry.publish"}, "active": true},
+			changes: map[string]any{"name": "Planned"},
+			body:    readEndpointBody("WebhookDefinition", map[string]any{"name": "Returned", "url": "https://example.test/returned", "topics": []any{"Entry.delete"}}),
 		},
 		{
 			name: "extension update", typeName: "contentful_extension", method: http.MethodPut,

@@ -792,7 +792,7 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 			assert.Zero(t, requestCount.Load())
 
 			updateResponse := resource.UpdateResponse{State: tfsdk.State{Schema: test.resourceSchema}}
-			test.update(client, resource.UpdateRequest{Config: config, Plan: plan}, &updateResponse)
+			test.update(client, resource.UpdateRequest{Config: config, Plan: plan, State: tfsdk.State(config)}, &updateResponse)
 
 			require.True(t, updateResponse.Diagnostics.HasError())
 			assert.Contains(t, mutationDiagnosticPaths(t, updateResponse.Diagnostics), test.expectedPath)

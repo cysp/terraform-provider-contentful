@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -215,13 +216,6 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, path.Empty())
-	resp.Diagnostics.Append(requestDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
 
@@ -230,6 +224,26 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	defer cancel()
+
+	unchanged, compareDiags := webhookRemoteValuesUnchanged(ctx, req.Plan, req.State)
+	resp.Diagnostics.Append(compareDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if unchanged {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("timeouts"), plan.Timeouts)...)
+
+		return
+	}
+
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
 	resp.Diagnostics.Append(versionDiags...)
@@ -286,6 +300,37 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	resp.Diagnostics.Append(consistencyDiags...)
+}
+
+func webhookRemoteValuesUnchanged(ctx context.Context, plan tfsdk.Plan, state tfsdk.State) (bool, diag.Diagnostics) {
+	var planned, prior types.Object
+
+	diags := plan.Get(ctx, &planned)
+	diags.Append(state.Get(ctx, &prior)...)
+
+	if diags.HasError() {
+		return false, diags
+	}
+
+	plannedValues, priorValues := planned.Attributes(), prior.Attributes()
+
+	for name, attribute := range plan.Schema.GetAttributes() {
+		if name == "timeouts" {
+			continue
+		}
+
+		value := plannedValues[name]
+		// A computed-only observation can retain its prior value if no write is needed.
+		if attribute.IsComputed() && !attribute.IsOptional() && value.IsUnknown() {
+			continue
+		}
+
+		if !value.Equal(priorValues[name]) {
+			return false, diags
+		}
+	}
+
+	return true, diags
 }
 
 func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

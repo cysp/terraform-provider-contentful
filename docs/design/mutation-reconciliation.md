@@ -8,7 +8,7 @@ The requested endpoint stays fixed and `timeouts` always comes from the plan. Pu
 | --- | --- | --- |
 | Role | POST to the space. Contentful assigns `role_id`. | PUT to the planned space and role IDs with the private version. |
 | Editor Interface | Versioned PUT to the interface identified by space, environment, and Content Type. | PUT to the same endpoint using the [activation count](#editor-interface-version-preconditions). |
-| Webhook | POST to the space. Contentful assigns `webhook_id`. | Versioned PUT to the planned space and webhook IDs. |
+| Webhook | POST to the space. Contentful assigns `webhook_id`. | Persist timeout-only changes locally. Changes to webhook fields require a versioned PUT to the planned space and webhook IDs. |
 
 Create retains the server-assigned Role or Webhook ID even if it contradicts a known plan. Update retains requested IDs on a contradiction. Webhook request conversion consults configuration for Optional+Computed omission. All three resources compare the response against the effective plan, including values retained by `ignore_changes`.
 
@@ -79,6 +79,13 @@ Compare `editor_layout`, `controls`, `group_controls`, and `sidebar` in order. A
 For controls and sidebar widgets, compare the identifiers and namespace exactly and compare `settings` as normalized JSON. A known `sidebar[].disabled` constrains the response, including the default `false`. Contentful has returned explicit `false` when sent and omitted the property when absent from the request. Report mismatches at the enclosing list.
 
 ## Webhook mutation decisions
+
+When the remotely managed values in the effective plan match prior state, Update
+stores the planned `timeouts` and retains the webhook identity and private version.
+An unknown computed-only observation can keep its prior value on this path.
+This also works after import when Contentful has redacted credentials. For a
+remote change, Update validates the complete request and requires the stored
+version before sending the PUT.
 
 | Attribute | Equivalence and omission |
 | --- | --- |
