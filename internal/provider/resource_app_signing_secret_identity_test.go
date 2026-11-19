@@ -16,10 +16,12 @@ import (
 func TestAppSigningSecretMutationRequiresConfirmedIdentity(t *testing.T) {
 	t.Parallel()
 
-	for name, response := range map[string]struct{ organizationID, appDefinitionID string }{
-		"organization":   {"other-org", "app"},
-		"app definition": {"org", "other-app"},
-		"both":           {"other-org", "other-app"},
+	for name, response := range map[string]struct{ organizationID, appDefinitionID, mismatches string }{
+		"organization":         {"other-org", "app", "organization_id"},
+		"app definition":       {"org", "other-app", "app_definition_id"},
+		"empty organization":   {"", "app", "organization_id"},
+		"empty app definition": {"org", "", "app_definition_id"},
+		"both":                 {"other-org", "other-app", "organization_id and app_definition_id"},
 	} {
 		for _, update := range []bool{false, true} {
 			t.Run(fmt.Sprintf("%s/update=%t", name, update), func(t *testing.T) {
@@ -38,7 +40,7 @@ func TestAppSigningSecretMutationRequiresConfirmedIdentity(t *testing.T) {
 							"organization":  map[string]any{"sys": map[string]any{"type": "Link", "linkType": "Organization", "id": response.organizationID}},
 							"appDefinition": map[string]any{"sys": map[string]any{"type": "Link", "linkType": "AppDefinition", "id": response.appDefinitionID}},
 						},
-						"redactedValue": "****aaaa",
+						"redactedValue": "aaaa",
 					})))
 				}))
 				resourceSchema := AppSigningSecretResourceSchema(t.Context())
@@ -61,6 +63,13 @@ func TestAppSigningSecretMutationRequiresConfirmedIdentity(t *testing.T) {
 				require.Len(t, result.Diagnostics, 1)
 				assert.Equal(t, tfprotov6.DiagnosticSeverityError, result.Diagnostics[0].Severity)
 				assert.Equal(t, "Unconfirmed app signing secret mutation", result.Diagnostics[0].Summary)
+				detail := result.Diagnostics[0].Detail
+				assert.Contains(t, detail, "requested "+response.mismatches+".")
+				assert.Contains(t, detail, "final four characters")
+				assert.NotContains(t, detail, "other-org")
+				assert.NotContains(t, detail, "other-app")
+				assert.NotContains(t, detail, strings.Repeat("a", 64))
+				assert.NotContains(t, detail, strings.Repeat("b", 64))
 				require.NotNil(t, result.NewState)
 				priorRaw, err := prior.Unmarshal(resourceSchema.Type().TerraformType(t.Context()))
 				require.NoError(t, err)

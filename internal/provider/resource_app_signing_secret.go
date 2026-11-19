@@ -2,8 +2,10 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -70,45 +72,12 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	defer cancel()
 
-	params := cm.PutAppSigningSecretParams{
-		OrganizationID:  plan.OrganizationID.ValueString(),
-		AppDefinitionID: plan.AppDefinitionID.ValueString(),
-	}
-
-	request, requestDiags := plan.ToAppSigningSecretRequest(ctx, path.Empty())
-	resp.Diagnostics.Append(requestDiags...)
+	data, diags := r.put(ctx, plan, types.StringNull(), "create")
+	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	response, err := r.providerData.client.PutAppSigningSecret(ctx, &request, params)
-
-	tflog.Info(ctx, "app_signing_secret.create", map[string]any{
-		"params": params,
-		// "request": request, omitted to avoid logging sensitive values
-		// "response": response, omitted to avoid logging sensitive values
-		"err": appSigningSecretLogError(err, plan.Value),
-	})
-
-	var data AppSigningSecretModel
-
-	switch response := response.(type) {
-	case *cm.AppSigningSecretStatusCode:
-		mutationState, mutationDiags := appSigningSecretMutationResponse(response.Response, plan)
-		resp.Diagnostics.Append(mutationDiags...)
-
-		data = mutationState
-
-	default:
-		resp.Diagnostics.AddError("Failed to create app signing secret", signingSecretErrorDetail(response, err, plan.Value))
-	}
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	data.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
 }
@@ -211,45 +180,12 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	defer cancel()
 
-	params := cm.PutAppSigningSecretParams{
-		OrganizationID:  plan.OrganizationID.ValueString(),
-		AppDefinitionID: plan.AppDefinitionID.ValueString(),
-	}
-
-	request, requestDiags := plan.ToAppSigningSecretRequest(ctx, path.Empty())
-	resp.Diagnostics.Append(requestDiags...)
+	data, diags := r.put(ctx, plan, state.Value, "update")
+	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	response, err := r.providerData.client.PutAppSigningSecret(ctx, &request, params)
-
-	tflog.Info(ctx, "app_signing_secret.update", map[string]any{
-		"params": params,
-		// "request": request, omitted to avoid logging sensitive values
-		// "response": response, omitted to avoid logging sensitive values
-		"err": appSigningSecretLogError(err, state.Value, plan.Value),
-	})
-
-	var data AppSigningSecretModel
-
-	switch response := response.(type) {
-	case *cm.AppSigningSecretStatusCode:
-		mutationState, mutationDiags := appSigningSecretMutationResponse(response.Response, plan)
-		resp.Diagnostics.Append(mutationDiags...)
-
-		data = mutationState
-
-	default:
-		resp.Diagnostics.AddError("Failed to update app signing secret", signingSecretErrorDetail(response, err, state.Value, plan.Value))
-	}
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	data.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
 }
@@ -317,6 +253,67 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 			return
 		}
 
-		resp.Diagnostics.AddError("Failed to delete app signing secret", signingSecretErrorDetail(response, err, state.Value))
+		detail := signingSecretErrorDetail(response, err, state.Value)
+		resp.Diagnostics.AddError("Failed to delete app signing secret", detail+"\n\nCheck whether a secret is present for this App Definition. If one exists, coordinate with the app backend and other writers before retrying. A second delete can remove a replacement secret.")
 	}
+}
+
+const appSigningSecretPutRecovery = "If the write was applied, a read still reveals only the final four characters. Reverting to the value in state can skip the write. Verify a fresh signed request with the intended key, or coordinate a new rotation with the app backend and other writers."
+
+func (r *appSigningSecretResource) put(ctx context.Context, plan AppSigningSecretModel, priorValue types.String, operation string) (AppSigningSecretModel, diag.Diagnostics) {
+	organizationID, diags := appSigningSecretEndpointID(plan.OrganizationID, path.Root("organization_id"))
+	appDefinitionID, appDiags := appSigningSecretEndpointID(plan.AppDefinitionID, path.Root("app_definition_id"))
+	request, requestDiags := plan.ToAppSigningSecretRequest(ctx, path.Empty())
+
+	diags.Append(appDiags...)
+	diags.Append(requestDiags...)
+
+	if diags.HasError() {
+		return AppSigningSecretModel{}, diags
+	}
+
+	params := cm.PutAppSigningSecretParams{OrganizationID: organizationID, AppDefinitionID: appDefinitionID}
+	response, err := r.providerData.client.PutAppSigningSecret(ctx, &request, params)
+	tflog.Info(ctx, "app_signing_secret."+operation, map[string]any{
+		"params": params,
+		"err":    appSigningSecretLogError(err, priorValue, plan.Value),
+	})
+
+	secret, ok := response.(*cm.AppSigningSecretStatusCode)
+	if err != nil || !ok {
+		detail := signingSecretErrorDetail(response, err, priorValue, plan.Value)
+		diags.AddError("Failed to "+operation+" app signing secret", detail+"\n\n"+appSigningSecretPutRecovery)
+
+		return AppSigningSecretModel{}, diags
+	}
+
+	var mismatches []string
+	if secret.Response.Sys.Organization.Sys.ID != organizationID {
+		mismatches = append(mismatches, "organization_id")
+	}
+
+	if secret.Response.Sys.AppDefinition.Sys.ID != appDefinitionID {
+		mismatches = append(mismatches, "app_definition_id")
+	}
+
+	if len(mismatches) > 0 {
+		diags.AddError("Unconfirmed app signing secret mutation", "The response did not match the requested "+strings.Join(mismatches, " and ")+". Terraform did not record the submitted value. "+appSigningSecretPutRecovery)
+
+		return AppSigningSecretModel{}, diags
+	}
+
+	data := NewAppSigningSecretResourceModelFromResponse(secret.Response)
+	data.Value = plan.Value
+	data.Timeouts = plan.Timeouts
+
+	return data, diags
+}
+
+func appSigningSecretEndpointID(value types.String, attributePath path.Path) (string, diag.Diagnostics) {
+	id, diags := requestRequiredString(value, attributePath)
+	if !diags.HasError() && id == "" {
+		diags.AddAttributeError(attributePath, "Invalid app signing secret endpoint", "The endpoint ID must not be empty.")
+	}
+
+	return id, diags
 }

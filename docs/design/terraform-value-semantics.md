@@ -131,7 +131,10 @@ guarantees do not make a remote mutation transactional.
 
 App Signing Secret mutation responses must identify the requested singleton
 before acknowledging the planned secret. A contradiction leaves prior secret
-state intact on Update and publishes no new secret state on Create. The
+state intact on Update and publishes no new secret state on Create. A PUT can
+take effect before its acknowledgement is lost, as the [complete-key verification
+experiment](../research/app-framework/request-signing.md#complete-key-verification-after-rotation-and-an-uncertain-write)
+demonstrates. The
 [Webhook Signing Secret](webhook-signing-secret.md#failures-and-confidentiality)
 has its own unconfirmed-write acknowledgement contract.
 

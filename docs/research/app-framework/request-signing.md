@@ -8,8 +8,9 @@ checks signed request provenance.
 See the [App Framework API inventory](README.md#api-inventory) for the related endpoint
 families and [App Identity](identity.md) for asymmetric keys and access tokens. The
 signing-secret sources and direct probe below are separate from the [shared App Framework
-study](README.md#scope-and-evidence). AppSignedRequest and verification behavior here
-comes from the cited documentation and toolkit, without an end-to-end request test.
+study](README.md#scope-and-evidence). AppSignedRequest and verification behavior is
+supported by the cited documentation, toolkit, and scoped signature experiment below.
+Delivery to a backend and queued-event propagation remain untested.
 
 ## AppSigningSecret addressing and operations
 
@@ -66,6 +67,25 @@ probe retained no complete secret or response value.
 | Overwrite signing-secret PUT | 200 | Same response structure and redaction relationship |
 | GET signing secret | 200 | Same response structure and redaction relationship for the replacement value |
 | DELETE signing secret | 204 | Empty response body |
+
+### Complete-key verification after rotation and an uncertain write
+
+On 2026-10-02, a disposable AppDefinition and installation were used to request
+AppSignedRequest signatures for a synthetic method, path, headers, and body.
+After initial creation and successive replacements, local HMAC-SHA256 verification
+accepted the intended complete secret and rejected a wrong key. This independently
+checks the signing key rather than relying on the redacted suffix.
+
+For one replacement, an HTTP relay received Contentful's successful PUT response
+but closed the caller's connection before forwarding it. A subsequent signed
+request verified with the replacement secret despite the caller seeing a failed
+write. Deliberately submitting those same replacement bytes again succeeded, and
+another signature verified with them. Losing acknowledgement did not roll back
+the accepted mutation.
+
+This observation establishes that the signing service used the replacement key
+after the caller lost its acknowledgement. It does not establish atomic
+propagation to event workers, a maximum propagation delay, or backend delivery.
 
 ## Reconstruction and rotation limits
 
