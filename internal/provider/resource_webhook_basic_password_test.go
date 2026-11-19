@@ -143,7 +143,7 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 
 	usernameOnly := webhookBasicPasswordConfig("Imported webhook", `"user"`, "null", "")
 	config := webhookBasicPasswordConfig("Imported webhook", `"user"`, `"configured-after-import"`, "")
-	recorder := &webhookUpdateRecorder{next: server}
+	recorder := &taxonomyRequestBodyRecorder{next: server}
 	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config:             usernameOnly,
@@ -196,10 +196,8 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 		},
 	}})
 
-	recorder.mu.Lock()
-	defer recorder.mu.Unlock()
-
-	require.Len(t, recorder.updates, 2)
+	updates := recorder.matchingRequests(http.MethodPut, "")
+	require.Len(t, updates, 2)
 
 	body := map[string]any{
 		"name": "Imported webhook", "url": "https://example.com/webhook", "topics": []string{"Entry.publish"},
@@ -207,13 +205,15 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 		"httpBasicUsername": "user", "httpBasicPassword": "configured-after-import",
 	}
 
-	require.Equal(t, "1", recorder.updates[0].version)
-	require.JSONEq(t, testJSON(body), testJSON(recorder.updates[0].body))
+	require.Equal(t, "/spaces/space/webhook_definitions/imported-webhook", updates[0].path)
+	require.Equal(t, "1", updates[0].version)
+	require.JSONEq(t, testJSON(body), string(updates[0].body))
 
 	body["httpBasicUsername"], body["httpBasicPassword"] = nil, nil
 
-	require.Equal(t, "2", recorder.updates[1].version)
-	require.JSONEq(t, testJSON(body), testJSON(recorder.updates[1].body))
+	require.Equal(t, "/spaces/space/webhook_definitions/imported-webhook", updates[1].path)
+	require.Equal(t, "2", updates[1].version)
+	require.JSONEq(t, testJSON(body), string(updates[1].body))
 }
 
 func TestAccWebhookResourceBasicPasswordIgnoreChangesUsesEffectivePlan(t *testing.T) {
