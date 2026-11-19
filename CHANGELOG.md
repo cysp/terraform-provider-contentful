@@ -5,6 +5,45 @@ Entries through 0.0.70 preserve the existing
 [GitHub release notes](https://github.com/cysp/terraform-provider-contentful/releases);
 dates are UTC publication dates.
 
+## [0.1.0](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.74...v0.1.0) (2026-11-19)
+
+
+### Bug fixes
+
+* **provider:** preserve typed descriptor contracts ([7e10e6f](https://github.com/cysp/terraform-provider-contentful/commit/7e10e6f1a6db4060c07ad9b79f620241a7edeac3))
+
+
+### Documentation
+
+* **agents:** clarify design decisions and verification workflows ([6d571c7](https://github.com/cysp/terraform-provider-contentful/commit/6d571c70c24aca066fb37cb7358fc69f3a2463a0))
+* **agents:** distinguish prose from generation inputs in validation ([fff2062](https://github.com/cysp/terraform-provider-contentful/commit/fff2062a636755e7066f90ba9a176d823bffd560))
+* **provider:** consolidate design contracts and contributor guidance ([1789f2f](https://github.com/cysp/terraform-provider-contentful/commit/1789f2f5f747ac0ba910832620f294135e3dd01c))
+* **provider:** streamline Registry guidance and connect examples ([38a4a72](https://github.com/cysp/terraform-provider-contentful/commit/38a4a72276f37c99c1264b371280c320d2830de3))
+
+
+### Continuous integration
+
+* **test:** cover terraform 1.16 and 1.17 ([ac51609](https://github.com/cysp/terraform-provider-contentful/commit/ac51609b6c8194aa8ac0b73aa95c7a5481ee6b76))
+
+
+### Tests
+
+* **provider:** preserve Role model boundary contracts ([2998ea3](https://github.com/cysp/terraform-provider-contentful/commit/2998ea37e34330ea9affbef4e2ae8bc548832da7))
+
+
+### Refactoring
+
+* **provider:** simplify Role permissions models ([b5e9293](https://github.com/cysp/terraform-provider-contentful/commit/b5e929332ba53c68acc3baa9045c6df50f31ef2f))
+* **provider:** simplify Role policy models ([a310457](https://github.com/cysp/terraform-provider-contentful/commit/a310457c07c65c9b9c6ecd0c657223ff2312f6d7))
+
+
+### Maintenance
+
+* **deps:** bump github.com/ogen-go/ogen from 1.24.0 to 1.25.0 ([7d571bd](https://github.com/cysp/terraform-provider-contentful/commit/7d571bde3b83af5f984979a34dde1b2bc416f3e9))
+* **deps:** bump indirect dependencies ([e493b32](https://github.com/cysp/terraform-provider-contentful/commit/e493b323927ef6cf653d0645750e61079fcd361a))
+* **deps:** bump indirect dependencies ([955dce3](https://github.com/cysp/terraform-provider-contentful/commit/955dce36ec532f51d233ddf05b1f4b478f0d2259))
+* **release:** bump minor for pre-1.0 features and breaking changes ([3b6567a](https://github.com/cysp/terraform-provider-contentful/commit/3b6567a37c2ca57d297427eb4f6097315244fe6f))
+
 ## [0.0.74](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.73...v0.0.74) (2026-11-16)
 
 ### Compatibility and recovery
