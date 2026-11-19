@@ -39,6 +39,10 @@ func (r *appSigningSecretResource) Schema(ctx context.Context, _ resource.Schema
 	resp.Schema = AppSigningSecretResourceSchema(ctx)
 }
 
+func (r *appSigningSecretResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	modifySigningSecretPlan(ctx, req, resp)
+}
+
 func (r *appSigningSecretResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
 }
@@ -320,8 +324,4 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 
 		resp.Diagnostics.AddError("Failed to delete app signing secret", signingSecretErrorDetail(response, err, state.Value))
 	}
-}
-
-func (r *appSigningSecretResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	modifySigningSecretPlan(ctx, req, resp)
 }

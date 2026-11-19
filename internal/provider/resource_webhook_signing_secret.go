@@ -41,6 +41,10 @@ func (r *webhookSigningSecretResource) Schema(ctx context.Context, _ resource.Sc
 	resp.Schema = WebhookSigningSecretResourceSchema(ctx)
 }
 
+func (r *webhookSigningSecretResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	modifySigningSecretPlan(ctx, req, resp)
+}
+
 func (r *webhookSigningSecretResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	resp.Diagnostics.Append(SetProviderDataFromResourceConfigureRequest(req, &r.providerData)...)
 }
@@ -207,10 +211,6 @@ func (r *webhookSigningSecretResource) Delete(ctx context.Context, req resource.
 	}
 
 	resp.Diagnostics.AddError("Failed to delete webhook signing secret", signingSecretErrorDetail(response, err, state.Value)+webhookSigningSecretMutationRecovery)
-}
-
-func (r *webhookSigningSecretResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	modifySigningSecretPlan(ctx, req, resp)
 }
 
 func (r *webhookSigningSecretResource) put(ctx context.Context, plan WebhookSigningSecretModel, priorValue types.String) (WebhookSigningSecretModel, diag.Diagnostics) {
