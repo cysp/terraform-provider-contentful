@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWebhookModelRejectsUnresolvedScalarRequestValues(t *testing.T) {
+func TestWebhookModelRejectsInvalidScalarRequestValues(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -42,6 +42,14 @@ func TestWebhookModelRejectsUnresolvedScalarRequestValues(t *testing.T) {
 		"null active": {
 			setValue:     func(model *WebhookModel) { model.Active = types.BoolNull() },
 			expectedPath: "active",
+		},
+		"missing password": {
+			setValue:     func(model *WebhookModel) { model.HTTPBasicUsername = types.StringValue("user") },
+			expectedPath: "http_basic_password",
+		},
+		"missing username": {
+			setValue:     func(model *WebhookModel) { model.HTTPBasicPassword = types.StringValue("password") },
+			expectedPath: "http_basic_username",
 		},
 		"unknown username": {
 			setValue:     func(model *WebhookModel) { model.HTTPBasicUsername = types.StringUnknown() },

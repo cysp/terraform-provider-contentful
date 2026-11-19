@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -40,10 +41,17 @@ var rawWebhookWithoutBasicPassword = testJSON(map[string]any{
 func TestAccWebhookResourceBasicPasswordOmittedFromRawCMAResponse(t *testing.T) {
 	t.Parallel()
 
-	config := webhookBasicPasswordConfig("Basic webhook", `"basic-password-test-sentinel"`, "")
+	config := webhookBasicPasswordConfig("Basic webhook", `"user"`, "terraform_data.password.output", "") + `
+resource "terraform_data" "password" {
+  input = "basic-password-test-sentinel"
+}
+`
 	testAccMockedResource(t, rawWebhookPasswordOmissionHandler{}, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config: config,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectUnknownValue("contentful_webhook.test", tfjsonpath.New("http_basic_password")),
+			}},
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue("contentful_webhook.test", tfjsonpath.New("http_basic_password"), knownvalue.StringExact("basic-password-test-sentinel")),
 			},
@@ -85,25 +93,26 @@ func TestAccWebhookResourceBasicPasswordLifecycle(t *testing.T) {
 	passwordPath := tfjsonpath.New("http_basic_password")
 	tests := []struct {
 		webhookName string
+		username    string
 		password    string
 		action      plancheck.ResourceActionType
 		stateValue  knownvalue.Check
 		storedValue cm.OptNilString
 	}{
-		{"Created webhook", `"password-one"`, plancheck.ResourceActionCreate, knownvalue.StringExact("password-one"), cm.NewOptNilString("password-one")},
-		{"Created webhook", `"password-one"`, plancheck.ResourceActionNoop, knownvalue.StringExact("password-one"), cm.NewOptNilString("password-one")},
-		{"Updated webhook", `"password-one"`, plancheck.ResourceActionUpdate, knownvalue.StringExact("password-one"), cm.NewOptNilString("password-one")},
-		{"Updated webhook", `"password-one"`, plancheck.ResourceActionNoop, knownvalue.StringExact("password-one"), cm.NewOptNilString("password-one")},
-		{"Updated webhook", `"password-two"`, plancheck.ResourceActionUpdate, knownvalue.StringExact("password-two"), cm.NewOptNilString("password-two")},
-		{"Updated webhook", `"password-two"`, plancheck.ResourceActionNoop, knownvalue.StringExact("password-two"), cm.NewOptNilString("password-two")},
-		{"Updated webhook", "null", plancheck.ResourceActionUpdate, knownvalue.Null(), cm.NewOptNilStringNull()},
-		{"Updated webhook", "null", plancheck.ResourceActionNoop, knownvalue.Null(), cm.NewOptNilStringNull()},
+		{"Created webhook", `"user"`, `"password-one"`, plancheck.ResourceActionCreate, knownvalue.StringExact("password-one"), cm.NewOptNilString("password-one")},
+		{"Created webhook", `"user"`, `"password-one"`, plancheck.ResourceActionNoop, knownvalue.StringExact("password-one"), cm.NewOptNilString("password-one")},
+		{"Updated webhook", `"user"`, `"password-one"`, plancheck.ResourceActionUpdate, knownvalue.StringExact("password-one"), cm.NewOptNilString("password-one")},
+		{"Updated webhook", `"user"`, `"password-one"`, plancheck.ResourceActionNoop, knownvalue.StringExact("password-one"), cm.NewOptNilString("password-one")},
+		{"Updated webhook", `"user"`, `"password-two"`, plancheck.ResourceActionUpdate, knownvalue.StringExact("password-two"), cm.NewOptNilString("password-two")},
+		{"Updated webhook", `"user"`, `"password-two"`, plancheck.ResourceActionNoop, knownvalue.StringExact("password-two"), cm.NewOptNilString("password-two")},
+		{"Updated webhook", "null", "null", plancheck.ResourceActionUpdate, knownvalue.Null(), cm.NewOptNilStringNull()},
+		{"Updated webhook", "null", "null", plancheck.ResourceActionNoop, knownvalue.Null(), cm.NewOptNilStringNull()},
 	}
 
 	steps := make([]resource.TestStep, 0, len(tests))
 	for _, test := range tests {
 		steps = append(steps, resource.TestStep{
-			Config: webhookBasicPasswordConfig(test.webhookName, test.password, ""),
+			Config: webhookBasicPasswordConfig(test.webhookName, test.username, test.password, ""),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_webhook.test", test.action),
 			}},
@@ -125,16 +134,19 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 	server.RegisterSpaceEnvironment("space", "master")
 	server.SetWebhookDefinition("space", "imported-webhook", cm.WebhookDefinitionData{
 		Name:              "Imported webhook",
+		Active:            cm.NewOptBool(true),
 		URL:               "https://example.com/webhook",
 		Topics:            []string{"Entry.publish"},
 		HttpBasicUsername: cm.NewOptNilString("user"),
 		HttpBasicPassword: cm.NewOptNilString("remote-password"),
 	})
 
-	config := webhookBasicPasswordConfig("Imported webhook", `"configured-after-import"`, "")
-	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
+	usernameOnly := webhookBasicPasswordConfig("Imported webhook", `"user"`, "null", "")
+	config := webhookBasicPasswordConfig("Imported webhook", `"user"`, `"configured-after-import"`, "")
+	recorder := &webhookUpdateRecorder{next: server}
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{
-			Config:             config,
+			Config:             usernameOnly,
 			ResourceName:       "contentful_webhook.test",
 			ImportState:        true,
 			ImportStateId:      "space/imported-webhook",
@@ -152,6 +164,20 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 			},
 		},
 		{
+			Config: usernameOnly,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop),
+			}},
+		},
+		{
+			Config:      webhookBasicPasswordConfig("Updated webhook", `"user"`, "null", ""),
+			ExpectError: regexp.MustCompile("Missing webhook Basic password"),
+		},
+		{
+			Config:      webhookBasicPasswordConfig("Updated webhook", `"user"`, `"ignored-password"`, "lifecycle { ignore_changes = [http_basic_password] }"),
+			ExpectError: regexp.MustCompile("Missing webhook Basic password"),
+		},
+		{
 			Config: config,
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),
@@ -164,7 +190,26 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 				plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop),
 			}},
 		},
+		{
+			Config: webhookBasicPasswordConfig("Imported webhook", "null", "null", ""),
+			Check:  checkStoredWebhookPassword(server, cm.NewOptNilStringNull()),
+		},
 	}})
+
+	recorder.mu.Lock()
+	defer recorder.mu.Unlock()
+
+	require.Len(t, recorder.updates, 2)
+	body := map[string]any{
+		"name": "Imported webhook", "url": "https://example.com/webhook", "topics": []string{"Entry.publish"},
+		"active": true, "filters": nil, "headers": []any{}, "transformation": nil,
+		"httpBasicUsername": "user", "httpBasicPassword": "configured-after-import",
+	}
+	require.Equal(t, "1", recorder.updates[0].version)
+	require.JSONEq(t, testJSON(body), testJSON(recorder.updates[0].body))
+	body["httpBasicUsername"], body["httpBasicPassword"] = nil, nil
+	require.Equal(t, "2", recorder.updates[1].version)
+	require.JSONEq(t, testJSON(body), testJSON(recorder.updates[1].body))
 }
 
 func TestAccWebhookResourceBasicPasswordIgnoreChangesUsesEffectivePlan(t *testing.T) {
@@ -175,9 +220,9 @@ func TestAccWebhookResourceBasicPasswordIgnoreChangesUsesEffectivePlan(t *testin
 	server.RegisterSpaceEnvironment("space", "master")
 
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
-		{Config: webhookBasicPasswordConfig("Initial webhook", `"effective-plan-password"`, "")},
+		{Config: webhookBasicPasswordConfig("Initial webhook", `"user"`, `"effective-plan-password"`, "")},
 		{
-			Config: webhookBasicPasswordConfig("Updated webhook", `"changed-config-password"`, "lifecycle { ignore_changes = [http_basic_password] }"),
+			Config: webhookBasicPasswordConfig("Updated webhook", `"user"`, "null", "lifecycle { ignore_changes = [http_basic_password] }"),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),
 				plancheck.ExpectKnownValue("contentful_webhook.test", tfjsonpath.New("http_basic_password"), knownvalue.StringExact("effective-plan-password")),
@@ -185,7 +230,7 @@ func TestAccWebhookResourceBasicPasswordIgnoreChangesUsesEffectivePlan(t *testin
 			Check: checkStoredWebhookPassword(server, cm.NewOptNilString("effective-plan-password")),
 		},
 		{
-			Config: webhookBasicPasswordConfig("Updated webhook", `"changed-config-password"`, "lifecycle { ignore_changes = [http_basic_password] }"),
+			Config: webhookBasicPasswordConfig("Updated webhook", `"user"`, `"changed-config-password"`, "lifecycle { ignore_changes = [http_basic_password] }"),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop),
 			}},
@@ -193,12 +238,27 @@ func TestAccWebhookResourceBasicPasswordIgnoreChangesUsesEffectivePlan(t *testin
 	}})
 }
 
-func webhookBasicPasswordConfig(name, password, lifecycle string) string {
-	username := `"user"`
-	if password == "null" {
-		username = "null"
-	}
+func TestAccWebhookResourceIncompleteBasicCredentialsOnCreate(t *testing.T) {
+	t.Parallel()
 
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+	counter := &webhookCreateCounter{next: server}
+	testAccMockedResource(t, counter, resource.TestCase{Steps: []resource.TestStep{
+		{
+			Config:      webhookBasicPasswordConfig("Webhook", `"user"`, "null", ""),
+			ExpectError: regexp.MustCompile("Missing webhook Basic password"),
+		},
+		{
+			Config:      webhookBasicPasswordConfig("Webhook", "null", `"password"`, ""),
+			ExpectError: regexp.MustCompile("Missing webhook Basic username"),
+		},
+	}})
+	require.Zero(t, counter.creates.Load())
+}
+
+func webhookBasicPasswordConfig(name, username, password, lifecycle string) string {
 	return fmt.Sprintf(`
 resource "contentful_webhook" "test" {
   space_id            = "space"
