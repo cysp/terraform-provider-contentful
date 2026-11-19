@@ -42,6 +42,8 @@ func TestAppSigningSecretValueValidatorRejectsInvalidValuesWithoutExposingThem(t
 		"too short":         strings.Repeat("s", 63),
 		"too long":          strings.Repeat("s", 65),
 		"invalid character": invalidCharacterPrefix + strings.Repeat("X", 64-len(invalidCharacterPrefix)),
+		"non-ASCII":         strings.Repeat("s", 63) + "é",
+		"trailing newline":  strings.Repeat("s", 63) + "\n",
 	}
 
 	for name, value := range tests {
@@ -55,6 +57,7 @@ func TestAppSigningSecretValueValidatorRejectsInvalidValuesWithoutExposingThem(t
 			}, &response)
 
 			require.True(t, response.Diagnostics.HasError())
+			assert.Equal(t, []string{"value"}, attributeDiagnosticPaths(t, response.Diagnostics))
 
 			for _, diagnostic := range response.Diagnostics {
 				assert.NotContains(t, diagnostic.Summary(), value)
@@ -62,6 +65,16 @@ func TestAppSigningSecretValueValidatorRejectsInvalidValuesWithoutExposingThem(t
 			}
 		})
 	}
+}
+
+func TestAppSigningSecretValueValidatorDefersNull(t *testing.T) {
+	t.Parallel()
+
+	var response validator.StringResponse
+	appSigningSecretValueAttribute(t).Validators[0].ValidateString(t.Context(), validator.StringRequest{
+		Path: path.Root("value"), ConfigValue: types.StringNull(),
+	}, &response)
+	require.Empty(t, response.Diagnostics)
 }
 
 func appSigningSecretValueAttribute(t *testing.T) schema.StringAttribute {

@@ -9,15 +9,23 @@ import (
 )
 
 func (m *AppSigningSecretModel) ToAppSigningSecretRequest(_ context.Context, modelPath path.Path) (cm.AppSigningSecretRequestData, diag.Diagnostics) {
-	value, diags := requestRequiredString(m.Value, modelPath.AtName("value"))
-
+	valuePath := modelPath.AtName("value")
+	value, diags := requestRequiredString(m.Value, valuePath)
 	if diags.HasError() {
 		return cm.AppSigningSecretRequestData{}, diags
 	}
 
-	req := cm.AppSigningSecretRequestData{
-		Value: value,
+	return newAppSigningSecretRequest(value, valuePath)
+}
+
+func newAppSigningSecretRequest(value string, valuePath path.Path) (cm.AppSigningSecretRequestData, diag.Diagnostics) {
+	request := cm.AppSigningSecretRequestData{Value: value}
+	// Use a fixed diagnostic so validation errors never disclose the secret.
+	if request.Validate() != nil {
+		return cm.AppSigningSecretRequestData{}, diag.Diagnostics{
+			diag.NewAttributeErrorDiagnostic(valuePath, "Invalid app signing secret value", appSigningSecretValueConstraint+"."),
+		}
 	}
 
-	return req, diags
+	return request, nil
 }
