@@ -14,7 +14,6 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -125,8 +124,9 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		message string
-		run     func(*testing.T, *appSigningSecretResource, tfsdk.Plan, tfsdk.State, *tfsdk.ResourceIdentity, *bytes.Buffer) diag.Diagnostics
+		message    string
+		priorValue string
+		run        func(*testing.T, *appSigningSecretResource, tfsdk.Plan, tfsdk.State, *tfsdk.ResourceIdentity, *bytes.Buffer) diag.Diagnostics
 	}{
 		"create": {
 			message: "app_signing_secret.create",
@@ -151,12 +151,10 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 			},
 		},
 		"update": {
-			message: "app_signing_secret.update",
+			message:    "app_signing_secret.update",
+			priorValue: appSigningSecretLogSentinel("PRIOR"),
 			run: func(t *testing.T, implementation *appSigningSecretResource, plan tfsdk.Plan, state tfsdk.State, identity *tfsdk.ResourceIdentity, logs *bytes.Buffer) diag.Diagnostics {
 				t.Helper()
-
-				// Import leaves value null; adopting the planned value must write.
-				require.False(t, state.SetAttribute(t.Context(), path.Root("value"), types.StringNull()).HasError())
 
 				response := resource.UpdateResponse{State: tfsdk.State(plan), Identity: identity}
 				implementation.Update(tflogtest.RootLogger(t.Context(), logs), resource.UpdateRequest{Plan: plan, State: state, Identity: identity}, &response)
@@ -182,11 +180,17 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 			t.Parallel()
 
 			value := appSigningSecretLogSentinel(strings.ToUpper(name))
+
+			priorSecret := value
+			if test.priorValue != "" {
+				priorSecret = test.priorValue
+			}
+
 			client, err := cm.NewClient(
 				"https://contentful.invalid",
 				cm.NewAccessTokenSecuritySource("access-token"),
 				cm.WithClient(&http.Client{Transport: appSigningSecretRoundTripFunc(func(*http.Request) (*http.Response, error) {
-					return nil, fmt.Errorf("%w: %s", errAppSigningSecretTestTransport, value)
+					return nil, fmt.Errorf("%w: %s %s", errAppSigningSecretTestTransport, value, priorSecret)
 				})}),
 			)
 			require.NoError(t, err)
@@ -195,6 +199,7 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 			resourceSchema := AppSigningSecretResourceSchema(ctx)
 			model := appSigningSecretTestModel(value)
 			plan := appSigningSecretTestPlan(ctx, t, resourceSchema, model)
+			model.Value = types.StringValue(priorSecret)
 			state := tfsdk.State{Schema: resourceSchema}
 			require.False(t, state.Set(ctx, &model).HasError())
 			identity := appSigningSecretTestIdentity(ctx)
@@ -212,7 +217,7 @@ func TestAppSigningSecretLifecycleErrorOutputRedactsValues(t *testing.T) {
 				assert.Contains(t, logOutput.String(), "***", "the actual logged error must be masked")
 			}
 
-			assertAppSigningSecretRuntimeOutputExcludes(t, logOutput.String(), []diag.Diagnostics{diagnostics}, value)
+			assertAppSigningSecretRuntimeOutputExcludes(t, logOutput.String(), []diag.Diagnostics{diagnostics}, value, priorSecret)
 		})
 	}
 }

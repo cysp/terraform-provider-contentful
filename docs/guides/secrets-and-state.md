@@ -29,11 +29,15 @@ Coordinate receivers before rotating the space's secret. Contentful describes ho
 
 [`contentful_app_signing_secret`](../resources/app_signing_secret) manages the signing secret for an App Definition. Use one resource per App Definition.
 
+If a create or update loses its acknowledgement, Contentful may have installed the submitted value. A read shows only the final four characters. Terraform retains the previously acknowledged value on a failed update and records no value on a failed create. Reverting configuration to the stored value can therefore produce a no-op while the app uses a different secret. Verify a fresh signed request with the intended key. If a rotation is needed, coordinate with the app backend and other writers, apply a fresh value, and verify a new signed request.
+
+If a delete loses its acknowledgement, check whether the App Definition still has a secret. If one exists, confirm with other writers that it should be removed before applying again. The delete has no version precondition and can remove a replacement.
+
 ## Importing signing secrets
 
 Contentful supports one webhook signing secret per space and one app signing secret per App Definition. Creating a secret overwrites any existing value at that scope. Destroying the resource deletes the current secret, including one rotated outside Terraform. If a replacement at the same scope uses `create_before_destroy`, the final delete removes the newly written secret. To rotate in place, change `value` and apply.
 
-After an uncertain write, Contentful can confirm that a signing secret exists but cannot return its full value. Refresh preserves the last value Terraform wrote, so an external rotation can go undetected.
+After an uncertain write, Contentful can confirm that a signing secret exists but cannot return its full value. Refresh preserves the last value Terraform acknowledged, so an external rotation can go undetected.
 
 Import leaves `value` null. Choose who will manage rotation before applying:
 

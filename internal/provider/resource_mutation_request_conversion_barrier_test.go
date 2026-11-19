@@ -511,6 +511,31 @@ func TestUpdateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 	}
 }
 
+func TestAppSigningSecretPutRequiresEndpointIDs(t *testing.T) {
+	t.Parallel()
+
+	for name, endpointID := range map[string]types.String{"unknown": types.StringUnknown(), "null": types.StringNull(), "empty": types.StringValue("")} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			client, calls := mutationRequestCountingClient(t)
+			implementation := appSigningSecretResource{providerData: ContentfulProviderData{client: client}}
+			plan := appSigningSecretTestModel(appSigningSecretLogSentinel("ENDPOINT"))
+			plan.OrganizationID = endpointID
+			plan.AppDefinitionID = endpointID
+
+			ctx := t.Context()
+			req := resource.CreateRequest{Plan: appSigningSecretTestPlan(ctx, t, AppSigningSecretResourceSchema(ctx), plan)}
+
+			var resp resource.CreateResponse
+			implementation.Create(ctx, req, &resp)
+
+			assert.ElementsMatch(t, []string{"organization_id", "app_definition_id"}, mutationDiagnosticPaths(t, resp.Diagnostics))
+			assert.Zero(t, calls.Load())
+		})
+	}
+}
+
 func TestEntryUpdateRequestConversionErrorStopsBeforeAPIRequest(t *testing.T) {
 	t.Parallel()
 
