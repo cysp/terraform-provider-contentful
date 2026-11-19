@@ -188,7 +188,7 @@ func (r *previewEnvironmentResource) Read(ctx context.Context, req resource.Read
 
 	if contentfulResponseIsNotFound(response) {
 		resp.Diagnostics.AddWarning("Content preview platform not found", util.ErrorDetailFromContentfulManagementResponse(response, err))
-		resp.State.RemoveResource(ctx)
+		removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 		return
 	}

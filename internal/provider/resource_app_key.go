@@ -164,7 +164,7 @@ func (r *appKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	default:
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Failed to read app key", util.ErrorDetailFromContentfulManagementResponse(response, err))
-			resp.State.RemoveResource(ctx)
+			removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 			return
 		}

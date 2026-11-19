@@ -154,7 +154,7 @@ func (r *environmentAliasResource) Read(ctx context.Context, req resource.ReadRe
 	default:
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Failed to read environment alias", util.ErrorDetailFromContentfulManagementResponse(response, err))
-			resp.State.RemoveResource(ctx)
+			removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 			return
 		}

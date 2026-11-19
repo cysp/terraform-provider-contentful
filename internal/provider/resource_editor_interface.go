@@ -194,7 +194,7 @@ func (r *editorInterfaceResource) Read(ctx context.Context, req resource.ReadReq
 	default:
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Failed to read editor interface", util.ErrorDetailFromContentfulManagementResponse(response, err))
-			resp.State.RemoveResource(ctx)
+			removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 			return
 		}

@@ -151,7 +151,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	} else {
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Failed to read team", util.ErrorDetailFromContentfulManagementResponse(response, err))
-			resp.State.RemoveResource(ctx)
+			removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 			return
 		}

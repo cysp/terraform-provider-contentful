@@ -153,7 +153,7 @@ func (r *appDefinitionResourceTypeResource) Read(ctx context.Context, req resour
 	default:
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Failed to read resource type definition", util.ErrorDetailFromContentfulManagementResponse(response, err))
-			resp.State.RemoveResource(ctx)
+			removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 			return
 		}

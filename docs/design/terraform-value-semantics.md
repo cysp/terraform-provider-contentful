@@ -241,8 +241,13 @@ after import. An import with a contradictory Read fails without recording the
 resource as managed. The requested environment or alias remains the address;
 related-resource references and singleton body IDs are not endpoint identity.
 Matching responses still expose ordinary remote drift and retain established
-redacted-value and narrow canonicalization rules. A supported NotFound response
-still removes the resource.
+redacted-value and narrow canonicalization rules.
+
+When a managed resource recognizes absence, Read returns null state and retains
+the incoming resource identity. If the identity is fully null, Read copies the
+declared identity attributes from prior state before removing the resource. An
+identity encoding error leaves the state intact.
+[Framework v1.19.0 validates identity even when Read returns null state](https://github.com/hashicorp/terraform-plugin-framework/blob/v1.19.0/internal/fwserver/server_readresource.go#L200-L211).
 
 Read rejects a response from an unconfirmed target. This differs from mutation
 recovery, which may need to retain the addressed target and returned values to

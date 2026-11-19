@@ -133,7 +133,7 @@ func (r *livePreviewVariablesResource) Read(ctx context.Context, req resource.Re
 
 	if livePreviewVariablesResponseIsError(response, http.StatusNotFound, cm.ErrorSysIDNotFound) {
 		resp.Diagnostics.AddWarning("Live preview variables not found", livePreviewVariablesErrorDetail(response, err))
-		resp.State.RemoveResource(ctx)
+		removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 		return
 	}
