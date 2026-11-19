@@ -125,7 +125,7 @@ func (r *taxonomyConceptResource) Read(ctx context.Context, req resource.ReadReq
 	concept, ok := response.(*cm.TaxonomyConcept)
 	if !ok {
 		if contentfulResponseIsNotFound(response) {
-			resp.State.RemoveResource(ctx)
+			removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 			return
 		}

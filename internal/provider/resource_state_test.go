@@ -308,6 +308,29 @@ func TestSetResourceIdentityAndStateRejectsMissingIdentity(t *testing.T) {
 	assert.True(t, diags.HasError())
 }
 
+func TestRemoveResourceFromStateWithIdentityKeepsStateOnIdentityError(t *testing.T) {
+	t.Parallel()
+
+	_, state := emptyPublicationTargets()
+	require.Empty(t, state.Set(t.Context(), &publicationStateModel{ID: types.StringValue("existing")}))
+	priorState := state.Raw.Copy()
+
+	// The first attribute can be copied. The second is missing from state.
+	schema := resourceIdentitySchema([]string{"id", "other"})
+	identity := &tfsdk.ResourceIdentity{
+		Schema: schema,
+		Raw:    tftypes.NewValue(schema.Type().TerraformType(t.Context()), nil),
+	}
+
+	var diags diag.Diagnostics
+
+	removeResourceFromStateWithIdentity(t.Context(), state, identity, &diags)
+
+	require.True(t, diags.HasError())
+	assert.True(t, priorState.Equal(state.Raw))
+	assert.True(t, identity.Raw.IsNull())
+}
+
 func nonStringPublicationTargets() (*tfsdk.ResourceIdentity, *tfsdk.State) {
 	identityRawType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"id": tftypes.String}}
 	stateRawType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"id": tftypes.Bool}}

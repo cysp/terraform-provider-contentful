@@ -108,7 +108,7 @@ func (r *webhookSigningSecretResource) Read(ctx context.Context, req resource.Re
 
 	response, err := r.providerData.client.GetWebhookSigningSecret(ctx, cm.GetWebhookSigningSecretParams{SpaceID: spaceID})
 	if err == nil && webhookSigningSecretNotFound(response) {
-		resp.State.RemoveResource(ctx)
+		removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 		return
 	}

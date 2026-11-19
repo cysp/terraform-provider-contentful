@@ -104,7 +104,7 @@ func (r *appEventSubscriptionResource) Read(ctx context.Context, req resource.Re
 
 	response, err := r.providerData.client.GetAppEventSubscription(ctx, cm.GetAppEventSubscriptionParams{OrganizationID: organization, AppDefinitionID: appDefinition})
 	if err == nil && contentfulResponseIsNotFound(response) {
-		resp.State.RemoveResource(ctx)
+		removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 		return
 	}

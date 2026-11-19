@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"maps"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -41,6 +43,20 @@ func publishResourceIdentityAndState(
 	identityAttributeNames []string,
 	stagedState tfsdk.State,
 ) diag.Diagnostics {
+	diags := setResourceIdentityFromState(ctx, identity, stagedState, identityAttributeNames)
+	if !diags.HasError() {
+		*state = stagedState
+	}
+
+	return diags
+}
+
+func setResourceIdentityFromState(
+	ctx context.Context,
+	identity *tfsdk.ResourceIdentity,
+	state tfsdk.State,
+	identityAttributeNames []string,
+) diag.Diagnostics {
 	if identity == nil {
 		return diag.Diagnostics{
 			diag.NewErrorDiagnostic(
@@ -59,7 +75,7 @@ func publishResourceIdentityAndState(
 
 		var value types.String
 
-		diags.Append(stagedState.GetAttribute(ctx, attributePath, &value)...)
+		diags.Append(state.GetAttribute(ctx, attributePath, &value)...)
 
 		if diags.HasError() {
 			return diags
@@ -73,9 +89,26 @@ func publishResourceIdentityAndState(
 	}
 
 	*identity = stagedIdentity
-	*state = stagedState
 
 	return diags
+}
+
+// Framework requires an identity even when Read returns null state. Preserve a
+// supplied identity, or reconstruct it from state before removing the resource.
+func removeResourceFromStateWithIdentity(
+	ctx context.Context,
+	state *tfsdk.State,
+	identity *tfsdk.ResourceIdentity,
+	diags *diag.Diagnostics,
+) {
+	if identity != nil && identity.Raw.IsFullyNull() {
+		names := slices.Sorted(maps.Keys(identity.Schema.GetAttributes()))
+		diags.Append(setResourceIdentityFromState(ctx, identity, *state, names)...)
+	}
+
+	if !diags.HasError() {
+		state.RemoveResource(ctx)
+	}
 }
 
 // setResourceIdentityStateAndVersion publishes the state/identity pair before

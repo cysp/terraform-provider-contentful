@@ -157,7 +157,7 @@ func (r *appActionResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 	response, err := r.providerData.client.GetAppAction(ctx, cm.GetAppActionParams{OrganizationID: state.OrganizationID.ValueString(), AppDefinitionID: state.AppDefinitionID.ValueString(), AppActionID: state.AppActionID.ValueString()})
 	if err == nil && contentfulResponseIsNotFound(response) {
-		resp.State.RemoveResource(ctx)
+		removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 		return
 	}

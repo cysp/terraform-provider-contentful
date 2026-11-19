@@ -160,7 +160,7 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 	default:
 		if contentfulResponseIsNotFound(response) {
 			resp.Diagnostics.AddWarning("Failed to read app signing secret", signingSecretErrorDetail(response, err, state.Value))
-			resp.State.RemoveResource(ctx)
+			removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 			return
 		}
