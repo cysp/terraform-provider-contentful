@@ -4631,7 +4631,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											return r, true
 										case "PUT":
 											r.name = UpdateWebhookDefinitionOperation
-											r.summary = "Update a webhook definition"
+											r.summary = "Create or update a webhook definition by ID"
 											r.operationID = "updateWebhookDefinition"
 											r.operationGroup = ""
 											r.pathPattern = "/spaces/{space_id}/webhook_definitions/{webhook_definition_id}"

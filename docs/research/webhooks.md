@@ -137,6 +137,20 @@ matched their list items.
 
 The sample contained no repeated header names, including case variants.
 
+## Webhook definition versions
+
+On 2026-11-21 (UTC), POST and specified-ID PUT each created an inactive webhook
+with HTTP 200 and `sys.version: 0`. On unused IDs, PUT created the definition
+when `X-Contentful-Version` was omitted, set to 0, or set to 7.
+
+An existing webhook required the exact version, including at version 0.
+An identical PUT and a PUT retaining an existing secret by its exact header
+name both returned 200 with the same version. Changing the name or rotating
+the secret advanced the version by one. Missing, stale, and future versions
+returned 409 `Conflict`, including on otherwise identical requests. GET
+confirmed the stored versions. All disposable definitions were deleted (204)
+and their absence confirmed by GET (404).
+
 ## Header names, order, and secret updates
 
 On 2026-11-21 (UTC), disposable inactive webhook definitions were created by POST
@@ -148,6 +162,7 @@ definition was deleted (204) and its absence confirmed by GET (404).
 | Repeat the exact header name | POST returned 422 `ValidationFailed` with identical or different ordinary values. A versioned PUT with different values returned 422 in either order. GET retained the preceding configuration and version after each rejected PUT. |
 | Supply two names differing only in case | POST, PUT, and GET returned both spellings. Each ordinary value stayed with its supplied key. With two secret values, each response returned both keys with `secret: true` and omitted both values. |
 | Reverse the order of two ordinary headers | PUT and GET returned the new order. The version increased by one even though the names and values were unchanged. This also held for case variants. |
+| Send a new header with `secret: true` and omit its value | POST returned 422 `ValidationFailed` with the missing field at `headers.0.value`. PUT to two unused IDs returned 500 `ServerError`. Neither definition was created. PUT to an existing ID returned 409 with a wrong version and 422 `ValidationFailed` with the current version. The latter response contained a string at `details.errors` naming the header. GET confirmed the version was unchanged. |
 | Omit a stored secret value on PUT | The exact spelling succeeded (200) with the same version. Changing only the spelling or supplying a new name without a value failed (422), leaving the definition and version unchanged. When both spellings had been configured separately as secret, omitting both values at their exact keys succeeded (200) with the same version. |
 | Change an ordinary header to secret at the same key, omitting its value | PUT returned 200. Both the PUT response and GET still contained a `value` member and `secret: false`. The version stayed the same. |
 

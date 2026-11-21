@@ -9,6 +9,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestWebhookDefinitionActiveDefault(t *testing.T) {
+	t.Parallel()
+
+	fields := cm.WebhookDefinitionData{Name: "Webhook"}
+	webhook := NewWebhookDefinitionFromFields("space", "webhook", fields)
+	require.Equal(t, cm.NewOptBool(true), webhook.Active)
+
+	fields.Active = cm.NewOptBool(false)
+	require.Nil(t, UpdateWebhookDefinitionFromFields(&webhook, fields))
+	require.Equal(t, cm.NewOptBool(false), webhook.Active)
+
+	fields.Active.Reset()
+	require.Nil(t, UpdateWebhookDefinitionFromFields(&webhook, fields))
+	require.Equal(t, cm.NewOptBool(true), webhook.Active)
+}
+
 func TestWebhookSecretValueIsPreservedAndRedacted(t *testing.T) {
 	t.Parallel()
 
@@ -22,7 +38,7 @@ func TestWebhookSecretValueIsPreservedAndRedacted(t *testing.T) {
 		},
 	})
 
-	UpdateWebhookDefinitionFromFields(&webhook, cm.WebhookDefinitionData{
+	require.Nil(t, UpdateWebhookDefinitionFromFields(&webhook, cm.WebhookDefinitionData{
 		Name:              "Updated webhook",
 		URL:               "https://example.com/webhook",
 		HttpBasicUsername: cm.NewOptNilString("user"),
@@ -30,7 +46,7 @@ func TestWebhookSecretValueIsPreservedAndRedacted(t *testing.T) {
 		Headers: cm.WebhookDefinitionHeaders{
 			{Key: "Authorization", Secret: cm.NewOptBool(true)},
 		},
-	})
+	}))
 
 	require.Len(t, webhook.Headers, 1)
 	assert.Equal(t, cm.NewOptString("existing-secret"), webhook.Headers[0].Value)

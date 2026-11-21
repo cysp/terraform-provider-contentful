@@ -15463,7 +15463,8 @@ func (s *Server) handleUpdateRoleRequest(args [2]string, argsEscaped bool, w htt
 
 // handleUpdateWebhookDefinitionRequest handles updateWebhookDefinition operation.
 //
-// Update a webhook definition.
+// Creates a webhook at an unused ID. Updating an existing webhook requires its current sys.version in
+// X-Contentful-Version.
 //
 // PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 func (s *Server) handleUpdateWebhookDefinitionRequest(args [2]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
@@ -15555,7 +15556,7 @@ func (s *Server) handleUpdateWebhookDefinitionRequest(args [2]string, argsEscape
 		mreq := middleware.Request{
 			Context:          ctx,
 			OperationName:    UpdateWebhookDefinitionOperation,
-			OperationSummary: "Update a webhook definition",
+			OperationSummary: "Create or update a webhook definition by ID",
 			OperationID:      "updateWebhookDefinition",
 			Body:             request,
 			RawBody:          rawBody,

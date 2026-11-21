@@ -264,7 +264,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	params := cm.UpdateWebhookDefinitionParams{
 		SpaceID:             plan.SpaceID.ValueString(),
 		WebhookDefinitionID: plan.WebhookID.ValueString(),
-		XContentfulVersion:  version,
+		XContentfulVersion:  cm.NewOptInt(version),
 	}
 
 	response, err := r.providerData.client.UpdateWebhookDefinition(ctx, &request, params)

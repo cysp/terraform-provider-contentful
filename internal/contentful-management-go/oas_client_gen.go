@@ -739,7 +739,8 @@ type Invoker interface {
 	UpdateRole(ctx context.Context, request *RoleData, params UpdateRoleParams, options ...RequestOption) (UpdateRoleRes, error)
 	// UpdateWebhookDefinition invokes updateWebhookDefinition operation.
 	//
-	// Update a webhook definition.
+	// Creates a webhook at an unused ID. Updating an existing webhook requires its current sys.version in
+	// X-Contentful-Version.
 	//
 	// PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	UpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams, options ...RequestOption) (UpdateWebhookDefinitionRes, error)
@@ -16417,7 +16418,8 @@ func (c *Client) sendUpdateRole(ctx context.Context, request *RoleData, params U
 
 // UpdateWebhookDefinition invokes updateWebhookDefinition operation.
 //
-// Update a webhook definition.
+// Creates a webhook at an unused ID. Updating an existing webhook requires its current sys.version in
+// X-Contentful-Version.
 //
 // PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 func (c *Client) UpdateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params UpdateWebhookDefinitionParams, options ...RequestOption) (UpdateWebhookDefinitionRes, error) {
@@ -16494,7 +16496,10 @@ func (c *Client) sendUpdateWebhookDefinition(ctx context.Context, request *Webho
 			Explode: false,
 		}
 		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
-			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+			if val, ok := params.XContentfulVersion.Get(); ok {
+				return e.EncodeValue(conv.IntToString(val))
+			}
+			return nil
 		}); err != nil {
 			return res, errors.Wrap(err, "encode header")
 		}
