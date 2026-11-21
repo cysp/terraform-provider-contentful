@@ -286,6 +286,17 @@ structurally incomplete response.
 
 The provider uses `total` when present and otherwise continues until an empty page. The fixture orders by ID to make pages repeatable. Contentful’s default ordering remains unverified.
 
+### Role collection pagination
+
+The Role fixture uses deterministic ID order and decimal offset tokens for cursor
+pagination. It accepts `pageNext`, `pagePrev`, and `limit`, emits navigation links,
+and rejects conflicting directions or invalid cursor and limit values. The token
+format is local to the fixture. See the [published protocol](../research/collections-and-errors.md#space-role-cursor-migration).
+
+[HTTP conformance tests](../../internal/contentful-management-go/testing/handler_role_pagination_test.go)
+exercise the generated client and server. Independent [provider fixtures](../../internal/provider/data_source_roles_pagination_internal_test.go)
+cover both legacy offsets and the [cursor traversal contract](configuration-data-sources.md#role-traversal).
+
 ### Role updates
 
 **Evidence:** The [Role update addressing contract](../research/space-access.md#role-update-addressing)
@@ -476,8 +487,7 @@ To verify recovery after a failed mutation, inspect the saved state before refre
   for polling, timeout, and terminal-failure behavior.
 - The fake does not reproduce Contentful's internal ordering for list endpoints.
   It uses deterministic ID order where pagination tests require stable pages.
-- Cursor pagination is not implemented. The generic fake also does not
-  interpret arbitrary entry query filters or configurable order. An exact HTTP
+- The generic fake does not interpret arbitrary entry query filters or configurable order. An exact HTTP
   request test covers the provider's forwarding of those values; fake lifecycle
   tests do not claim their result-set semantics.
 - Rate limiting models the documented second-level contract only. It does not

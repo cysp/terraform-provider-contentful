@@ -30,6 +30,7 @@ type discoveryTestFamily struct {
 	organization          string
 	expected              string
 	preserveResponseOrder bool
+	cursorPagination      bool
 }
 
 func discoveryTestFamilies() []discoveryTestFamily {
@@ -52,7 +53,7 @@ func discoveryTestFamilies() []discoveryTestFamily {
 			"content_management_api": true,
 			"content_delivery_api":   false,
 		})},
-		{name: "role", singular: NewRoleDataSource, plural: NewRolesDataSource, scopes: map[string]any{"space_id": "space"}, id: "role_id", collection: "roles", endpoint: "/spaces/space/roles", organization: "", preserveResponseOrder: true, expected: testJSON(map[string]any{
+		{name: "role", cursorPagination: true, singular: NewRoleDataSource, plural: NewRolesDataSource, scopes: map[string]any{"space_id": "space"}, id: "role_id", collection: "roles", endpoint: "/spaces/space/roles", organization: "", preserveResponseOrder: true, expected: testJSON(map[string]any{
 			"role_id":     "item-b",
 			"name":        "Second",
 			"description": nil,
