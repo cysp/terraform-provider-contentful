@@ -57,6 +57,8 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 
 		response := completeWebhookMutationResponse()
 		response.Sys.ID = webhookID
+		version := rapid.IntRange(0, 1000).Draw(t, "returned version")
+		response.Sys.Version = version
 		response.Filters.SetTo(reconciliationWebhookResponseFilters(returnedKinds, returnedValues, negated))
 		responseTransformation := response.Transformation.Value
 		responseTransformation.Body = []byte(returnedJSON)
@@ -73,6 +75,7 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 		expected := WebhookModel{
 			IDIdentityModel: NewIDIdentityModelFromMultipartID("space", webhookID),
 			SpaceID:         types.StringValue("space"), WebhookID: types.StringValue(webhookID),
+			Version:           types.Int64Value(int64(version)),
 			Name:              plan.Name,
 			URL:               plan.URL,
 			Topics:            plan.Topics,
@@ -147,6 +150,7 @@ func TestWebhookMutationReconciliationProperties(t *testing.T) {
 			expectedPath = "headers"
 		case 6:
 			response.Sys.Space.Sys.ID = "other-space"
+			expected.Version = types.Int64Null()
 			expectedPath = "space_id"
 		case 7:
 			plan.Filters = NewTypedListNull[TypedObject[WebhookFilterValue]]()

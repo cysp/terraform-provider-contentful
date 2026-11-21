@@ -2,13 +2,18 @@ package provider_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
+	"os"
 	"regexp"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
@@ -19,6 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
@@ -162,6 +168,7 @@ func TestAccWebhookResourcePreservesImportedSecretHeadersOnUpdate(t *testing.T) 
 				ResourceName:       "contentful_webhook.test",
 				ImportState:        true,
 				ImportStateId:      "space/imported-webhook",
+				ImportStateCheck:   testAccImportAttributes(map[string]string{"version": "0"}),
 				ImportStatePersist: true,
 			},
 			{
@@ -207,9 +214,12 @@ func TestAccWebhookResourceRetainsSecretHeaderWhileUpdatingSibling(t *testing.T)
 
 	const address = "contentful_webhook.test"
 
-	step := func(managed, version, headers string, writes int) resource.TestStep {
+	step := func(managed, headers string, writes int, requestVersion string, responseVersion json.Number) resource.TestStep {
 		return resource.TestStep{
 			Config: webhookHeadersConfig(imported.Name, headers),
+			ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPreRefresh: []plancheck.PlanCheck{
+				expectResponseStateInPlan{address: address, valuePath: tfjsonpath.New("version"), value: responseVersion},
+			}},
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(address, tfjsonpath.New("headers"), knownvalue.MapExact(map[string]knownvalue.Check{
 					"X-Secret":  knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(true), "value": knownvalue.Null()}),
@@ -217,7 +227,7 @@ func TestAccWebhookResourceRetainsSecretHeaderWhileUpdatingSibling(t *testing.T)
 				})),
 			},
 			PostApplyFunc: func() {
-				recorder.requirePut(t, writes, version, imported.Name, []map[string]any{
+				recorder.requirePut(t, writes, requestVersion, imported.Name, []map[string]any{
 					{"key": "X-Managed", "secret": false, "value": managed}, {"key": "X-Secret", "secret": true},
 				})
 
@@ -230,8 +240,8 @@ func TestAccWebhookResourceRetainsSecretHeaderWhileUpdatingSibling(t *testing.T)
 			},
 		}
 	}
-	ignored := step("first", "1", `headers = { X-Managed = { value = "first" } }
-  lifecycle { ignore_changes = [headers["X-Secret"]] }`, 1)
+	ignored := step("first", `headers = { X-Managed = { value = "first" } }
+  lifecycle { ignore_changes = [headers["X-Secret"]] }`, 1, "1", "2")
 	ignored.PreConfig = func() {
 		imported.Headers[0].Value = cm.NewOptString("externally-rotated")
 		response, err := server.Handler().UpdateWebhookDefinition(t.Context(), &imported, cm.UpdateWebhookDefinitionParams{
@@ -240,7 +250,7 @@ func TestAccWebhookResourceRetainsSecretHeaderWhileUpdatingSibling(t *testing.T)
 		require.NoError(t, err)
 		require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
 	}
-	explicit := step("second", "2", `headers = { X-Managed = terraform_data.header.output.managed, X-Secret = { secret = terraform_data.header.output.secret } }`, 2)
+	explicit := step("second", `headers = { X-Managed = terraform_data.header.output.managed, X-Secret = { secret = terraform_data.header.output.secret } }`, 2, "2", "3")
 	explicit.Config += `
 resource "terraform_data" "header" {
   input = { managed = { value = "second" }, secret = true }
@@ -377,8 +387,9 @@ func TestAccWebhookResourceImportNotFound(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest // Live acceptance serializes access to the shared account.
 func TestAccWebhookResourceLifecycle(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
@@ -392,43 +403,54 @@ func TestAccWebhookResourceLifecycle(t *testing.T) {
 		"webhook_id": config.StringVariable(webhookID),
 	}
 
+	checkVersion := checkWebhookVersionMatchesContentful(t, server)
 	identity := statecheck.CompareValue(compare.ValuesSame())
+	stableVersion := statecheck.CompareValue(compare.ValuesSame())
+	version := tfjsonpath.New("version")
 
 	testAccMockableResource(t, server, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				Check:           checkVersion,
 				ConfigStateChecks: []statecheck.StateCheck{
 					identity.AddStateValue("contentful_webhook.test", tfjsonpath.New("id")),
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionCreate),
+						plancheck.ExpectUnknownValue("contentful_webhook.test", version),
 					},
 				},
 			},
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: configVariables,
+				Check:           checkVersion,
 				ConfigStateChecks: []statecheck.StateCheck{
 					identity.AddStateValue("contentful_webhook.test", tfjsonpath.New("id")),
+					stableVersion.AddStateValue("contentful_webhook.test", version),
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue("contentful_webhook.test", version),
 					},
 				},
 			},
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAccWebhookResourceLifecycle/2"),
 				ConfigVariables: configVariables,
+				Check:           checkVersion,
 				ConfigStateChecks: []statecheck.StateCheck{
 					identity.AddStateValue("contentful_webhook.test", tfjsonpath.New("id")),
+					stableVersion.AddStateValue("contentful_webhook.test", version),
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop),
+						plancheck.ExpectKnownValue("contentful_webhook.test", version, knownvalue.NotNull()),
 					},
 				},
 			},
@@ -446,4 +468,48 @@ func TestAccWebhookResourceLifecycle(t *testing.T) {
 			},
 		},
 	})
+}
+
+func checkWebhookVersionMatchesContentful(t *testing.T, server *cmt.Server) resource.TestCheckFunc {
+	t.Helper()
+
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("TF_ACC must be set for acceptance tests")
+	}
+
+	endpoint, token := os.Getenv("CONTENTFUL_URL"), os.Getenv("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN")
+	if endpoint == "" {
+		endpoint = cm.DefaultServerURL
+	}
+
+	if os.Getenv("TF_ACC_MOCKED") != "" {
+		inspectionServer := httptest.NewServer(server)
+		t.Cleanup(inspectionServer.Close)
+		endpoint, token = inspectionServer.URL, cmt.ValidAccessToken
+	}
+
+	client, err := cm.NewClient(endpoint, cm.NewAccessTokenSecuritySource(token), cm.WithClient(cm.NewTransportClient(&http.Client{Timeout: time.Minute}, cm.DefaultUserAgent)))
+	require.NoError(t, err)
+
+	return func(state *terraform.State) error {
+		const address = "contentful_webhook.test"
+
+		instance := state.RootModule().Resources[address]
+		require.NotNil(t, instance, "missing %s in state", address)
+		require.NotNil(t, instance.Primary)
+
+		attributes := instance.Primary.Attributes
+
+		response, err := client.GetWebhookDefinition(t.Context(), cm.GetWebhookDefinitionParams{
+			SpaceID: attributes["space_id"], WebhookDefinitionID: attributes["webhook_id"],
+		})
+		if err != nil {
+			return fmt.Errorf("read webhook version: %w", err)
+		}
+
+		webhook, ok := response.(*cm.WebhookDefinition)
+		require.Truef(t, ok, "unexpected GetWebhookDefinition response %T", response)
+
+		return resource.TestCheckResourceAttr(address, "version", strconv.Itoa(webhook.Sys.Version))(state)
+	}
 }

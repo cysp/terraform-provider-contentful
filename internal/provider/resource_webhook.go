@@ -15,6 +15,7 @@ import (
 
 var (
 	_ resource.Resource                = (*webhookResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*webhookResource)(nil)
 	_ resource.ResourceWithConfigure   = (*webhookResource)(nil)
 	_ resource.ResourceWithIdentity    = (*webhookResource)(nil)
 	_ resource.ResourceWithImportState = (*webhookResource)(nil)
@@ -51,6 +52,28 @@ func (r *webhookResource) ImportState(ctx context.Context, req resource.ImportSt
 	ImportStatePassthroughMultipartID(ctx, webhookIdentityAttributeNames(), req, resp)
 }
 
+func (r *webhookResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+		return
+	}
+
+	unchanged, diags := webhookRemoteValuesUnchanged(ctx, req.Plan, req.State)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() || !unchanged {
+		return
+	}
+
+	var version types.Int64
+
+	versionPath := path.Root("version")
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, versionPath, &version)...)
+
+	if !resp.Diagnostics.HasError() {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, versionPath, version)...)
+	}
+}
+
 func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var (
 		plan   WebhookModel
@@ -80,8 +103,6 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	defer cancel()
 
-	version := 1
-
 	params := cm.CreateWebhookDefinitionParams{
 		SpaceID: plan.SpaceID.ValueString(),
 	}
@@ -97,6 +118,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	var (
 		data              WebhookModel
+		version           int
 		consistencyDiags  diag.Diagnostics
 		identityConfirmed bool
 	)

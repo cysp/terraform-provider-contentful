@@ -663,10 +663,13 @@ func TestCompleteWebhookPlanRestoresCanonicalisedEquivalentResponse(t *testing.T
 	t.Parallel()
 
 	plan := completeWebhookMutationPlan()
-	state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), completeWebhookMutationResponse(), plan, plan.WebhookID)
+	response := completeWebhookMutationResponse()
+	response.Sys.Version = 0
+	state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 	assert.Empty(t, responseDiags)
 	assert.Empty(t, consistencyDiags)
+	assert.Equal(t, types.Int64Value(0), state.Version)
 	assert.True(t, state.Filters.Equal(plan.Filters))
 	assert.True(t, state.Transformation.Equal(plan.Transformation))
 	assert.Equal(t, plan.HTTPBasicPassword, state.HTTPBasicPassword)

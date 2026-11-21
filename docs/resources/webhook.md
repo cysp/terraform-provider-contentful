@@ -71,6 +71,7 @@ resource "contentful_webhook" "this" {
 ### Read-Only
 
 - `id` (String) Composite Terraform resource identifier in `space_id/webhook_id` form.
+- `version` (Number) The Contentful `sys.version` last observed for this webhook.
 - `webhook_id` (String) System ID of the webhook.
 
 <a id="nestedatt--filters"></a>

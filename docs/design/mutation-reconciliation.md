@@ -80,12 +80,18 @@ For controls and sidebar widgets, compare the identifiers and namespace exactly 
 
 ## Webhook mutation decisions
 
-When the remotely managed values in the effective plan match prior state, Update
-stores the planned `timeouts` and retains the webhook identity and private version.
-An unknown computed-only observation can keep its prior value on this path.
-This also works after import when Contentful has redacted credentials. For a
-remote change, Update validates the complete request and requires the stored
-version before sending the PUT.
+When the remotely managed values in the effective plan match prior state,
+planning preserves the prior `version`. Update saves the planned `timeouts`
+without sending a PUT, including when Contentful has redacted credentials.
+
+For a remote change, Update validates the full request and sends the private
+version as `X-Contentful-Version`. Contentful checks this precondition when
+the webhook exists. If the webhook was deleted after refresh, the same PUT
+can recreate it at the requested ID. See the [version observations](../research/webhooks.md#webhook-definition-versions).
+
+The public `version` records Contentful’s `sys.version`. If a mutation response
+identifies a different space, or a PUT returns a different webhook ID, recovery
+state clears both versions.
 
 On a full Webhook PUT, omit a header's `value` only when the planned value is null and both the planned header and the refreshed prior header at the exact key have `secret = true`. Send every known string, including an empty one, verbatim.
 

@@ -14,6 +14,7 @@ type WebhookModel struct {
 	IDIdentityModel
 	WebhookIdentityModel
 
+	Version           types.Int64                                `tfsdk:"version"`
 	Name              types.String                               `tfsdk:"name"`
 	URL               types.String                               `tfsdk:"url"`
 	Topics            TypedList[types.String]                    `tfsdk:"topics"`

@@ -59,8 +59,10 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 				Config: localConfig,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate),
+					plancheck.ExpectKnownValue(address, tfjsonpath.New("version"), knownvalue.Int64Exact(1)),
 				}},
 				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(address, tfjsonpath.New("version"), knownvalue.Int64Exact(1)),
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("timeouts").AtMapKey("update"), knownvalue.StringExact("3m")),
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("http_basic_username"), knownvalue.StringExact("user")),
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("http_basic_password"), knownvalue.Null()),

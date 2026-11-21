@@ -20,6 +20,7 @@ func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(spaceID, webhookID),
 		SpaceID:         types.StringValue(spaceID),
 		WebhookID:       types.StringValue(webhookID),
+		Version:         types.Int64Value(int64(webhookDefinition.Sys.Version)),
 	}
 
 	model.Name = types.StringValue(webhookDefinition.Name)
@@ -56,6 +57,10 @@ func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.
 	reconciler := mutationResponseReconciler{resourceName: "webhook"}
 	reconciler.pinIdentity(path.Root("space_id"), plan.SpaceID, state.SpaceID, &state.SpaceID)
 	reconciler.pinCreatedIdentity(path.Root("webhook_id"), endpointID, plan.WebhookID, state.WebhookID, &state.WebhookID)
+
+	if reconciler.identityMismatch {
+		state.Version = types.Int64Null()
+	}
 
 	state.IDIdentityModel = NewIDIdentityModelFromMultipartID(state.SpaceID.ValueString(), state.WebhookID.ValueString())
 
