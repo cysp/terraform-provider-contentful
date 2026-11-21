@@ -94,7 +94,7 @@ func TestAccEntryResourceContentTypeContradictionPreservesRecoveryState(t *testi
 						plancheck.ExpectResourceAction(address, plancheck.ResourceActionReplace),
 						expectResponseStateInPlan{address: address, valuePath: tfjsonpath.New("content_type_id"), value: "remote"},
 						expectResponseStateInPlan{address: address, valuePath: tfjsonpath.New("id"), value: "space/environment/entry"},
-						expectResponseStateInPlan{address: address, valuePath: tfjsonpath.New("fields").AtMapKey("managed"), value: testJSON(map[string]string{"en-US": "planned"})},
+						expectResponseStateInPlan{address: address, valuePath: tfjsonpath.New("fields").AtMapKey("managed").AtMapKey("en-US"), value: testJSON("planned")},
 					}},
 				},
 			)

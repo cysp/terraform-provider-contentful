@@ -7,6 +7,8 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/attr/xattr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -16,11 +18,13 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*entryResource)(nil)
-	_ resource.ResourceWithConfigure   = (*entryResource)(nil)
-	_ resource.ResourceWithIdentity    = (*entryResource)(nil)
-	_ resource.ResourceWithImportState = (*entryResource)(nil)
-	_ resource.ResourceWithModifyPlan  = (*entryResource)(nil)
+	_ resource.Resource                   = (*entryResource)(nil)
+	_ resource.ResourceWithConfigure      = (*entryResource)(nil)
+	_ resource.ResourceWithIdentity       = (*entryResource)(nil)
+	_ resource.ResourceWithImportState    = (*entryResource)(nil)
+	_ resource.ResourceWithUpgradeState   = (*entryResource)(nil)
+	_ resource.ResourceWithValidateConfig = (*entryResource)(nil)
+	_ resource.ResourceWithModifyPlan     = (*entryResource)(nil)
 )
 
 //nolint:ireturn
@@ -44,6 +48,27 @@ func (r *entryResource) Metadata(_ context.Context, req resource.MetadataRequest
 
 func (r *entryResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = EntryResourceSchema(ctx)
+}
+
+func (r *entryResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	// Framework validation stops at the outer map's elements. Validate JSON
+	// in each localized field at the path Terraform assigned to that value.
+	root := path.Root("fields")
+
+	var fields TypedMap[TypedMap[jsontypes.Normalized]]
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, root, &fields)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	for fieldID, locales := range fields.Elements() {
+		for code, value := range locales.Elements() {
+			var result xattr.ValidateAttributeResponse
+			value.ValidateAttribute(ctx, xattr.ValidateAttributeRequest{Path: root.AtMapKey(fieldID).AtMapKey(code)}, &result)
+			resp.Diagnostics.Append(result.Diagnostics...)
+		}
+	}
 }
 
 func (r *entryResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

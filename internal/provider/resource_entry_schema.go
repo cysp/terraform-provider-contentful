@@ -25,6 +25,7 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 	}).ToObjectValue(ctx)
 
 	return schema.Schema{
+		Version:     1,
 		Description: "Manages a Contentful Entry in an environment. Creating an Entry or changing its managed fields or metadata writes and publishes a draft. Import and refresh do not publish drafts written outside Terraform.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -72,9 +73,9 @@ func EntryResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"fields": schema.MapAttribute{
-				Description: "Complete set of Entry field values, keyed by Contentful field ID. For field content, encode a JSON object keyed by locale, for example `jsonencode({ \"en-US\" = \"Welcome\" })`. Use the environment's default locale for non-localized fields. A Terraform-null map value omits that field from the request; `jsonencode(null)` sends JSON null. Updates replace the complete fields payload. See [field ownership](#drift-and-field-ownership) and [null and empty values](#null-and-empty-field-values).",
-				ElementType: jsontypes.NormalizedType{},
-				CustomType:  NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
+				Description: "Complete set of Entry field values, keyed by Contentful field ID and locale code. Encode each locale value with jsonencode. Use the environment's default locale for non-localized fields. Updates replace the complete fields payload. See [field ownership](#drift-and-field-ownership) and [null and empty values](#null-and-empty-field-values).",
+				ElementType: NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx),
+				CustomType:  NewTypedMapNull[TypedMap[jsontypes.Normalized]]().CustomType(ctx),
 				Required:    true,
 			},
 			"metadata": schema.SingleNestedAttribute{

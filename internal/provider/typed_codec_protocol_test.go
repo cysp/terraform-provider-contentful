@@ -15,7 +15,7 @@ func TestProtocol6ResourceValidationRejectsMalformedCollectionJSON(t *testing.T)
 	for resourceType, config := range map[string]map[string]any{
 		"contentful_entry": {
 			"space_id": "space", "environment_id": "master", "content_type_id": "article",
-			"fields": map[string]string{"title": "{"},
+			"fields": map[string]any{"title": map[string]string{"en-US": "{"}},
 		},
 		"contentful_content_type": {
 			"space_id": "space", "environment_id": "master", "content_type_id": "article",
@@ -60,6 +60,10 @@ func TestProtocol6ResourceValidationRejectsMalformedCollectionJSON(t *testing.T)
 			assert.Equal(t, tfprotov6.DiagnosticSeverityError, response.Diagnostics[0].Severity)
 			assert.Equal(t, "Invalid JSON String Value", response.Diagnostics[0].Summary)
 			assert.Contains(t, response.Diagnostics[0].Detail, "not valid JSON string format")
+
+			if resourceType == "contentful_entry" {
+				assert.Equal(t, tftypes.NewAttributePath().WithAttributeName("fields").WithElementKeyString("title").WithElementKeyString("en-US"), response.Diagnostics[0].Attribute)
+			}
 		})
 	}
 }

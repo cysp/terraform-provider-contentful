@@ -27,15 +27,21 @@ Routine provider logs omit Entry request and response payloads. Contentful error
 
 - Outside pending draft recovery, changing only `timeouts` leaves the remote Entry untouched.
 - Unpublishing outside Terraform makes `published_version` null. Terraform does not republish solely to restore the previous publication. A later managed `fields` or `metadata` change writes and publishes a new draft.
-- Entry updates replace the complete `fields` payload. Values retained by `ignore_changes` remain in that payload and are published with any later managed change. An ignored-only external draft is left untouched.
+- To leave one translation to another editor, add its path to `lifecycle.ignore_changes`, for example `fields["name"]["fr-FR"]`. Entry updates replace the complete `fields` payload. Values retained by `ignore_changes` remain in that payload and are published with any later managed change. An ignored-only external draft is left untouched.
 - Content Type defaults may be added when an Entry is created, but Contentful does not reapply them on updates. Use `ignore_changes` for defaulted fields that another system should continue to manage.
 - The resource uses whole-Entry publication and does not model independent locale publication. Locale-based publishing is currently unsupported.
 
 ## Null and empty field values
 
-Terraform `null` omits a field from the request; `jsonencode(null)` sends JSON null. Contentful can omit JSON-null fields from its response. When that happens, the provider preserves the planned or previously stored null representation. A value returned by Contentful takes precedence during refresh, so external changes remain visible.
+A Terraform `null` map element omits that field or locale from the request. To send JSON null for a translation, use `name = { "en-US" = jsonencode(null) }`. Refresh preserves a previously omitted null element while it is absent. A returned value takes precedence so external changes remain visible.
 
-Contentful can also omit fields whose locale values are all empty arrays. The provider preserves those known empty values when they are absent from the response. It does not preserve a removed nonempty field this way. A locale object such as `jsonencode({ "en-US" = null })` is a distinct value and receives no null fallback.
+Contentful can omit fields whose locale values are all empty arrays. The provider preserves those known empty values while absent. A removed nonempty value remains observable.
+
+## Upgrading Entry fields
+
+Earlier configurations encoded each complete locale map as one JSON string. Move `jsonencode` to each locale value. For example, change `name = jsonencode({ "en-US" = var.name })` to `name = { "en-US" = jsonencode(var.name) }`. Expressions producing maps of JSON strings and module inputs with type `map(string)` need the same change at their source. From the provider source checkout, run `go run ./cmd/terraform-provider-contentful-migrate -check /path/to/config` to identify safe literal conversions and skipped expressions. Use `-write` to rewrite supported literals, review the diff, and convert dynamic expressions and module variable types manually. The tool stages each changed file beside its target and replaces it after the new contents are written. Symbolic links keep pointing to their targets. If a later file fails, the tool reports earlier updates and leaves them in place. A subsequent `-check` exits nonzero while changes or skipped expressions remain. The provider upgrades supported prior state at plan time. Review the plan before applying.
+
+The earlier whole-field expression `name = jsonencode(null)` sent a JSON null in place of the entire locale map. The nested schema cannot express that value. State upgrade reports the field path and stops if it encounters whole-field JSON null. Keep the previous provider version while that behavior is required.
 
 ## Destroy
 

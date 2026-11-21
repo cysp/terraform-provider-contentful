@@ -14,6 +14,7 @@ import (
 	frameworkprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	frameworkresource "github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	testingresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -57,7 +58,7 @@ func TestAccEntryResourceLegacyStateDoesNotAuthorizePublication(t *testing.T) {
 	additionalCLIOptions := &testingresource.AdditionalCLIOptions{
 		Plan: testingresource.PlanOptions{NoRefresh: true},
 	}
-	config := `
+	legacyConfig := `
 resource "contentful_entry" "test" {
   space_id        = "space"
   environment_id  = "environment"
@@ -66,13 +67,22 @@ resource "contentful_entry" "test" {
   fields = { managed = jsonencode({ "en-US" = "one" }) }
 }
 `
+	config := `
+resource "contentful_entry" "test" {
+  space_id        = "space"
+  environment_id  = "environment"
+  entry_id        = "entry"
+  content_type_id = "article"
+  fields = { managed = { "en-US" = jsonencode("one") } }
+}
+`
 
 	testingresource.Test(t, validateAcceptanceTestCase(t, testingresource.TestCase{
 		AdditionalCLIOptions: additionalCLIOptions,
 		Steps: []testingresource.TestStep{
 			{
 				ProtoV6ProviderFactories: legacyEntryProviderFactories(published.Response, options...),
-				Config:                   config,
+				Config:                   legacyConfig,
 			},
 			{
 				PreConfig:                recorder.reset,
@@ -151,6 +161,7 @@ func (r *legacyEntryResource) Metadata(_ context.Context, req frameworkresource.
 func (r *legacyEntryResource) Schema(ctx context.Context, _ frameworkresource.SchemaRequest, resp *frameworkresource.SchemaResponse) {
 	resp.Schema = EntryResourceSchema(ctx)
 	resp.Schema.Version = 0
+	resp.Schema.Attributes["fields"] = schema.MapAttribute{Required: true, ElementType: jsontypes.NormalizedType{}, CustomType: NewTypedMapNull[jsontypes.Normalized]().CustomType(ctx)}
 	delete(resp.Schema.Attributes, "published_version")
 }
 
@@ -173,7 +184,7 @@ func (r *legacyEntryResource) Create(ctx context.Context, req frameworkresource.
 		IDIdentityModel:    current.IDIdentityModel,
 		EntryIdentityModel: current.EntryIdentityModel,
 		ContentTypeID:      current.ContentTypeID,
-		Fields:             current.Fields,
+		Fields:             plan.Fields,
 		Metadata:           plan.Metadata,
 		Timeouts:           plan.Timeouts,
 	}

@@ -23,6 +23,6 @@ resource "contentful_entry" "using_lookup" {
   content_type_id = data.contentful_content_type.article.content_type_id
   entry_id        = "looked-up-entry"
   fields = {
-    title = jsonencode({ "en-US" = "From discovery" })
+    title = { "en-US" = jsonencode("From discovery") }
   }
 }

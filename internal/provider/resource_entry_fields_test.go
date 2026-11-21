@@ -29,11 +29,11 @@ resource "contentful_entry" "test" {
   entry_id        = "entry"
   content_type_id = "article"
   fields = {
-    managed = jsonencode({ "en-US" = %q })
+    managed = { "en-US" = jsonencode(%q) }
   }
 
   lifecycle {
-    ignore_changes = [fields["external"]]
+    ignore_changes = [fields["external"], fields["managed"]["fr-FR"]]
   }
 }
 `, managed)
@@ -55,7 +55,7 @@ resource "contentful_entry" "test" {
 				entry := getTestEntry(t, server)
 				response, putErr := server.Handler().PutEntry(t.Context(), &cm.EntryRequest{
 					Fields: cm.NewOptEntryFields(cm.EntryFields{
-						"managed":  jx.Raw(testJSON(map[string]any{"en-US": "one"})),
+						"managed":  jx.Raw(testJSON(map[string]any{"en-US": "one", "fr-FR": "traduction"})),
 						"external": jx.Raw(testJSON(map[string]any{"en-US": "remote"})),
 					}),
 					Metadata: entry.Metadata,
@@ -84,7 +84,7 @@ resource "contentful_entry" "test" {
 			Config:    config("two"),
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
-				require.JSONEq(t, testJSON(map[string]any{"en-US": "two"}), string(update.fields["managed"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": "two", "fr-FR": "traduction"}), string(update.fields["managed"]))
 				require.JSONEq(t, testJSON(map[string]any{"en-US": "remote"}), string(update.fields["external"]))
 
 				return nil
@@ -132,7 +132,7 @@ resource "contentful_entry" "test" {
   entry_id        = "entry"
   content_type_id = "article"
   fields = {
-    managed = jsonencode({ "en-US" = %q })
+    managed = { "en-US" = jsonencode(%q) }
   }
 
   lifecycle {
@@ -149,7 +149,7 @@ resource "contentful_entry" "test" {
   entry_id        = "entry"
   content_type_id = "article"
   fields = {
-    managed = jsonencode({ "en-US" = %q })
+    managed = { "en-US" = jsonencode(%q) }
   }
 }
 `, managed)
@@ -226,7 +226,7 @@ func TestAccEntryResourceNullFieldLifecycle(t *testing.T) {
 
 		additionalRawNull := ""
 		if includeAdditionalRawNull {
-			additionalRawNull = "additional_raw_null = jsonencode(null)"
+			additionalRawNull = "additional_raw_null = { \"en-US\" = jsonencode(null) }"
 		}
 
 		return fmt.Sprintf(`
@@ -237,14 +237,15 @@ resource "contentful_entry" "test" {
   content_type_id = "article"
   fields = {
     managed  = %s
-    raw_null = jsonencode(null)
+    raw_null = { "en-US" = jsonencode(null) }
+    arrays = { "en-US" = jsonencode([]), "de-DE" = null }
     %s
     %s
   }
 }
 `, managedValue, terraformNull, additionalRawNull)
 	}
-	managed := `jsonencode({ "en-US" = "one" })`
+	managed := `{ "en-US" = jsonencode("one"), "fr-FR" = null }`
 
 	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{
@@ -253,7 +254,8 @@ resource "contentful_entry" "test" {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
 				require.JSONEq(t, testJSON(map[string]any{"en-US": "one"}), string(update.fields["managed"]))
 				require.NotContains(t, update.fields, "terraform_null")
-				require.JSONEq(t, testJSON(nil), string(update.fields["raw_null"]))
+				require.JSONEq(t, `{"en-US":[]}`, string(update.fields["arrays"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": nil}), string(update.fields["raw_null"]))
 				require.NotContains(t, update.fields, "additional_raw_null")
 
 				return nil
@@ -290,8 +292,8 @@ resource "contentful_entry" "test" {
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
 				require.JSONEq(t, testJSON(map[string]any{"en-US": "one"}), string(update.fields["managed"]))
-				require.JSONEq(t, testJSON(nil), string(update.fields["raw_null"]))
-				require.JSONEq(t, testJSON(nil), string(update.fields["additional_raw_null"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": nil}), string(update.fields["raw_null"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": nil}), string(update.fields["additional_raw_null"]))
 
 				return nil
 			},
@@ -302,13 +304,13 @@ resource "contentful_entry" "test" {
 			Check: func(*terraform.State) error {
 				update, _ := requireEntryUpdateThenPublish(t, recorder.snapshot())
 				require.NotContains(t, update.fields, "managed")
-				require.JSONEq(t, testJSON(nil), string(update.fields["raw_null"]))
-				require.JSONEq(t, testJSON(nil), string(update.fields["additional_raw_null"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": nil}), string(update.fields["raw_null"]))
+				require.JSONEq(t, testJSON(map[string]any{"en-US": nil}), string(update.fields["additional_raw_null"]))
 
 				entry := getTestEntry(t, server)
 				require.NotContains(t, entry.Fields.Value, "managed")
-				require.NotContains(t, entry.Fields.Value, "raw_null")
-				require.NotContains(t, entry.Fields.Value, "additional_raw_null")
+				require.JSONEq(t, `{"en-US":null}`, string(entry.Fields.Value["raw_null"]))
+				require.JSONEq(t, `{"en-US":null}`, string(entry.Fields.Value["additional_raw_null"]))
 				require.True(t, entry.Sys.PublishedVersion.IsSet())
 				require.Less(t, entry.Sys.PublishedVersion.Or(0), entry.Sys.Version)
 
@@ -422,7 +424,7 @@ resource "contentful_entry" "test" {
   environment_id  = "environment"
   entry_id        = "entry"
   content_type_id = "article"
-  fields          = { managed = jsonencode({ "en-US" = "one" }) }
+  fields          = { managed = { "en-US" = jsonencode("one") } }
   metadata        = { tags = ["first", "second"] }
 }
 `
@@ -459,7 +461,7 @@ resource "contentful_entry" "test" {
   environment_id  = "environment"
   entry_id        = "entry"
   content_type_id = "article"
-  fields          = { managed = jsonencode({ "en-US" = "one" }) }
+  fields          = { managed = { "en-US" = jsonencode("one") } }
   metadata        = { tags = [%q, %q] }
 }
 `, first, second)
@@ -502,7 +504,7 @@ resource "contentful_entry" "test" {
   environment_id  = "environment"
   entry_id        = "entry"
   content_type_id = "article"
-  fields          = { managed = jsonencode({ "en-US" = "one" }) }
+  fields          = { managed = { "en-US" = jsonencode("one") } }
   metadata        = { %s = ["duplicate", "duplicate"] }
 }
 `, attributeName)

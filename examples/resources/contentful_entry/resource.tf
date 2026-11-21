@@ -4,6 +4,6 @@ resource "contentful_entry" "example" {
   content_type_id = contentful_content_type.author.content_type_id
 
   fields = {
-    name = jsonencode({ "en-US" = "Ursula Le Guin" })
+    name = { "en-US" = jsonencode("Ursula Le Guin") }
   }
 }

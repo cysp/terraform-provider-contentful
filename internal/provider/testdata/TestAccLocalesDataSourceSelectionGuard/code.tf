@@ -18,5 +18,5 @@ resource "contentful_entry" "test" {
   space_id        = data.contentful_locales.test.space_id
   environment_id  = data.contentful_locales.test.environment_id
   content_type_id = "article"
-  fields          = { title = jsonencode({ (local.selected.code) = "Hello" }) }
+  fields          = { title = { (local.selected.code) = jsonencode("Hello") } }
 }

@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -21,7 +22,10 @@ func TestEntryFieldRequestProperties(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
 		fields := rapid.MapOfN(
 			testdata.AlphanumericStringOfN(1, 10),
-			rapid.OneOf(testdata.NormalizedJSONValue(), rapid.Just(jsontypes.NewNormalizedNull())),
+			rapid.OneOf(
+				rapid.Map(rapid.MapOfN(testdata.AlphanumericStringOfN(1, 8), rapid.OneOf(testdata.NormalizedJSONValue(), rapid.Just(jsontypes.NewNormalizedNull())), 0, 4), NewTypedMap),
+				rapid.Just(NewTypedMapNull[jsontypes.Normalized]()),
+			),
 			0, 5,
 		).Draw(t, "fields")
 		model := EntryModel{Fields: NewTypedMap(fields)}
@@ -36,9 +40,24 @@ func TestEntryFieldRequestProperties(t *testing.T) {
 		expected := make(cm.EntryFields)
 
 		for name, value := range fields {
-			if !value.IsNull() {
-				expected[name] = jx.Raw(value.ValueString())
+			if value.IsNull() {
+				continue
 			}
+
+			localized := map[string]json.RawMessage{}
+
+			for locale, element := range value.Elements() {
+				if !element.IsNull() {
+					localized[locale] = json.RawMessage(element.ValueString())
+				}
+			}
+
+			encoded, err := json.Marshal(localized)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			expected[name] = jx.Raw(encoded)
 		}
 
 		assert.Equal(t, cm.NewOptEntryFields(expected), request.Fields)

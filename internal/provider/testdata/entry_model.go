@@ -17,7 +17,7 @@ func EntryModel(spaceID, environmentID, contentTypeID, entryID string) *rapid.Ge
 			Fields: rapid.Map(
 				rapid.MapOfN(
 					AlphanumericStringOfN(1, 10),
-					NormalizedJSONValue(),
+					rapid.Map(rapid.MapOfN(AlphanumericStringOfN(1, 10), NormalizedJSONValue(), 0, 4), provider.NewTypedMap),
 					0,
 					5,
 				),
