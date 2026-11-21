@@ -167,7 +167,7 @@ func TestAccWebhookResourcePreservesImportedSecretHeadersOnUpdate(t *testing.T) 
 			{
 				Config: webhookHeadersConfig("Updated webhook", ""),
 				PostApplyFunc: func() {
-					recorder.requirePut(t, 1, "1", "Updated webhook", []map[string]any{
+					recorder.requirePut(t, 1, "0", "Updated webhook", []map[string]any{
 						{"key": "X-Ordinary", "value": "ordinary", "secret": false},
 						{"key": "X-Secret", "secret": true},
 					})
@@ -180,7 +180,7 @@ func TestAccWebhookResourcePreservesImportedSecretHeadersOnUpdate(t *testing.T) 
 			{
 				Config: webhookHeadersConfig("Cleared webhook", "headers = {}"),
 				PostApplyFunc: func() {
-					recorder.requirePut(t, 2, "2", "Cleared webhook", []map[string]any{})
+					recorder.requirePut(t, 2, "1", "Cleared webhook", []map[string]any{})
 
 					stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 					require.True(t, ok)
@@ -230,17 +230,17 @@ func TestAccWebhookResourceRetainsSecretHeaderWhileUpdatingSibling(t *testing.T)
 			},
 		}
 	}
-	ignored := step("first", "2", `headers = { X-Managed = { value = "first" } }
+	ignored := step("first", "1", `headers = { X-Managed = { value = "first" } }
   lifecycle { ignore_changes = [headers["X-Secret"]] }`, 1)
 	ignored.PreConfig = func() {
 		imported.Headers[0].Value = cm.NewOptString("externally-rotated")
 		response, err := server.Handler().UpdateWebhookDefinition(t.Context(), &imported, cm.UpdateWebhookDefinitionParams{
-			SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: 1,
+			SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: cm.NewOptInt(0),
 		})
 		require.NoError(t, err)
 		require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
 	}
-	explicit := step("second", "3", `headers = { X-Managed = terraform_data.header.output.managed, X-Secret = { secret = terraform_data.header.output.secret } }`, 2)
+	explicit := step("second", "2", `headers = { X-Managed = terraform_data.header.output.managed, X-Secret = { secret = terraform_data.header.output.secret } }`, 2)
 	explicit.Config += `
 resource "terraform_data" "header" {
   input = { managed = { value = "second" }, secret = true }

@@ -25,7 +25,7 @@ func (ts *Handler) CreateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 	response := redactWebhookDefinitionSecrets(webhookDefinition)
 
 	return snapshotResponse(&cm.WebhookDefinitionStatusCode{
-		StatusCode: http.StatusCreated,
+		StatusCode: http.StatusOK,
 		Response:   response,
 	}), nil
 }
@@ -65,16 +65,19 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 		response := redactWebhookDefinitionSecrets(newWebhookDefinition)
 
 		return snapshotResponse(&cm.WebhookDefinitionStatusCode{
-			StatusCode: http.StatusCreated,
+			StatusCode: http.StatusOK,
 			Response:   response,
 		}), nil
 	}
 
-	if params.XContentfulVersion != webhookDefinition.Sys.Version {
-		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
+	if version, present := params.XContentfulVersion.Get(); !present || version != webhookDefinition.Sys.Version {
+		return snapshotResponse(NewContentfulManagementErrorStatusCodeConflict(nil, nil)), nil
 	}
 
-	UpdateWebhookDefinitionFromFields(webhookDefinition, *req)
+	if validationError := UpdateWebhookDefinitionFromFields(webhookDefinition, *req); validationError != nil {
+		return snapshotResponse(validationError), nil
+	}
+
 	response := redactWebhookDefinitionSecrets(*webhookDefinition)
 
 	return snapshotResponse(&cm.WebhookDefinitionStatusCode{

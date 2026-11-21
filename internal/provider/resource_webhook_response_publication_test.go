@@ -111,13 +111,13 @@ func TestAccWebhookResourceReturnedCredentialsInRecoveryState(t *testing.T) {
 		t.Run(method, func(t *testing.T) {
 			t.Parallel()
 			runtime, adapter := webhookPublicationRuntime(t)
-			wantVersion := "1"
+			wantVersion := "0"
 
 			if method == http.MethodPut {
 				output, err := runtime.run(t.Context(), "import", "-input=false", "-no-color", "contentful_webhook.test", "space/existing")
 				require.NoError(t, err, output)
 
-				wantVersion = "2"
+				wantVersion = "1"
 			}
 
 			runtime.writeConfig(t, webhookBasicPasswordConfig("Updated", `"configured-password"`, `headers = {}`))

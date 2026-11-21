@@ -28,7 +28,7 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 	server.RegisterSpaceEnvironment("space", "master")
 
 	fields := cm.WebhookDefinitionData{
-		Name: "Imported webhook", URL: "https://example.com/webhook", Topics: []string{"Entry.publish"},
+		Name: "Before import", URL: "https://example.com/webhook", Topics: []string{"Entry.publish"},
 		HttpBasicUsername: cm.NewOptNilString("user"), HttpBasicPassword: cm.NewOptNilString("remote-password"),
 		Active: cm.NewOptBool(true),
 		Headers: cm.WebhookDefinitionHeaders{
@@ -37,9 +37,10 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 		},
 	}
 	server.SetWebhookDefinition("space", "imported-webhook", fields)
-	// Import at version 2 so a fabricated initial version cannot authorize the next PUT.
+	// Advance the version before import to exercise the stored PUT precondition.
+	fields.Name = "Imported webhook"
 	seed, err := server.Handler().UpdateWebhookDefinition(t.Context(), &fields, cm.UpdateWebhookDefinitionParams{
-		SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: 1,
+		SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: cm.NewOptInt(0),
 	})
 	require.NoError(t, err)
 	require.IsType(t, &cm.WebhookDefinitionStatusCode{}, seed)
@@ -74,7 +75,7 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 
 					stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 					require.True(t, ok)
-					require.Equal(t, 2, stored.Sys.Version)
+					require.Equal(t, 1, stored.Sys.Version)
 					require.Equal(t, cm.NewOptNilString("remote-password"), stored.HttpBasicPassword)
 
 					return nil
@@ -96,7 +97,7 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 					puts := recorder.matchingRequests(http.MethodPut, "")
 					require.Len(t, puts, 1)
 					require.Equal(t, "/spaces/space/webhook_definitions/imported-webhook", puts[0].path)
-					require.Equal(t, "2", puts[0].version)
+					require.Equal(t, "1", puts[0].version)
 					require.JSONEq(t, testJSON(map[string]any{
 						"name": "Imported webhook", "url": "https://example.com/webhook", "topics": []string{"Entry.publish"},
 						"httpBasicUsername": "user", "httpBasicPassword": "rotated-password",
@@ -105,7 +106,7 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 
 					stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 					require.True(t, ok)
-					require.Equal(t, 3, stored.Sys.Version)
+					require.Equal(t, 2, stored.Sys.Version)
 					require.Equal(t, cm.NewOptNilString("rotated-password"), stored.HttpBasicPassword)
 
 					return nil

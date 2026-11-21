@@ -666,7 +666,8 @@ type Handler interface {
 	UpdateRole(ctx context.Context, req *RoleData, params UpdateRoleParams) (UpdateRoleRes, error)
 	// UpdateWebhookDefinition implements updateWebhookDefinition operation.
 	//
-	// Update a webhook definition.
+	// Creates a webhook at an unused ID. Updating an existing webhook requires its current sys.version in
+	// X-Contentful-Version.
 	//
 	// PUT /spaces/{space_id}/webhook_definitions/{webhook_definition_id}
 	UpdateWebhookDefinition(ctx context.Context, req *WebhookDefinitionData, params UpdateWebhookDefinitionParams) (UpdateWebhookDefinitionRes, error)

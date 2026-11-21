@@ -1,44 +1,70 @@
 package cmtesting
 
-import cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+import (
+	"reflect"
+	"slices"
+
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/go-faster/jx"
+)
 
 func NewWebhookDefinitionFromFields(spaceID, webhookDefinitionID string, webhookDefinitionFields cm.WebhookDefinitionData) cm.WebhookDefinition {
 	webhookDefinition := cm.WebhookDefinition{
 		Sys: cm.NewWebhookDefinitionSys(spaceID, webhookDefinitionID),
 	}
 
-	UpdateWebhookDefinitionFromFields(&webhookDefinition, webhookDefinitionFields)
+	setWebhookDefinitionFields(&webhookDefinition, webhookDefinitionFields)
 
 	return webhookDefinition
 }
 
-func UpdateWebhookDefinitionFromFields(webhookDefinition *cm.WebhookDefinition, webhookDefinitionFields cm.WebhookDefinitionData) {
-	webhookDefinition.Sys.Version++
+func UpdateWebhookDefinitionFromFields(webhook *cm.WebhookDefinition, fields cm.WebhookDefinitionData) *cm.ErrorStatusCode {
+	updated := *webhook
+	setWebhookDefinitionFields(&updated, fields)
+
+	for i, header := range updated.Headers {
+		if header.Value.IsSet() || !header.Secret.Or(false) {
+			continue
+		}
+
+		index := slices.IndexFunc(webhook.Headers, func(stored cm.WebhookDefinitionHeader) bool {
+			return stored.Key == header.Key
+		})
+		if index < 0 {
+			return missingWebhookHeaderValueError(header.Key)
+		}
+
+		updated.Headers[i] = webhook.Headers[index]
+	}
+
+	if !reflect.DeepEqual(*webhook, updated) {
+		updated.Sys.Version++
+		*webhook = updated
+	}
+
+	return nil
+}
+
+func missingWebhookHeaderValueError(key string) *cm.ErrorStatusCode {
+	var details jx.Encoder
+	details.ObjStart()
+	details.FieldStart("errors")
+	details.Str("Header " + key + " is missing a value and cannot be set")
+	details.ObjEnd()
+
+	return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), details.Bytes())
+}
+
+func setWebhookDefinitionFields(webhookDefinition *cm.WebhookDefinition, webhookDefinitionFields cm.WebhookDefinitionData) {
 	webhookDefinition.Name = webhookDefinitionFields.Name
 	webhookDefinition.URL = webhookDefinitionFields.URL
 	webhookDefinition.HttpBasicUsername = webhookDefinitionFields.HttpBasicUsername
 	webhookDefinition.HttpBasicPassword = webhookDefinitionFields.HttpBasicPassword
 
-	headers := make(cm.WebhookDefinitionHeaders, len(webhookDefinitionFields.Headers))
-	for index, header := range webhookDefinitionFields.Headers {
-		headers[index] = header
-		if header.Value.IsSet() || !header.Secret.Or(false) {
-			continue
-		}
-
-		for _, existingHeader := range webhookDefinition.Headers {
-			if existingHeader.Key == header.Key && existingHeader.Secret.Or(false) {
-				headers[index].Value = existingHeader.Value
-
-				break
-			}
-		}
-	}
-
-	webhookDefinition.Headers = headers
+	webhookDefinition.Headers = append(cm.WebhookDefinitionHeaders{}, webhookDefinitionFields.Headers...)
 	webhookDefinition.Topics = webhookDefinitionFields.Topics
 	webhookDefinition.Filters = webhookDefinitionFields.Filters
-	webhookDefinition.Active = webhookDefinitionFields.Active
+	webhookDefinition.Active = cm.NewOptBool(webhookDefinitionFields.Active.Or(true))
 	convertOptNil(&webhookDefinition.Transformation, &webhookDefinitionFields.Transformation, func(transformation cm.WebhookDefinitionDataTransformation) cm.WebhookDefinitionTransformation {
 		return cm.WebhookDefinitionTransformation(transformation)
 	})

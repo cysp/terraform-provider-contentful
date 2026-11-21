@@ -159,6 +159,20 @@ Redacted metadata does not establish equality of complete secrets.
 
 The fixture stores only a redacted suffix. To check which secret the provider submitted, inspect the literal request body as the [lifecycle tests](../../internal/provider/resource_webhook_signing_secret_test.go) do.
 
+### Webhook definition versions
+
+POST creates a webhook at version 0, as does PUT to an unused ID. PUT to an
+existing definition requires the exact `X-Contentful-Version`. The mock compares
+the stored fields before redacting secrets and increments the version only
+when those fields change. See the [live version observations](../research/webhooks.md#webhook-definition-versions).
+
+On an existing webhook, a PUT header with `secret: true` and no `value`
+retains the stored header at that exact key. If the key is absent, the mock
+returns 422 and preserves the entire definition. The mock still accepts a missing
+secret value on creation, including when a webhook is deleted between refresh
+and PUT. For the observed creation errors, see the
+[header observations](../research/webhooks.md#header-names-order-and-secret-updates).
+
 ### Webhook topics
 
 **Evidence:** Contentful's [Webhook configuration

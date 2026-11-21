@@ -205,13 +205,13 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 	}
 
 	require.Equal(t, "/spaces/space/webhook_definitions/imported-webhook", updates[0].path)
-	require.Equal(t, "1", updates[0].version)
+	require.Equal(t, "0", updates[0].version)
 	require.JSONEq(t, testJSON(body), string(updates[0].body))
 
 	body["httpBasicUsername"], body["httpBasicPassword"] = nil, nil
 
 	require.Equal(t, "/spaces/space/webhook_definitions/imported-webhook", updates[1].path)
-	require.Equal(t, "2", updates[1].version)
+	require.Equal(t, "1", updates[1].version)
 	require.JSONEq(t, testJSON(body), string(updates[1].body))
 }
 
