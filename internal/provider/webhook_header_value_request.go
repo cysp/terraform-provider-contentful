@@ -32,13 +32,14 @@ func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
 }
 
 // A null value asks Contentful to keep the secret at this exact key.
+// An unknown flag can permit omission only if there is a prior secret to retain.
 func (v WebhookHeaderValue) validateValueOmission(headerPath path.Path, prior TypedObject[WebhookHeaderValue]) diag.Diagnostics {
 	if !v.Value.IsNull() {
 		return nil
 	}
 
 	previous, present := prior.GetValue()
-	if present && previous.Secret.ValueBool() && v.Secret.ValueBool() {
+	if present && previous.Secret.ValueBool() && (v.Secret.ValueBool() || v.Secret.IsUnknown()) {
 		return nil
 	}
 

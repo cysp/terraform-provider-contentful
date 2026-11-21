@@ -207,44 +207,86 @@ func TestAccWebhookResourceRetainsSecretHeaderWhileUpdatingSibling(t *testing.T)
 
 	const address = "contentful_webhook.test"
 
-	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
-		{Config: webhookHeadersConfig(imported.Name, ""), ResourceName: address, ImportState: true, ImportStateId: "space/imported-webhook", ImportStatePersist: true},
-		{
-			Config: webhookHeadersConfig(imported.Name, `headers = { X-Managed = { value = "first" } }
-  lifecycle { ignore_changes = [headers["X-Secret"]] }`),
-			PreConfig: func() {
-				imported.Headers[0].Value = cm.NewOptString("externally-rotated")
-				response, err := server.Handler().UpdateWebhookDefinition(t.Context(), &imported, cm.UpdateWebhookDefinitionParams{
-					SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: 1,
-				})
-				require.NoError(t, err)
-				require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
-			},
+	step := func(managed, version, headers string, writes int) resource.TestStep {
+		return resource.TestStep{
+			Config: webhookHeadersConfig(imported.Name, headers),
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(address, tfjsonpath.New("headers"), knownvalue.MapExact(map[string]knownvalue.Check{
 					"X-Secret":  knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(true), "value": knownvalue.Null()}),
-					"X-Managed": knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(false), "value": knownvalue.StringExact("first")}),
+					"X-Managed": knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(false), "value": knownvalue.StringExact(managed)}),
 				})),
 			},
 			PostApplyFunc: func() {
-				recorder.requirePut(t, 1, "2", imported.Name, []map[string]any{
-					{"key": "X-Managed", "secret": false, "value": "first"}, {"key": "X-Secret", "secret": true},
+				recorder.requirePut(t, writes, version, imported.Name, []map[string]any{
+					{"key": "X-Managed", "secret": false, "value": managed}, {"key": "X-Secret", "secret": true},
 				})
 
 				stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 				require.True(t, ok)
 				require.Equal(t, cm.WebhookDefinitionHeaders{
-					{Key: "X-Managed", Secret: cm.NewOptBool(false), Value: cm.NewOptString("first")},
+					{Key: "X-Managed", Secret: cm.NewOptBool(false), Value: cm.NewOptString(managed)},
 					{Key: "X-Secret", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-rotated")},
 				}, stored.Headers)
 			},
-		},
+		}
+	}
+	ignored := step("first", "2", `headers = { X-Managed = { value = "first" } }
+  lifecycle { ignore_changes = [headers["X-Secret"]] }`, 1)
+	ignored.PreConfig = func() {
+		imported.Headers[0].Value = cm.NewOptString("externally-rotated")
+		response, err := server.Handler().UpdateWebhookDefinition(t.Context(), &imported, cm.UpdateWebhookDefinitionParams{
+			SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: 1,
+		})
+		require.NoError(t, err)
+		require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
+	}
+	explicit := step("second", "3", `headers = { X-Managed = terraform_data.header.output.managed, X-Secret = { secret = terraform_data.header.output.secret } }`, 2)
+	explicit.Config += `
+resource "terraform_data" "header" {
+  input = { managed = { value = "second" }, secret = true }
+}
+`
+	invalid := func(key string) resource.TestStep {
+		return resource.TestStep{
+			Config:      webhookHeadersConfig(imported.Name, fmt.Sprintf("headers = { %q = { secret = true } }", key)),
+			PlanOnly:    true,
+			ExpectError: regexp.MustCompile("Missing webhook header value"),
+		}
+	}
+	unknownSecret := webhookHeadersConfig(imported.Name, `headers = { X-Secret = { secret = terraform_data.flag.output } }`) + `
+resource "terraform_data" "flag" {
+  input = true
+}
+`
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+		{Config: webhookHeadersConfig(imported.Name, ""), ResourceName: address, ImportState: true, ImportStateId: "space/imported-webhook", ImportStatePersist: true},
+		ignored, explicit, invalid("x-secret"), invalid("X-Managed"),
+		{Config: explicit.Config, Taint: []string{address}, PlanOnly: true, ExpectError: regexp.MustCompile("Missing webhook header value")},
+		{Config: unknownSecret, Taint: []string{address}, PlanOnly: true, ExpectError: regexp.MustCompile("Missing webhook header value")},
 	}})
 	recorder.mu.Lock()
 	defer recorder.mu.Unlock()
 
-	require.Len(t, recorder.writes, 2)
-	require.Equal(t, http.MethodDelete, recorder.writes[1].method)
+	require.Len(t, recorder.writes, 3)
+	require.Equal(t, http.MethodDelete, recorder.writes[2].method)
+}
+
+func TestAccWebhookResourceRequiresValueForNewSecretHeader(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer()
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+	recorder := &webhookWriteRecorder{next: server}
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{{
+		Config:      webhookHeadersConfig("New webhook", `headers = { X-Secret = { secret = true } }`),
+		PlanOnly:    true,
+		ExpectError: regexp.MustCompile("Missing webhook header value"),
+	}}})
+	recorder.mu.Lock()
+	defer recorder.mu.Unlock()
+
+	require.Empty(t, recorder.writes)
 }
 
 func webhookHeadersConfig(name, headers string) string {
