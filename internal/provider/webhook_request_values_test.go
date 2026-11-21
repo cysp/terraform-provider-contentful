@@ -68,7 +68,7 @@ func TestWebhookModelRejectsInvalidScalarRequestValues(t *testing.T) {
 			model := validWebhookRequestModel()
 			test.setValue(&model)
 
-			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
+			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, nil, path.Empty())
 
 			require.True(t, diags.HasError())
 			assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, diags))
@@ -120,7 +120,7 @@ func TestWebhookModelTopicsRequestValues(t *testing.T) {
 			model := validWebhookRequestModel()
 			model.Topics = test.topics
 
-			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
+			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, nil, path.Empty())
 
 			if len(test.expectedPaths) > 0 {
 				require.True(t, diags.HasError())
@@ -228,7 +228,7 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), test.headers, test.headers)
+			actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), test.headers, nil)
 
 			if len(test.expectedPaths) > 0 {
 				require.True(t, diags.HasError())

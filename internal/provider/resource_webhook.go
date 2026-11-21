@@ -64,7 +64,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, path.Empty())
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, nil, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -240,7 +240,14 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, path.Empty())
+	var priorHeaders TypedMap[TypedObject[WebhookHeaderValue]]
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("headers"), &priorHeaders)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	request, requestDiags := plan.ToWebhookDefinitionData(ctx, config, priorHeaders.Elements(), path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

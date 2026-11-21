@@ -58,10 +58,11 @@ Contentful's `secret = true` flag on a custom webhook header controls how Conten
 
 Terraform records returned header values. When Contentful omits a secret value, refresh retains the previously managed value at the exact header name, including its case. An external rotation can then go undetected. Import leaves an omitted value null.
 
-After import, choose how Terraform should manage headers:
+When updating a webhook:
 
-- Omit `headers` to preserve the imported headers on later updates. The provider sends unreadable secret headers without values, which lets Contentful retain their secrets.
-- Configure `headers` with values for every header you want to manage.
+- Omit `headers` to keep the headers in state. Terraform resends known values. For a secret header with a null value, it sends only the name and `secret = true`.
+- Use `ignore_changes = [headers["X-Token"]]` to retain that entry from state while managing other headers. A null secret value preserves the remote secret. A known value is sent again and can overwrite an external rotation.
+- Configure `headers` with values for the headers you want to set or replace.
 - Set `headers = {}` to clear all custom headers.
 
 ## App and extension parameters

@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"maps"
 	"slices"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -11,7 +12,7 @@ import (
 func ToWebhookDefinitionHeaders(
 	path path.Path,
 	model TypedMap[TypedObject[WebhookHeaderValue]],
-	configured TypedMap[TypedObject[WebhookHeaderValue]],
+	prior map[string]TypedObject[WebhookHeaderValue],
 ) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
 	if model.IsNull() || model.IsUnknown() {
 		// The lifecycle rejects configuration-owned unknown plans. A remaining
@@ -21,28 +22,16 @@ func ToWebhookDefinitionHeaders(
 
 	diags := diag.Diagnostics{}
 
-	headers := make(cm.WebhookDefinitionHeaders, len(model.Elements()))
+	plannedHeaders := model.Elements()
+	headers := make(cm.WebhookDefinitionHeaders, len(plannedHeaders))
 
-	headersValues := model.Elements()
-
-	headersKeys := make([]string, len(headersValues))
-
-	index := 0
-
-	for key := range headersValues {
-		headersKeys[index] = key
-		index++
-	}
-
-	slices.Sort(headersKeys)
-
-	for index, key := range headersKeys {
-		headersValue := headersValues[key]
-		headerValue, ok := headersValue.GetValue()
+	for index, key := range slices.Sorted(maps.Keys(plannedHeaders)) {
+		plannedHeader := plannedHeaders[key]
+		headerValue, ok := plannedHeader.GetValue()
 		headerPath := path.AtMapKey(key)
 
 		if !ok {
-			if headersValue.IsUnknown() {
+			if plannedHeader.IsUnknown() {
 				diags.AddAttributeError(
 					headerPath,
 					"Unexpected unknown webhook header",
@@ -59,7 +48,7 @@ func ToWebhookDefinitionHeaders(
 			continue
 		}
 
-		header, headerDiags := headerValue.ToWebhookDefinitionHeader(headerPath, key, configured)
+		header, headerDiags := headerValue.ToWebhookDefinitionHeader(headerPath, key, prior[key])
 		diags.Append(headerDiags...)
 
 		if !headerDiags.HasError() {
