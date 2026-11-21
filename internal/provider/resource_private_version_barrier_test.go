@@ -51,8 +51,9 @@ func TestPrivateVersionValuesAreForwardedToRepresentativeMutations(t *testing.T)
 			method: http.MethodPut,
 			path:   "/spaces/space/preview_environments/preview",
 		},
-		"tag update":    {method: http.MethodPut, path: "/spaces/space/environments/environment/tags/tag"},
-		"locale update": {method: http.MethodPut, path: "/spaces/space/environments/environment/locales/locale"},
+		"webhook update": {method: http.MethodPut, path: "/spaces/space/webhook_definitions/webhook"},
+		"tag update":     {method: http.MethodPut, path: "/spaces/space/environments/environment/tags/tag"},
+		"locale update":  {method: http.MethodPut, path: "/spaces/space/environments/environment/locales/locale"},
 	}
 
 	var cases []privateVersionForwardingCase

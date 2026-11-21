@@ -38,6 +38,10 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"version": schema.Int64Attribute{
+				Description: "The Contentful `sys.version` last observed for this webhook.",
+				Computed:    true,
+			},
 			"active": schema.BoolAttribute{
 				Description: "Whether the webhook is active. Defaults to `true`.",
 				Optional:    true,

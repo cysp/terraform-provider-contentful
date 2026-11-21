@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -91,6 +93,45 @@ func TestAccWebhookResourceConsistencyErrorsRetainResponseState(t *testing.T) {
 	})
 }
 
+func TestAccWebhookResourceUpdateIdentityMismatchClearsVersion(t *testing.T) {
+	t.Parallel()
+
+	const address = "contentful_webhook.test"
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+	adapter := &mutationJSONResponseAdapter{delegate: server}
+	testAccMockedResource(t, adapter, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{
+			{Config: webhookMutationConfig("Created", "Entry", false)},
+			{
+				PreConfig: func() {
+					adapter.mutateNext(http.MethodPut, func(response map[string]any) {
+						sys, ok := response["sys"].(map[string]any)
+						if !assert.True(t, ok) {
+							return
+						}
+
+						sys["id"] = "other-webhook"
+						sys["version"] = 73
+					})
+				},
+				Config:      webhookMutationConfig("Updated", "Entry", false),
+				ExpectError: regexp.MustCompile(`Contentful returned a different webhook identity`),
+			},
+			{
+				Config: webhookMutationConfig("Retry", "Entry", false),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					testAccPriorState{check: statecheck.ExpectKnownValue(address, tfjsonpath.New("version"), knownvalue.Null())},
+				}},
+				ExpectError: regexp.MustCompile(`Private version is unavailable`),
+			},
+		},
+	})
+}
+
 func TestAccWebhookResourceUnsupportedResponsePropertiesPreventFalseConvergence(t *testing.T) {
 	t.Parallel()
 
@@ -145,6 +186,9 @@ func TestAccWebhookResourceMutationReconciliationUsesEffectivePlanWithIgnoreChan
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{
 			Config: webhookMutationConfig("Initial webhook", "Asset", false),
+			ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPreRefresh: []plancheck.PlanCheck{
+				expectResponseStateInPlan{address: "contentful_webhook.test", valuePath: tfjsonpath.New("version"), value: json.Number("0")},
+			}},
 		},
 		{
 			Config: webhookMutationConfig("Updated webhook", "Entry", true),
