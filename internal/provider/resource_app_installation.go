@@ -119,7 +119,7 @@ func (r *appInstallationResource) Create(ctx context.Context, req resource.Creat
 func (r *appInstallationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state AppInstallationModel
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(state.readState(ctx, req.State)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -185,7 +185,7 @@ func (r *appInstallationResource) Update(ctx context.Context, req resource.Updat
 	var plan, state AppInstallationModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(state.readState(ctx, req.State)...)
 
 	if resp.Diagnostics.HasError() {
 		return

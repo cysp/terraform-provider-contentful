@@ -19,7 +19,7 @@ func TestAccAppInstallationResourceTimeoutOnlyPreservesRemoteRotation(t *testing
 	intended := map[string]any{"secret": "alpha", "visible": "one"}
 	external := map[string]any{"secret": "rotated", "visible": "one"}
 	ignored := map[string]any{"secret": "ignored", "visible": "one"}
-	steps := make([]resource.TestStep, 0, 5)
+	steps := make([]resource.TestStep, 0, 6)
 
 	steps = append(steps, resource.TestStep{Config: appInstallationSecretConfig(intended, "")})
 	for _, change := range []struct {
@@ -51,6 +51,14 @@ lifecycle { ignore_changes = [parameters] }`),
 lifecycle { ignore_changes = [parameters] }`),
 		ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionUpdate)}},
 		Check:            fixture.check(t, intended, []appInstallationSecretRequest{appInstallationSecretPut(intended, ""), appInstallationSecretPut(intended, "terms")}),
+	}, resource.TestStep{
+		PreConfig: func() { fixture.setStored(external) },
+		Config:    appInstallationSecretConfig(ignored, `lifecycle { ignore_changes = [parameters] }`),
+		Check: fixture.check(t, intended, []appInstallationSecretRequest{
+			appInstallationSecretPut(intended, ""),
+			appInstallationSecretPut(intended, "terms"),
+			appInstallationSecretPut(intended, ""),
+		}),
 	})
 	testAccMockedResource(t, fixture, resource.TestCase{CheckDestroy: fixture.checkDestroyed(t), Steps: steps})
 }
@@ -70,6 +78,7 @@ func TestAccAppInstallationResourceImportedTimeoutOnlyPreservesRemoteRotation(t 
 			ResourceName: appInstallationTestAddress, ImportState: true, ImportStateId: "space/master/app", ImportStatePersist: true,
 			ImportStateCheck: func(states []*terraform.InstanceState) error {
 				require.Len(t, states, 1)
+				assert.Equal(t, "0", states[0].Attributes["marketplace.#"], "import records an empty set")
 				assert.JSONEq(t, testJSON(map[string]any{"secret": "******", "visible": "one"}), states[0].Attributes["parameters"], "import retains original mask")
 
 				return nil

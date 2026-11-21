@@ -67,8 +67,10 @@ cannot make the operation atomic.
 Update compares effective Plan with prior State. When parameters are equivalent
 under normalized JSON semantics and Marketplace acknowledgments are unchanged,
 it publishes planned timeouts without issuing a PUT. Timeout and request
-validation still run. A parameter or Marketplace change still writes;
-Marketplace acknowledgments affect the outgoing header.
+validation still run. An empty acknowledgment set omits the
+`X-Contentful-Marketplace` header. Read and Update treat a null Marketplace
+set in imported or older state as empty so adopting the default cannot
+replay stored parameters, even with refresh disabled.
 
 An ordinary parameter update can reassert a configured secret after an invisible
 external rotation. A mask returned after an uncertain write never proves that
