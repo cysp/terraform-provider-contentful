@@ -10,14 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, fallbackHeaderValues map[string]TypedObject[WebhookHeaderValue]) (WebhookModel, diag.Diagnostics) {
-	model, diags, _ := newWebhookResourceModelFromResponse(ctx, webhookDefinition, fallbackHeaderValues)
-
-	return model, diags
-}
-
-func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, fallbackHeaderValues map[string]TypedObject[WebhookHeaderValue]) (WebhookModel, diag.Diagnostics, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
+func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, fallback WebhookModel) (WebhookModel, diag.Diagnostics) {
+	var filterDiags diag.Diagnostics
 
 	spaceID := webhookDefinition.Sys.Space.Sys.ID
 	webhookID := webhookDefinition.Sys.ID
@@ -34,24 +28,22 @@ func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 
 	model.Topics = NewTypedListFromStringSlice(webhookDefinition.Topics)
 
-	filtersList, filtersListDiags := ReadWebhookFiltersListValueFromResponse(ctx, path.Root("filters"), webhookDefinition.Filters)
-	diags.Append(filtersListDiags...)
-
-	model.Filters = filtersList
+	model.Filters, filterDiags = ReadWebhookFiltersListValueFromResponse(ctx, path.Root("filters"), webhookDefinition.Filters)
 
 	model.HTTPBasicUsername = types.StringPointerValue(webhookDefinition.HttpBasicUsername.ValueStringPointer())
+
 	model.HTTPBasicPassword = types.StringPointerValue(webhookDefinition.HttpBasicPassword.ValueStringPointer())
+	if webhookDefinition.HttpBasicPassword.IsEmpty() && !fallback.HTTPBasicPassword.IsUnknown() {
+		model.HTTPBasicPassword = fallback.HTTPBasicPassword
+	}
 
-	headersList, headersListDiags := ReadHeaderValueMapFromResponse(ctx, path.Root("headers"), webhookDefinition.Headers, fallbackHeaderValues)
-	diags.Append(headersListDiags...)
-
-	model.Headers = headersList
+	model.Headers = webhookResponseHeaders(webhookDefinition.Headers, fallback.Headers)
 
 	model.Transformation = ReadWebhookTransformationValueFromResponse(webhookDefinition.Transformation)
 
 	model.Active = util.OptBoolToBoolValue(webhookDefinition.Active)
 
-	return model, diags, filtersListDiags
+	return model, filterDiags
 }
 
 // ReconcileWebhookMutationResponse projects the complete mutation response and
@@ -60,7 +52,7 @@ func newWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 // always remains the requested Terraform target. Password and secret-header
 // response omissions retain their established narrow fallbacks.
 func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, plan WebhookModel, endpointID types.String) (WebhookModel, diag.Diagnostics, diag.Diagnostics, bool) {
-	state, responseDiags, filtersDiags := newWebhookResourceModelFromResponse(ctx, webhookDefinition, plan.Headers.Elements())
+	state, filterDiags := NewWebhookResourceModelFromResponse(ctx, webhookDefinition, plan)
 	reconciler := mutationResponseReconciler{resourceName: "webhook"}
 	reconciler.pinIdentity(path.Root("space_id"), plan.SpaceID, state.SpaceID, &state.SpaceID)
 	reconciler.pinCreatedIdentity(path.Root("webhook_id"), endpointID, plan.WebhookID, state.WebhookID, &state.WebhookID)
@@ -84,16 +76,8 @@ func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.
 		candidateState.Topics = plan.Topics
 	}
 
-	if !plan.HTTPBasicPassword.IsUnknown() {
-		switch {
-		case webhookDefinition.HttpBasicPassword.IsEmpty() && !plan.HTTPBasicPassword.IsNull():
-			state.HTTPBasicPassword = plan.HTTPBasicPassword
-			candidateState.HTTPBasicPassword = plan.HTTPBasicPassword
-		case !webhookDefinition.HttpBasicPassword.IsEmpty() && !plan.HTTPBasicPassword.Equal(state.HTTPBasicPassword):
-			reconciler.diagnostics.AddAttributeError(path.Root("http_basic_password"), "Contentful returned a different webhook Basic password", "Contentful accepted the request but returned a webhook Basic password that differs from the value Terraform applied. Terraform retained the returned value in state. Review the webhook and configuration before applying again.")
-		default:
-			candidateState.HTTPBasicPassword = plan.HTTPBasicPassword
-		}
+	if reconciler.compareExact(path.Root("http_basic_password"), "Contentful returned a different webhook Basic password", plan.HTTPBasicPassword, state.HTTPBasicPassword) {
+		candidateState.HTTPBasicPassword = plan.HTTPBasicPassword
 	}
 
 	if reconciler.compareExact(path.Root("http_basic_username"), "Contentful returned a different webhook Basic username", plan.HTTPBasicUsername, state.HTTPBasicUsername) {
@@ -102,7 +86,7 @@ func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.
 
 	if reconciler.compareSemantic(
 		path.Root("filters"), "webhook filters", "Contentful returned different webhook filters",
-		plan.Filters.IsUnknown(), filtersDiags,
+		plan.Filters.IsUnknown(), filterDiags,
 		func() (bool, diag.Diagnostics) { return webhookFiltersEquivalent(plan.Filters, state.Filters), nil },
 	) {
 		candidateState.Filters = plan.Filters
@@ -130,7 +114,7 @@ func ReconcileWebhookMutationResponse(ctx context.Context, webhookDefinition cm.
 		state = candidateState
 	}
 
-	return state, responseDiags, reconciler.diagnostics, !reconciler.identityMismatch
+	return state, filterDiags, reconciler.diagnostics, !reconciler.identityMismatch
 }
 
 func webhookFiltersEquivalent(planned, response TypedList[TypedObject[WebhookFilterValue]]) bool {

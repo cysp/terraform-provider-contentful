@@ -213,7 +213,7 @@ func TestWebhookFilterResponseProjectionReportsUnsupportedProperties(t *testing.
 		Topics:  []string{"Entry.create", "Entry.save"},
 		Filters: decoded,
 		Headers: cm.WebhookDefinitionHeaders{},
-	}, map[string]TypedObject[WebhookHeaderValue]{})
+	}, WebhookModel{})
 
 	expectedFilters := NewTypedList([]TypedObject[WebhookFilterValue]{
 		NewTypedObject(webhookFilterValue(

@@ -8,7 +8,7 @@ The requested endpoint stays fixed and `timeouts` always comes from the plan. Pu
 | --- | --- | --- |
 | Role | POST to the space. Contentful assigns `role_id`. | PUT to the planned space and role IDs with the private version. |
 | Editor Interface | Versioned PUT to the interface identified by space, environment, and Content Type. | PUT to the same endpoint using the [activation count](#editor-interface-version-preconditions). |
-| Webhook | POST to the space. Contentful assigns `webhook_id`. | Persist timeout-only changes locally. Changes to webhook fields require a versioned PUT to the planned space and webhook IDs. |
+| Webhook | POST to the space. Contentful assigns `webhook_id`. An empty returned ID prevents state publication. Inspect the space before retrying the POST. | Persist timeout-only changes locally. Changes to webhook fields require a versioned PUT to the planned space and webhook IDs. |
 
 Create retains the server-assigned Role or Webhook ID even if it contradicts a known plan. Update retains requested IDs on a contradiction. Webhook request conversion consults configuration for Optional+Computed omission. All three resources compare the response against the effective plan, including values retained by `ignore_changes`.
 
@@ -93,23 +93,19 @@ version before sending the PUT.
 | `topics` | Nonempty ordered list. Preserve duplicate counts and reject null elements. |
 | `filters` | Ignore outer order and preserve duplicate counts. Match the single selected operator, its negation if present, and all operands. Compare `in.values` without regard to order, preserving duplicates. Compare paths, equality values, and regex patterns exactly. Omission differs from an empty list. Unsupported operators make projection lossy. |
 | `headers` | Match map keys and complete header objects. The plan can preserve prior headers on Update because omitting the CMA member can clear them. An explicit empty map clears the headers. An unknown plan on Create takes the response. |
-| `headers[*].secret` and `.value` | Project an absent flag as `false`. For a secret header whose value Contentful omits, retain only the matching planned value, even on an unrelated contradiction. A returned value takes precedence. |
+| `headers[*].secret` and `.value` | An absent secret flag means `false`. For returned and omitted values, see [credential responses](#webhook-credential-responses). |
 | `transformation` | Compare optional scalar members exactly and the body as normalized JSON, preserving array order. A null body differs from a known JSON string. |
 
 Report differences at the affected top-level attribute. A lossy response cannot establish equivalence with a known plan. See the [Webhook observations](../research/webhooks.md) for Contentful's wire representations.
 
-## Webhook Basic password
+## Webhook credential responses
 
-Contentful accepts `httpBasicPassword` on Webhook Create and Update but omits
-the property from successful mutation and GET responses. The generated client
-distinguishes absence (`Set` is false) from explicit JSON `null` (`Set` and
-`Null` are true). Only absence receives the password fallback; explicit null
-and returned values remain response truth.
+Use any Basic password or header value Contentful returns, including an empty
+string. An explicit JSON null clears the Basic password. A difference from a
+known plan is reported after the returned state is saved for recovery.
 
-| Operation | When Contentful omits the password |
-| --- | --- |
-| Create or Update | Preserve the exact known password from the effective plan, including during rotation or an unrelated response mismatch. An unknown configured password fails before the request. Omitting both Basic credentials on update clears them. |
-| Refresh | Retain the previously managed value. External rotation or removal is undetectable. |
-| Import | Leave the password null. Configuring credentials afterward writes them to Contentful. |
-
-When the password is present, use the returned value, even explicit null. A difference from a known plan is a consistency error at `http_basic_password`.
+Contentful normally omits the Basic password and secret header values. On
+omission, retain the known value from the effective plan after a write or from
+prior state on refresh. Import leaves omitted values null. For a secret header,
+look up the exact Terraform key, regardless of its previous secret flag. Case
+variants are distinct keys in the [webhook definition](../research/webhooks.md#header-names-order-and-secret-updates).
