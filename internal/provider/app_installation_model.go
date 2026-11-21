@@ -1,8 +1,12 @@
 package provider
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -20,4 +24,18 @@ type AppInstallationModel struct {
 	Parameters  jsontypes.Normalized `tfsdk:"parameters"`
 
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
+}
+
+func emptyAppInstallationMarketplace() types.Set {
+	return types.SetValueMust(types.StringType, nil)
+}
+
+func (model *AppInstallationModel) readState(ctx context.Context, state tfsdk.State) diag.Diagnostics {
+	diags := state.Get(ctx, model)
+	// Imports and state written before the schema default can have a null set.
+	if model.Marketplace.IsNull() {
+		model.Marketplace = emptyAppInstallationMarketplace()
+	}
+
+	return diags
 }

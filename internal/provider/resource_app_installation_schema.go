@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -46,9 +47,11 @@ func AppInstallationResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"marketplace": schema.SetAttribute{
-				Description: "Marketplace agreement acknowledgments sent to Contentful when installing the app. Use the acknowledgment strings required by the selected Marketplace app.",
+				Description: "Marketplace agreement acknowledgments sent to Contentful when installing the app. Defaults to an empty set. Use the acknowledgment strings required by the selected Marketplace app.",
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
+				Default:     setdefault.StaticValue(emptyAppInstallationMarketplace()),
 				Validators: []validator.Set{
 					setvalidator.NoNullValues(),
 				},

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/compare"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -143,6 +144,62 @@ func TestAccAppInstallationResourceSecretsExternalRotation(t *testing.T) {
 			Check:            fixture.check(t, changed, []appInstallationSecretRequest{appInstallationSecretPut(initial, ""), appInstallationSecretPut(changed, "")}),
 		},
 	}})
+}
+
+func TestAccAppInstallationResourceEmptyMarketplacePreservesRemoteRotation(t *testing.T) {
+	t.Parallel()
+
+	for _, test := range []struct {
+		name, before, after string
+	}{
+		{name: "omitted to empty", after: "marketplace = []"},
+		{name: "empty to omitted", before: "marketplace = []"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			fixture := newAppInstallationSecretFixture(t)
+			initial := map[string]any{"secret": "alpha", "visible": "one"}
+			external := map[string]any{"secret": "rotated", "visible": "one"}
+			testAccMockedResource(t, fixture, resource.TestCase{CheckDestroy: fixture.checkDestroyed(t), Steps: []resource.TestStep{
+				{Config: appInstallationSecretConfig(initial, test.before)},
+				{
+					PreConfig: func() { fixture.setStored(external) },
+					Config:    appInstallationSecretConfig(initial, test.after),
+					ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionNoop),
+					}},
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("marketplace"), knownvalue.SetExact(nil)),
+					},
+					Check: fixture.check(t, external, []appInstallationSecretRequest{appInstallationSecretPut(initial, "")}),
+				},
+			}})
+		})
+	}
+}
+
+func TestAccAppInstallationResourceLegacyMarketplaceWithoutRefresh(t *testing.T) {
+	// The fixture was created with v0.1.0 and an omitted marketplace argument.
+	t.Setenv(resource.EnvTfAccProviderNamespace, "cysp")
+
+	fixture := newAppInstallationSecretFixture(t)
+	external := map[string]any{"secret": "rotated", "visible": "one"}
+	fixture.setStored(external)
+
+	testAccMockedResource(t, fixture, resource.TestCase{
+		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
+		Steps: []resource.TestStep{{
+			ConfigDirectory: config.TestNameDirectory(),
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionUpdate),
+			}},
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("marketplace"), knownvalue.SetExact(nil)),
+			},
+			Check: fixture.check(t, external, nil),
+		}},
+	})
 }
 
 func TestAccAppInstallationResourceSecretsMutationContradictions(t *testing.T) {

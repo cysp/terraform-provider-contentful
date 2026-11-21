@@ -37,7 +37,7 @@ type appInstallationSecretRequest struct {
 	body        map[string]any
 	path        string
 	query       string
-	marketplace string
+	marketplace []string
 	version     string
 }
 
@@ -89,7 +89,7 @@ func (f *appInstallationSecretFixture) ServeHTTP(w http.ResponseWriter, r *http.
 			return
 		}
 
-		f.requests = append(f.requests, appInstallationSecretRequest{body: decoded, path: r.URL.Path, query: r.URL.RawQuery, marketplace: r.Header.Get("X-Contentful-Marketplace"), version: r.Header.Get("X-Contentful-Version")})
+		f.requests = append(f.requests, appInstallationSecretRequest{body: decoded, path: r.URL.Path, query: r.URL.RawQuery, marketplace: r.Header.Values("X-Contentful-Marketplace"), version: r.Header.Get("X-Contentful-Version")})
 		r.Body = io.NopCloser(bytes.NewReader(body))
 	}
 
@@ -236,5 +236,10 @@ func appInstallationSecretPut(parameters map[string]any, marketplace string) app
 		body["parameters"] = parameters
 	}
 
-	return appInstallationSecretRequest{body: body, path: "/spaces/space/environments/master/app_installations/app", marketplace: marketplace}
+	request := appInstallationSecretRequest{body: body, path: "/spaces/space/environments/master/app_installations/app"}
+	if marketplace != "" {
+		request.marketplace = []string{marketplace}
+	}
+
+	return request
 }
