@@ -12,7 +12,7 @@ Installs a Contentful app in an environment and manages its installation paramet
 
 ## Example Usage
 
-The [App Definition example](app_definition#example-usage) declares the `apiKey` Secret used by the custom installation. Supply `app_api_key` as a sensitive variable and restrict access to state and saved plans.
+Terraform shows changes to `refreshInterval` in the plan while it redacts `apiKey`, which the example supplies through a sensitive variable. The [App Definition example](app_definition#example-usage) declares both parameters. Restrict access to state and saved plans.
 
 ```terraform
 # The custom and Marketplace examples install two different apps.
@@ -24,7 +24,8 @@ resource "contentful_app_installation" "custom" {
   app_definition_id = var.app_definition_id
 
   parameters = {
-    apiKey = jsonencode(var.app_api_key)
+    refreshInterval = jsonencode(30)
+    apiKey          = jsonencode(var.app_api_key)
   }
 }
 
@@ -51,6 +52,8 @@ Omitting a key from the planned map can remove that parameter, including an opti
 ## Upgrading from the single JSON string
 
 Replace `parameters = jsonencode(local.settings)` with `parameters = { for id, value in local.settings : id => jsonencode(value) }`. If `local.settings` can be null, use `local.settings == null ? null : { for id, value in local.settings : id => jsonencode(value) }`.
+
+If you plan to add `ignore_changes` for a sensitive parameter, first apply the map configuration with that key supplied by its sensitive variable. This lets Terraform record sensitivity for the individual key before you ignore changes to it.
 
 A module output that returns `parameters` directly changes from a JSON string to a map of JSON-encoded strings, even when the installation has no planned changes. If `local.params` refers to `contentful_app_installation.custom.parameters`, use `jsondecode(local.params["editor"])` for one key, or `local.params == null ? null : { for id, encoded in local.params : id => jsondecode(encoded) }` for the whole object.
 
