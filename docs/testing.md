@@ -73,12 +73,10 @@ Choose checks for the behavior being proved:
   type. Do not add generic adapters just to hide these supported interfaces.
 
 A create/update scenario should prove the intended state transitions, retained
-identity, and final cleanup. Test external deletion and drift where supported,
-expected diagnostics for invalid input, and state upgrades with a pinned prior
-provider release. `ExpectError` should identify the expected diagnostic, not
-match any failure. `ExpectNonEmptyPlan` needs a specific reason; it must not
-hide accidental drift. Check remote absence after destroy when deletion or
-retention is the behavior under test.
+identity, and final cleanup. Test external deletion and drift where supported.
+For invalid input, use `ExpectError` to identify the expected diagnostic.
+`ExpectNonEmptyPlan` needs a specific reason; it must not hide accidental drift.
+Check remote absence after destroy when deletion or retention is the behavior under test.
 
 HTTP request and version oracles remain separate evidence from Terraform
 state. Assert exact payload contents, version headers, and lifecycle ordering.
@@ -133,8 +131,12 @@ use numbered format verbs and `%q` for quoted strings.
 
 Rename test-name-based fixture directories with their tests. Format changed
 fixtures with `terraform fmt`; query fixtures use the appropriate `.tfquery.hcl`
-extension. Keep pinned external-provider declarations with upgrade fixtures.
-See HashiCorp's [configuration reference](https://developer.hashicorp.com/terraform/plugin/testing/acceptance-tests/configuration).
+extension. See HashiCorp's [configuration reference](https://developer.hashicorp.com/terraform/plugin/testing/acceptance-tests/configuration).
+
+To test whether the current provider can read or upgrade older state, use a
+saved state fixture captured with synthetic data. Record which release produced
+it. When a test needs to run an earlier provider, pin that release in its test
+configuration.
 
 For commands, prerequisites, CLI selection, account isolation, and CI coverage,
 see [Development: Tests](../DEVELOPMENT.md#tests).
