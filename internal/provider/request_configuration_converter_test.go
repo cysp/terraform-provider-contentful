@@ -62,7 +62,7 @@ func TestRequestConvertersRejectUnknownPlannedConfigurationOwnedValues(t *testin
 		model.Headers = NewTypedMapUnknown[TypedObject[WebhookHeaderValue]]()
 		actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{
 			Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
-		}, path.Empty())
+		}, nil, path.Empty())
 
 		require.True(t, diags.HasError())
 		assert.Equal(t, []string{"headers"}, attributeDiagnosticPaths(t, diags))
@@ -168,7 +168,7 @@ func TestConfigurationAwareConvertersPreserveKnownEmptyPlanValues(t *testing.T) 
 		model := validWebhookRequestModel()
 		model.Headers = emptyHeaders
 
-		actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{Headers: emptyHeaders}, path.Empty())
+		actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{Headers: emptyHeaders}, nil, path.Empty())
 
 		require.False(t, diags.HasError(), diags.Errors())
 		assert.NotNil(t, actual.Headers)

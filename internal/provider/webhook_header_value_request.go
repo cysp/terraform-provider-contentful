@@ -9,7 +9,7 @@ import (
 func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
 	path path.Path,
 	key string,
-	configuredHeaders TypedMap[TypedObject[WebhookHeaderValue]],
+	prior TypedObject[WebhookHeaderValue],
 ) (cm.WebhookDefinitionHeader, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -20,26 +20,30 @@ func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
 		return cm.WebhookDefinitionHeader{}, diags
 	}
 
-	header := cm.WebhookDefinitionHeader{
-		Key:    key,
-		Secret: cm.NewOptBool(secret),
-	}
-
-	if v.Value.IsNull() && secret && configuredHeaders.IsNull() {
-		// Contentful redacts secret values. For response-owned imported
-		// headers, sending secret=true without value asks CMA to retain the
-		// existing secret during an update.
-		return header, diags
-	}
-
-	value, valueDiags := requestRequiredString(v.Value, path.AtName("value"))
+	diags.Append(v.validateValueOmission(path, prior)...)
+	value, valueDiags := requestOmittableString(v.Value, path.AtName("value"))
 	diags.Append(valueDiags...)
 
 	if diags.HasError() {
 		return cm.WebhookDefinitionHeader{}, diags
 	}
 
-	header.Value = cm.NewOptString(value)
+	return cm.WebhookDefinitionHeader{Key: key, Secret: cm.NewOptBool(secret), Value: value}, diags
+}
 
-	return header, diags
+// A null value asks Contentful to keep the secret at this exact key.
+func (v WebhookHeaderValue) validateValueOmission(headerPath path.Path, prior TypedObject[WebhookHeaderValue]) diag.Diagnostics {
+	if !v.Value.IsNull() {
+		return nil
+	}
+
+	previous, present := prior.GetValue()
+	if present && previous.Secret.ValueBool() && v.Secret.ValueBool() {
+		return nil
+	}
+
+	return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(
+		headerPath.AtName("value"), "Missing webhook header value",
+		"Supply a value for this header. You can omit value only to retain an existing secret header with the exact same name and secret = true.",
+	)}
 }

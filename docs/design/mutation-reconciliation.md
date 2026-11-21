@@ -87,6 +87,8 @@ This also works after import when Contentful has redacted credentials. For a
 remote change, Update validates the complete request and requires the stored
 version before sending the PUT.
 
+On a full Webhook PUT, omit a header's `value` only when the planned value is null and both the planned header and the refreshed prior header at the exact key have `secret = true`. Send every known string, including an empty one, verbatim.
+
 | Attribute | Equivalence and omission |
 | --- | --- |
 | `active`, `name`, `url`, `http_basic_username` | Exact scalar comparison. The static `active` default constrains the plan to `true` when applied. A null username is distinct from an empty string. |

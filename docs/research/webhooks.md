@@ -140,7 +140,7 @@ The sample contained no repeated header names, including case variants.
 ## Header names, order, and secret updates
 
 On 2026-11-21 (UTC), disposable inactive webhook definitions were created by POST
-and specified-ID PUT. Each accepted configuration was read back by ID. Each
+and specified-ID PUT. Each successful write was read back by ID. Each
 definition was deleted (204) and its absence confirmed by GET (404).
 
 | Request | Configuration API observation |
@@ -149,6 +149,7 @@ definition was deleted (204) and its absence confirmed by GET (404).
 | Supply two names differing only in case | POST, PUT, and GET returned both spellings. Each ordinary value stayed with its supplied key. With two secret values, each response returned both keys with `secret: true` and omitted both values. |
 | Reverse the order of two ordinary headers | PUT and GET returned the new order. The version increased by one even though the names and values were unchanged. This also held for case variants. |
 | Omit a stored secret value on PUT | The exact spelling succeeded (200) with the same version. Changing only the spelling or supplying a new name without a value failed (422), leaving the definition and version unchanged. When both spellings had been configured separately as secret, omitting both values at their exact keys succeeded (200) with the same version. |
+| Change an ordinary header to secret at the same key, omitting its value | PUT returned 200. Both the PUT response and GET still contained a `value` member and `secret: false`. The version stayed the same. |
 
 These observations concern the webhook definition. The hooks were inactive, so
 the experiments did not measure the header order, casing, or secret values a
