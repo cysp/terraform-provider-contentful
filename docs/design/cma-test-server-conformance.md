@@ -168,9 +168,10 @@ when those fields change. See the [live version observations](../research/webhoo
 
 On an existing webhook, a PUT header with `secret: true` and no `value`
 retains the stored header at that exact key. If the key is absent, the mock
-returns 422 and preserves the entire definition. The mock still accepts a missing
-secret value on creation, including when a webhook is deleted between refresh
-and PUT. For the observed creation errors, see the
+returns 422 and preserves the entire definition.
+
+Creation requires a value for each header. The mock returns the route-specific
+errors recorded in the
 [header observations](../research/webhooks.md#header-names-order-and-secret-updates).
 
 ### Webhook topics
