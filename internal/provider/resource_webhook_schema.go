@@ -64,7 +64,7 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"filters": WebhookFiltersSchema(ctx, true),
 			"http_basic_password": schema.StringAttribute{
-				MarkdownDescription: "HTTP Basic authentication password; configure it together with http_basic_username. Contentful does not return this value, so Terraform preserves a previously managed value during refresh but cannot detect changes made outside Terraform; import leaves it null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.",
+				MarkdownDescription: "HTTP Basic authentication password. Configure it together with `http_basic_username`. When Contentful omits the password, refresh retains the previously managed value and import leaves it null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.",
 				Optional:            true,
 				Sensitive:           true,
 			},

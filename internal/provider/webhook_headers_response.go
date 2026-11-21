@@ -1,28 +1,28 @@
 package provider
 
 import (
-	"context"
-
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ReadHeaderValueMapFromResponse(ctx context.Context, path path.Path, headers []cm.WebhookDefinitionHeader, fallbackHeaderValues map[string]TypedObject[WebhookHeaderValue]) (TypedMap[TypedObject[WebhookHeaderValue]], diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
-	headersValues := make(map[string]TypedObject[WebhookHeaderValue], len(headers))
+func webhookResponseHeaders(headers cm.WebhookDefinitionHeaders, fallbackHeaders TypedMap[TypedObject[WebhookHeaderValue]]) TypedMap[TypedObject[WebhookHeaderValue]] {
+	values := make(map[string]TypedObject[WebhookHeaderValue], len(headers))
 
 	for _, header := range headers {
-		fallbackHeader := fallbackHeaderValues[header.Key]
+		secret := header.Secret.Or(false)
+		value := types.StringNull()
 
-		value, valueDiags := NewWebhookHeaderValueFromResponse(ctx, path.AtMapKey(header.Key), header, fallbackHeader)
-		diags.Append(valueDiags...)
+		if returned, present := header.Value.Get(); present {
+			value = types.StringValue(returned)
+		} else if secret {
+			fallback := fallbackHeaders.Elements()[header.Key].Value().Value
+			if !fallback.IsUnknown() {
+				value = fallback
+			}
+		}
 
-		headersValues[header.Key] = value
+		values[header.Key] = NewTypedObject(WebhookHeaderValue{Secret: types.BoolValue(secret), Value: value})
 	}
 
-	headersList := NewTypedMap(headersValues)
-
-	return headersList, diags
+	return NewTypedMap(values)
 }

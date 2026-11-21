@@ -105,6 +105,12 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	case *cm.WebhookDefinitionStatusCode:
 		var responseDiags diag.Diagnostics
 
+		if response.Response.Sys.ID == "" {
+			resp.Diagnostics.AddError("Missing created webhook ID", "Contentful accepted the create request without returning a webhook ID. Inspect the space for the new webhook before retrying.")
+
+			return
+		}
+
 		data, responseDiags, consistencyDiags, identityConfirmed = ReconcileWebhookMutationResponse(ctx, response.Response, plan, types.StringNull())
 
 		resp.Diagnostics.Append(responseDiags...)
@@ -167,12 +173,8 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinition:
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state.Headers.Elements())
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state)
 		resp.Diagnostics.Append(responseModelDiags...)
-
-		if response.HttpBasicPassword.IsEmpty() && !state.HTTPBasicPassword.IsNull() && !state.HTTPBasicPassword.IsUnknown() {
-			responseModel.HTTPBasicPassword = state.HTTPBasicPassword
-		}
 
 		data = responseModel
 		version = response.Sys.Version

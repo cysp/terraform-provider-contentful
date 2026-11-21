@@ -12,8 +12,8 @@ Restrict access to Terraform state and saved plans when managing credentials. Se
 | --- | --- | --- |
 | [Webhook signing secret](#webhook-signing-secrets) | Preserves stored value | `value` is null |
 | [App signing secret](#app-signing-secrets) | Preserves stored value | `value` is null |
-| [Webhook Basic password](#basic-authentication) | Preserves managed password | `http_basic_password` is null |
-| [Secret webhook header](#secret-custom-headers) | Preserves managed value for matching header | Unreadable value is null |
+| [Webhook Basic password](#basic-authentication) | Retains prior value when omitted | Null when omitted |
+| [Secret webhook header](#secret-custom-headers) | Retains the value at the exact key when omitted | Null when omitted |
 | [App Installation `Secret` parameter](#app-installation-secrets), read with a personal access token | Can retain prior state for an all-asterisk response | Retains mask; original value unavailable |
 | [Personal Access Token](#personal-access-tokens) | Preserves token from creation | `token` is null |
 | Delivery API access token | Reads token | Reads token |
@@ -48,7 +48,7 @@ Import leaves `value` null. Choose who will manage rotation before applying:
 
 ### Basic authentication
 
-For [`contentful_webhook`](../resources/webhook), Contentful does not return the HTTP Basic authentication password. Refresh preserves a previously managed `http_basic_password` but cannot detect changes made outside Terraform. Import leaves the password null and does not change the remote credentials.
+For [`contentful_webhook`](../resources/webhook), Contentful normally omits the HTTP Basic password. When it does, refresh retains the previously managed value and import leaves it null. Terraform records a password returned by Contentful.
 
 On a later update, omitting both `http_basic_username` and `http_basic_password` clears Basic authentication, including on an imported webhook. To keep Basic authentication when updating an imported webhook, supply both credentials. Terraform can read the webhook and report no changes with just the imported username. If an update would send that username alone, the provider reports a missing password before sending the request. `ignore_changes` can retain a previously managed password only when Terraform already has it in state.
 
@@ -56,7 +56,7 @@ On a later update, omitting both `http_basic_username` and `http_basic_password`
 
 Contentful's `secret = true` flag on a custom webhook header controls how Contentful treats the value. Terraform sensitivity is configured separately: supply a sensitive Terraform expression to redact the header value from normal Terraform output. The value can still be present in plan or state data.
 
-Contentful omits secret custom-header values from responses. Refresh preserves a previously managed value for the matching header but cannot verify it or detect an external replacement. Import leaves an unreadable secret-header value null.
+Terraform records returned header values. When Contentful omits a secret value, refresh retains the previously managed value at the exact header name, including its case. An external rotation can then go undetected. Import leaves an omitted value null.
 
 After import, choose how Terraform should manage headers:
 
