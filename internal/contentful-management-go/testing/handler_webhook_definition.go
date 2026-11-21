@@ -2,6 +2,8 @@ package cmtesting
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -18,6 +20,11 @@ func (ts *Handler) CreateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 
 	if ts.environments.Get(params.SpaceID, "master") == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
+	}
+
+	validationResponse, err := validateWebhookCreationHeaders(http.MethodPost, req.Headers)
+	if err != nil || validationResponse != nil {
+		return validationResponse, err
 	}
 
 	webhookDefinition := NewWebhookDefinitionFromFields(params.SpaceID, generateResourceID(), *req)
@@ -60,6 +67,11 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 
 	webhookDefinition := ts.webhookDefinitions.Get(params.SpaceID, params.WebhookDefinitionID)
 	if webhookDefinition == nil {
+		validationResponse, err := validateWebhookCreationHeaders(http.MethodPut, req.Headers)
+		if err != nil || validationResponse != nil {
+			return validationResponse, err
+		}
+
 		newWebhookDefinition := NewWebhookDefinitionFromFields(params.SpaceID, params.WebhookDefinitionID, *req)
 		ts.webhookDefinitions.Set(params.SpaceID, newWebhookDefinition.Sys.ID, &newWebhookDefinition)
 		response := redactWebhookDefinitionSecrets(newWebhookDefinition)
@@ -84,6 +96,48 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 		StatusCode: http.StatusOK,
 		Response:   response,
 	}), nil
+}
+
+func validateWebhookCreationHeaders(method string, headers cm.WebhookDefinitionHeaders) (*cm.ErrorStatusCode, error) {
+	var (
+		failures     []map[string]any
+		missingValue bool
+	)
+
+	for index, header := range headers {
+		if header.Value.IsSet() {
+			continue
+		}
+
+		missingValue = true
+
+		if method == http.MethodPost {
+			failures = append(failures, map[string]any{
+				"name": "invalid_type", "path": []any{"headers", index, "value"},
+				"details": fmt.Sprintf(`Invalid input: expected string, received undefined at "headers.%d.value"`, index),
+			})
+		} else if !header.Secret.IsSet() {
+			failures = append(failures, map[string]any{
+				"name": "invalid_union", "path": []any{"headers", index},
+				"details": fmt.Sprintf(`Invalid input at "headers.%d"`, index),
+			})
+		}
+	}
+
+	if len(failures) > 0 {
+		details, err := json.Marshal(map[string]any{"errors": failures})
+		if err != nil {
+			return nil, fmt.Errorf("encode webhook header validation details: %w", err)
+		}
+
+		return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), details), nil
+	}
+
+	if missingValue {
+		return NewContentfulManagementErrorStatusCode(http.StatusInternalServerError, "ServerError", new("Failed to create webhook definition/s"), nil), nil
+	}
+
+	return nil, nil //nolint:nilnil // All header values are present.
 }
 
 func missingWebhookTopicsValidationDetails() []byte {
