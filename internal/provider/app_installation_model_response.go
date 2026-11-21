@@ -2,7 +2,6 @@ package provider
 
 import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -12,8 +11,6 @@ import (
 // successful mutation, or prior State during Read, as the reference for values
 // that Contentful does not return in full.
 func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallation, reference AppInstallationModel) (AppInstallationModel, diag.Diagnostics) {
-	diags := diag.Diagnostics{}
-
 	spaceID := appInstallation.Sys.Space.Sys.ID
 	environmentID := appInstallation.Sys.Environment.Sys.ID
 	appDefinitionID := appInstallation.Sys.AppDefinition.Sys.ID
@@ -27,25 +24,8 @@ func NewAppInstallationResourceModelFromResponse(appInstallation cm.AppInstallat
 		Timeouts:        reference.Timeouts,
 	}
 
-	if appInstallation.Parameters != nil {
-		parameters, err := parseNormalizedJSONValue(appInstallation.Parameters)
-		if err != nil {
-			diags.AddAttributeError(path.Root("parameters"), "Failed to read parameters", err.Error())
-		}
-
-		model.Parameters = parameters
-	} else {
-		model.Parameters = jsontypes.NewNormalizedNull()
-	}
-
-	if diags.HasError() {
-		return model, diags
-	}
-
-	parameters, parameterDiags := reconcileAppInstallationParameters(model.Parameters, reference.Parameters)
-	diags.Append(parameterDiags...)
-
-	model.Parameters = parameters
+	parameters, diags := decodeInstallationParameters(path.Root("parameters"), appInstallation.Parameters)
+	model.Parameters = reconcileAppInstallationParameters(parameters, reference.Parameters)
 
 	return model, diags
 }

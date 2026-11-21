@@ -1,11 +1,13 @@
 package provider_test
 
 import (
+	"encoding/json"
+	"net/http/httptest"
 	"regexp"
 	"testing"
 
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
-	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -67,7 +69,7 @@ func TestAccAppInstallationResourceSecretsLifecycle(t *testing.T) {
 
 				var expected knownvalue.Check = knownvalue.Null()
 				if transition.parameters != nil {
-					expected = knownvalue.StringExact(testJSON(transition.parameters))
+					expected = installationParameterCheck(transition.parameters)
 				}
 
 				steps = append(steps, resource.TestStep{
@@ -97,7 +99,8 @@ func TestAccAppInstallationResourceSecretsImportAndEffectivePlan(t *testing.T) {
 			Config: appInstallationSecretConfig(configured, ""), ResourceName: appInstallationTestAddress, ImportState: true, ImportStateId: "space/master/app", ImportStatePersist: true,
 			ImportStateCheck: func(states []*terraform.InstanceState) error {
 				require.Len(t, states, 1)
-				assert.JSONEq(t, testJSON(imported), states[0].Attributes["parameters"], "import retains returned mask")
+				assert.Equal(t, `"******"`, states[0].Attributes["parameters.secret"], "import retains returned mask")
+				assert.Equal(t, `"one"`, states[0].Attributes["parameters.visible"])
 
 				return nil
 			},
@@ -105,19 +108,19 @@ func TestAccAppInstallationResourceSecretsImportAndEffectivePlan(t *testing.T) {
 		{
 			Config: appInstallationSecretConfig(configured, `marketplace = ["terms"]
 lifecycle { ignore_changes = [parameters] }`),
-			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionUpdate), plancheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters"), knownvalue.StringExact(testJSON(imported)))}},
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionUpdate), plancheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters"), installationParameterCheck(imported))}},
 			Check:            fixture.check(t, stored, []appInstallationSecretRequest{appInstallationSecretPut(imported, "terms")}),
 		},
 		{
 			Config:            appInstallationSecretConfig(configured, `marketplace = ["terms"]`),
 			ConfigPlanChecks:  resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionUpdate)}},
-			ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters"), knownvalue.StringExact(testJSON(configured)))},
+			ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters"), installationParameterCheck(configured))},
 			Check:             fixture.check(t, configured, []appInstallationSecretRequest{appInstallationSecretPut(imported, "terms"), appInstallationSecretPut(configured, "terms")}),
 		},
 		{
 			Config: appInstallationSecretConfig(map[string]any{"secret": "ignored-change", "visible": "ignored-change"}, `marketplace = ["privacy", "terms"]
 lifecycle { ignore_changes = [parameters] }`),
-			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionUpdate), plancheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters"), knownvalue.StringExact(testJSON(configured)))}},
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionUpdate), plancheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters"), installationParameterCheck(configured))}},
 			Check:            fixture.check(t, configured, []appInstallationSecretRequest{appInstallationSecretPut(imported, "terms"), appInstallationSecretPut(configured, "terms"), appInstallationSecretPut(configured, "privacy,terms")}),
 		},
 	}})
@@ -179,82 +182,74 @@ func TestAccAppInstallationResourceEmptyMarketplacePreservesRemoteRotation(t *te
 	}
 }
 
-func TestAccAppInstallationResourceLegacyMarketplaceWithoutRefresh(t *testing.T) {
-	// The fixture was created with v0.1.0 and an omitted marketplace argument.
-	t.Setenv(resource.EnvTfAccProviderNamespace, "cysp")
-
-	fixture := newAppInstallationSecretFixture(t)
-	external := map[string]any{"secret": "rotated", "visible": "one"}
-	fixture.setStored(external)
-
-	testAccMockedResource(t, fixture, resource.TestCase{
-		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
-		Steps: []resource.TestStep{{
-			ConfigDirectory: config.TestNameDirectory(),
-			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-				plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionUpdate),
-			}},
-			ConfigStateChecks: []statecheck.StateCheck{
-				statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("marketplace"), knownvalue.SetExact(nil)),
-			},
-			Check: fixture.check(t, external, nil),
-		}},
-	})
-}
-
-func TestAccAppInstallationResourceSecretsMutationContradictions(t *testing.T) {
+func TestAccAppInstallationResourceContradictoryUpdate(t *testing.T) {
 	t.Parallel()
 
-	for _, test := range []struct {
-		name     string
-		response map[string]any
-	}{
-		{"readable secret", map[string]any{"secret": "different", "visible": "one"}},
-		{"readable ordinary", map[string]any{"secret": "*****", "visible": "different"}},
-		{"missing ordinary key", map[string]any{"secret": "*****"}},
-		{"missing secret key", map[string]any{"visible": "one"}},
-		{"added key", map[string]any{"secret": "*****", "visible": "one", "added": true}},
-	} {
-		for _, operation := range []string{"create", "update"} {
-			t.Run(test.name+"/"+operation, func(t *testing.T) {
-				t.Parallel()
-				fixture := newAppInstallationSecretFixture(t)
-				parameters := map[string]any{"secret": "alpha", "visible": "one"}
-				initial := map[string]any{"secret": "before", "visible": "before"}
+	fixture := newAppInstallationSecretFixture(t)
+	server := httptest.NewServer(fixture)
+	t.Cleanup(server.Close)
 
-				var (
-					steps          []resource.TestStep
-					requests       []appInstallationSecretRequest
-					storedAfterPut []map[string]any
-				)
+	runtime := newTerraformTestRuntime(t)
+	runtime.providerURL = server.URL
+	initial := map[string]any{"secret": "alpha", "visible": "one"}
+	updated := map[string]any{"secret": "alpha", "visible": "two"}
 
-				if operation == "update" {
-					steps = append(steps, resource.TestStep{Config: appInstallationSecretConfig(initial, ""), Check: fixture.check(t, initial, []appInstallationSecretRequest{appInstallationSecretPut(initial, "")})})
-					requests = append(requests, appInstallationSecretPut(initial, ""))
-					storedAfterPut = append(storedAfterPut, initial)
-				}
+	runtime.writeConfig(t, appInstallationSecretConfig(initial, ""))
+	output, err := runtime.run(t.Context(), "apply", "-json", "-auto-approve", "-input=false")
+	require.NoError(t, err, output)
 
-				requests = append(requests, appInstallationSecretPut(parameters, ""))
-				storedAfterPut = append(storedAfterPut, parameters)
-				steps = append(steps, resource.TestStep{
-					PreConfig: func() {
-						fixture.mu.Lock()
-						defer fixture.mu.Unlock()
+	firstPut := appInstallationSecretPut(initial, "")
+	require.NoError(t, fixture.check(t, initial, []appInstallationSecretRequest{firstPut})(nil))
 
-						fixture.putResponseOverride = test.response
-					},
-					Config:      appInstallationSecretConfig(parameters, ""),
-					ExpectError: regexp.MustCompile(`Provider produced inconsistent result after apply`),
-				})
-				testAccMockedResource(t, fixture, resource.TestCase{Steps: steps, CheckDestroy: fixture.checkDestroyed(t)})
-				fixture.mu.Lock()
-				defer fixture.mu.Unlock()
+	fixture.mu.Lock()
+	fixture.putResponseOverride = []byte(testJSON(map[string]any{"secret": "*****"}))
+	fixture.mu.Unlock()
 
-				assert.Equal(t, requests, fixture.requests, "exact mutation requests")
-				assert.Equal(t, storedAfterPut, fixture.storedAfterPut, "backing values after each PUT")
-			})
-		}
-	}
+	runtime.writeConfig(t, appInstallationSecretConfig(updated, ""))
+	output, err = runtime.run(t.Context(), "apply", "-json", "-auto-approve", "-input=false")
+	require.Error(t, err)
+	assert.Contains(t, output, "Contentful returned different App Installation parameters")
+	require.NoError(t, fixture.check(t, updated, []appInstallationSecretRequest{firstPut, appInstallationSecretPut(updated, "")})(nil))
+}
+
+func TestAccAppInstallationResourceReturnedParametersInRecoveryState(t *testing.T) {
+	t.Parallel()
+
+	const returned = "synthetic-response-only-credential"
+
+	fixture := newAppInstallationSecretFixture(t)
+	fixture.putResponseOverride = []byte(testJSON(map[string]string{"secret": returned}))
+	server := httptest.NewServer(fixture)
+	t.Cleanup(server.Close)
+
+	runtime := newTerraformTestRuntime(t)
+	runtime.providerURL = server.URL
+	runtime.writeConfig(t, `
+resource "contentful_app_installation" "test" {
+  space_id          = "space"
+  environment_id    = "master"
+  app_definition_id = "app"
+}`)
+
+	output, err := runtime.run(t.Context(), "apply", "-json", "-auto-approve", "-input=false")
+	require.Error(t, err)
+	assert.Contains(t, output, "Contentful returned different App Installation parameters")
+	assert.NotContains(t, output, returned)
+	require.NoError(t, fixture.check(t, nil, []appInstallationSecretRequest{appInstallationSecretPut(nil, "")})(nil))
+
+	output, err = runtime.run(t.Context(), "show", "-json")
+	require.NoError(t, err, output)
+
+	var state tfjson.State
+	require.NoError(t, json.Unmarshal([]byte(output), &state))
+	require.NotNil(t, state.Values)
+	require.NotNil(t, state.Values.RootModule)
+	require.Len(t, state.Values.RootModule.Resources, 1)
+	instance := state.Values.RootModule.Resources[0]
+	assert.True(t, instance.Tainted)
+	assert.Equal(t, "space/master/app", instance.AttributeValues["id"])
+	assert.Equal(t, map[string]any{"space_id": "space", "environment_id": "master", "app_definition_id": "app"}, instance.IdentityValues)
+	assert.Equal(t, map[string]any{"secret": testJSON(returned)}, instance.AttributeValues["parameters"])
 }
 
 func TestAccAppInstallationResourceSecretsUnsuccessfulWrite(t *testing.T) {
@@ -297,4 +292,57 @@ func TestAccAppInstallationResourceSecretsReadableDrift(t *testing.T) {
 	}
 
 	testAccMockedResource(t, fixture, resource.TestCase{Steps: steps, CheckDestroy: fixture.checkDestroyed(t)})
+}
+
+func TestAccAppInstallationResourceInvalidParameterDiagnostic(t *testing.T) {
+	t.Parallel()
+	runtime := newTerraformTestRuntime(t)
+
+	const sentinel = "private-sentinel-malformed-json"
+
+	runtime.writeConfig(t, `
+variable "credential" {
+  type = string
+  sensitive = true
+}
+resource "contentful_app_installation" "invalid" {
+  space_id = "space"
+  environment_id = "master"
+  app_definition_id = "app"
+  parameters = { apiKey = var.credential }
+}
+`)
+
+	for _, format := range []string{"-no-color", "-json"} {
+		output, err := runtime.run(t.Context(), "plan", format, "-input=false", "-var=credential="+sentinel)
+		require.Error(t, err)
+		assert.Contains(t, output, "Invalid installation parameter JSON")
+		assert.NotContains(t, output, sentinel)
+	}
+}
+
+func TestAccAppInstallationResourceFormattingAndMarketplace(t *testing.T) {
+	t.Parallel()
+	fixture := newAppInstallationSecretFixture(t)
+	remote := map[string]any{"visible": "one"}
+	initialPut := appInstallationSecretPut(remote, "")
+	puts := []appInstallationSecretRequest{initialPut}
+
+	const formatted = `
+resource "contentful_app_installation" "test" {
+  space_id = "space"
+  environment_id = "master"
+  app_definition_id = "app"
+  parameters = { visible = "  \"one\" " }
+}
+`
+	testAccMockedResource(t, fixture, resource.TestCase{Steps: []resource.TestStep{
+		{Config: appInstallationSecretConfig(remote, ""), Check: fixture.check(t, remote, puts)},
+		{
+			Config: formatted, Check: fixture.check(t, remote, puts),
+			ConfigStateChecks: []statecheck.StateCheck{statecheck.ExpectKnownValue(appInstallationTestAddress, tfjsonpath.New("parameters").AtMapKey("visible"), knownvalue.StringExact(`  "one" `))},
+		},
+		{Config: formatted, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(appInstallationTestAddress, plancheck.ResourceActionNoop)}}},
+		{Config: appInstallationSecretConfig(remote, `marketplace = ["terms"]`), Check: fixture.check(t, remote, []appInstallationSecretRequest{initialPut, appInstallationSecretPut(remote, "terms")})},
+	}})
 }

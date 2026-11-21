@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,15 +19,6 @@ func TestResponseJSONNormalization(t *testing.T) {
 		path    path.Path
 		project func([]byte) (jsontypes.Normalized, diag.Diagnostics)
 	}{
-		{
-			name: "app installation",
-			path: path.Root("parameters"),
-			project: func(raw []byte) (jsontypes.Normalized, diag.Diagnostics) {
-				model, diags := NewAppInstallationResourceModelFromResponse(cm.AppInstallation{Parameters: raw}, AppInstallationModel{Marketplace: types.SetNull(types.StringType)})
-
-				return model.Parameters, diags
-			},
-		},
 		{
 			name: "extension",
 			path: path.Root("parameters"),

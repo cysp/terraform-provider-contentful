@@ -48,8 +48,8 @@ func TestAppInstallationSecretsUnsuccessfulUpdate(t *testing.T) {
 	require.NoError(t, err)
 
 	implementation := appInstallationResource{providerData: ContentfulProviderData{client: client}}
-	state := tfsdk.State(appInstallationTestPlan(t, testJSON(map[string]any{"secret": "previous", "visible": "one"})))
-	plan := appInstallationTestPlan(t, testJSON(map[string]any{"secret": "next", "visible": "two"}))
+	state := tfsdk.State(appInstallationTestPlan(t, map[string]string{"secret": `"previous"`, "visible": `"one"`}))
+	plan := appInstallationTestPlan(t, map[string]string{"secret": `"next"`, "visible": `"two"`})
 	identitySchema := resourceIdentitySchema(appInstallationIdentityAttributeNames())
 	identityRaw, err := tftypes.ValueFromJSONWithOpts([]byte(testJSON(map[string]any{"space_id": "space", "environment_id": "master", "app_definition_id": "app"})), identitySchema.Type().TerraformType(t.Context()), tftypes.ValueFromJSONOpts{})
 	require.NoError(t, err)
@@ -75,4 +75,38 @@ func TestAppInstallationSecretsUnsuccessfulUpdate(t *testing.T) {
 	var stored map[string]any
 	require.NoError(t, json.Unmarshal([]byte(observed.body), &stored))
 	assert.Equal(t, map[string]any{"parameters": map[string]any{"secret": "next", "visible": "two"}}, stored)
+}
+
+func TestAppInstallationMutationRejectsContradictoryParameters(t *testing.T) {
+	t.Parallel()
+
+	for _, test := range []struct {
+		name     string
+		returned map[string]any
+	}{
+		{name: "readable secret", returned: map[string]any{"secret": "different", "visible": "one"}},
+		{name: "readable ordinary", returned: map[string]any{"secret": "*****", "visible": "different"}},
+		{name: "missing ordinary key", returned: map[string]any{"secret": "*****"}},
+		{name: "missing secret key", returned: map[string]any{"visible": "one"}},
+		{name: "null parameters"},
+		{name: "added key", returned: map[string]any{"secret": "*****", "visible": "one", "added": true}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			plan := appInstallationTestPlan(t, map[string]string{"secret": `"alpha"`, "visible": `"one"`})
+
+			var model AppInstallationModel
+			require.Empty(t, plan.Get(t.Context(), &model))
+
+			schema := resourceIdentitySchema(appInstallationIdentityAttributeNames())
+			identity := tfsdk.ResourceIdentity{Schema: schema, Raw: tftypes.NewValue(schema.Type().TerraformType(t.Context()), nil)}
+			state := tfsdk.State{Schema: plan.Schema}
+			endpoint := cm.PutAppInstallationParams{SpaceID: "space", EnvironmentID: "master", AppDefinitionID: "app"}
+			response := cm.AppInstallation{Sys: cm.NewAppInstallationSys("space", "master", "app"), Parameters: []byte(testJSON(test.returned))}
+			diags := setAppInstallationMutationState(t.Context(), &identity, &state, endpoint, model, response)
+			require.Len(t, diags.Errors(), 1)
+			assert.Equal(t, "Contentful returned different App Installation parameters", diags.Errors()[0].Summary())
+		})
+	}
 }

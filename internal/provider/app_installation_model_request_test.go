@@ -104,39 +104,52 @@ func TestToAppInstallationData(t *testing.T) {
 
 	tests := map[string]struct {
 		model               AppInstallationModel
-		expectErrors        bool
+		diagnosticPath      string
 		expectedRequestBody string
 	}{
 		"null": {
 			model: AppInstallationModel{
-				Parameters: jsontypes.NewNormalizedNull(),
+				Parameters: types.MapNull(jsontypes.NormalizedType{}),
 			},
 			expectedRequestBody: testJSON(map[string]any{}),
 		},
 		"unknown": {
 			model: AppInstallationModel{
-				Parameters: jsontypes.NewNormalizedUnknown(),
+				Parameters: types.MapUnknown(jsontypes.NormalizedType{}),
 			},
-			expectErrors:        true,
+			diagnosticPath:      "parameters",
 			expectedRequestBody: testJSON(map[string]any{}),
 		},
 		"empty": {
 			model: AppInstallationModel{
-				Parameters: NewNormalizedJSONValue([]byte(testJSON(map[string]any{}))),
+				Parameters: testInstallationParameterMap(nil),
 			},
 			expectedRequestBody: testJSON(map[string]any{"parameters": map[string]any{}}),
 		},
 		"foo=bar": {
 			model: AppInstallationModel{
-				Parameters: NewNormalizedJSONValue([]byte(testJSON(map[string]any{"foo": "bar"}))),
+				Parameters: testInstallationParameterMap(map[string]string{"foo": `"bar"`}),
 			},
 			expectedRequestBody: testJSON(map[string]any{"parameters": map[string]any{"foo": "bar"}}),
 		},
+		"bare null member": {
+			model:          AppInstallationModel{Parameters: types.MapValueMust(jsontypes.NormalizedType{}, map[string]attr.Value{"foo": jsontypes.NewNormalizedNull()})},
+			diagnosticPath: `parameters["foo"]`, expectedRequestBody: "{}",
+		},
+		"unknown member": {
+			model:          AppInstallationModel{Parameters: types.MapValueMust(jsontypes.NormalizedType{}, map[string]attr.Value{"foo": jsontypes.NewNormalizedUnknown()})},
+			diagnosticPath: `parameters["foo"]`, expectedRequestBody: "{}",
+		},
+		"JSON null member": {
+			model:               AppInstallationModel{Parameters: testInstallationParameterMap(map[string]string{"foo": "null"})},
+			expectedRequestBody: `{"parameters":{"foo":null}}`,
+		},
 		"invalid": {
 			model: AppInstallationModel{
-				Parameters: NewNormalizedJSONValue([]byte("invalid")),
+				Parameters: testInstallationParameterMap(map[string]string{"foo": "invalid"}),
 			},
-			expectedRequestBody: "{\"parameters\":invalid}",
+			diagnosticPath:      `parameters["foo"]`,
+			expectedRequestBody: "{}",
 		},
 	}
 
@@ -151,10 +164,10 @@ func TestToAppInstallationData(t *testing.T) {
 
 			assert.Equal(t, test.expectedRequestBody, string(requestBody))
 
-			if test.expectErrors {
+			if test.diagnosticPath != "" {
 				require.True(t, diags.HasError())
 				assert.Equal(t, cm.AppInstallationData{}, req)
-				assert.Equal(t, []string{"parameters"}, attributeDiagnosticPaths(t, diags))
+				assert.Equal(t, []string{test.diagnosticPath}, attributeDiagnosticPaths(t, diags))
 			} else {
 				assert.Empty(t, diags.Errors())
 			}
@@ -162,4 +175,13 @@ func TestToAppInstallationData(t *testing.T) {
 			assert.Empty(t, diags.Warnings())
 		})
 	}
+}
+
+func testInstallationParameterMap(members map[string]string) types.Map {
+	elements := make(map[string]attr.Value, len(members))
+	for id, raw := range members {
+		elements[id] = jsontypes.NewNormalizedValue(raw)
+	}
+
+	return types.MapValueMust(jsontypes.NormalizedType{}, elements)
 }

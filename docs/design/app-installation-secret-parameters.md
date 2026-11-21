@@ -1,10 +1,5 @@
 # App Installation Secret parameters
 
-The provider reconciles redacted App Installation responses with the effective
-Plan after successful writes and with prior State during refresh. This preserves
-Terraform's parameter values when Contentful withholds plaintext, but cannot
-verify the remote secret. Each write owns the complete planned parameter object.
-
 The [API research](../research/app-framework/secret-installation-parameters.md)
 records published contracts and scoped observations. The
 [secrets guide](../guides/secrets-and-state.md#app-installation-secrets) explains
@@ -25,52 +20,40 @@ records these failures at provider revision
 
 ## Response contract
 
-`parameters` is an optional normalized JSON string. Reconciliation applies only
-to the installation response. It requires no AppDefinition lookup, separate
-Secret configuration, or provider-private state. Configuration comparison uses
-normalized JSON semantics: a mask is not equivalent to plaintext when deciding
-whether a configured change needs a write.
+The Terraform `parameters` map holds one JSON-encoded value per parameter ID.
+The CMA exchanges those values as members of a single JSON object.
 
 Create and Update use the effective Plan as the reference after a successful
-response. Read uses prior State. Import has no prior plaintext to recover.
+response. Read uses prior State.
 
-Apply the following rule only to immediate properties of a JSON object:
+When a returned top-level parameter is a nonempty string of ASCII `*` characters,
+use the reference value at the same key if it is a known string containing at
+least one character other than `*`. Keep every other returned value as received.
+The resulting map contains exactly the keys Contentful returned.
 
-| Response and reference | Result |
-| --- | --- |
-| Values are equal | Keep the response; no diagnostic |
-| Response is a nonempty string containing only ASCII `*`; reference at the same key is a known, nonempty string containing at least one other character | Substitute that reference string; no diagnostic |
-| Reference is missing, null, unknown, empty, non-string, or entirely asterisks | Keep the response |
-| Response key is missing, or its value is empty, null, non-string, or readable text | Keep the response |
-| Nested object or array contains asterisks | Keep the nested value without recursive substitution |
-
-The provider does not compare mask lengths because Contentful does not document
-them as an equality guarantee. The
+Mask length gives no documented guarantee of plaintext equality. The
 [client evidence](../research/app-framework/secret-installation-parameters.md#client-source-evidence)
 supports replay of redacted values without establishing plaintext equality.
-There is no UTF-16 calculation or warning for a different-length response.
-
-Reconciliation changes only qualifying returned values. It never restores an
-omitted object or key, removes response-added keys, or replaces the complete
-response with the Plan. Other differences remain normal refresh drift or
-post-write consistency failures. A failed apply does not imply remote rollback.
-See [Terraform value semantics](terraform-value-semantics.md).
+Read records other differences as drift. After a successful PUT with representable
+parameters, the provider saves the map after mask reconciliation and checks it
+against the plan. A mismatch produces a resource-level error naming `parameters`.
+This avoids including either parameter values or their configuration expression
+in the diagnostic. See [Terraform value semantics](terraform-value-semantics.md).
 
 ## Writes and ownership
 
-Each Create or Update that issues a PUT sends the complete `parameters` value
-from the effective Plan, including values retained by `ignore_changes` and
-imported all-asterisk values. It does not omit masks, replace plaintext with masks,
-or add a GET before writing. Omitting a key can delete it; reading before writing
-cannot make the operation atomic.
+A PUT with a planned map sends every key, including values retained by
+`ignore_changes` and imported masks. Omitting a key can delete it. A null
+map omits the `parameters` member and can clear existing values.
 
 Update compares effective Plan with prior State. When parameters are equivalent
 under normalized JSON semantics and Marketplace acknowledgments are unchanged,
 it publishes planned timeouts without issuing a PUT. Timeout and request
 validation still run. An empty acknowledgment set omits the
-`X-Contentful-Marketplace` header. Read and Update treat a null Marketplace
-set in imported or older state as empty so adopting the default cannot
-replay stored parameters, even with refresh disabled.
+`X-Contentful-Marketplace` header. Import and state upgrade both record an
+empty set when acknowledgments are absent. With equivalent configuration,
+upgrading the parameter object and applying this default requires no PUT,
+even with refresh disabled.
 
 An ordinary parameter update can reassert a configured secret after an invisible
 external rotation. A mask returned after an uncertain write never proves that
@@ -97,43 +80,12 @@ existing secret instead of replacing it. See the
 stored in Terraform state and saved plans; see the
 [secrets guide](../guides/secrets-and-state.md).
 
-## Implementation boundaries
-
-The [response helper](../../internal/provider/app_installation_parameters_response.go)
-must preserve unrelated JSON values, including numeric tokens, nulls, empty
-collections, and nested structures. A response with no qualifying substitution
-is retained unchanged.
-
-The [resource lifecycle](../../internal/provider/resource_app_installation.go)
-selects Plan or State as the reference. The
-[response projector](../../internal/provider/app_installation_model_response.go)
-preserves its Marketplace acknowledgments and timeouts and reconciles parameters
-before returning the model for identity and state publication. Only successful
-mutations reach reconciliation. Invalid JSON, unknown request values, and failed
-state encoding remain errors. Reconciliation diagnostics must not include
-parameter values.
-
 ## Verification
 
-[Response tests](../../internal/provider/app_installation_parameters_response_internal_test.go)
-exercise the matching boundaries and JSON fidelity.
-[Lifecycle tests](../../internal/provider/resource_app_installation_secrets_test.go)
-and the [failed Update test](../../internal/provider/resource_app_installation_secrets_internal_test.go)
-check state and requests against independent backing values.
-[Timeout lifecycle tests](../../internal/provider/resource_app_installation_timeout_test.go)
-and [validation tests](../../internal/provider/resource_app_installation_timeout_internal_test.go)
-check which changes issue a PUT and that validation runs before skipping it.
-
-The [shared test server](../../internal/contentful-management-go/testing/app_installation.go)
-separates stored secrets from PAT responses and models the observed mask replay
-rule. The [HTTP fixture](../../internal/provider/resource_app_installation_secrets_fixture_test.go)
-records requests and injects deliberate response contradictions or failures. Expected values must remain
-independent of the reconciliation helper. Exact requests and backing values
-establish ownership behavior separately from Terraform state assertions.
-A deliberately different-length response tests provider policy; it does not
-claim that Contentful emitted that representation in the live experiments.
-
-Follow [Testing](../testing.md) and the
-[validation scope](../../DEVELOPMENT.md#validation-scope) when changing this contract.
+The [HTTP fixture](../../internal/provider/resource_app_installation_secrets_fixture_test.go)
+records the complete PUT and can override the response independently of the
+stored parameters. Check both when changing mask handling. A synthetic mask
+of a different length tests the provider’s inference rule. For observed service
+behavior, use the [API research](../research/app-framework/secret-installation-parameters.md).
 
 [reproduction]: https://github.com/cysp/terraform-provider-contentful/blob/741b9b316a28b4491988addc07b0d6a4027d25a9/docs/design/app-installation-secret-parameters.md#provider-behavior-and-reproduction
