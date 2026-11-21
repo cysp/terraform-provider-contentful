@@ -7,7 +7,8 @@ resource "contentful_app_installation" "custom" {
   app_definition_id = var.app_definition_id
 
   parameters = {
-    apiKey = jsonencode(var.app_api_key)
+    refreshInterval = jsonencode(30)
+    apiKey          = jsonencode(var.app_api_key)
   }
 }
 
