@@ -151,13 +151,10 @@ Required:
 <a id="nestedatt--headers"></a>
 ### Nested Schema for `headers`
 
-Required:
-
-- `value` (String) Header value. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. See [Secrets and Terraform state](../guides/secrets-and-state).
-
 Optional:
 
 - `secret` (Boolean) Whether Contentful treats the header value as secret. Defaults to `false`.
+- `value` (String) Header value. Omit it with `secret = true` to retain an existing secret under the exact same header name on update. New headers and ordinary headers require a value. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. See [Secrets and Terraform state](../guides/secrets-and-state).
 
 
 <a id="nestedatt--timeouts"></a>

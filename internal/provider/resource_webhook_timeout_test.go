@@ -31,6 +31,10 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 		Name: "Imported webhook", URL: "https://example.com/webhook", Topics: []string{"Entry.publish"},
 		HttpBasicUsername: cm.NewOptNilString("user"), HttpBasicPassword: cm.NewOptNilString("remote-password"),
 		Active: cm.NewOptBool(true),
+		Headers: cm.WebhookDefinitionHeaders{
+			{Key: "X-Ordinary", Secret: cm.NewOptBool(false)},
+			{Key: "X-Managed", Value: cm.NewOptString("same"), Secret: cm.NewOptBool(false)},
+		},
 	}
 	server.SetWebhookDefinition("space", "imported-webhook", fields)
 	// Import at version 2 so a fabricated initial version cannot authorize the next PUT.
@@ -59,6 +63,9 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("timeouts").AtMapKey("update"), knownvalue.StringExact("3m")),
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("http_basic_username"), knownvalue.StringExact("user")),
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("http_basic_password"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(address, tfjsonpath.New("headers").AtMapKey("X-Ordinary"), knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"secret": knownvalue.Bool(false), "value": knownvalue.Null(),
+					})),
 					statecheck.ExpectIdentityValueMatchesState(address, tfjsonpath.New("space_id")),
 					statecheck.ExpectIdentityValueMatchesState(address, tfjsonpath.New("webhook_id")),
 				},
@@ -74,7 +81,17 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 				},
 			},
 			{
-				Config: webhookBasicPasswordConfig("Imported webhook", `"rotated-password"`, timeout),
+				Config: webhookBasicPasswordConfig("Imported webhook", "null", `
+  timeouts = { update = "4m" }
+  headers  = { X-Managed = { value = "same" } }
+  lifecycle { ignore_changes = [http_basic_username, headers["X-Ordinary"]] }`),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(address, tfjsonpath.New("timeouts").AtMapKey("update"), knownvalue.StringExact("4m")),
+					statecheck.ExpectKnownValue(address, tfjsonpath.New("headers").AtMapKey("X-Ordinary").AtMapKey("value"), knownvalue.Null()),
+				},
+			},
+			{
+				Config: webhookBasicPasswordConfig("Imported webhook", `"rotated-password"`, timeout+"\nheaders = {}"),
 				Check: func(*terraform.State) error {
 					puts := recorder.matchingRequests(http.MethodPut, "")
 					require.Len(t, puts, 1)
