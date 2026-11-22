@@ -7,6 +7,7 @@ Use these notes to check Contentful request shapes, version preconditions, and o
 | Topic | Reference and questions covered |
 | --- | --- |
 | App Framework | [App Framework reference](app-framework/README.md): definitions, installations, deployment, events, actions, identity, request signing, Functions, and external resources |
+| Signing secret metadata | [Versions and timestamps](signing-secret-versions.md): AppSigningSecret and WebhookSigningSecret metadata, conflicting examples, and conditional requests |
 | Webhooks | [Configuration, delivery, and observability](webhooks.md): topics, headers, Basic authentication, signing settings, retries, and activity logs |
 | Entries and Content Types | [PUT header semantics](entry-and-content-type-put-headers.md): create/update selection and absent-target behavior |
 | Entry lifecycle | [Publication, versions, and deletion](entry-lifecycle.md): version locking, published versions, unpublish, and delete preconditions |

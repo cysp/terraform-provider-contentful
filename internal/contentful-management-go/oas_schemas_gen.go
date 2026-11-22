@@ -2465,6 +2465,7 @@ type AppSigningSecretSys struct {
 	// Merged property.
 	Type          AppSigningSecretSysType `json:"type"`
 	AppDefinition AppDefinitionLink       `json:"appDefinition"`
+	UpdatedAt     OptDateTime             `json:"updatedAt"`
 }
 
 // GetOrganization returns the value of Organization.
@@ -2482,6 +2483,11 @@ func (s *AppSigningSecretSys) GetAppDefinition() AppDefinitionLink {
 	return s.AppDefinition
 }
 
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *AppSigningSecretSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
 // SetOrganization sets the value of Organization.
 func (s *AppSigningSecretSys) SetOrganization(val OrganizationLink) {
 	s.Organization = val
@@ -2495,6 +2501,11 @@ func (s *AppSigningSecretSys) SetType(val AppSigningSecretSysType) {
 // SetAppDefinition sets the value of AppDefinition.
 func (s *AppSigningSecretSys) SetAppDefinition(val AppDefinitionLink) {
 	s.AppDefinition = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *AppSigningSecretSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
 }
 
 // Merged schema.
@@ -14993,8 +15004,9 @@ func (s *WebhookSigningSecretRequestData) SetValue(val string) {
 // Ref: #/WebhookSigningSecretSys
 type WebhookSigningSecretSys struct {
 	// Merged property.
-	Type  WebhookSigningSecretSysType `json:"type"`
-	Space SpaceLink                   `json:"space"`
+	Type      WebhookSigningSecretSysType `json:"type"`
+	Space     SpaceLink                   `json:"space"`
+	UpdatedAt OptDateTime                 `json:"updatedAt"`
 }
 
 // GetType returns the value of Type.
@@ -15007,6 +15019,11 @@ func (s *WebhookSigningSecretSys) GetSpace() SpaceLink {
 	return s.Space
 }
 
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *WebhookSigningSecretSys) GetUpdatedAt() OptDateTime {
+	return s.UpdatedAt
+}
+
 // SetType sets the value of Type.
 func (s *WebhookSigningSecretSys) SetType(val WebhookSigningSecretSysType) {
 	s.Type = val
@@ -15015,6 +15032,11 @@ func (s *WebhookSigningSecretSys) SetType(val WebhookSigningSecretSysType) {
 // SetSpace sets the value of Space.
 func (s *WebhookSigningSecretSys) SetSpace(val SpaceLink) {
 	s.Space = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *WebhookSigningSecretSys) SetUpdatedAt(val OptDateTime) {
+	s.UpdatedAt = val
 }
 
 // Merged schema.

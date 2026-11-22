@@ -9,8 +9,13 @@ import (
 )
 
 func (m *AppSigningSecretModel) ToAppSigningSecretRequest(_ context.Context, modelPath path.Path) (cm.AppSigningSecretRequestData, diag.Diagnostics) {
-	valuePath := modelPath.AtName("value")
-	value, diags := requestRequiredString(m.Value, valuePath)
+	selected, valuePath, diags := resolveSigningSecretValue(m.Value, m.ValueWO, modelPath)
+	if diags.HasError() {
+		return cm.AppSigningSecretRequestData{}, diags
+	}
+
+	value, valueDiags := requestRequiredString(selected, valuePath)
+	diags.Append(valueDiags...)
 
 	if diags.HasError() {
 		return cm.AppSigningSecretRequestData{}, diags

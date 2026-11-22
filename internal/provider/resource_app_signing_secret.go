@@ -14,6 +14,7 @@ import (
 
 var (
 	_ resource.Resource                = (*appSigningSecretResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*appSigningSecretResource)(nil)
 	_ resource.ResourceWithConfigure   = (*appSigningSecretResource)(nil)
 	_ resource.ResourceWithIdentity    = (*appSigningSecretResource)(nil)
 	_ resource.ResourceWithImportState = (*appSigningSecretResource)(nil)
@@ -54,17 +55,24 @@ func (r *appSigningSecretResource) ImportState(ctx context.Context, req resource
 
 func (r *appSigningSecretResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan AppSigningSecretModel
-
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("value_wo"), &plan.ValueWO)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx = maskAppSigningSecretValues(ctx, plan.Value)
+	request, requestDiags := plan.ToAppSigningSecretRequest(ctx, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
 
-	ctx, cancel, timeoutDiagnostics := resourceCreateContext(ctx, plan.Timeouts)
-	resp.Diagnostics.Append(timeoutDiagnostics...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx = maskSigningSecretValues(ctx, plan.Value, plan.ValueWO)
+
+	ctx, cancel, timeoutDiags := resourceCreateContext(ctx, plan.Timeouts)
+	resp.Diagnostics.Append(timeoutDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -72,14 +80,24 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	defer cancel()
 
-	data, diags := r.put(ctx, plan, types.StringNull(), "create")
-	resp.Diagnostics.Append(diags...)
+	var verifier signingSecretVerifier
+	if !plan.ValueWO.IsNull() {
+		resp.Diagnostics.Append(verifier.set(ctx, plan.ValueWO)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	// Create always writes, including replacement and recreation after absence.
+	data, putDiags := r.put(ctx, plan, request, types.StringNull(), "create")
+	resp.Diagnostics.Append(putDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
+	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
 }
 
 func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -91,7 +109,7 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	ctx = maskAppSigningSecretValues(ctx, state.Value)
+	ctx = maskSigningSecretValues(ctx, state.Value)
 
 	ctx, cancel, timeoutDiagnostics := resourceReadContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
@@ -119,10 +137,8 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 
 	switch response := response.(type) {
 	case *cm.AppSigningSecret:
-		readState := NewAppSigningSecretResourceModelFromResponse(*response)
-		if readState.Value.IsNull() && !state.Value.IsUnknown() {
-			readState.Value = state.Value
-		}
+		readState, readDiags := NewAppSigningSecretResourceModelFromResponse(*response, params.OrganizationID, params.AppDefinitionID, state.Value)
+		resp.Diagnostics.Append(readDiags...)
 
 		data = readState
 
@@ -154,25 +170,44 @@ func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRe
 
 func (r *appSigningSecretResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var state, plan AppSigningSecretModel
-
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("value_wo"), &plan.ValueWO)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if plan.Value.Equal(state.Value) {
+	verifier, hashDiags := readSigningSecretVerifier(ctx, req.Private, state.Value)
+	resp.Diagnostics.Append(hashDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Ordinary fields retain their effective values in Plan, including ignores.
+	if plan.ValueWO.IsNull() && !plan.Value.IsUnknown() && plan.Value.Equal(state.Value) {
+		if !plan.Value.IsNull() {
+			verifier.clear()
+		}
+
 		state.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &state)...)
+		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &state)...)
 
 		return
 	}
 
-	ctx = maskAppSigningSecretValues(ctx, state.Value, plan.Value)
+	request, requestDiags := plan.ToAppSigningSecretRequest(ctx, path.Empty())
+	resp.Diagnostics.Append(requestDiags...)
 
-	ctx, cancel, timeoutDiagnostics := resourceUpdateContext(ctx, plan.Timeouts)
-	resp.Diagnostics.Append(timeoutDiagnostics...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx = maskSigningSecretValues(ctx, state.Value, plan.Value, plan.ValueWO)
+
+	ctx, cancel, timeoutDiags := resourceUpdateContext(ctx, plan.Timeouts)
+	resp.Diagnostics.Append(timeoutDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -180,26 +215,31 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	defer cancel()
 
-	data, diags := r.put(ctx, plan, state.Value, "update")
-	resp.Diagnostics.Append(diags...)
+	matches, prepareDiags := prepareSigningSecretValue(ctx, &verifier, state.Value, request.Value, plan.ValueWO)
+	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
-}
+	if matches {
+		// Same bytes can still change their public/private representation.
+		state.Value = plan.Value
+		state.ValueWO = types.StringNull()
+		state.Timeouts = plan.Timeouts
+		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &state)...)
 
-func maskAppSigningSecretValues(ctx context.Context, values ...types.String) context.Context {
-	knownValues := make([]string, 0, len(values))
-
-	for _, value := range values {
-		if !value.IsNull() && !value.IsUnknown() && value.ValueString() != "" {
-			knownValues = append(knownValues, value.ValueString())
-		}
+		return
 	}
 
-	return tflog.MaskLogStrings(ctx, knownValues...)
+	data, putDiags := r.put(ctx, plan, request, state.Value, "update")
+	resp.Diagnostics.Append(putDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
 }
 
 func appSigningSecretLogError(err error, values ...types.String) any {
@@ -219,7 +259,7 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 		return
 	}
 
-	ctx = maskAppSigningSecretValues(ctx, state.Value)
+	ctx = maskSigningSecretValues(ctx, state.Value)
 
 	ctx, cancel, timeoutDiagnostics := resourceDeleteContext(ctx, state.Timeouts)
 	resp.Diagnostics.Append(timeoutDiagnostics...)
@@ -258,15 +298,16 @@ func (r *appSigningSecretResource) Delete(ctx context.Context, req resource.Dele
 	}
 }
 
-const appSigningSecretPutRecovery = "If the write was applied, a read still reveals only the final four characters. Reverting to the value in state can skip the write. Verify a fresh signed request with the intended key, or coordinate a new rotation with the app backend and other writers."
+func (r *appSigningSecretResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	modifySigningSecretPlan(ctx, req, resp)
+}
 
-func (r *appSigningSecretResource) put(ctx context.Context, plan AppSigningSecretModel, priorValue types.String, operation string) (AppSigningSecretModel, diag.Diagnostics) {
+const appSigningSecretPutRecovery = "If the write was applied, a read still reveals only the final four characters. Reverting to the last acknowledged value can skip the write. Verify a fresh signed request with the intended key, or coordinate a new rotation with the app backend and other writers."
+
+func (r *appSigningSecretResource) put(ctx context.Context, plan AppSigningSecretModel, request cm.AppSigningSecretRequestData, priorValue types.String, operation string) (AppSigningSecretModel, diag.Diagnostics) {
 	organizationID, diags := appSigningSecretEndpointID(plan.OrganizationID, path.Root("organization_id"))
 	appDefinitionID, appDiags := appSigningSecretEndpointID(plan.AppDefinitionID, path.Root("app_definition_id"))
-	request, requestDiags := plan.ToAppSigningSecretRequest(ctx, path.Empty())
-
 	diags.Append(appDiags...)
-	diags.Append(requestDiags...)
 
 	if diags.HasError() {
 		return AppSigningSecretModel{}, diags
@@ -276,12 +317,12 @@ func (r *appSigningSecretResource) put(ctx context.Context, plan AppSigningSecre
 	response, err := r.providerData.client.PutAppSigningSecret(ctx, &request, params)
 	tflog.Info(ctx, "app_signing_secret."+operation, map[string]any{
 		"params": params,
-		"err":    appSigningSecretLogError(err, priorValue, plan.Value),
+		"err":    appSigningSecretLogError(err, priorValue, plan.Value, plan.ValueWO),
 	})
 
 	secret, ok := response.(*cm.AppSigningSecretStatusCode)
 	if err != nil || !ok {
-		detail := signingSecretErrorDetail(response, err, priorValue, plan.Value)
+		detail := signingSecretErrorDetail(response, err, priorValue, plan.Value, plan.ValueWO)
 		diags.AddError("Failed to "+operation+" app signing secret", detail+"\n\n"+appSigningSecretPutRecovery)
 
 		return AppSigningSecretModel{}, diags
@@ -302,8 +343,7 @@ func (r *appSigningSecretResource) put(ctx context.Context, plan AppSigningSecre
 		return AppSigningSecretModel{}, diags
 	}
 
-	data := NewAppSigningSecretResourceModelFromResponse(secret.Response)
-	data.Value = plan.Value
+	data := appSigningSecretResponseModel(secret.Response, plan.Value)
 	data.Timeouts = plan.Timeouts
 
 	return data, diags

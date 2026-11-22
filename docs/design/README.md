@@ -10,6 +10,7 @@
 | Taxonomy Concepts or Concept Schemes | [Collection ownership and version locking](taxonomy.md) |
 | App Definitions, App Actions, or Extensions | [App and Extension configuration](app-configuration.md) |
 | App Installation parameters | [Parameter masking and complete-object updates](app-installation-secret-parameters.md) |
+| App and webhook signing-secret values, comparison, or state publication | [Signing secret values and acknowledgement](signing-secret-write-only.md) and [Signing secret planning](signing-secret-planning.md) |
 | Webhook Signing Secrets | [Space-wide signing secret ownership](webhook-signing-secret.md) |
 | Preview environments or live preview variables | [Preview platform configuration](content-preview-environments.md) and [variables document ownership](content-preview-environments.md#live-preview-variables) |
 | Delivery API key environments or Space Enablements | [Key environment selection](terraform-value-semantics.md#delivery-api-key-environments) and [enablement request values](terraform-value-semantics.md#space-enablements) |

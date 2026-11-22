@@ -9,3 +9,6 @@ AppSigningSecretSys:
         type:
           enum:
             - AppSigningSecret
+        updatedAt:
+          type: string
+          format: date-time
