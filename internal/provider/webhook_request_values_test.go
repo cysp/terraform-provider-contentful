@@ -5,7 +5,6 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
@@ -68,7 +67,7 @@ func TestWebhookModelRejectsInvalidScalarRequestValues(t *testing.T) {
 			model := validWebhookRequestModel()
 			test.setValue(&model)
 
-			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, nil, path.Empty())
+			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
 
 			require.True(t, diags.HasError())
 			assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, diags))
@@ -120,7 +119,7 @@ func TestWebhookModelTopicsRequestValues(t *testing.T) {
 			model := validWebhookRequestModel()
 			model.Topics = test.topics
 
-			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, nil, path.Empty())
+			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
 
 			if len(test.expectedPaths) > 0 {
 				require.True(t, diags.HasError())
@@ -137,28 +136,9 @@ func TestWebhookModelTopicsRequestValues(t *testing.T) {
 func TestWebhookHeadersRequestValues(t *testing.T) {
 	t.Parallel()
 
-	ctx := t.Context()
-
-	validHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringValue("value"),
-		"secret": types.BoolValue(false),
-	}))
-	unknownValueHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringUnknown(),
-		"secret": types.BoolValue(false),
-	}))
-	unknownSecretHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringValue("value"),
-		"secret": types.BoolUnknown(),
-	}))
-	nullValueHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringNull(),
-		"secret": types.BoolValue(false),
-	}))
-	nullSecretHeader := DiagsNoErrorsMust(NewTypedObjectFromAttributes[WebhookHeaderValue](ctx, map[string]attr.Value{
-		"value":  types.StringValue("value"),
-		"secret": types.BoolNull(),
-	}))
+	header := func(value types.String, secret types.Bool) TypedObject[WebhookHeaderValue] {
+		return NewTypedObject(WebhookHeaderValue{Value: value, Secret: secret})
+	}
 
 	tests := map[string]struct {
 		headers       TypedMap[TypedObject[WebhookHeaderValue]]
@@ -175,14 +155,18 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 			headers:  NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
 			expected: cm.WebhookDefinitionHeaders{},
 		},
-		"known values are sorted": {
+		"sorted keys preserve empty and omitted values": {
 			headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
-				"Z-Header": validHeader,
-				"A-Header": validHeader,
+				"X-Retained":     header(types.StringNull(), types.BoolValue(true)),
+				"X-Secret":       header(types.StringValue("token"), types.BoolValue(true)),
+				"X-Empty-Secret": header(types.StringValue(""), types.BoolValue(true)),
+				"X-Empty":        header(types.StringValue(""), types.BoolValue(false)),
 			}),
 			expected: cm.WebhookDefinitionHeaders{
-				{Key: "A-Header", Value: cm.NewOptString("value"), Secret: cm.NewOptBool(false)},
-				{Key: "Z-Header", Value: cm.NewOptString("value"), Secret: cm.NewOptBool(false)},
+				{Key: "X-Empty", Value: cm.NewOptString(""), Secret: cm.NewOptBool(false)},
+				{Key: "X-Empty-Secret", Value: cm.NewOptString(""), Secret: cm.NewOptBool(true)},
+				{Key: "X-Retained", Secret: cm.NewOptBool(true)},
+				{Key: "X-Secret", Value: cm.NewOptString("token"), Secret: cm.NewOptBool(true)},
 			},
 		},
 		"unknown object": {
@@ -199,26 +183,26 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 		},
 		"unknown value": {
 			headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
-				"X-Header": unknownValueHeader,
+				"X-Header": header(types.StringUnknown(), types.BoolValue(false)),
 			}),
 			expectedPaths: []string{"headers[\"X-Header\"].value"},
 		},
 		"null value": {
 			headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
-				"X-Header": nullValueHeader,
+				"X-Header": header(types.StringNull(), types.BoolValue(false)),
 			}),
 			expectedPaths: []string{"headers[\"X-Header\"].value"},
 		},
 		"null secret": {
 			headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
-				"X-Header": nullSecretHeader,
+				"X-Header": header(types.StringValue("value"), types.BoolNull()),
 			}),
 			expectedPaths: []string{"headers[\"X-Header\"].secret"},
 		},
 		"mixed valid and unknown values fail atomically": {
 			headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
-				"A-Header": validHeader,
-				"X-Header": unknownSecretHeader,
+				"A-Header": header(types.StringValue("valid"), types.BoolValue(false)),
+				"X-Header": header(types.StringValue("value"), types.BoolUnknown()),
 			}),
 			expectedPaths: []string{"headers[\"X-Header\"].secret"},
 		},
@@ -228,7 +212,7 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), test.headers, nil)
+			actual, diags := ToWebhookDefinitionHeaders(path.Root("headers"), test.headers)
 
 			if len(test.expectedPaths) > 0 {
 				require.True(t, diags.HasError())

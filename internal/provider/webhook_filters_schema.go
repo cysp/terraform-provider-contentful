@@ -148,7 +148,7 @@ func exactlyOneWebhookFilterOperator(names ...string) []validator.Object {
 func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"value": schema.StringAttribute{
-			Description: "Header value. Omit it with `secret = true` to retain an existing secret under the exact same header name on update. New headers and ordinary headers require a value. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. See [Secrets and Terraform state](../guides/secrets-and-state).",
+			Description: "Supply a value for each configured header when creating or replacing a webhook. On update, ordinary headers require a value. A null planned value with `secret = true` asks Contentful to retain the secret stored under that exact header name. Supply a value when adding a new header name or changing an ordinary header to secret. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. See [Secrets and Terraform state](../guides/secrets-and-state).",
 			Optional:    true,
 		},
 		"secret": schema.BoolAttribute{

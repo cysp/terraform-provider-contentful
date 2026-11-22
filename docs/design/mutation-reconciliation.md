@@ -95,7 +95,9 @@ state clears both versions.
 
 When configuration omits `headers`, build the PUT from the effective plan. Send ordinary header values, including empty strings. For each secret header, send its exact key and `secret = true` without a `value` member. Contentful retains the secret stored under that name. If the webhook was deleted after refresh, the PUT can fail because there is no stored secret to retain.
 
-With a configured map, send every known planned string, including an empty one, verbatim. A null value is valid only when the planned header and the prior header at the exact key both have `secret = true`. Omit that value to retain the stored secret.
+On creation or replacement, each configured header needs an initial value. Reject known null values during planning, defer unknowns, and validate the resolved values before POST.
+
+On update with a configured map, send each known planned string verbatim, including an empty string or a value retained by `ignore_changes`. If the planned value is null, require `secret = true` and omit the `value` member from the PUT. The header’s previous secret flag does not affect this decision. Check the returned headers against the plan, including the secret flag. See the [observed results for existing, new, and renamed headers](../research/webhooks.md#header-names-order-and-secret-updates).
 
 | Attribute | Equivalence and omission |
 | --- | --- |

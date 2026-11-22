@@ -12,7 +12,6 @@ import (
 func ToWebhookDefinitionHeaders(
 	path path.Path,
 	model TypedMap[TypedObject[WebhookHeaderValue]],
-	prior map[string]TypedObject[WebhookHeaderValue],
 ) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
 	if model.IsNull() || model.IsUnknown() {
 		// The lifecycle rejects configuration-owned unknown plans. A remaining
@@ -48,7 +47,7 @@ func ToWebhookDefinitionHeaders(
 			continue
 		}
 
-		header, headerDiags := headerValue.ToWebhookDefinitionHeader(headerPath, key, prior[key])
+		header, headerDiags := headerValue.ToWebhookDefinitionHeader(headerPath, key)
 		diags.Append(headerDiags...)
 
 		if !headerDiags.HasError() {

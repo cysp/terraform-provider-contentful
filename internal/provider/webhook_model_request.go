@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
-func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, config WebhookModel, priorHeaders map[string]TypedObject[WebhookHeaderValue], path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
+func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, config WebhookModel, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
 	diags := rejectUnknownConfigurationOwnedRequestValue(model.Headers, config.Headers, path.AtName("headers"))
 
 	name, nameDiags := requestRequiredString(model.Name, path.AtName("name"))
@@ -65,7 +65,7 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, config W
 
 	req.Filters = filters
 
-	headersList, headersListDiags := ToWebhookDefinitionHeaders(path.AtName("headers"), model.Headers, priorHeaders)
+	headersList, headersListDiags := ToWebhookDefinitionHeaders(path.AtName("headers"), model.Headers)
 	diags.Append(headersListDiags...)
 
 	req.Headers = headersList
