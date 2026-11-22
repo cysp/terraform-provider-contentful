@@ -5,6 +5,64 @@ Entries through 0.0.70 preserve the existing
 [GitHub release notes](https://github.com/cysp/terraform-provider-contentful/releases);
 dates are UTC publication dates.
 
+## [0.2.0](https://github.com/cysp/terraform-provider-contentful/compare/v0.1.0...v0.2.0) (2026-11-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **provider:** contentful_app_installation.parameters now takes a map. Use each parameter ID as a key and apply jsonencode to each value. Existing configurations that encode all parameters as one JSON string must be updated. Saved null values and JSON objects with NFC-normalized parameter IDs upgrade in place.
+
+### Features
+
+* **provider:** allow omitting values for existing secret webhook headers ([3fab538](https://github.com/cysp/terraform-provider-contentful/commit/3fab53899b80d69966d545eeaf6daa074c262450))
+* **provider:** expose the observed webhook version ([25a66eb](https://github.com/cysp/terraform-provider-contentful/commit/25a66eba8a524d89f4896084f69b64d47f051ff5))
+* **provider:** model App Installation parameters as a map ([022bb20](https://github.com/cysp/terraform-provider-contentful/commit/022bb20ee0fb000b130fd43c7d13d3c04c1d25cb))
+
+
+### Bug fixes
+
+* **contentful-management-go:** match webhook definition versioning ([e7b29c2](https://github.com/cysp/terraform-provider-contentful/commit/e7b29c2dd77b3107eddb62cfcab81c41be7059c2))
+* **contentful-management-go:** reject missing header values on webhook creation ([05d1bbd](https://github.com/cysp/terraform-provider-contentful/commit/05d1bbdd294b90daab53c660e09adce3e4160029))
+* **provider:** clarify unconfirmed app signing secret mutations ([5403e3b](https://github.com/cysp/terraform-provider-contentful/commit/5403e3b6a44e2b1f223e97c1eb2043f22f9f143e))
+* **provider:** default app installation Marketplace acknowledgments to an empty set ([dc9ef01](https://github.com/cysp/terraform-provider-contentful/commit/dc9ef019248dcce763730909cb40ad78bc2fc8bf))
+* **provider:** persist webhook timeout updates without a PUT ([b2987d1](https://github.com/cysp/terraform-provider-contentful/commit/b2987d19f839dc798cc158a8bcbc3f0f6b86b343))
+* **provider:** preserve webhook secrets when the headers map is omitted ([6c47aca](https://github.com/cysp/terraform-provider-contentful/commit/6c47acac96ed7a5e5d3d3eaf51c0b2317f87e106))
+* **provider:** reconcile webhook credentials and require a created ID ([6d71e5d](https://github.com/cysp/terraform-provider-contentful/commit/6d71e5d396e2f4b6b28a691e4e301d6a6063db67))
+* **provider:** require paired Basic credentials when writing webhooks ([38daaa9](https://github.com/cysp/terraform-provider-contentful/commit/38daaa9a46cfed168105f596937338aba0cf2f14))
+* **provider:** retain ignored webhook secret headers on update ([987eb18](https://github.com/cysp/terraform-provider-contentful/commit/987eb18b3b8a7faa75c04adaa4dccca70075b7af))
+* **provider:** retain resource identity when refresh finds absence ([a8f0093](https://github.com/cysp/terraform-provider-contentful/commit/a8f00938bd9f12b9afe6e988a6cce3303c9db7f0))
+* **provider:** validate app signing secrets before mutation ([2162229](https://github.com/cysp/terraform-provider-contentful/commit/216222932154b14007b3b2c10395a15795b8435a))
+* **provider:** validate webhook header values for creation and update ([b4b7bc0](https://github.com/cysp/terraform-provider-contentful/commit/b4b7bc0aacf4d93d95ec494d6db9a1baa61b5b0f))
+
+
+### Documentation
+
+* **provider:** show per-key plan diffs for App Installation parameters ([7f99fd5](https://github.com/cysp/terraform-provider-contentful/commit/7f99fd52bd221141265753a746702bd2f1e15ab8))
+
+
+### Tests
+
+* **provider:** cover webhook credential and identity publication ([bd4f7a3](https://github.com/cysp/terraform-provider-contentful/commit/bd4f7a3a692beb6382a65736a8ea9e0d9902d961))
+* **provider:** exercise webhook Basic credential pairs at mutation ([3274c6f](https://github.com/cysp/terraform-provider-contentful/commit/3274c6fcb1467d622f6ac7eca64878a0c83dd0f6))
+* **provider:** isolate Basic credential checks from webhook header fixtures ([93cbd8c](https://github.com/cysp/terraform-provider-contentful/commit/93cbd8c86c9b549e1fffb037d5060bde90eb58ba))
+* **provider:** preserve the webhook password fixture for concurrent callers ([57f68e3](https://github.com/cysp/terraform-provider-contentful/commit/57f68e3cadd83c3e2422d2902458eed1e6aafee9))
+* **provider:** refresh webhook state without a version attribute ([d2bbefe](https://github.com/cysp/terraform-provider-contentful/commit/d2bbefe3ea24c21024dd9647714695ec45fd17a1))
+
+
+### Style
+
+* **provider:** address app signing secret validation lint ([7e2df34](https://github.com/cysp/terraform-provider-contentful/commit/7e2df3405e4e321a3be0d5f3697b2bd589f4d13a))
+* **provider:** format webhook credential test assertions ([5c7467e](https://github.com/cysp/terraform-provider-contentful/commit/5c7467e42c2eb6db594bcf8d5b5cade597b659e9))
+
+
+### Maintenance
+
+* **deps:** bump actions/setup-go from 7.0.0 to 7.1.0 ([fbf1d33](https://github.com/cysp/terraform-provider-contentful/commit/fbf1d330cff398a7ffdd9762140e553c9207e9b0))
+* **deps:** bump indirect dependencies ([bed1de7](https://github.com/cysp/terraform-provider-contentful/commit/bed1de7987eda865e563e0359f1ec6fb28bd0466))
+* **deps:** bump indirect dependencies ([6c57bbb](https://github.com/cysp/terraform-provider-contentful/commit/6c57bbb44fbc191745a933dc06f8bf2c84d66b76))
+* **deps:** bump indirect dependencies ([51e225b](https://github.com/cysp/terraform-provider-contentful/commit/51e225b42e1bd483a678a28d03e4185dfa882723))
+* **deps:** bump indirect dependencies ([3ab13af](https://github.com/cysp/terraform-provider-contentful/commit/3ab13afa6f6e91276fa1a55b7d35c1846c8f7a99))
+
 ## [0.1.0](https://github.com/cysp/terraform-provider-contentful/compare/v0.0.74...v0.1.0) (2026-11-19)
 
 
