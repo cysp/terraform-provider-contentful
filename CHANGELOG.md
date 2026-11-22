@@ -10,7 +10,7 @@ dates are UTC publication dates.
 
 ### ⚠ BREAKING CHANGES
 
-* **provider:** contentful_app_installation.parameters now takes a map. Use each parameter ID as a key and apply jsonencode to each value. Existing configurations that encode all parameters as one JSON string must be updated. Saved null values and JSON objects with NFC-normalized parameter IDs upgrade in place.
+* **provider:** `contentful_app_installation.parameters` now takes a map. Use each parameter ID as a key and apply `jsonencode` to each value. Existing configurations that encode all parameters as one JSON string must be updated. Module outputs that return `parameters` directly now return a map of JSON-encoded strings, even when the installation has no planned changes. Saved null values and JSON objects with NFC-normalized parameter IDs upgrade in place. See the [App Installation upgrade guide](https://github.com/cysp/terraform-provider-contentful/blob/7f99fd52bd221141265753a746702bd2f1e15ab8/docs/resources/app_installation.md#upgrading-from-the-single-json-string) for nullable inputs, sensitive parameters and state recovery.
 
 ### Features
 
