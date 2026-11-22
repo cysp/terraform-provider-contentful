@@ -9,7 +9,6 @@ import (
 func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
 	path path.Path,
 	key string,
-	prior TypedObject[WebhookHeaderValue],
 ) (cm.WebhookDefinitionHeader, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -20,7 +19,7 @@ func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
 		return cm.WebhookDefinitionHeader{}, diags
 	}
 
-	diags.Append(v.validateValueOmission(path, prior)...)
+	diags.Append(v.validateValueOmission(path)...)
 	value, valueDiags := requestOmittableString(v.Value, path.AtName("value"))
 	diags.Append(valueDiags...)
 
@@ -31,20 +30,13 @@ func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
 	return cm.WebhookDefinitionHeader{Key: key, Secret: cm.NewOptBool(secret), Value: value}, diags
 }
 
-// A null value asks Contentful to keep the secret at this exact key.
-// An unknown flag can permit omission only if there is a prior secret to retain.
-func (v WebhookHeaderValue) validateValueOmission(headerPath path.Path, prior TypedObject[WebhookHeaderValue]) diag.Diagnostics {
-	if !v.Value.IsNull() {
-		return nil
-	}
-
-	previous, present := prior.GetValue()
-	if present && previous.Secret.ValueBool() && (v.Secret.ValueBool() || v.Secret.IsUnknown()) {
+func (v WebhookHeaderValue) validateValueOmission(headerPath path.Path) diag.Diagnostics {
+	if !v.Value.IsNull() || v.Secret.IsUnknown() || v.Secret.ValueBool() {
 		return nil
 	}
 
 	return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(
 		headerPath.AtName("value"), "Missing webhook header value",
-		"Supply a value for this header. You can omit value only to retain an existing secret header with the exact same name and secret = true.",
+		"Supply a value for this ordinary webhook header.",
 	)}
 }

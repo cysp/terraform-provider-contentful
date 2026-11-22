@@ -6,6 +6,8 @@ import (
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -37,7 +39,7 @@ func WebhookHeadersSchema(ctx context.Context, optional bool) schema.Attribute {
 type validateWebhookHeaderValues struct{}
 
 func (validateWebhookHeaderValues) Description(context.Context) string {
-	return "A header value may be omitted only to retain an existing secret with the exact same name."
+	return "Each configured header needs an initial value on creation or replacement. On update, only headers with secret = true may have a null planned value."
 }
 
 func (m validateWebhookHeaderValues) MarkdownDescription(ctx context.Context) string {
@@ -51,17 +53,35 @@ func (validateWebhookHeaderValues) PlanModifyMap(ctx context.Context, req planmo
 		return
 	}
 
-	var planned, prior map[string]TypedObject[WebhookHeaderValue]
+	var planned map[string]TypedObject[WebhookHeaderValue]
 	resp.Diagnostics.Append(req.PlanValue.ElementsAs(ctx, &planned, false)...)
-	resp.Diagnostics.Append(req.StateValue.ElementsAs(ctx, &prior, false)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	for _, key := range slices.Sorted(maps.Keys(planned)) {
-		if header, known := planned[key].GetValue(); known {
-			resp.Diagnostics.Append(header.validateValueOmission(req.Path.AtMapKey(key), prior[key])...)
+	resp.Diagnostics.Append(validatePlannedWebhookHeaderValues(req.Path, planned, req.State.Raw.IsNull())...)
+}
+
+func validatePlannedWebhookHeaderValues(headersPath path.Path, headers map[string]TypedObject[WebhookHeaderValue], creating bool) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	for _, key := range slices.Sorted(maps.Keys(headers)) {
+		header, known := headers[key].GetValue()
+		if !known {
+			continue
 		}
+
+		headerPath := headersPath.AtMapKey(key)
+		if creating && header.Value.IsNull() {
+			diags.AddAttributeError(headerPath.AtName("value"), "Missing initial webhook header value",
+				"Supply an initial value for this header when creating or replacing a webhook.")
+
+			continue
+		}
+
+		diags.Append(header.validateValueOmission(headerPath)...)
 	}
+
+	return diags
 }

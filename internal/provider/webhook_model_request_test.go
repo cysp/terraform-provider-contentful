@@ -205,7 +205,7 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, diags := testcase.model.ToWebhookDefinitionData(ctx, WebhookModel{}, nil, path.Empty())
+			got, diags := testcase.model.ToWebhookDefinitionData(ctx, WebhookModel{}, path.Empty())
 
 			if testcase.expectErr {
 				assert.True(t, diags.HasError())
@@ -258,7 +258,7 @@ func TestWebhookModelFilterContainerSemantics(t *testing.T) {
 				Active:            types.BoolValue(true),
 			}
 
-			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, nil, path.Empty())
+			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
 
 			assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, diags))
 
@@ -286,7 +286,7 @@ func TestWebhookTopicsPreserveChildDiagnosticPathAndFailClosed(t *testing.T) {
 		}),
 	}
 
-	actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, nil, path.Empty())
+	actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
 
 	assert.Zero(t, actual)
 	assert.True(t, diags.HasError())

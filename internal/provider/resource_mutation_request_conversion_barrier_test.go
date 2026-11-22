@@ -25,6 +25,14 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 
 	ctx := t.Context()
 
+	webhook := WebhookModel{
+		SpaceID: types.StringValue("space"), Name: types.StringValue("Webhook"), URL: types.StringValue("https://example.com/webhook"),
+		Active: types.BoolValue(true), Topics: NewTypedList([]types.String{types.StringValue("Entry.publish")}), Timeouts: TimeoutsNull(),
+		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
+			"X-Token": NewTypedObject(WebhookHeaderValue{Secret: types.BoolValue(true), Value: types.StringNull()}),
+		}),
+	}
+
 	for name, test := range map[string]struct {
 		model          any
 		config         any
@@ -32,6 +40,14 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 		create         func(*cm.Client, resource.CreateRequest, *resource.CreateResponse)
 		expectedPath   string
 	}{
+		"webhook initial header value": {
+			model: webhook, config: webhook, resourceSchema: WebhookResourceSchema(ctx),
+			create: func(client *cm.Client, request resource.CreateRequest, response *resource.CreateResponse) {
+				implementation := webhookResource{providerData: ContentfulProviderData{client: client}}
+				implementation.Create(ctx, request, response)
+			},
+			expectedPath: `headers["X-Token"].value`,
+		},
 		"app signing secret": {
 			model: AppSigningSecretModel{
 				IDIdentityModel: IDIdentityModel{ID: types.StringUnknown()},

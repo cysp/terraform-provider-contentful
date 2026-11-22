@@ -10,6 +10,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -210,9 +211,11 @@ func TestAccWebhookResourceOmittedAndEmptyHeaders(t *testing.T) {
 			},
 		},
 	}})
+	require.Len(t, recorder.writes, 4)
+	require.Equal(t, http.MethodDelete, recorder.writes[3].method)
 }
 
-func TestAccWebhookResourceRetainsSecretHeaderWhileUpdatingSibling(t *testing.T) {
+func TestAccWebhookResourceConfiguredSecretHeaders(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
@@ -270,13 +273,6 @@ resource "terraform_data" "header" {
   input = { managed = { value = "second" }, secret = true }
 }
 `
-	invalid := func(key string) resource.TestStep {
-		return resource.TestStep{
-			Config:      webhookHeadersConfig(imported.Name, fmt.Sprintf("headers = { %q = { secret = true } }", key)),
-			PlanOnly:    true,
-			ExpectError: regexp.MustCompile("Missing webhook header value"),
-		}
-	}
 	unknownSecret := webhookHeadersConfig(imported.Name, `headers = { X-Secret = { secret = terraform_data.flag.output } }`) + `
 resource "terraform_data" "flag" {
   input = true
@@ -284,29 +280,51 @@ resource "terraform_data" "flag" {
 `
 	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: webhookHeadersConfig(imported.Name, ""), ResourceName: address, ImportState: true, ImportStateId: "space/imported-webhook", ImportStatePersist: true},
-		ignored, explicit, invalid("x-secret"), invalid("X-Managed"),
-		{Config: explicit.Config, Taint: []string{address}, PlanOnly: true, ExpectError: regexp.MustCompile("Missing webhook header value")},
-		{Config: unknownSecret, Taint: []string{address}, PlanOnly: true, ExpectError: regexp.MustCompile("Missing webhook header value")},
+		ignored, explicit,
+		{
+			Config:      webhookHeadersConfig(imported.Name, `headers = { x-secret = { secret = true, value = null } }`),
+			ExpectError: regexp.MustCompile("Failed to update webhook"),
+		},
+		{
+			Config:      webhookHeadersConfig(imported.Name, `headers = { X-Managed = { secret = true }, X-Secret = { secret = true } }`),
+			ExpectError: regexp.MustCompile("Contentful returned different webhook headers"),
+		},
+		{Config: strings.Replace(explicit.Config, `space_id = "space"`, `space_id = "another-space"`, 1), PlanOnly: true, ExpectError: regexp.MustCompile("Missing initial webhook header value")},
+		{Config: unknownSecret, Taint: []string{address}, PlanOnly: true, ExpectError: regexp.MustCompile("Missing initial webhook header value")},
 	}})
-	recorder.mu.Lock()
-	defer recorder.mu.Unlock()
-
-	require.Len(t, recorder.writes, 3)
-	require.Equal(t, http.MethodDelete, recorder.writes[2].method)
+	recorder.requirePut(t, 3, "3", imported.Name, []map[string]any{{"key": "x-secret", "secret": true}})
+	recorder.requirePut(t, 4, "3", imported.Name, []map[string]any{
+		{"key": "X-Managed", "secret": true}, {"key": "X-Secret", "secret": true},
+	})
+	require.Len(t, recorder.writes, 5)
+	require.Equal(t, http.MethodDelete, recorder.writes[4].method)
 }
 
-func TestAccWebhookResourceRequiresValueForNewSecretHeader(t *testing.T) {
+func TestAccWebhookResourceCreateWithNullHeaderValue(t *testing.T) {
 	t.Parallel()
 
 	server, err := cmt.NewContentfulManagementServer()
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
 	recorder := &webhookWriteRecorder{next: server}
-	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{{
-		Config:      webhookHeadersConfig("New webhook", `headers = { X-Secret = { secret = true } }`),
-		PlanOnly:    true,
-		ExpectError: regexp.MustCompile("Missing webhook header value"),
-	}}})
+	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
+		{
+			Config:      webhookHeadersConfig("New webhook", `headers = { X-Header = { secret = true, value = null } }`),
+			PlanOnly:    true,
+			ExpectError: regexp.MustCompile("Missing initial webhook header value"),
+		},
+		{
+			Config:      webhookHeadersConfig("New webhook", `headers = { X-Header = { value = null } }`),
+			PlanOnly:    true,
+			ExpectError: regexp.MustCompile("Missing initial webhook header value"),
+		},
+		{
+			Config: webhookHeadersConfig("New webhook", `headers = { X-Header = { secret = true, value = terraform_data.token.output } }`) + `
+resource "terraform_data" "token" { input = "test-token" }
+`,
+			PlanOnly: true, ExpectNonEmptyPlan: true,
+		},
+	}})
 	recorder.mu.Lock()
 	defer recorder.mu.Unlock()
 
@@ -354,13 +372,13 @@ func (r *webhookWriteRecorder) ServeHTTP(w http.ResponseWriter, req *http.Reques
 	r.next.ServeHTTP(w, req)
 }
 
-func (r *webhookWriteRecorder) requirePut(t *testing.T, count int, version, name string, headers []map[string]any) {
+func (r *webhookWriteRecorder) requirePut(t *testing.T, writeNumber int, version, name string, headers []map[string]any) {
 	t.Helper()
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	require.Len(t, r.writes, count)
-	write := r.writes[count-1]
+	require.GreaterOrEqual(t, len(r.writes), writeNumber)
+	write := r.writes[writeNumber-1]
 	require.Equal(t, http.MethodPut, write.method)
 	require.Equal(t, "/spaces/space/webhook_definitions/imported-webhook", write.path)
 	require.Equal(t, version, write.version)
