@@ -60,9 +60,9 @@ Terraform records returned header values. When Contentful omits a secret value, 
 
 When updating a webhook:
 
-- Omit `headers` to keep the headers in state. Terraform resends known values. For a secret header with a null value, it sends only the name and `secret = true`.
+- Omit `headers` to keep the existing headers when changing another webhook setting. Terraform resends ordinary header values. For secret headers, it sends the exact name and secret flag so Contentful can retain the current value, including one rotated outside Terraform.
 - To keep an existing secret while updating other headers, use its exact name with `{ secret = true }` and omit `value`. For example, `headers = { "X-Token" = { secret = true }, "X-Format" = { value = "json" } }` changes the format header and leaves the stored token in Contentful.
-- Use `ignore_changes = [headers["X-Token"]]` to retain that entry from state while managing other headers. A null secret value preserves the remote secret. A known value is sent again and can overwrite an external rotation.
+- If you configure `headers` and use `ignore_changes = [headers["X-Token"]]`, Terraform uses the entry from state. When the webhook is written, a known value in that entry is sent again and can overwrite an external rotation. A null value for a secret header lets Contentful retain the stored secret.
 - Supply `value` to set or replace a header, including when creating the webhook, renaming the key, or converting an ordinary header to a secret. A configured map removes keys that are absent from the effective plan.
 - Set `headers = {}` to clear all custom headers.
 

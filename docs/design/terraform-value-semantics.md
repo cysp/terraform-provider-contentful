@@ -36,7 +36,8 @@ the plan:
 - Config null + Plan unknown: omission can be valid because the attribute is
   response-owned.
 - Config null + Plan known: send the known planned value, including a default or
-  a value preserved from prior state.
+  a value preserved from prior state. For webhook updates with `headers` omitted,
+  [send secret headers by name](mutation-reconciliation.md#webhook-mutation-decisions).
 - Config known + Plan known: send the planned value.
 - Config known + Plan unknown: fail closed. Never substitute Config for Plan.
 

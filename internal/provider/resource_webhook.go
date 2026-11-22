@@ -276,6 +276,16 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	if config.Headers.IsNull() {
+		// Contentful retains an existing secret when its exact key is sent without a value.
+		for i := range request.Headers {
+			header := &request.Headers[i]
+			if header.Secret.Or(false) {
+				header.Value.Reset()
+			}
+		}
+	}
+
 	version, versionDiags := requiredPrivateVersion(ctx, req.Private)
 	resp.Diagnostics.Append(versionDiags...)
 
