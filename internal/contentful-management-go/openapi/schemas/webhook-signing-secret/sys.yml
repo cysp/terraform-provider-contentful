@@ -8,3 +8,6 @@ WebhookSigningSecretSys:
         type:
           enum:
             - WebhookSigningSecret
+        updatedAt:
+          type: string
+          format: date-time

@@ -133,14 +133,13 @@ The [local publication contract](#diagnostics-and-local-publication) defines the
 state/identity encoding boundary and subsequent private-data writes. These local
 guarantees do not make a remote mutation transactional.
 
-App Signing Secret mutation responses must identify the requested singleton
-before acknowledging the planned secret. A contradiction leaves prior secret
-state intact on Update and publishes no new secret state on Create. A PUT can
-take effect before its acknowledgement is lost, as the [complete-key verification
+App and Webhook Signing Secret mutation responses must identify the requested
+singleton before the provider acknowledges the submitted value. A PUT can take
+effect before its acknowledgement is lost, as the [complete-key verification
 experiment](../research/app-framework/request-signing.md#complete-key-verification-after-rotation-and-an-uncertain-write)
-demonstrates. The
-[Webhook Signing Secret](webhook-signing-secret.md#failures-and-confidentiality)
-has its own unconfirmed-write acknowledgement contract.
+demonstrates. The [signing-secret value contract](signing-secret-write-only.md#mutation-boundary)
+covers the provider's returned state, including its verifier, and Core persistence
+after a failed Update.
 
 For Preview Environment, Config omission selects generated-ID creation without
 discarding known Plan constraints. See the

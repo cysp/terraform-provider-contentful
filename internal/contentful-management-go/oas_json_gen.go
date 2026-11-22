@@ -6004,12 +6004,19 @@ func (s *AppSigningSecretSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("appDefinition")
 		s.AppDefinition.Encode(e)
 	}
+	{
+		if s.UpdatedAt.Set {
+			e.FieldStart("updatedAt")
+			s.UpdatedAt.Encode(e, json.EncodeDateTime)
+		}
+	}
 }
 
-var jsonFieldsNameOfAppSigningSecretSys = [3]string{
+var jsonFieldsNameOfAppSigningSecretSys = [4]string{
 	0: "organization",
 	1: "type",
 	2: "appDefinition",
+	3: "updatedAt",
 }
 
 // Decode decodes AppSigningSecretSys from json.
@@ -6050,6 +6057,16 @@ func (s *AppSigningSecretSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"appDefinition\"")
+			}
+		case "updatedAt":
+			if err := func() error {
+				s.UpdatedAt.Reset()
+				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()
@@ -32651,11 +32668,18 @@ func (s *WebhookSigningSecretSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("space")
 		s.Space.Encode(e)
 	}
+	{
+		if s.UpdatedAt.Set {
+			e.FieldStart("updatedAt")
+			s.UpdatedAt.Encode(e, json.EncodeDateTime)
+		}
+	}
 }
 
-var jsonFieldsNameOfWebhookSigningSecretSys = [2]string{
+var jsonFieldsNameOfWebhookSigningSecretSys = [3]string{
 	0: "type",
 	1: "space",
+	2: "updatedAt",
 }
 
 // Decode decodes WebhookSigningSecretSys from json.
@@ -32686,6 +32710,16 @@ func (s *WebhookSigningSecretSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"space\"")
+			}
+		case "updatedAt":
+			if err := func() error {
+				s.UpdatedAt.Reset()
+				if err := s.UpdatedAt.Decode(d, json.DecodeDateTime); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"updatedAt\"")
 			}
 		default:
 			return d.Skip()

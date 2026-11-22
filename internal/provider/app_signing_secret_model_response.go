@@ -2,18 +2,45 @@ package provider
 
 import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func NewAppSigningSecretResourceModelFromResponse(res cm.AppSigningSecret) AppSigningSecretModel {
+func NewAppSigningSecretResourceModelFromResponse(res cm.AppSigningSecret, organizationID, appDefinitionID string, value types.String) (AppSigningSecretModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	if res.Sys.Organization.Sys.ID != organizationID || organizationID == "" {
+		diags.AddAttributeError(path.Root("organization_id"), "Unexpected app signing secret identity", "Contentful did not return the requested organization identity. No new state was published.")
+	}
+
+	if res.Sys.AppDefinition.Sys.ID != appDefinitionID || appDefinitionID == "" {
+		diags.AddAttributeError(path.Root("app_definition_id"), "Unexpected app signing secret identity", "Contentful did not return the requested App Definition identity. No new state was published.")
+	}
+
+	if value.IsUnknown() {
+		diags.AddAttributeError(path.Root("value"), "Unexpected unknown signing secret value", "The retained signing secret value must be known or null.")
+	}
+
+	if diags.HasError() {
+		return AppSigningSecretModel{}, diags
+	}
+
+	return appSigningSecretResponseModel(res, value), diags
+}
+
+func appSigningSecretResponseModel(res cm.AppSigningSecret, value types.String) AppSigningSecretModel {
 	organizationID := res.Sys.Organization.Sys.ID
 	appDefinitionID := res.Sys.AppDefinition.Sys.ID
 
 	model := AppSigningSecretModel{
+		Value:           value,
+		ValueWO:         types.StringNull(),
 		IDIdentityModel: NewIDIdentityModelFromMultipartID(organizationID, appDefinitionID),
 		OrganizationID:  types.StringValue(organizationID),
 		AppDefinitionID: types.StringValue(appDefinitionID),
 	}
+
+	model.UpdatedAt = signingSecretTimestamp(res.Sys.UpdatedAt)
 
 	return model
 }

@@ -13,6 +13,8 @@ type WebhookSigningSecretModel struct {
 	IDIdentityModel
 	WebhookSigningSecretIdentityModel
 
-	Value    types.String   `tfsdk:"value"`
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	Value     types.String   `tfsdk:"value"`
+	ValueWO   types.String   `tfsdk:"value_wo"`
+	UpdatedAt types.String   `tfsdk:"updated_at"`
+	Timeouts  timeouts.Value `tfsdk:"timeouts"`
 }
