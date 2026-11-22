@@ -93,7 +93,9 @@ The public `version` records Contentful’s `sys.version`. If a mutation respons
 identifies a different space, or a PUT returns a different webhook ID, recovery
 state clears both versions.
 
-On a full Webhook PUT, omit a header's `value` only when the planned value is null and both the planned header and the refreshed prior header at the exact key have `secret = true`. Send every known string, including an empty one, verbatim.
+When configuration omits `headers`, build the PUT from the effective plan. Send ordinary header values, including empty strings. For each secret header, send its exact key and `secret = true` without a `value` member. Contentful retains the secret stored under that name. If the webhook was deleted after refresh, the PUT can fail because there is no stored secret to retain.
+
+With a configured map, send every known planned string, including an empty one, verbatim. A null value is valid only when the planned header and the prior header at the exact key both have `secret = true`. Omit that value to retain the stored secret.
 
 | Attribute | Equivalence and omission |
 | --- | --- |
