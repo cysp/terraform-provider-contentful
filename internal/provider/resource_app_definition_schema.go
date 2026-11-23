@@ -43,14 +43,10 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"src": schema.StringAttribute{
-				Description: "Nonempty frontend URL using HTTPS, or HTTP on localhost. Omission retains the existing URL during in-place updates. Configure explicitly to retain it during replacement.",
+				Description: "Nonempty frontend URL using HTTPS, or HTTP on localhost. Omitting `src` removes the URL on update. To keep an externally managed URL during in-place updates, set `ignore_changes = [src]` in the resource lifecycle.",
 				Optional:    true,
-				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
-				},
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"bundle_id": schema.StringAttribute{
@@ -62,7 +58,7 @@ func AppDefinitionResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"locations": schema.ListNestedAttribute{
-				Description: "Locations where the app can be rendered in the Contentful web app. Use `[]` for no locations. Rendering locations require a frontend hosting source. When the provider sends a `src` URL, including one retained from state, Contentful requires at least one location other than `dialog`.",
+				Description: "Locations where the app can be rendered in the Contentful web app. Use `[]` for no locations. Rendering locations require a frontend hosting source. With a `src` URL, Contentful requires at least one location other than `dialog`.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"location": schema.StringAttribute{

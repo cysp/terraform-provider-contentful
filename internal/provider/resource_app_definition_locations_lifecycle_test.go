@@ -22,18 +22,21 @@ func TestAccAppDefinitionResourceImportedLocationLifecycle(t *testing.T) {
 		ignored = `resource "contentful_app_definition" "test" {
  organization_id = "org"
  name = "Before"
+ src = "https://example.invalid/app"
  locations = [{ location = "app-config" }]
  lifecycle { ignore_changes = [locations] }
 }`
 		renamed = `resource "contentful_app_definition" "test" {
  organization_id = "org"
  name = "After"
+ src = "https://example.invalid/app"
  locations = [{ location = "app-config" }]
  lifecycle { ignore_changes = [locations] }
 }`
 		corrected = `resource "contentful_app_definition" "test" {
  organization_id = "org"
  name = "After"
+ src = "https://example.invalid/app"
  locations = [{ location = "app-config" }]
 }`
 		originalBody = testJSON(map[string]any{

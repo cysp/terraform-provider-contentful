@@ -69,6 +69,14 @@ resource "contentful_app_definition" "this" {
 
 An `entry-field` location declares the field types the app can edit. To select it as the editor for a particular field, configure the Content Type's [Editor Interface](editor_interface). For an array, specify the item type separately, for example `Symbol` or `Link`. Contentful validates unfamiliar field types and link targets.
 
+## Upgrading definitions with a frontend URL
+
+In v0.2.x, omitting `src` kept the existing URL during in-place updates. After upgrading, Terraform plans to remove an omitted URL, even when the definition was imported and the rest of the configuration matches. If the URL is the only hosting source and a rendering location remains configured, Contentful can reject the update at apply.
+
+Before upgrading, check each App Definition with an external frontend. To keep managing its URL in Terraform, set `src` to the current URL. If another system manages the URL, add `ignore_changes = [src]` to the resource's `lifecycle` block. Configure `src` explicitly if a replacement must start with that URL.
+
+To remove the external frontend and all its locations, omit `src` and set `locations = []`. Remove `src` from `ignore_changes` if it was delegated. Review the plan for both changes before applying.
+
 ## Updating existing definitions
 
 Contentful can return location or parameter definitions that are readable but invalid for a new write. An update validates the complete planned definition, including values retained by `ignore_changes`. You can delete the App Definition even if its stored values would fail update validation.
@@ -80,7 +88,7 @@ Keep credentials out of parameter defaults. A `Secret` parameter declaration alo
 
 ### Required
 
-- `locations` (Attributes List) Locations where the app can be rendered in the Contentful web app. Use `[]` for no locations. Rendering locations require a frontend hosting source. When the provider sends a `src` URL, including one retained from state, Contentful requires at least one location other than `dialog`. (see [below for nested schema](#nestedatt--locations))
+- `locations` (Attributes List) Locations where the app can be rendered in the Contentful web app. Use `[]` for no locations. Rendering locations require a frontend hosting source. With a `src` URL, Contentful requires at least one location other than `dialog`. (see [below for nested schema](#nestedatt--locations))
 - `name` (String) A human-readable name of the app.
 - `organization_id` (String) ID of the organization that owns the app definition. Changing this value replaces the resource.
 
@@ -88,7 +96,7 @@ Keep credentials out of parameter defaults. A `Secret` parameter declaration alo
 
 - `bundle_id` (String) ID of an App Bundle belonging to this definition. Omission retains the selected bundle during in-place updates.
 - `parameters` (Attributes) App configuration parameter definitions. (see [below for nested schema](#nestedatt--parameters))
-- `src` (String) Nonempty frontend URL using HTTPS, or HTTP on localhost. Omission retains the existing URL during in-place updates. Configure explicitly to retain it during replacement.
+- `src` (String) Nonempty frontend URL using HTTPS, or HTTP on localhost. Omitting `src` removes the URL on update. To keep an externally managed URL during in-place updates, set `ignore_changes = [src]` in the resource lifecycle.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
