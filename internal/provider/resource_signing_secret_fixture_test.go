@@ -104,6 +104,11 @@ func (s *signingSecretFixture) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	response := map[string]any{"sys": sys, "redactedValue": "opaque"}
 
+	if s.kind == "app" && len(s.values) > 0 {
+		last := s.values[len(s.values)-1]
+		response["redactedValue"] = last[len(last)-4:]
+	}
+
 	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

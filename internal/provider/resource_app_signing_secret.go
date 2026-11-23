@@ -337,6 +337,10 @@ func (r *appSigningSecretResource) put(ctx context.Context, plan AppSigningSecre
 		mismatches = append(mismatches, "app_definition_id")
 	}
 
+	if secret.Response.RedactedValue != request.Value[len(request.Value)-4:] {
+		mismatches = append(mismatches, "signing secret suffix")
+	}
+
 	if len(mismatches) > 0 {
 		diags.AddError("Unconfirmed app signing secret mutation", "The response did not match the requested "+strings.Join(mismatches, " and ")+". Terraform did not record the submitted value. "+appSigningSecretPutRecovery)
 
