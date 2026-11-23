@@ -87,8 +87,8 @@ func testSigningSecretWriteOnlyAcknowledgement(t *testing.T, kind string) {
 	fixture := &signingSecretFixture{kind: kind, withUpdatedAt: true}
 
 	type failureCase struct {
-		name, summary, attribute               string
-		echo, invalidTimestamp, invalidPrivate bool
+		name, summary, attribute                            string
+		echo, invalidTimestamp, invalidPrivate, wrongSuffix bool
 	}
 
 	fault := failureCase{}
@@ -134,6 +134,10 @@ func testSigningSecretWriteOnlyAcknowledgement(t *testing.T, kind string) {
 
 				document["sys"].(map[string]any)[link].(map[string]any)["sys"].(map[string]any)["id"] = "other"
 			})
+		}
+
+		if fault.wrongSuffix {
+			response = mutateTestJSON(response, func(document map[string]any) { document["redactedValue"] = "zzzz" })
 		}
 
 		if fault.invalidTimestamp {
@@ -188,6 +192,7 @@ func testSigningSecretWriteOnlyAcknowledgement(t *testing.T, kind string) {
 	}
 	if kind == "app" {
 		failures = append(failures,
+			failureCase{name: "contradictory redacted value", summary: "Unconfirmed app signing secret mutation", wrongSuffix: true},
 			failureCase{name: "organization identity", summary: "Unconfirmed app signing secret mutation", attribute: "organization_id"},
 			failureCase{name: "app definition identity", summary: "Unconfirmed app signing secret mutation", attribute: "app_definition_id"},
 		)
@@ -248,6 +253,11 @@ func testSigningSecretWriteOnlyAcknowledgement(t *testing.T, kind string) {
 
 		for _, diagnostic := range response.Diagnostics {
 			require.NotContains(t, diagnostic.Detail, changed)
+		}
+
+		if fault.wrongSuffix {
+			require.NotContains(t, response.Diagnostics[0].Detail, "zzzz")
+			require.NotContains(t, response.Diagnostics[0].Detail, "bbbb")
 		}
 
 		if fault.invalidPrivate {

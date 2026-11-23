@@ -106,7 +106,10 @@ When writing a secret:
 
 1. Prepare verifier changes before sending PUT.
 2. Require a PUT response that has no transport error, decodes successfully,
-   and identifies the requested resource.
+   and identifies the requested resource. For an App Signing Secret, require
+   `redactedValue` to match the final four characters of the submitted key.
+   A mismatch contradicts the PUT. A matching suffix alone cannot verify the
+   complete key. The Webhook Signing Secret response has an opaque redaction.
 3. Encode the new resource state and identity.
 4. Publish the verifier, then the encoded state and identity.
 
