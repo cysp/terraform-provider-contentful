@@ -17,7 +17,7 @@ import (
 //nolint:ireturn
 func WebhookHeadersSchema(ctx context.Context, optional bool) schema.Attribute {
 	return schema.MapNestedAttribute{
-		Description: "HTTP headers sent by the webhook, keyed by header name. Omit this map on creation to adopt the headers returned by Contentful. If you omit it when changing another webhook setting, Terraform resends ordinary header values and retains stored secrets by exact header name. Set `headers = {}` to remove all custom headers.",
+		Description: "HTTP headers sent by the webhook, keyed by header name. Omit this map on creation to adopt the headers returned by Contentful. If you omit it when changing another webhook setting, Terraform resends ordinary header values and retains stored secrets by exact header name. To remove all custom headers, set `headers = {}` and remove any `ignore_changes` rule that retains the map or one of its keys.",
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: WebhookHeaderValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookHeaderValue]().CustomType(ctx),
