@@ -80,7 +80,7 @@ func (r *webhookSigningSecretResource) Create(ctx context.Context, req resource.
 
 	defer cancel()
 
-	var verifier signingSecretVerifier
+	verifier := writeOnlySecretVerifier{attribute: signingSecretWO}
 	if !plan.ValueWO.IsNull() {
 		resp.Diagnostics.Append(verifier.set(ctx, plan.ValueWO)...)
 
@@ -163,7 +163,7 @@ func (r *webhookSigningSecretResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	verifier, hashDiags := readSigningSecretVerifier(ctx, req.Private, state.Value)
+	verifier, hashDiags := readWriteOnlySecretVerifier(ctx, req.Private, signingSecretWO, state.Value)
 	resp.Diagnostics.Append(hashDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -200,7 +200,7 @@ func (r *webhookSigningSecretResource) Update(ctx context.Context, req resource.
 
 	defer cancel()
 
-	matches, prepareDiags := prepareSigningSecretValue(ctx, &verifier, state.Value, request.Value, plan.ValueWO)
+	matches, prepareDiags := prepareWriteOnlySecretValue(ctx, &verifier, state.Value, request.Value, plan.ValueWO)
 	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {

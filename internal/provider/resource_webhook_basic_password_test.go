@@ -184,10 +184,18 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 			Check: checkStoredWebhookPassword(server, cm.NewOptNilString("configured-after-import")),
 		},
 		{
+			Config:      usernameOnly,
+			ExpectError: regexp.MustCompile("Missing webhook Basic password"),
+		},
+		{
 			Config: config,
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop),
 			}},
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectKnownValue("contentful_webhook.test", tfjsonpath.New("http_basic_password"), knownvalue.StringExact("configured-after-import")),
+			},
+			Check: checkStoredWebhookPassword(server, cm.NewOptNilString("configured-after-import")),
 		},
 		{
 			Config: webhookBasicPasswordConfig("Imported webhook", "null", ""),

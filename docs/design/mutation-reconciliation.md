@@ -8,7 +8,7 @@ The requested endpoint stays fixed and `timeouts` always comes from the plan. Pu
 | --- | --- | --- |
 | Role | POST to the space. Contentful assigns `role_id`. | PUT to the planned space and role IDs with the private version. |
 | Editor Interface | Versioned PUT to the interface identified by space, environment, and Content Type. | PUT to the same endpoint using the [activation count](#editor-interface-version-preconditions). |
-| Webhook | POST to the space. Contentful assigns `webhook_id`. An empty returned ID prevents state publication. Inspect the space before retrying the POST. | Persist timeout-only changes locally. Changes to webhook fields require a versioned PUT to the planned space and webhook IDs. |
+| Webhook | POST to the space. Contentful assigns `webhook_id`. An empty returned ID prevents state publication. Inspect the space before retrying the POST. | Persist timeout-only changes locally when apply-time credentials agree. Remote changes require a versioned PUT to the planned space and webhook IDs. |
 
 Create retains the server-assigned Role or Webhook ID even if it contradicts a known plan. Update retains requested IDs on a contradiction. Webhook request conversion consults configuration for Optional+Computed omission. All three resources compare the response against the effective plan, including values retained by `ignore_changes`.
 
@@ -80,9 +80,7 @@ For controls and sidebar widgets, compare the identifiers and namespace exactly 
 
 ## Webhook mutation decisions
 
-When the remotely managed values in the effective plan match prior state,
-planning preserves the prior `version`. Update saves the planned `timeouts`
-without sending a PUT, including when Contentful has redacted credentials.
+For ordinary timeout-only updates, planning preserves the prior `version`. If a write-only password could rotate on apply, planning leaves `version` unknown. Update can save timeouts without a PUT when the actual credentials agree, including when the webhook contains unreadable headers.
 
 For a remote change, Update validates the full request and sends the private
 version as `X-Contentful-Version`. Contentful checks this precondition when
@@ -112,8 +110,7 @@ Report differences at the affected top-level attribute. A lossy response cannot 
 
 ## Webhook credential responses
 
-Use any Basic password or header value Contentful returns, including an empty
-string. An explicit JSON null clears the Basic password. A difference from a
+For ordinary credentials, use any Basic password or header value Contentful returns, including an empty string. The write-only Basic password follows the confidentiality rules below. An explicit JSON null clears the Basic password. A difference from a
 known plan is reported after the returned state is saved for recovery.
 
 Contentful normally omits the Basic password and secret header values. On
@@ -121,3 +118,9 @@ omission, retain the known value from the effective plan after a write or from
 prior state on refresh. Import leaves omitted values null. For a secret header,
 look up the exact Terraform key, regardless of its previous secret flag. Case
 variants are distinct keys in the [webhook definition](../research/webhooks.md#header-names-order-and-secret-updates).
+
+### Write-only Basic authentication
+
+The Webhook compares apply-time `http_basic_password_wo` from Config to the prior ordinary password or private verifier. Other remote fields follow the effective Plan. A versioned full PUT must carry a complete Basic pair. Matching bytes can migrate storage without a PUT when other remote fields agree. An update that could rotate a password leaves the observed public `version` unknown; only the private version authorizes a PUT.
+
+Publish changed verifier data with the public state and identity after a consistent, identified response. An inconsistent reply can still supply the endpoint and recovery version. Keep an unacknowledged write-only password redacted and retain the prior verifier. Refresh forgets the comparison if it observes the Basic username change. Refresh rejects a readable echo at a previously redacted password. A failed migration without any response checkpoint can leave the previous ordinary representation in state. See [Basic authentication](../guides/secrets-and-state.md#basic-authentication) for migration and recovery.
