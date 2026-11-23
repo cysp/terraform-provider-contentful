@@ -12,7 +12,7 @@ Restrict access to Terraform state and saved plans when managing credentials. Se
 | --- | --- | --- |
 | [Webhook signing secret](#webhook-signing-secrets) | Preserves ordinary `value` or the write-only verifier | Neither secret argument has a value |
 | [App signing secret](#app-signing-secrets) | Preserves ordinary `value` or the write-only verifier | Neither secret argument has a value |
-| [Webhook Basic password](#basic-authentication) | Retains prior value when omitted | Null when omitted |
+| [Webhook Basic password](#basic-authentication) | Retains an ordinary password or its write-only verifier when omitted | Null when omitted |
 | [Secret webhook header](#secret-custom-headers) | Retains the value at the exact key when omitted | Null when omitted |
 | [App Installation `Secret` parameter](#app-installation-secrets), read with a personal access token | Can retain prior state for an all-asterisk response | Retains mask; original value unavailable |
 | [Personal Access Token](#personal-access-tokens) | Preserves token from creation | `token` is null |
@@ -113,9 +113,15 @@ For replacement recovery, review the plan and require destruction of the old ins
 
 ### Basic authentication
 
-For [`contentful_webhook`](../resources/webhook), Contentful normally omits the HTTP Basic password. When it does, refresh retains the previously managed value and import leaves it null. Terraform records a password returned by Contentful.
+Set `http_basic_username` with either `http_basic_password` or `http_basic_password_wo`. Contentful normally omits the password on reads. Import then leaves it null, and Terraform needs the actual password before a full PUT can retain Basic authentication. Omitting both credentials clears them on the next PUT. A password returned on initial import can enter ordinary state. An ignored ordinary password can supply its previous value only when Terraform already has it. A timeout-only update can still succeed after import when the password is unavailable. See the [Webhook example](../resources/webhook).
 
-On a later update, omitting both `http_basic_username` and `http_basic_password` clears Basic authentication, including on an imported webhook. To keep Basic authentication when updating an imported webhook, supply both credentials. Terraform can read the webhook and report no changes with just the imported username. If an update would send that username alone, the provider reports a missing password before sending the request. `ignore_changes` can retain a previously managed password only when Terraform already has it in state.
+Terraform 1.11.1 or later can accept a sensitive ephemeral variable for `http_basic_password_wo`. Supply the password even for unrelated updates to the webhook. Use a randomly generated password. The salted Argon2id verifier in private state permits offline guesses. Basic and signing-secret verifiers share one hashing slot per provider process.
+
+To move between ordinary and write-only storage, supply exactly the last acknowledged bytes through the new argument. Matching bytes require no PUT. A saved migration plan can contain the prior ordinary password. Switching back restores the plaintext to state. Remove conflicting `ignore_changes` rules before migrating.
+
+Make a fresh plan to rotate. If an update is scheduled, the apply-time password controls the write. A saved no-op cannot rotate. An ignored write-only password may still rotate on an update triggered elsewhere. Even a timeout-only update can make the planned `version` unknown when the password could rotate at apply.
+
+A lost reply can leave Terraform comparing against the previous password even if Contentful accepted the new one. A contradictory reply can establish a recovery version without acknowledging the proposed password. Refresh cannot verify the remote bytes. Coordinate with the receiver, supply a password different from the last acknowledged value, apply a fresh plan and verify delivery. After a lost create reply, identify the webhook before creating another.
 
 ### Secret custom headers
 

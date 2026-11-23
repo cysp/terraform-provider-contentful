@@ -19,7 +19,7 @@ import (
 )
 
 //nolint:paralleltest // Own the one process-wide workspace while exercising independent resource instances.
-func TestSigningSecretCreatesShareCancellation(t *testing.T) {
+func TestWriteOnlySecretCreatesShareCancellation(t *testing.T) {
 	var requests atomic.Int64
 
 	client, err := cm.NewClient("https://contentful.invalid", cm.NewAccessTokenSecuritySource("test"), cm.WithClient(&http.Client{
@@ -33,29 +33,45 @@ func TestSigningSecretCreatesShareCancellation(t *testing.T) {
 
 	providerData := ContentfulProviderData{client: client}
 	signingValue := strings.Repeat("s", 64)
+	basic := map[string]any{
+		"space_id": "space", "name": "test", "url": "https://example.test/", "topics": []string{"Entry.publish"}, "active": true,
+	}
+
+	basic["http_basic_username"] = "user"
+
 	cases := []struct {
 		name           string
 		implementation resource.Resource
 		schema         schema.Schema
 		planned        map[string]any
+		writeOnly      map[string]any
 	}{
 		{
 			name:           "app signing",
 			implementation: &appSigningSecretResource{providerData: providerData},
 			schema:         AppSigningSecretResourceSchema(t.Context()),
 			planned:        map[string]any{"organization_id": "org", "app_definition_id": "app"},
+			writeOnly:      map[string]any{"value_wo": signingValue},
 		},
 		{
 			name:           "webhook signing",
 			implementation: &webhookSigningSecretResource{providerData: providerData},
 			schema:         WebhookSigningSecretResourceSchema(t.Context()),
 			planned:        map[string]any{"space_id": "space"},
+			writeOnly:      map[string]any{"value_wo": signingValue},
+		},
+		{
+			name:           "Basic password",
+			implementation: &webhookResource{providerData: providerData},
+			schema:         WebhookResourceSchema(t.Context()),
+			planned:        basic,
+			writeOnly:      map[string]any{"http_basic_password_wo": "synthetic-password"},
 		},
 	}
 
-	require.True(t, signingSecretHashSlot.TryAcquire(1))
+	require.True(t, writeOnlySecretHashSlot.TryAcquire(1))
 
-	defer signingSecretHashSlot.Release(1)
+	defer writeOnlySecretHashSlot.Release(1)
 
 	synctest.Test(t, func(t *testing.T) {
 		ctx, cancel := context.WithCancel(t.Context())
@@ -68,7 +84,7 @@ func TestSigningSecretCreatesShareCancellation(t *testing.T) {
 			require.NoError(t, err, testCase.name)
 
 			configured := maps.Clone(testCase.planned)
-			configured["value_wo"] = signingValue
+			maps.Copy(configured, testCase.writeOnly)
 			config, err := tftypes.ValueFromJSONWithOpts([]byte(testJSON(configured)), typ, tftypes.ValueFromJSONOpts{})
 			require.NoError(t, err, testCase.name)
 
@@ -83,7 +99,7 @@ func TestSigningSecretCreatesShareCancellation(t *testing.T) {
 		}
 
 		synctest.Wait()
-		assert.Empty(t, results, "both resources must wait for the process slot")
+		assert.Empty(t, results, "all four resources must wait for the process slot")
 		cancel()
 
 		for range cases {

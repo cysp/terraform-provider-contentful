@@ -14,16 +14,17 @@ type WebhookModel struct {
 	IDIdentityModel
 	WebhookIdentityModel
 
-	Version           types.Int64                                `tfsdk:"version"`
-	Name              types.String                               `tfsdk:"name"`
-	URL               types.String                               `tfsdk:"url"`
-	Topics            TypedList[types.String]                    `tfsdk:"topics"`
-	Filters           TypedList[TypedObject[WebhookFilterValue]] `tfsdk:"filters"`
-	HTTPBasicPassword types.String                               `tfsdk:"http_basic_password"`
-	HTTPBasicUsername types.String                               `tfsdk:"http_basic_username"`
-	Headers           TypedMap[TypedObject[WebhookHeaderValue]]  `tfsdk:"headers"`
-	Transformation    TypedObject[WebhookTransformationValue]    `tfsdk:"transformation"`
-	Active            types.Bool                                 `tfsdk:"active"`
+	Version             types.Int64                                `tfsdk:"version"`
+	Name                types.String                               `tfsdk:"name"`
+	URL                 types.String                               `tfsdk:"url"`
+	Topics              TypedList[types.String]                    `tfsdk:"topics"`
+	Filters             TypedList[TypedObject[WebhookFilterValue]] `tfsdk:"filters"`
+	HTTPBasicPassword   types.String                               `tfsdk:"http_basic_password"`
+	HTTPBasicPasswordWO types.String                               `tfsdk:"http_basic_password_wo"`
+	HTTPBasicUsername   types.String                               `tfsdk:"http_basic_username"`
+	Headers             TypedMap[TypedObject[WebhookHeaderValue]]  `tfsdk:"headers"`
+	Transformation      TypedObject[WebhookTransformationValue]    `tfsdk:"transformation"`
+	Active              types.Bool                                 `tfsdk:"active"`
 
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }

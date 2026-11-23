@@ -33,6 +33,9 @@ resource "contentful_webhook" "this" {
     },
   ]
 
+  http_basic_username    = "webhook"
+  http_basic_password_wo = var.webhook_password
+
   headers = {
     "X-Webhook-Secret" = {
       value  = var.webhook_secret
@@ -60,10 +63,13 @@ resource "contentful_webhook" "this" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `active` (Boolean) Whether the webhook is active. Defaults to `true`.
 - `filters` (Attributes List) Filtering constraints applied after `topics`. Contentful combines filters with logical AND; each filter configures exactly one of `equals`, `in`, `regexp`, or `not`. Null or omitted filters default to the `master` environment; `filters = []` sends no constraints. Supported payload paths and event restrictions are defined by [Contentful webhook filters](https://www.contentful.com/developers/docs/extensibility/webhooks/filters/). (see [below for nested schema](#nestedatt--filters))
 - `headers` (Attributes Map) HTTP headers sent by the webhook, keyed by header name. Omit this map on creation to adopt the headers returned by Contentful. If you omit it when changing another webhook setting, Terraform resends ordinary header values and retains stored secrets by exact header name. To remove all custom headers, set `headers = {}` and remove any `ignore_changes` rule that retains the map or one of its keys. (see [below for nested schema](#nestedatt--headers))
 - `http_basic_password` (String, Sensitive) HTTP Basic authentication password. Configure it together with `http_basic_username`. When Contentful omits the password, refresh retains the previously managed value and import leaves it null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.
+- `http_basic_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only alternative to `http_basic_password` for Terraform 1.11.1 or later. Supply it with `http_basic_username` on every apply that writes the webhook. An ephemeral input keeps the password out of saved plans. See [Secrets and Terraform state](../guides/secrets-and-state#basic-authentication).
 - `http_basic_username` (String) HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `transformation` (Attributes) Customizes the outgoing webhook HTTP method, Content-Type, Content-Length header, and request body. When omitted, Contentful uses its standard webhook request behavior. Unsupported methods and content types prevent writes, including values retained by ignore_changes. Read and import preserve returned values. (see [below for nested schema](#nestedatt--transformation))
@@ -71,7 +77,7 @@ resource "contentful_webhook" "this" {
 ### Read-Only
 
 - `id` (String) Composite Terraform resource identifier in `space_id/webhook_id` form.
-- `version` (Number) The Contentful `sys.version` last observed for this webhook.
+- `version` (Number) The Contentful `sys.version` last observed for this webhook. A possible write-only rotation makes the planned version unknown.
 - `webhook_id` (String) System ID of the webhook.
 
 <a id="nestedatt--filters"></a>
