@@ -275,13 +275,11 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	if config.Headers.IsNull() {
-		// Contentful retains an existing secret when its exact key is sent without a value.
-		for i := range request.Headers {
-			header := &request.Headers[i]
-			if header.Secret.Or(false) {
-				header.Value.Reset()
-			}
+	for i := range request.Headers {
+		header := &request.Headers[i]
+		if _, configured := config.Headers.Elements()[header.Key]; !configured && header.Secret.Or(false) {
+			// Sending the exact key without a value preserves any external rotation.
+			header.Value.Reset()
 		}
 	}
 

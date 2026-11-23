@@ -97,7 +97,7 @@ When configuration omits `headers`, build the PUT from the effective plan. Send 
 
 On creation or replacement, each configured header needs an initial value. Reject known null values during planning, defer unknowns, and validate the resolved values before POST.
 
-On update with a configured map, send each known planned string verbatim, including an empty string or a value retained by `ignore_changes`. If the planned value is null, require `secret = true` and omit the `value` member from the PUT. The header’s previous secret flag does not affect this decision. Check the returned headers against the plan, including the secret flag. See the [observed results for existing, new, and renamed headers](../research/webhooks.md#header-names-order-and-secret-updates).
+For a secret key omitted from a configured map and retained by `ignore_changes`, use the same exact-name preservation request. For explicitly configured keys, send each known planned string verbatim, including an empty string or an ignored value. If the planned value is null, require `secret = true` and omit the `value` member from the PUT. The header’s previous secret flag does not affect this decision. Check the returned headers against the plan, including the secret flag. See the [observed results for existing, new, and renamed headers](../research/webhooks.md#header-names-order-and-secret-updates).
 
 | Attribute | Equivalence and omission |
 | --- | --- |

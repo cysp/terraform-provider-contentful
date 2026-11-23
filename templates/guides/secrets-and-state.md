@@ -63,9 +63,9 @@ Supply an initial `value` for each configured header when creating or replacing 
 When updating a webhook:
 
 - Omit `headers` to keep the existing headers when changing another webhook setting. Terraform resends ordinary header values. For secret headers, it sends the exact name and secret flag so Contentful can retain the current value, including one rotated outside Terraform.
-- To keep an existing secret while changing other headers, use its exact name and set `secret = true`. Omit `value` or set it to `null`. For example, `headers = { "X-Token" = { secret = true }, "X-Format" = { value = "json" } }` keeps the stored token and sets the format header. To rotate the token, set its `value` to the new token.
+- To manage an existing header’s name while another system rotates its value, use its exact name and set `secret = true`. Omit `value` or set it to `null`. For example, `headers = { "X-Token" = { secret = true }, "X-Format" = { value = "json" } }` keeps the stored token and sets the format header. To rotate the token, set its `value` to the new token.
+- To let another system manage the entire secret header while Terraform manages its siblings, omit its key from configuration and add `ignore_changes = [headers["X-Token"]]` for that exact key. On update, Terraform sends the key and secret flag so Contentful retains the stored value, including an external rotation. If configuration still declares the ignored key, Terraform can resend the value retained in its plan.
 - Supply a value when adding a header under a new name, including a change in case. When changing an ordinary header to secret, set `secret = true` and supply the value you want Contentful to store. You can use the current value. If the planned value is null, Contentful leaves the header ordinary and Terraform reports the difference.
-- If you configure `headers` and use `ignore_changes = [headers["X-Token"]]`, Terraform uses the entry from state. When the webhook is written, a known value in that entry is sent again and can overwrite an external rotation. A null value for a secret header lets Contentful retain the stored secret.
 - A configured map removes headers absent from the plan. To remove all custom headers, set `headers = {}` and remove any `ignore_changes` rule that retains the map or one of its keys.
 
 ## App and extension parameters
