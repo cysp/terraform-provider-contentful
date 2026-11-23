@@ -104,7 +104,7 @@ On update with a configured map, send each known planned string verbatim, includ
 | `active`, `name`, `url`, `http_basic_username` | Exact scalar comparison. The static `active` default constrains the plan to `true` when applied. A null username is distinct from an empty string. |
 | `topics` | Nonempty ordered list. Preserve duplicate counts and reject null elements. |
 | `filters` | Ignore outer order and preserve duplicate counts. Match the single selected operator, its negation if present, and all operands. Compare `in.values` without regard to order, preserving duplicates. Compare paths, equality values, and regex patterns exactly. Omission differs from an empty list. Unsupported operators make projection lossy. |
-| `headers` | Match map keys and complete header objects. The plan can preserve prior headers on Update because omitting the CMA member can clear them. An explicit empty map clears the headers. An unknown plan on Create takes the response. |
+| `headers` | Match map keys and complete header objects. The plan can preserve prior headers on Update because omitting the CMA member can clear them. An empty map in the effective plan clears the headers. An unknown plan on Create takes the response. |
 | `headers[*].secret` and `.value` | An absent secret flag means `false`. For returned and omitted values, see [credential responses](#webhook-credential-responses). |
 | `transformation` | Compare optional scalar members exactly and the body as normalized JSON, preserving array order. A null body differs from a known JSON string. |
 

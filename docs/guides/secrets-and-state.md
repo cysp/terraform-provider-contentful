@@ -66,7 +66,7 @@ When updating a webhook:
 - To keep an existing secret while changing other headers, use its exact name and set `secret = true`. Omit `value` or set it to `null`. For example, `headers = { "X-Token" = { secret = true }, "X-Format" = { value = "json" } }` keeps the stored token and sets the format header. To rotate the token, set its `value` to the new token.
 - Supply a value when adding a header under a new name, including a change in case. When changing an ordinary header to secret, set `secret = true` and supply the value you want Contentful to store. You can use the current value. If the planned value is null, Contentful leaves the header ordinary and Terraform reports the difference.
 - If you configure `headers` and use `ignore_changes = [headers["X-Token"]]`, Terraform uses the entry from state. When the webhook is written, a known value in that entry is sent again and can overwrite an external rotation. A null value for a secret header lets Contentful retain the stored secret.
-- A configured map removes headers absent from the plan. Set `headers = {}` to remove all custom headers.
+- A configured map removes headers absent from the plan. To remove all custom headers, set `headers = {}` and remove any `ignore_changes` rule that retains the map or one of its keys.
 
 ## App and extension parameters
 

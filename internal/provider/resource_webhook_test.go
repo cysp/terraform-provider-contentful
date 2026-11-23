@@ -201,9 +201,20 @@ func TestAccWebhookResourceOmittedAndEmptyHeaders(t *testing.T) {
 			},
 		},
 		{
+			Config: webhookHeadersConfig("Renamed", `headers = {}
+  lifecycle { ignore_changes = [headers["X-Imported"]] }`),
+			PostApplyFunc: func() {
+				recorder.requirePut(t, 3, "3", "Renamed", []map[string]any{{"key": "X-Imported", "secret": true}})
+
+				stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
+				require.True(t, ok)
+				require.Equal(t, cm.WebhookDefinitionHeaders{imported}, stored.Headers)
+			},
+		},
+		{
 			Config: webhookHeadersConfig("Renamed", "headers = {}"),
 			PostApplyFunc: func() {
-				recorder.requirePut(t, 3, "3", "Renamed", []map[string]any{})
+				recorder.requirePut(t, 4, "4", "Renamed", []map[string]any{})
 
 				stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 				require.True(t, ok)
@@ -211,8 +222,8 @@ func TestAccWebhookResourceOmittedAndEmptyHeaders(t *testing.T) {
 			},
 		},
 	}})
-	require.Len(t, recorder.writes, 4)
-	require.Equal(t, http.MethodDelete, recorder.writes[3].method)
+	require.Len(t, recorder.writes, 5)
+	require.Equal(t, http.MethodDelete, recorder.writes[4].method)
 }
 
 func TestAccWebhookResourceConfiguredSecretHeaders(t *testing.T) {
