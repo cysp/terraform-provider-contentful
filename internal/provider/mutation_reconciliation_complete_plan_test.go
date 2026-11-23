@@ -750,24 +750,24 @@ func TestCompleteWebhookPlanRejectsIndependentAttributeContradictions(t *testing
 	}
 }
 
-func TestWebhookUnknownOptionalComputedPlanUsesResponse(t *testing.T) {
+func TestWebhookOmittedHeadersRejectUnexpectedResponse(t *testing.T) {
 	t.Parallel()
 
 	plan := completeWebhookMutationPlan()
-	plan.Headers = NewTypedMapUnknown[TypedObject[WebhookHeaderValue]]()
+	plan.Headers = NewTypedMapNull[TypedObject[WebhookHeaderValue]]()
 	response := completeWebhookMutationResponse()
 	response.Headers = cm.WebhookDefinitionHeaders{{Key: "Response", Value: cm.NewOptString("response"), Secret: cm.NewOptBool(true)}}
 
 	state, responseDiags, consistencyDiags, _ := ReconcileWebhookMutationResponse(t.Context(), response, plan, plan.WebhookID)
 
 	assert.Empty(t, responseDiags)
-	assert.Empty(t, consistencyDiags)
+	assert.Equal(t, []string{"headers"}, attributeDiagnosticPaths(t, consistencyDiags))
 	assert.Contains(t, state.Headers.Elements(), "Response")
 	assert.Equal(t, "response", state.Headers.Elements()["Response"].Value().Value.ValueString())
 	assert.True(t, state.Headers.Elements()["Response"].Value().Secret.ValueBool())
 }
 
-func TestWebhookKnownOptionalComputedPlansConstrainMutationResponse(t *testing.T) {
+func TestWebhookPlannedHeadersAndActiveConstrainMutationResponse(t *testing.T) {
 	t.Parallel()
 
 	plan := completeWebhookMutationPlan()

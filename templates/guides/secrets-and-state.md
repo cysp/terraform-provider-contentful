@@ -12,8 +12,8 @@ Restrict access to Terraform state and saved plans when managing credentials. Se
 | --- | --- | --- |
 | [Webhook signing secret](#webhook-signing-secrets) | Preserves ordinary `value` or the write-only verifier | Neither secret argument has a value |
 | [App signing secret](#app-signing-secrets) | Preserves ordinary `value` or the write-only verifier | Neither secret argument has a value |
-| [Webhook Basic password](#basic-authentication) | Retains an ordinary password or its write-only verifier when omitted | Null when omitted |
-| [Secret webhook header](#secret-custom-headers) | Retains the value at the exact key when omitted | Null when omitted |
+| [Webhook Basic password](#basic-authentication) | Preserves ordinary password or write-only verifier | Null when omitted |
+| [Secret webhook header](#secret-custom-headers) | Preserves ordinary value or write-only verifier by header name | Unreadable value is null |
 | [App Installation `Secret` parameter](#app-installation-secrets), read with a personal access token | Can retain prior state for an all-asterisk response | Retains mask; original value unavailable |
 | [Personal Access Token](#personal-access-tokens) | Preserves token from creation | `token` is null |
 | Delivery API access token | Reads token | Reads token |
@@ -111,33 +111,41 @@ For replacement recovery, review the plan and require destruction of the old ins
 
 ## Webhook credentials and secret headers
 
+Use Terraform 1.11.1 or later and ephemeral inputs for `http_basic_password_wo` and `headers["name"].value_wo`. Use randomly generated webhook credentials. The provider stores a salted Argon2id verifier for each acknowledged write-only value. Anyone with state access can test guesses, including guesses for short passwords. The two signing-secret resources and webhook credentials share one hashing slot per provider process. [Webhook example](../resources/webhook#example-usage)
+
 ### Basic authentication
 
-Set `http_basic_username` with either `http_basic_password` or `http_basic_password_wo`. Contentful normally omits the password on reads. Import then leaves it null, and Terraform needs the actual password before a full PUT can retain Basic authentication. Omitting both credentials clears them on the next PUT. A password returned on initial import can enter ordinary state. An ignored ordinary password can supply its previous value only when Terraform already has it. A timeout-only update can still succeed after import when the password is unavailable. See the [Webhook example](../resources/webhook).
+Set `http_basic_username` together with either `http_basic_password` or `http_basic_password_wo`. Contentful normally omits the password from reads. The provider must resend the password on each webhook PUT that retains Basic authentication. With the write-only argument, supply the actual password at apply time, including for changes to other webhook settings.
 
-Terraform 1.11.1 or later can accept a sensitive ephemeral variable for `http_basic_password_wo`. Supply the password even for unrelated updates to the webhook. Use a randomly generated password. The salted Argon2id verifier in private state permits offline guesses. Basic and signing-secret verifiers share one hashing slot per provider process.
-
-To move between ordinary and write-only storage, supply exactly the last acknowledged bytes through the new argument. Matching bytes require no PUT. A saved migration plan can contain the prior ordinary password. Switching back restores the plaintext to state. Remove conflicting `ignore_changes` rules before migrating.
-
-Make a fresh plan to rotate. If an update is scheduled, the apply-time password controls the write. A saved no-op cannot rotate. An ignored write-only password may still rotate on an update triggered elsewhere. Even a timeout-only update can make the planned `version` unknown when the password could rotate at apply.
-
-A lost reply can leave Terraform comparing against the previous password even if Contentful accepted the new one. A contradictory reply can establish a recovery version without acknowledging the proposed password. Refresh cannot verify the remote bytes. Coordinate with the receiver, supply a password different from the last acknowledged value, apply a fresh plan and verify delivery. After a lost create reply, identify the webhook before creating another.
+Import leaves an omitted password null. Terraform can store an ordinary password that Contentful returns on the initial import. Supply a password before updating a webhook that should retain Basic authentication. Omitting both the username and password clears the remote credentials on the next PUT. An ignored ordinary password can supply its prior value only when Terraform has already stored it.
 
 ### Secret custom headers
 
-Contentful's `secret = true` flag on a custom webhook header controls how Contentful treats the value. Terraform sensitivity is configured separately: supply a sensitive Terraform expression to redact the header value from normal Terraform output. The value can still be present in plan or state data.
+Declare each managed header in `headers`. For a secret header, set `secret = true` and supply either its ordinary `value` or its write-only `value_wo`. Terraform keeps an independent verifier for each acknowledged write-only value. An ordinary header can coexist with write-only headers. Use a sensitive expression for an ordinary secret value if you want Terraform to redact it from CLI output. Ordinary values remain in state.
 
-Terraform records returned header values. When Contentful omits a secret value, refresh keeps any value already in state under the exact header name, including its case. An external rotation can then go undetected. Import leaves an omitted value null.
+On a full webhook update, the outcome depends on the header declaration.
 
-Supply an initial `value` for each configured header when creating or replacing a webhook.
+- A new or renamed secret header needs its value, even if the new name differs only in capitalization. Include only one spelling of each name.
+- A retained secret header can be sent with its exact key and `secret = true`, omitting the value. Contentful keeps the existing remote bytes. This also works after import, when Terraform has neither the value nor a verifier. Supplying a write-only value after import installs it.
+- Removing only `value_wo` while retaining the header declaration preserves the remote header and any previous verifier. A later comparison still uses the last acknowledged value. To delete the remote header, remove its key from `headers`. Omitting the map or setting `headers = {}` clears all headers unless a lifecycle rule retains them. [Contentful custom header updates](https://www.contentful.com/developers/docs/extensibility/webhooks/headers/#custom-headers)
 
-When updating a webhook:
+**Upgrading a webhook with omitted headers.** Provider v0.2.x retained existing headers when the map was omitted. Before upgrading, add `lifecycle { ignore_changes = [headers] }` if another system manages the entire collection. This also preserves imported headers on subsequent updates. To delegate just one header while managing its siblings, omit that key from configuration and add it to `ignore_changes`, for example `headers["X-External"]`. Terraform keeps the refreshed header in the plan for the full webhook PUT. To manage the collection in Terraform, declare the headers to keep and review the first plan for removals.
 
-- Omit `headers` to keep the existing headers when changing another webhook setting. Terraform resends ordinary header values. For secret headers, it sends the exact name and secret flag so Contentful can retain the current value, including one rotated outside Terraform.
-- To manage an existing header’s name while another system rotates its value, use its exact name and set `secret = true`. Omit `value` or set it to `null`. For example, `headers = { "X-Token" = { secret = true }, "X-Format" = { value = "json" } }` keeps the stored token and sets the format header. To rotate the token, set its `value` to the new token.
-- To let another system manage the entire secret header while Terraform manages its siblings, omit its key from configuration and add `ignore_changes = [headers["X-Token"]]` for that exact key. On update, Terraform sends the key and secret flag so Contentful retains the stored value, including an external rotation. If configuration still declares the ignored key, Terraform can resend the value retained in its plan.
-- Supply a value when adding a header under a new name, including a change in case. When changing an ordinary header to secret, set `secret = true` and supply the value you want Contentful to store. You can use the current value. If the planned value is null, Contentful leaves the header ordinary and Terraform reports the difference.
-- A configured map removes headers absent from the plan. To remove all custom headers, set `headers = {}` and remove any `ignore_changes` rule that retains the map or one of its keys.
+When a lifecycle rule retains an omitted secret header, Terraform sends its exact key without a value. If you still declare the ignored key with an ordinary value, a full PUT can resend the value retained in the plan and overwrite an external rotation. If an external edit makes a previously redacted header readable, refresh reports an error and discards the response value. A subsequent update also discards an unexpected readable value for a delegated or removed redacted header.
+
+To delegate rotation of an existing secret, remove its `value_wo` from configuration. Ignoring a configured `value_wo` can suppress a rotation-only plan, but any update triggered by another attribute can still send its apply-time value. An ignored header must have a value at creation if configuration declares it. [Terraform lifecycle rules](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes)
+
+### Migration, rotation, and recovery
+
+Switch an ordinary password or secret header to write-only storage by moving the same acknowledged bytes to the corresponding write-only argument. Switching back stores the bytes in public resource state. A storage-only migration needs no PUT. Remove conflicting `ignore_changes` rules before migrating. Old state snapshots and plans made during migration can contain the prior ordinary value.
+
+Create a fresh plan for each rotation. A change to a write-only input alone can schedule an update through the webhook's computed `version`. Any scheduled update compares the actual apply-time inputs. Applying a saved no-op plan makes no mutation, even with different ephemeral inputs. If an apply-time credential first appears on a planned update whose version was known, make a fresh plan with the intended credential before rotating. Resource changes that could advance `version` can make it unknown in the plan, including when the final comparison skips the PUT. Ordinary arguments follow their effective Terraform plan, including ignored changes.
+
+Refresh can observe the webhook version and header names, but cannot read back secret bytes. A lost PUT response leaves Terraform with its prior credential comparison. A decoded but contradictory response can identify the webhook and its version. Terraform keeps that recovery information and the previous verifiers. Write-only credentials stay redacted. For an ordinary password or secret header, Terraform keeps the effective planned value when Contentful omits it, even if another credential is write-only. A migration from ordinary to write-only storage can then lose its old plaintext baseline and require another PUT. Reverting to the previous inputs can produce a no-op even if Contentful installed the new values.
+
+To re-establish agreement, coordinate with the receiver, choose fresh values different from the last acknowledged ones for the affected credentials, and apply a new plan. If the full PUT needs an unavailable Basic password, supply it or explicitly remove Basic authentication. An existing secret header can be preserved by exact name without its bytes. Check delivery at the receiver. After a lost creation response, locate the webhook before creating another one.
+
+A failed migration can leave no record of a newly attempted write-only path. If a later read also violates Contentful's redaction contract and returns that path as readable ordinary data, Terraform can report it as drift and store it. Check the remote header's secret flag before refreshing after such a failure. Keep state and saved plans protected during recovery.
 
 ## App and extension parameters
 

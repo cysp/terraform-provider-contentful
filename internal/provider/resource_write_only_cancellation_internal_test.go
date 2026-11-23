@@ -33,11 +33,13 @@ func TestWriteOnlySecretCreatesShareCancellation(t *testing.T) {
 
 	providerData := ContentfulProviderData{client: client}
 	signingValue := strings.Repeat("s", 64)
-	basic := map[string]any{
+	webhook := map[string]any{
 		"space_id": "space", "name": "test", "url": "https://example.test/", "topics": []string{"Entry.publish"}, "active": true,
 	}
-
+	basic := maps.Clone(webhook)
 	basic["http_basic_username"] = "user"
+	header := maps.Clone(webhook)
+	header["headers"] = map[string]any{"X-Key": map[string]any{"secret": true}}
 
 	cases := []struct {
 		name           string
@@ -66,6 +68,13 @@ func TestWriteOnlySecretCreatesShareCancellation(t *testing.T) {
 			schema:         WebhookResourceSchema(t.Context()),
 			planned:        basic,
 			writeOnly:      map[string]any{"http_basic_password_wo": "synthetic-password"},
+		},
+		{
+			name:           "secret header",
+			implementation: &webhookResource{providerData: providerData},
+			schema:         WebhookResourceSchema(t.Context()),
+			planned:        header,
+			writeOnly:      map[string]any{"headers": map[string]any{"X-Key": map[string]any{"secret": true, "value_wo": "synthetic-header"}}},
 		},
 	}
 

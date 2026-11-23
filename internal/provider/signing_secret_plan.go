@@ -44,7 +44,7 @@ func modifySigningSecretPlan(ctx context.Context, req resource.ModifyPlanRequest
 		// room for a write even when the planning-time value matches.
 		possibleWrite = true
 
-		verifier, hashDiags := readWriteOnlySecretVerifier(ctx, req.Private, signingSecretWO, stateValue)
+		verifier, hashDiags := readSigningSecretVerifier(ctx, req.Private, stateValue)
 		for _, diagnostic := range hashDiags {
 			switch invalid := diagnostic.(type) {
 			case invalidWriteOnlySecretHashesDiagnostic:
@@ -59,7 +59,7 @@ func modifySigningSecretPlan(ctx context.Context, req resource.ModifyPlanRequest
 		}
 
 		if !hashDiags.HasError() && !configuredWO.IsUnknown() && planValue.IsNull() {
-			matches, matchDiags := writeOnlySecretValueMatches(ctx, &verifier, stateValue, configuredWO)
+			matches, matchDiags := writeOnlySecretValueMatches(ctx, &verifier, rootWriteOnlySecretPath(signingSecretWO), stateValue, configuredWO)
 			resp.Diagnostics.Append(matchDiags...)
 
 			if resp.Diagnostics.HasError() {

@@ -171,7 +171,7 @@ func TestAccWebhookResourceOmittedAndEmptyHeaders(t *testing.T) {
   X-Managed = { secret = true, value = "managed" }
 }`)},
 		{
-			Config: webhookHeadersConfig("Renamed", ""),
+			Config: webhookHeadersConfig("Renamed", "lifecycle { ignore_changes = [headers] }"),
 			PreConfig: func() {
 				fields.Headers = cm.WebhookDefinitionHeaders{
 					{Key: "X-Empty", Secret: cm.NewOptBool(false), Value: cm.NewOptString("")},
@@ -212,9 +212,9 @@ func TestAccWebhookResourceOmittedAndEmptyHeaders(t *testing.T) {
 			},
 		},
 		{
-			Config: webhookHeadersConfig("Renamed", "headers = {}"),
+			Config: webhookHeadersConfig("Renamed", ""),
 			PostApplyFunc: func() {
-				recorder.requirePut(t, 4, "4", "Renamed", []map[string]any{})
+				recorder.requirePut(t, 4, "4", "Renamed", nil)
 
 				stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 				require.True(t, ok)
@@ -264,8 +264,8 @@ func TestAccWebhookResourceConfiguredSecretHeaders(t *testing.T) {
 			}},
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(address, tfjsonpath.New("headers"), knownvalue.MapExact(map[string]knownvalue.Check{
-					"X-Secret":  knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(true), "value": want.secretState}),
-					"X-Managed": knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(false), "value": knownvalue.StringExact(want.managed)}),
+					"X-Secret":  knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(true), "value": want.secretState, "value_wo": knownvalue.Null()}),
+					"X-Managed": knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(false), "value": knownvalue.StringExact(want.managed), "value_wo": knownvalue.Null()}),
 				})),
 			},
 			PostApplyFunc: func() {
@@ -431,10 +431,16 @@ func (r *webhookWriteRecorder) requirePut(t *testing.T, writeNumber int, version
 	require.Equal(t, http.MethodPut, write.method)
 	require.Equal(t, "/spaces/space/webhook_definitions/imported-webhook", write.path)
 	require.Equal(t, version, write.version)
-	require.JSONEq(t, testJSON(map[string]any{
+
+	body := map[string]any{
 		"name": name, "url": "https://example.com/webhook", "topics": []string{"Entry.publish"}, "active": true,
-		"headers": headers, "filters": nil, "transformation": nil, "httpBasicUsername": nil, "httpBasicPassword": nil,
-	}), write.body)
+		"filters": nil, "transformation": nil, "httpBasicUsername": nil, "httpBasicPassword": nil,
+	}
+	if headers != nil {
+		body["headers"] = headers
+	}
+
+	require.JSONEq(t, testJSON(body), write.body)
 }
 
 //nolint:paralleltest

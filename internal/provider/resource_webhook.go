@@ -15,12 +15,12 @@ import (
 )
 
 var (
-	_ resource.Resource               = (*webhookResource)(nil)
-	_ resource.ResourceWithModifyPlan = (*webhookResource)(nil)
-
-	_ resource.ResourceWithConfigure   = (*webhookResource)(nil)
-	_ resource.ResourceWithIdentity    = (*webhookResource)(nil)
-	_ resource.ResourceWithImportState = (*webhookResource)(nil)
+	_ resource.Resource                   = (*webhookResource)(nil)
+	_ resource.ResourceWithModifyPlan     = (*webhookResource)(nil)
+	_ resource.ResourceWithValidateConfig = (*webhookResource)(nil)
+	_ resource.ResourceWithConfigure      = (*webhookResource)(nil)
+	_ resource.ResourceWithIdentity       = (*webhookResource)(nil)
+	_ resource.ResourceWithImportState    = (*webhookResource)(nil)
 )
 
 //nolint:ireturn
@@ -76,22 +76,22 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	defer cancel()
 
-	verifier := writeOnlySecretVerifier{attribute: webhookPasswordWO}
-	protected := !config.HTTPBasicPasswordWO.IsNull()
-	requestModel, _, prepareDiags := prepareWebhookBasicPassword(ctx, WebhookModel{}, plan, config, &verifier)
+	store := writeOnlySecretVerifiers{}
+	mask := webhookMutationRedaction(store, config)
+	requestModel, _, prepareDiags := prepareWebhookWrite(ctx, WebhookModel{}, plan, config, &store)
 	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(validatePlannedWebhookHeaderValues(path.Root("headers"), plan.Headers.Elements(), true)...)
+	resp.Diagnostics.Append(validatePlannedWebhookHeaderValues(path.Root("headers"), requestModel.Headers.Elements(), nil, true)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, config, path.Empty())
+	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -108,12 +108,12 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	definition, ok := response.(*cm.WebhookDefinitionStatusCode)
 	if err != nil || !ok {
-		resp.Diagnostics.AddError("Failed to create webhook", webhookMutationErrorDetail(response, err, protected))
+		resp.Diagnostics.AddError("Failed to create webhook", webhookMutationErrorDetail(response, err, mask.any()))
 
 		return
 	}
 
-	resp.Diagnostics.Append(publishWebhookBasicResponse(ctx, resp.Private, &verifier, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, protected)...)
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, &store, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, mask)...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -149,15 +149,14 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinition:
-		if webhookBasicPasswordRedacted(state) {
-			resp.Diagnostics.Append(checkWebhookBasicPasswordResponse(response, state.HTTPBasicPassword)...)
+		sanitized, secretDiags := webhookReadRedaction(state).redact(*response, state)
+		resp.Diagnostics.Append(secretDiags...)
 
-			if resp.Diagnostics.HasError() {
-				return
-			}
+		if resp.Diagnostics.HasError() {
+			return
 		}
 
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, *response, state)
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, sanitized, state)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
@@ -186,21 +185,14 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	if webhookBasicPasswordRedacted(state) && !state.HTTPBasicUsername.Equal(data.HTTPBasicUsername) {
-		// The stored verifier refers only to the previous username.
-		resp.Diagnostics.Append(publishStateAfterPrivate(ctx, resp.Identity, &resp.State, webhookIdentityAttributeNames(), &data, func() diag.Diagnostics {
-			diags := SetPrivateProviderData(ctx, resp.Private, "version", version)
-			if !diags.HasError() {
-				diags.Append(resp.Private.SetKey(ctx, writeOnlySecretHashesPrivateKey, nil)...)
-			}
+	store, pruneDiags := webhookVerifiersAfterRead(ctx, req.Private, state, data)
+	resp.Diagnostics.Append(pruneDiags...)
 
-			return diags
-		})...)
-
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(setResourceIdentityStateAndVersion(ctx, resp.Identity, &resp.State, resp.Private, webhookIdentityAttributeNames(), &data, version)...)
+	resp.Diagnostics.Append(publishWebhookState(ctx, resp.Private, &store, resp.Identity, &resp.State, data, version, true)...)
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -234,63 +226,44 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	if unchanged && config.HTTPBasicPasswordWO.IsNull() {
+	if unchanged && config.HTTPBasicPasswordWO.IsNull() && !config.Headers.IsUnknown() && len(config.writeOnlyHeaderValues()) == 0 {
 		state.Timeouts = plan.Timeouts
 		resp.Diagnostics.Append(setResourceIdentityAndState(ctx, resp.Identity, &resp.State, webhookIdentityAttributeNames(), &state)...)
 
 		return
 	}
 
-	verifier, hashDiags := readWriteOnlySecretVerifier(ctx, req.Private, webhookPasswordWO, state.HTTPBasicPassword)
+	store, hashDiags := readWebhookVerifiers(ctx, req.Private, state)
 	resp.Diagnostics.Append(hashDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	protected := verifier.key != nil || !config.HTTPBasicPasswordWO.IsNull()
-	requestModel, matches, prepareDiags := prepareWebhookBasicPassword(ctx, state, plan, config, &verifier)
+	mask := webhookMutationRedaction(store, config)
+	requestModel, needsPUT, prepareDiags := prepareWebhookWrite(ctx, state, plan, config, &store)
 	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Matching bytes can migrate between representations locally. Compare all
-	// other effective remote fields using the same rule as ordinary updates.
-	other := req.Plan
-	resp.Diagnostics.Append(other.SetAttribute(ctx, path.Root("http_basic_password"), state.HTTPBasicPassword)...)
-	otherUnchanged, otherDiags := webhookRemoteValuesUnchanged(ctx, other, req.State)
-	resp.Diagnostics.Append(otherDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	if matches && otherUnchanged {
+	if !needsPUT {
 		// A storage-only migration changes the Plan and verifier without changing
 		// Contentful. Computed fields resolve from the acknowledged prior state.
 		state.HTTPBasicPassword = plan.HTTPBasicPassword
-
+		state.Headers = plan.Headers
 		state.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(publishStateAfterPrivate(ctx, resp.Identity, &resp.State, webhookIdentityAttributeNames(), &state, func() diag.Diagnostics { return verifier.publish(ctx, resp.Private) })...)
+		resp.Diagnostics.Append(publishStateAfterPrivate(ctx, resp.Identity, &resp.State, webhookIdentityAttributeNames(), &state, func() diag.Diagnostics { return store.publish(ctx, resp.Private) })...)
 
 		return
 	}
 
-	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, config, path.Empty())
+	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
-	}
-
-	for i := range request.Headers {
-		header := &request.Headers[i]
-		if _, configured := config.Headers.Elements()[header.Key]; !configured && header.Secret.Or(false) {
-			// Sending the exact key without a value preserves any external rotation.
-			header.Value.Reset()
-		}
 	}
 
 	version, versionDiags := webhookUpdateVersion(ctx, req.Private, plan.Version, unchanged)
@@ -312,12 +285,12 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	definition, ok := response.(*cm.WebhookDefinitionStatusCode)
 	if err != nil || !ok {
-		resp.Diagnostics.AddError("Failed to update webhook", webhookMutationErrorDetail(response, err, protected || webhookBasicPasswordRedacted(state)))
+		resp.Diagnostics.AddError("Failed to update webhook", webhookMutationErrorDetail(response, err, mask.any() || webhookReadRedaction(state).any()))
 
 		return
 	}
 
-	resp.Diagnostics.Append(publishWebhookBasicResponse(ctx, resp.Private, &verifier, resp.Identity, &resp.State, definition.Response, state, plan, protected)...)
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, &store, resp.Identity, &resp.State, definition.Response, state, plan, mask)...)
 }
 
 // A saved plan can pin sys.version before an ephemeral credential first
@@ -419,7 +392,7 @@ func webhookResponseStatus(response any) string {
 }
 
 func webhookReadErrorDetail(response any, err error, state WebhookModel) string {
-	if state.Name.IsNull() || webhookBasicPasswordRedacted(state) {
+	if state.Name.IsNull() || webhookReadRedaction(state).any() {
 		return webhookResponseStatus(response) + "Contentful did not confirm the webhook operation."
 	}
 

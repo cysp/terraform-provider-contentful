@@ -208,7 +208,7 @@ func TestAccWebhookResourceBasicPasswordImportRequiresUpdate(t *testing.T) {
 
 	body := map[string]any{
 		"name": "Imported webhook", "url": "https://example.com/webhook", "topics": []string{"Entry.publish"},
-		"active": true, "filters": nil, "headers": []any{}, "transformation": nil,
+		"active": true, "filters": nil, "transformation": nil,
 		"httpBasicUsername": "user", "httpBasicPassword": "configured-after-import",
 	}
 

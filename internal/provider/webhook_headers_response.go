@@ -6,6 +6,10 @@ import (
 )
 
 func webhookResponseHeaders(headers cm.WebhookDefinitionHeaders, fallbackHeaders TypedMap[TypedObject[WebhookHeaderValue]]) TypedMap[TypedObject[WebhookHeaderValue]] {
+	if len(headers) == 0 && fallbackHeaders.IsNull() {
+		return fallbackHeaders
+	}
+
 	values := make(map[string]TypedObject[WebhookHeaderValue], len(headers))
 
 	for _, header := range headers {

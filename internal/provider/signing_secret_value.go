@@ -27,7 +27,7 @@ func resolveSigningSecretValue(value, valueWO types.String, modelPath path.Path)
 
 // Encode public state and identity before publishing the prepared private
 // value. Diagnostics do not roll back Framework response mutations.
-func publishSigningSecretState(ctx context.Context, private PrivateProviderData, verifier *writeOnlySecretVerifier, identity *tfsdk.ResourceIdentity, state *tfsdk.State, identityNames []string, model any) diag.Diagnostics {
+func publishSigningSecretState(ctx context.Context, private PrivateProviderData, verifier *writeOnlySecretVerifiers, identity *tfsdk.ResourceIdentity, state *tfsdk.State, identityNames []string, model any) diag.Diagnostics {
 	return publishStateAfterPrivate(ctx, identity, state, identityNames, model, func() diag.Diagnostics {
 		return verifier.publish(ctx, private)
 	})
