@@ -9,61 +9,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 //nolint:ireturn
-func WebhookHeadersSchema(ctx context.Context, optional bool) schema.Attribute {
+func WebhookHeadersSchema(ctx context.Context) schema.Attribute {
 	return schema.MapNestedAttribute{
-		Description: "HTTP headers sent by the webhook, keyed by header name. Omit this map on creation to adopt the headers returned by Contentful. If you omit it when changing another webhook setting, Terraform resends ordinary header values and retains stored secrets by exact header name. To remove all custom headers, set `headers = {}` and remove any `ignore_changes` rule that retains the map or one of its keys.",
+		Description: "HTTP headers sent by the webhook, keyed by header name. Omitting the map or setting `headers = {}` removes all headers unless `ignore_changes` retains the map or a key. To keep an externally managed header, omit its key and ignore that exact key. See [Secrets and Terraform state](../guides/secrets-and-state#secret-custom-headers).",
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: WebhookHeaderValue{}.SchemaAttributes(ctx),
 			CustomType: NewTypedObjectNull[WebhookHeaderValue]().CustomType(ctx),
 		},
 		CustomType: TypedMap[TypedObject[WebhookHeaderValue]]{}.CustomType(ctx),
-		Optional:   optional,
-		Computed:   true,
+		Optional:   true,
 		Validators: []validator.Map{
 			mapvalidator.NoNullValues(),
 		},
-		PlanModifiers: []planmodifier.Map{
-			mapplanmodifier.UseStateForUnknown(),
-			validateWebhookHeaderValues{},
-		},
 	}
 }
 
-// validateWebhookHeaderValues checks the effective map after UseStateForUnknown.
-type validateWebhookHeaderValues struct{}
-
-func (validateWebhookHeaderValues) Description(context.Context) string {
-	return "Each configured header needs an initial value on creation or replacement. On update, only headers with secret = true may have a null planned value."
-}
-
-func (m validateWebhookHeaderValues) MarkdownDescription(ctx context.Context) string {
-	return m.Description(ctx)
-}
-
-func (validateWebhookHeaderValues) PlanModifyMap(ctx context.Context, req planmodifier.MapRequest, resp *planmodifier.MapResponse) {
-	// An unchanged map can contain values inherited through omission or ignore_changes.
-	// Request conversion checks those values if an update actually sends a PUT.
-	if req.PlanValue.IsNull() || req.PlanValue.IsUnknown() || req.PlanValue.Equal(req.StateValue) {
-		return
-	}
-
-	var planned map[string]TypedObject[WebhookHeaderValue]
-	resp.Diagnostics.Append(req.PlanValue.ElementsAs(ctx, &planned, false)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(validatePlannedWebhookHeaderValues(req.Path, planned, req.State.Raw.IsNull())...)
-}
-
-func validatePlannedWebhookHeaderValues(headersPath path.Path, headers map[string]TypedObject[WebhookHeaderValue], creating bool) diag.Diagnostics {
+func validatePlannedWebhookHeaderValues(headersPath path.Path, headers map[string]TypedObject[WebhookHeaderValue], writeOnly map[string]types.String, creating bool) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	for _, key := range slices.Sorted(maps.Keys(headers)) {
@@ -73,7 +39,7 @@ func validatePlannedWebhookHeaderValues(headersPath path.Path, headers map[strin
 		}
 
 		headerPath := headersPath.AtMapKey(key)
-		if creating && header.Value.IsNull() {
+		if creating && header.Value.IsNull() && writeOnly[key].IsNull() {
 			diags.AddAttributeError(headerPath.AtName("value"), "Missing initial webhook header value",
 				"Supply an initial value for this header when creating or replacing a webhook.")
 

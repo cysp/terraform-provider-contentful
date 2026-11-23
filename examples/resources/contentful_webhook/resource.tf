@@ -23,8 +23,8 @@ resource "contentful_webhook" "this" {
 
   headers = {
     "X-Webhook-Secret" = {
-      value  = var.webhook_secret
-      secret = true
+      secret   = true
+      value_wo = var.webhook_secret
     },
   }
 

@@ -11,6 +11,7 @@ resource "contentful_webhook" "test" {
   name     = "Edited externally"
   url      = "https://example.com/webhook"
   topics   = ["Entry.publish"]
+  headers  = {}
   filters = [{
     equals = {
       doc   = "sys.type"

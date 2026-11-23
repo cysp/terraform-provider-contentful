@@ -155,7 +155,7 @@ resource "contentful_webhook" "test" {
 	require.Nil(t, after.Attributes["http_basic_password"])
 	require.Equal(t, "Contradictory", after.Attributes["name"])
 	require.Equal(t, "2", testJSON(after.Attributes["version"]))
-	require.Equal(t, map[string]any{"X-Key": map[string]any{"secret": true, "value": "ordinary-header"}}, after.Attributes["headers"])
+	require.Equal(t, map[string]any{"X-Key": map[string]any{"secret": true, "value": "ordinary-header", "value_wo": nil}}, after.Attributes["headers"])
 
 	// A refreshed no-op compares against Terraform's stored acknowledgement;
 	// only a fresh differing value deliberately writes the password again.
@@ -181,7 +181,10 @@ func TestAccWebhookResourceIgnoredWriteOnlyBasicPasswordOnTimeoutUpdate(t *testi
 	seed := cm.WebhookDefinitionData{
 		Name: "Imported", URL: "https://example.invalid/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
 		HttpBasicUsername: cm.NewOptNilString("user"), HttpBasicPassword: cm.NewOptNilString(original),
-		Headers: cm.WebhookDefinitionHeaders{{Key: "X-Imported", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-managed-header")}},
+		Headers: cm.WebhookDefinitionHeaders{
+			{Key: "X-Imported", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-managed-header")},
+			{Key: "x-imported", Secret: cm.NewOptBool(true), Value: cm.NewOptString("another-header")},
+		},
 	}
 	seed.Filters.SetToNull()
 	seed.Transformation.SetToNull()
@@ -210,11 +213,14 @@ resource "contentful_webhook" "test" {
 		require.NoError(t, err, out)
 	}
 
-	configure("")
+	configure(`lifecycle { ignore_changes = [headers] }`)
 	run("import", original, "contentful_webhook.test", "space/imported")
+
+	hidden := map[string]any{"secret": true, "value": nil, "value_wo": nil}
+	require.Equal(t, map[string]any{"X-Imported": hidden, "x-imported": hidden}, readWebhookStateInstances(t, runtime)[0].Attributes["headers"])
 	run("apply", original, "-auto-approve")
 	configure(`timeouts = { update = "3m" }
- lifecycle { ignore_changes = [http_basic_password_wo] }`)
+ lifecycle { ignore_changes = [http_basic_password_wo, headers] }`)
 	run("plan", original, "-out=timeout.tfplan")
 	run("apply", rotated, "timeout.tfplan")
 
@@ -228,7 +234,7 @@ resource "contentful_webhook" "test" {
 		require.Equal(t, "0", puts[i].version)
 		require.JSONEq(t, testJSON(map[string]any{
 			"name": "Imported", "url": "https://example.invalid/webhook", "active": true, "topics": []string{"Entry.publish"},
-			"httpBasicUsername": "user", "httpBasicPassword": password, "filters": nil, "transformation": nil, "headers": []map[string]any{{"key": "X-Imported", "secret": true}},
+			"httpBasicUsername": "user", "httpBasicPassword": password, "filters": nil, "transformation": nil, "headers": []map[string]any{{"key": "X-Imported", "secret": true}, {"key": "x-imported", "secret": true}},
 		}), string(puts[i].body))
 	}
 
@@ -238,4 +244,23 @@ resource "contentful_webhook" "test" {
 	require.True(t, ok)
 	require.Equal(t, rotated, stored.HttpBasicPassword.Or(""))
 	require.Equal(t, "externally-managed-header", stored.Headers[0].Value.Or(""))
+	require.Equal(t, "another-header", stored.Headers[1].Value.Or(""))
+	require.Equal(t, 1, stored.Sys.Version)
+
+	// A timeout-only update needs no full request. A subsequent password
+	// rotation must validate even the delegated ordinary headers.
+	seed.HttpBasicPassword = cm.NewOptNilString(rotated)
+	seed.Headers = cm.WebhookDefinitionHeaders{{Key: "X-External", Secret: cm.NewOptBool(false)}}
+	response, err := server.Handler().UpdateWebhookDefinition(t.Context(), &seed, cm.UpdateWebhookDefinitionParams{
+		SpaceID: "space", WebhookDefinitionID: "imported", XContentfulVersion: cm.NewOptInt(1),
+	})
+	require.NoError(t, err)
+	require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
+	configure(`timeouts = { update = "4m" }
+ lifecycle { ignore_changes = [headers] }`)
+	run("apply", rotated, "-auto-approve")
+	out, err := runtime.run(t.Context(), "apply", "-input=false", "-no-color", "-auto-approve", "-var=password="+original)
+	require.Error(t, err, out)
+	require.Contains(t, out, "Missing webhook header value")
+	require.Equal(t, puts, recorder.matchingRequests(http.MethodPut, ""))
 }

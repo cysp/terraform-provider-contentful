@@ -67,7 +67,7 @@ func TestWebhookModelRejectsInvalidScalarRequestValues(t *testing.T) {
 			model := validWebhookRequestModel()
 			test.setValue(&model)
 
-			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
+			actual, diags := model.ToWebhookDefinitionData(t.Context(), path.Empty())
 
 			require.True(t, diags.HasError())
 			assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, diags))
@@ -119,7 +119,7 @@ func TestWebhookModelTopicsRequestValues(t *testing.T) {
 			model := validWebhookRequestModel()
 			model.Topics = test.topics
 
-			actual, diags := model.ToWebhookDefinitionData(t.Context(), WebhookModel{}, path.Empty())
+			actual, diags := model.ToWebhookDefinitionData(t.Context(), path.Empty())
 
 			if len(test.expectedPaths) > 0 {
 				require.True(t, diags.HasError())
@@ -148,8 +148,9 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 		"null is omitted": {
 			headers: NewTypedMapNull[TypedObject[WebhookHeaderValue]](),
 		},
-		"computed unknown is omitted": {
-			headers: NewTypedMapUnknown[TypedObject[WebhookHeaderValue]](),
+		"unknown is rejected": {
+			headers:       NewTypedMapUnknown[TypedObject[WebhookHeaderValue]](),
+			expectedPaths: []string{"headers"},
 		},
 		"empty is preserved": {
 			headers:  NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),

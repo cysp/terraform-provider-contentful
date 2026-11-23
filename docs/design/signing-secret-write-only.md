@@ -63,7 +63,7 @@ generated signing secrets and protect state, saved plans, and backups.
 ## Memory use
 
 One semaphore per provider process admits one Argon2 calculation at a time
-across both signing-secret resources and [Webhook Basic passwords](mutation-reconciliation.md#write-only-basic-authentication). Comparison and preparation acquire it
+across both signing-secret resources and [Webhook definition credentials](mutation-reconciliation.md#write-only-webhook-credentials). Comparison and preparation acquire it
 separately. An operation can be cancelled while waiting, and queue time counts
 toward its deadline. An active calculation holds the slot until it returns and
 then checks for cancellation. HTTP operations and state publication run outside

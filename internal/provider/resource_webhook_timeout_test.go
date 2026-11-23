@@ -47,7 +47,7 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 
 	recorder := &taxonomyRequestBodyRecorder{next: server}
 	// The configuration omits both credentials. The effective plan retains the imported username.
-	localConfig := webhookBasicPasswordConfig("Imported webhook", "null", timeout+"\nlifecycle { ignore_changes = [http_basic_username] }")
+	localConfig := webhookBasicPasswordConfig("Imported webhook", "null", timeout+"\nlifecycle { ignore_changes = [http_basic_username, headers] }")
 	testAccMockedResource(t, recorder, resource.TestCase{
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
@@ -67,7 +67,7 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("http_basic_username"), knownvalue.StringExact("user")),
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("http_basic_password"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(address, tfjsonpath.New("headers").AtMapKey("X-Ordinary"), knownvalue.ObjectExact(map[string]knownvalue.Check{
-						"secret": knownvalue.Bool(false), "value": knownvalue.Null(),
+						"value_wo": knownvalue.Null(), "secret": knownvalue.Bool(false), "value": knownvalue.Null(),
 					})),
 					statecheck.ExpectIdentityValueMatchesState(address, tfjsonpath.New("space_id")),
 					statecheck.ExpectIdentityValueMatchesState(address, tfjsonpath.New("webhook_id")),

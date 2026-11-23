@@ -88,7 +88,7 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				Description: "HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.",
 				Optional:    true,
 			},
-			"headers":        WebhookHeadersSchema(ctx, true),
+			"headers":        WebhookHeadersSchema(ctx),
 			"transformation": WebhookTransformationSchema(ctx, true),
 			"timeouts":       timeouts.Attributes(ctx, crudTimeoutOptions()),
 		},

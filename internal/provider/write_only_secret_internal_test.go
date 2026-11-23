@@ -50,9 +50,9 @@ func TestSigningSecretReadsAcknowledgedVerifier(t *testing.T) {
 
 	data := []byte(testJSON([]map[string]string{{"path": "value_wo", "hash": writeOnlyTestHash}}))
 	private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: data}}
-	verifier, diags := readWriteOnlySecretVerifier(t.Context(), private, signingSecretWO, types.StringNull())
+	verifier, diags := readSigningSecretVerifier(t.Context(), private, types.StringNull())
 	require.Empty(t, diags)
-	matched, diags := verifier.matches(t.Context(), types.StringValue(strings.Repeat("a", 64)))
+	matched, diags := verifier.matches(t.Context(), rootWriteOnlySecretPath("value_wo"), types.StringValue(strings.Repeat("a", 64)))
 	require.Empty(t, diags)
 	require.True(t, matched)
 	require.Empty(t, verifier.publish(t.Context(), private))
@@ -75,7 +75,7 @@ func TestWriteOnlySecretRejectsInvalidPrivateData(t *testing.T) {
 		"trailing":               {data: []byte(writeOnlyTestPrivate + `[]`), reason: "Unexpected data follows"},
 		"unknown field":          {data: []byte(testJSON([]map[string]any{{"path": "value_wo", "hash": writeOnlyTestHash, "unexpected": 42}})), reason: "no additional fields"},
 		"empty path":             {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "", Hash: writeOnlyTestHash}})), reason: "not supported by this resource"},
-		"duplicate path":         {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: writeOnlyTestHash}, {Path: "value_wo", Hash: writeOnlyTestHash}})), reason: "at most one secret verifier"},
+		"duplicate path":         {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: writeOnlyTestHash}, {Path: "value_wo", Hash: writeOnlyTestHash}})), reason: "Duplicate verifier paths"},
 		"unsupported algorithm":  {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: strings.Replace(writeOnlyTestHash, "argon2id", "argon2i", 1)}})), reason: "unsupported algorithm, version, or parameter encoding"},
 		"unsupported parameters": {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: strings.Replace(writeOnlyTestHash, "m=65536", "m=4294967295", 1)}})), reason: "unsupported algorithm, version, or parameter encoding"},
 		"unsupported passes":     {data: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: strings.Replace(writeOnlyTestHash, "t=3", "t=1", 1)}})), reason: "unsupported algorithm, version, or parameter encoding"},
@@ -88,7 +88,7 @@ func TestWriteOnlySecretRejectsInvalidPrivateData(t *testing.T) {
 			t.Parallel()
 
 			private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: test.data}}
-			_, diags := readWriteOnlySecretVerifier(t.Context(), private, signingSecretWO, types.StringNull())
+			_, diags := readSigningSecretVerifier(t.Context(), private, types.StringNull())
 			require.True(t, diags.HasError())
 			assert.Equal(t, "Invalid write-only secret private state", diags.Errors()[0].Summary())
 			assert.Contains(t, diags.Errors()[0].Detail(), test.reason)
@@ -103,9 +103,9 @@ func TestWriteOnlySecretMissingIsNotCorrupt(t *testing.T) {
 
 	for _, data := range [][]byte{nil, []byte(testJSON([]any{}))} {
 		private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: data}}
-		verifier, diags := readWriteOnlySecretVerifier(t.Context(), private, signingSecretWO, types.StringNull())
+		verifier, diags := readSigningSecretVerifier(t.Context(), private, types.StringNull())
 		require.Empty(t, diags)
-		matched, diags := verifier.matches(t.Context(), types.StringValue(strings.Repeat("a", 64)))
+		matched, diags := verifier.matches(t.Context(), rootWriteOnlySecretPath("value_wo"), types.StringValue(strings.Repeat("a", 64)))
 		require.Empty(t, diags)
 		assert.False(t, matched)
 	}
@@ -117,11 +117,11 @@ func TestWriteOnlySecretCancellationDoesNotPrepareOrPublish(t *testing.T) {
 	writeOnlyTestPrivate := testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: writeOnlyTestHash}})
 
 	private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(writeOnlyTestPrivate)}}
-	verifier, diags := readWriteOnlySecretVerifier(t.Context(), private, signingSecretWO, types.StringNull())
+	verifier, diags := readSigningSecretVerifier(t.Context(), private, types.StringNull())
 	require.Empty(t, diags)
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
-	require.True(t, verifier.set(ctx, types.StringValue(strings.Repeat("b", 64))).HasError())
+	require.True(t, verifier.set(ctx, rootWriteOnlySecretPath("value_wo"), types.StringValue(strings.Repeat("b", 64))).HasError())
 	assert.JSONEq(t, writeOnlyTestPrivate, string(verifier.prepared))
 	assert.Zero(t, private.writes)
 }
@@ -134,7 +134,7 @@ func TestSigningSecretQueuedHashesRespectCancellation(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		data := []byte(testJSON([]writeOnlySecretHashRecord{{Path: "value_wo", Hash: writeOnlyTestHash}}))
 		private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: data}}
-		verifier, diags := readWriteOnlySecretVerifier(t.Context(), private, signingSecretWO, types.StringNull())
+		verifier, diags := readSigningSecretVerifier(t.Context(), private, types.StringNull())
 		require.Empty(t, diags)
 
 		replacement := verifier
@@ -148,10 +148,10 @@ func TestSigningSecretQueuedHashesRespectCancellation(t *testing.T) {
 		)
 
 		go func() {
-			matched, comparison = verifier.matches(ctx, types.StringValue(strings.Repeat("a", 64)))
+			matched, comparison = verifier.matches(ctx, rootWriteOnlySecretPath("value_wo"), types.StringValue(strings.Repeat("a", 64)))
 		}()
 		go func() {
-			preparation = replacement.set(ctx, types.StringValue(strings.Repeat("b", 64)))
+			preparation = replacement.set(ctx, rootWriteOnlySecretPath("value_wo"), types.StringValue(strings.Repeat("b", 64)))
 		}()
 
 		synctest.Wait()
@@ -203,16 +203,16 @@ func TestSigningSecretPublicationFailurePreservesAcknowledgedState(t *testing.T)
 
 			private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(privateData)}, fail: test.failPrivateWrite}
 
-			verifier := writeOnlySecretVerifier{attribute: signingSecretWO}
+			var verifier writeOnlySecretVerifiers
 
 			var diags diag.Diagnostics
 			if test.discardObsolete {
-				verifier, diags = readWriteOnlySecretVerifier(ctx, private, signingSecretWO, prior.Value)
+				verifier, diags = readSigningSecretVerifier(ctx, private, prior.Value)
 				require.Empty(t, diags)
 			} else {
-				verifier, diags = readWriteOnlySecretVerifier(ctx, private, signingSecretWO, types.StringNull())
+				verifier, diags = readSigningSecretVerifier(ctx, private, types.StringNull())
 				require.Empty(t, diags)
-				require.Empty(t, verifier.set(ctx, types.StringValue(strings.Repeat("b", 64))))
+				require.Empty(t, verifier.set(ctx, rootWriteOnlySecretPath("value_wo"), types.StringValue(strings.Repeat("b", 64))))
 			}
 
 			changed := appSigningSecretTestModel(strings.Repeat("b", 64))
@@ -242,7 +242,7 @@ func TestSigningSecretOrdinaryValueRequiresPrivateAccess(t *testing.T) {
 	t.Parallel()
 
 	private := &writeOnlyTestPrivateData{failRead: true}
-	_, diags := readWriteOnlySecretVerifier(t.Context(), private, signingSecretWO, types.StringValue(strings.Repeat("a", 64)))
+	_, diags := readSigningSecretVerifier(t.Context(), private, types.StringValue(strings.Repeat("a", 64)))
 	require.Len(t, diags, 1)
 	assert.Equal(t, "Private read failed", diags[0].Summary())
 	assert.Zero(t, private.writes)
@@ -252,7 +252,7 @@ func TestSigningSecretRejectsOtherVerifierPaths(t *testing.T) {
 	t.Parallel()
 
 	private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(testJSON([]writeOnlySecretHashRecord{{Path: "other", Hash: writeOnlyTestHash}}))}}
-	_, diags := readWriteOnlySecretVerifier(t.Context(), private, signingSecretWO, types.StringNull())
+	_, diags := readSigningSecretVerifier(t.Context(), private, types.StringNull())
 	require.True(t, diags.HasError())
 	assert.Contains(t, diags.Errors()[0].Detail(), "not supported by this resource")
 	assert.NotContains(t, diags.Errors()[0].Detail(), writeOnlyTestHash)

@@ -9,6 +9,7 @@ variable "webhook_id" {
 variable "webhook_secret" {
   description = "Shared secret expected by the webhook receiver."
   type        = string
+  ephemeral   = true
   sensitive   = true
 }
 

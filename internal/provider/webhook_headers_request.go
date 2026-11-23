@@ -13,13 +13,16 @@ func ToWebhookDefinitionHeaders(
 	path path.Path,
 	model TypedMap[TypedObject[WebhookHeaderValue]],
 ) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
-	if model.IsNull() || model.IsUnknown() {
-		// The lifecycle rejects configuration-owned unknown plans. A remaining
-		// unknown represents response-owned, omitted Optional+Computed headers.
-		return nil, nil
+	var diags diag.Diagnostics
+	if model.IsUnknown() {
+		diags.AddAttributeError(path, "Unexpected unknown webhook headers", "Headers must be known before the webhook can be written.")
+
+		return nil, diags
 	}
 
-	diags := diag.Diagnostics{}
+	if model.IsNull() {
+		return nil, diags
+	}
 
 	plannedHeaders := model.Elements()
 	headers := make(cm.WebhookDefinitionHeaders, len(plannedHeaders))

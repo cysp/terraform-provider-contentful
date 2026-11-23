@@ -89,7 +89,7 @@ func requireReturnedWebhookCredentials(t *testing.T, instance webhookStateInstan
 	t.Helper()
 
 	require.Equal(t, returnedWebhookPassword, instance.Attributes["http_basic_password"])
-	require.Equal(t, map[string]any{"X-Secret": map[string]any{"secret": true, "value": returnedWebhookHeaderValue}}, instance.Attributes["headers"])
+	require.Equal(t, map[string]any{"X-Secret": map[string]any{"secret": true, "value": returnedWebhookHeaderValue, "value_wo": nil}}, instance.Attributes["headers"])
 }
 
 func TestAccWebhookResourceImportReturnedCredentials(t *testing.T) {
@@ -133,10 +133,15 @@ func TestAccWebhookResourceReturnedCredentialsInRecoveryState(t *testing.T) {
 			instances := readWebhookStateInstances(t, runtime)
 			require.Len(t, instances, 1)
 			instance := instances[0]
-			requireReturnedWebhookCredentials(t, instance)
 
 			if method == http.MethodPost {
+				requireReturnedWebhookCredentials(t, instance)
 				assert.Equal(t, "tainted", instance.Status)
+			} else {
+				// Import left a redacted header without a verifier. The PUT
+				// requested its removal and supplied an ordinary Basic password.
+				assert.Equal(t, returnedWebhookPassword, instance.Attributes["http_basic_password"])
+				assert.Equal(t, map[string]any{"X-Secret": map[string]any{"secret": true, "value": nil, "value_wo": nil}}, instance.Attributes["headers"])
 			}
 
 			webhookID, ok := instance.Attributes["webhook_id"].(string)
