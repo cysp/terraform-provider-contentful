@@ -5,6 +5,24 @@ Entries through 0.0.70 preserve the existing
 [GitHub release notes](https://github.com/cysp/terraform-provider-contentful/releases);
 dates are UTC publication dates.
 
+## [0.2.1](https://github.com/cysp/terraform-provider-contentful/compare/v0.2.0...v0.2.1) (2026-11-23)
+
+
+### Bug fixes
+
+* **provider:** avoid replaying secrets for omitted webhook header keys ([2bc952a](https://github.com/cysp/terraform-provider-contentful/commit/2bc952a13aec87357e02da8d92d3c26948d64d9d))
+
+
+### Documentation
+
+* **provider:** clarify how to clear all webhook headers ([9dbe621](https://github.com/cysp/terraform-provider-contentful/commit/9dbe621f94fbe68f401d2f472eb4e6de154293fc))
+
+
+### Maintenance
+
+* **deps:** bump indirect dependencies ([88af99d](https://github.com/cysp/terraform-provider-contentful/commit/88af99dd81b7816033793c260fb5fe65c15c5066))
+* **release:** bump patch for compatible pre-1.0 features ([5af08fc](https://github.com/cysp/terraform-provider-contentful/commit/5af08fcdde277453b7ca2247025026968fa77c97))
+
 ## [0.2.0](https://github.com/cysp/terraform-provider-contentful/compare/v0.1.0...v0.2.0) (2026-11-22)
 
 
