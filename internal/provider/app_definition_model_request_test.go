@@ -15,7 +15,6 @@ import (
 func validAppDefinitionRequestModel() AppDefinitionBaseModel {
 	return AppDefinitionBaseModel{
 		Name:     types.StringValue("App"),
-		Src:      types.StringUnknown(),
 		BundleID: types.StringUnknown(),
 		Locations: []AppDefinitionLocationsItem{
 			{
@@ -53,6 +52,10 @@ func TestAppDefinitionRequestRejectsUnresolvedScalars(t *testing.T) {
 		"null name": {
 			mutate:       func(model *AppDefinitionBaseModel) { model.Name = types.StringNull() },
 			expectedPath: "name",
+		},
+		"unknown src": {
+			mutate:       func(model *AppDefinitionBaseModel) { model.Src = types.StringUnknown() },
+			expectedPath: "src",
 		},
 		"unknown location": {
 			mutate:       func(model *AppDefinitionBaseModel) { model.Locations[0].Location = types.StringUnknown() },
@@ -143,70 +146,6 @@ func TestAppDefinitionRequestFailsAtomically(t *testing.T) {
 	}, attributeDiagnosticPaths(t, diags))
 }
 
-func TestAppDefinitionRequestOptionalComputedOwnership(t *testing.T) {
-	t.Parallel()
-
-	for name, test := range map[string]struct {
-		configured    types.String
-		planned       types.String
-		expectedValue string
-		expectedSet   bool
-		expectedError bool
-	}{
-		"config null plan unknown omits response-owned value": {
-			configured: types.StringNull(),
-			planned:    types.StringUnknown(),
-		},
-		"config null plan known uses default or state-preserved value": {
-			configured:    types.StringNull(),
-			planned:       types.StringValue("https://planned.example/from-state.js"),
-			expectedValue: "https://planned.example/from-state.js",
-			expectedSet:   true,
-		},
-		"config known plan known sends plan rather than config": {
-			configured:    types.StringValue("https://configured.example/expression.js"),
-			planned:       types.StringValue("https://planned.example/resolved.js"),
-			expectedValue: "https://planned.example/resolved.js",
-			expectedSet:   true,
-		},
-		"config known plan unknown fails closed": {
-			configured:    types.StringValue("https://configured.example/expression.js"),
-			planned:       types.StringUnknown(),
-			expectedError: true,
-		},
-		"known empty remains explicit": {
-			configured:  types.StringValue(""),
-			planned:     types.StringValue(""),
-			expectedSet: true,
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			model := validAppDefinitionRequestModel()
-			model.Src = test.planned
-
-			actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{Src: test.configured}, path.Empty())
-
-			if test.expectedError {
-				require.True(t, diags.HasError())
-				assert.Equal(t, []string{"src"}, attributeDiagnosticPaths(t, diags))
-				assert.Equal(t, cm.AppDefinitionData{}, actual)
-
-				return
-			}
-
-			require.False(t, diags.HasError(), diags.Errors())
-
-			if test.expectedSet {
-				assert.Equal(t, test.expectedValue, requireOptString(t, actual.Src))
-			} else {
-				assert.False(t, actual.Src.IsSet())
-			}
-		})
-	}
-}
-
 func TestAppDefinitionRequestUsesKnownResponseOwnedBundle(t *testing.T) {
 	t.Parallel()
 
@@ -246,7 +185,7 @@ func TestAppDefinitionRequestPreservesOptionalScalarPresence(t *testing.T) {
 	assert.Empty(t, requireOptString(t, items.LinkType))
 }
 
-func TestAppDefinitionRequestOmitsOptionalComputedUnknownsAndNullLinks(t *testing.T) {
+func TestAppDefinitionRequestOmitsUnknownBundleAndNullStrings(t *testing.T) {
 	t.Parallel()
 
 	model := validAppDefinitionRequestModel()
@@ -262,17 +201,15 @@ func TestAppDefinitionRequestOmitsOptionalComputedUnknownsAndNullLinks(t *testin
 	assert.False(t, items.LinkType.IsSet())
 }
 
-func TestAppDefinitionRequestOmitsOptionalComputedNulls(t *testing.T) {
+func TestAppDefinitionRequestOmitsNullBundle(t *testing.T) {
 	t.Parallel()
 
 	model := validAppDefinitionRequestModel()
-	model.Src = types.StringNull()
 	model.BundleID = types.StringNull()
 
 	actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{}, path.Empty())
 
 	require.False(t, diags.HasError(), diags.Errors())
-	assert.False(t, actual.Src.IsSet())
 	assert.False(t, actual.Bundle.IsSet())
 }
 

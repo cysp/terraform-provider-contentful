@@ -15,16 +15,16 @@ import (
 func TestRequestConvertersRejectUnknownPlannedConfigurationOwnedValues(t *testing.T) {
 	t.Parallel()
 
-	t.Run("app definition scalar", func(t *testing.T) {
+	t.Run("app definition bundle", func(t *testing.T) {
 		t.Parallel()
 
 		model := validAppDefinitionRequestModel()
 		actual, diags := model.ToAppDefinitionData(AppDefinitionBaseModel{
-			Src: types.StringValue("https://configured.example/app.js"),
+			BundleID: types.StringValue("configured-bundle"),
 		}, path.Empty())
 
 		require.True(t, diags.HasError())
-		assert.Equal(t, []string{"src"}, attributeDiagnosticPaths(t, diags))
+		assert.Equal(t, []string{"bundle_id"}, attributeDiagnosticPaths(t, diags))
 		assert.Equal(t, cm.AppDefinitionData{}, actual)
 	})
 
