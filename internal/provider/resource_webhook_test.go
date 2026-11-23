@@ -240,48 +240,85 @@ func TestAccWebhookResourceConfiguredSecretHeaders(t *testing.T) {
 	server.SetWebhookDefinition("space", "imported-webhook", imported)
 	recorder := &webhookWriteRecorder{next: server}
 
-	const address = "contentful_webhook.test"
+	const (
+		address       = "contentful_webhook.test"
+		ignoreChanges = `
+  lifecycle { ignore_changes = [headers["X-Secret"]] }`
+	)
 
-	step := func(managed, headers string, writes int, requestVersion string, responseVersion json.Number) resource.TestStep {
+	type headerUpdate struct {
+		managed         string
+		secretState     knownvalue.Check
+		secretRequest   map[string]any
+		storedSecret    string
+		write           int
+		requestVersion  string
+		responseVersion json.Number
+	}
+
+	step := func(headers string, want headerUpdate) resource.TestStep {
 		return resource.TestStep{
 			Config: webhookHeadersConfig(imported.Name, headers),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPreRefresh: []plancheck.PlanCheck{
-				expectResponseStateInPlan{address: address, valuePath: tfjsonpath.New("version"), value: responseVersion},
+				expectResponseStateInPlan{address: address, valuePath: tfjsonpath.New("version"), value: want.responseVersion},
 			}},
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(address, tfjsonpath.New("headers"), knownvalue.MapExact(map[string]knownvalue.Check{
-					"X-Secret":  knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(true), "value": knownvalue.Null()}),
-					"X-Managed": knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(false), "value": knownvalue.StringExact(managed)}),
+					"X-Secret":  knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(true), "value": want.secretState}),
+					"X-Managed": knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(false), "value": knownvalue.StringExact(want.managed)}),
 				})),
 			},
 			PostApplyFunc: func() {
-				recorder.requirePut(t, writes, requestVersion, imported.Name, []map[string]any{
-					{"key": "X-Managed", "secret": false, "value": managed}, {"key": "X-Secret", "secret": true},
+				recorder.requirePut(t, want.write, want.requestVersion, imported.Name, []map[string]any{
+					{"key": "X-Managed", "secret": false, "value": want.managed}, want.secretRequest,
 				})
 
 				stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 				require.True(t, ok)
 				require.Equal(t, cm.WebhookDefinitionHeaders{
-					{Key: "X-Managed", Secret: cm.NewOptBool(false), Value: cm.NewOptString(managed)},
-					{Key: "X-Secret", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-rotated")},
+					{Key: "X-Managed", Secret: cm.NewOptBool(false), Value: cm.NewOptString(want.managed)},
+					{Key: "X-Secret", Secret: cm.NewOptBool(true), Value: cm.NewOptString(want.storedSecret)},
 				}, stored.Headers)
 			},
 		}
 	}
-	ignored := step("first", `headers = { X-Managed = { value = "first" } }
-  lifecycle { ignore_changes = [headers["X-Secret"]] }`, 1, "1", "2")
-	ignored.PreConfig = func() {
-		imported.Headers[0].Value = cm.NewOptString("externally-rotated")
+
+	preserveSecret := map[string]any{"key": "X-Secret", "secret": true}
+	omitted := step(`headers = { X-Managed = { value = "first" } }`+ignoreChanges, headerUpdate{
+		managed:       "first",
+		secretState:   knownvalue.StringExact("last-managed"),
+		secretRequest: preserveSecret,
+		storedSecret:  "rotated",
+		write:         2, requestVersion: "2", responseVersion: "3",
+	})
+	omitted.PreConfig = func() {
+		imported.Headers[0].Value = cm.NewOptString("rotated")
 		response, err := server.Handler().UpdateWebhookDefinition(t.Context(), &imported, cm.UpdateWebhookDefinitionParams{
-			SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: cm.NewOptInt(0),
+			SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: cm.NewOptInt(1),
 		})
 		require.NoError(t, err)
 		require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
 	}
-	explicit := step("second", `headers = { X-Managed = terraform_data.header.output.managed, X-Secret = { secret = terraform_data.header.output.secret } }`, 2, "2", "3")
-	explicit.Config += `
+	declared := step(`headers = {
+    X-Managed = { value = "second" }
+    X-Secret  = { secret = true, value = "configured-new" }
+  }`+ignoreChanges, headerUpdate{
+		managed:       "second",
+		secretState:   knownvalue.StringExact("last-managed"),
+		storedSecret:  "last-managed",
+		secretRequest: map[string]any{"key": "X-Secret", "secret": true, "value": "last-managed"},
+		write:         3, requestVersion: "3", responseVersion: "4",
+	})
+	withoutValue := step(`headers = { X-Managed = terraform_data.header.output.managed, X-Secret = { secret = terraform_data.header.output.secret } }`, headerUpdate{
+		managed:       "third",
+		secretState:   knownvalue.Null(),
+		secretRequest: preserveSecret,
+		storedSecret:  "last-managed",
+		write:         4, requestVersion: "4", responseVersion: "5",
+	})
+	withoutValue.Config += `
 resource "terraform_data" "header" {
-  input = { managed = { value = "second" }, secret = true }
+  input = { managed = { value = "third" }, secret = true }
 }
 `
 	unknownSecret := webhookHeadersConfig(imported.Name, `headers = { X-Secret = { secret = terraform_data.flag.output } }`) + `
@@ -291,7 +328,8 @@ resource "terraform_data" "flag" {
 `
 	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
 		{Config: webhookHeadersConfig(imported.Name, ""), ResourceName: address, ImportState: true, ImportStateId: "space/imported-webhook", ImportStatePersist: true},
-		ignored, explicit,
+		{Config: webhookHeadersConfig(imported.Name, `headers = { X-Secret = { secret = true, value = "last-managed" } }`)},
+		omitted, declared, withoutValue,
 		{
 			Config:      webhookHeadersConfig(imported.Name, `headers = { x-secret = { secret = true, value = null } }`),
 			ExpectError: regexp.MustCompile("Failed to update webhook"),
@@ -300,15 +338,15 @@ resource "terraform_data" "flag" {
 			Config:      webhookHeadersConfig(imported.Name, `headers = { X-Managed = { secret = true }, X-Secret = { secret = true } }`),
 			ExpectError: regexp.MustCompile("Contentful returned different webhook headers"),
 		},
-		{Config: strings.Replace(explicit.Config, `space_id = "space"`, `space_id = "another-space"`, 1), PlanOnly: true, ExpectError: regexp.MustCompile("Missing initial webhook header value")},
+		{Config: strings.Replace(withoutValue.Config, `space_id = "space"`, `space_id = "another-space"`, 1), PlanOnly: true, ExpectError: regexp.MustCompile("Missing initial webhook header value")},
 		{Config: unknownSecret, Taint: []string{address}, PlanOnly: true, ExpectError: regexp.MustCompile("Missing initial webhook header value")},
 	}})
-	recorder.requirePut(t, 3, "3", imported.Name, []map[string]any{{"key": "x-secret", "secret": true}})
-	recorder.requirePut(t, 4, "3", imported.Name, []map[string]any{
+	recorder.requirePut(t, 5, "5", imported.Name, []map[string]any{{"key": "x-secret", "secret": true}})
+	recorder.requirePut(t, 6, "5", imported.Name, []map[string]any{
 		{"key": "X-Managed", "secret": true}, {"key": "X-Secret", "secret": true},
 	})
-	require.Len(t, recorder.writes, 5)
-	require.Equal(t, http.MethodDelete, recorder.writes[4].method)
+	require.Len(t, recorder.writes, 7)
+	require.Equal(t, http.MethodDelete, recorder.writes[6].method)
 }
 
 func TestAccWebhookResourceCreateWithNullHeaderValue(t *testing.T) {
