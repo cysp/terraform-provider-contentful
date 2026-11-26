@@ -69,7 +69,7 @@ require (
 	github.com/hashicorp/terraform-registry-address v0.5.1 // indirect
 	github.com/hashicorp/terraform-svchost v0.2.1 // indirect
 	github.com/hashicorp/yamux v0.1.2 // indirect
-	github.com/huandu/xstrings v1.6.5 // indirect
+	github.com/huandu/xstrings v1.6.6 // indirect
 	github.com/jhump/protoreflect v1.19.0 // indirect
 	github.com/jhump/protoreflect/v2 v2.0.1 // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
