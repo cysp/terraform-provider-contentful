@@ -191,14 +191,23 @@ topics-validation tests.
 
 ### Webhook Basic password
 
-**Evidence:** Contentful's [Webhook configuration
-documentation](https://www.contentful.com/developers/docs/extensibility/webhooks/configure-webhook/#http-basic-authentication)
-defines paired username/password writes and paired-null removal. Sanitized direct
-Create, Update, and GET observations established that CMA accepts the password but omits
-`httpBasicPassword` from every response while retaining `httpBasicUsername`.
+**Evidence:** The [raw CMA observations](../research/webhooks.md#basic-authentication-field-presence-and-version-changes)
+cover field presence, validation errors, response redaction, and version controls
+on POST and PUT.
 
-**Default fake behavior:** The fake stores the submitted password so later request
-behavior remains testable, but omits it from Create, Update, and GET responses.
+**Default fake behavior:** An omitted Basic field retains its stored value on
+update. Both fields default to null on creation. A nonempty string requires a
+nonempty counterpart in the same request. Paired nulls clear both fields. When a
+PUT sets one field to null and omits the other, the fixture rejects the request
+if the field being cleared holds a nonempty string. Invalid pairs return a
+field-specific 422 before the fixture applies any changes. On update, this
+preserves the entire definition and its version. Successful writes and GET
+include the username (possibly null or empty) and omit the password.
+
+The fixture stores the submitted password to model subsequent writes and version
+comparisons. The probes establish the redacted configuration and version. Error
+precedence for a request that also violates a different constraint is a fixture
+convention.
 
 **Provider boundary:** The provider restores planned or prior state only when the
 response property is absent; explicit JSON null remains distinct.

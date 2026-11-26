@@ -150,28 +150,7 @@ func TestWebhookDefinitionHTTPVersions(t *testing.T) {
 	request := func(method, path, version string, body map[string]any, status int) map[string]any {
 		t.Helper()
 
-		var payload io.Reader
-		if body != nil {
-			payload = strings.NewReader(testJSON(body))
-		}
-
-		req := httptest.NewRequestWithContext(t.Context(), method, path, payload)
-		req.Header.Set("Authorization", "Bearer "+cmt.ValidAccessToken)
-		req.Header.Set("Content-Type", "application/vnd.contentful.management.v1+json")
-
-		if version != "" {
-			req.Header.Set("X-Contentful-Version", version)
-		}
-
-		resp := httptest.NewRecorder()
-		server.ServeHTTP(resp, req)
-		require.Equal(t, status, resp.Code, resp.Body.String())
-
-		var result map[string]any
-
-		decoder := json.NewDecoder(resp.Body)
-		decoder.UseNumber()
-		require.NoError(t, decoder.Decode(&result))
+		result := webhookHTTP(t, server, method, path, version, body, status)
 		sys, ok := result["sys"].(map[string]any)
 		require.True(t, ok)
 
@@ -275,4 +254,27 @@ func TestWebhookDefinitionRejectsMissingValueForNewSecretHeader(t *testing.T) {
 		require.True(t, ok)
 		require.Equal(t, before, after)
 	}
+}
+
+func webhookHTTP(t *testing.T, server *cmt.Server, method, path, version string, body map[string]any, status int) map[string]any {
+	t.Helper()
+
+	var payload io.Reader
+	if body != nil {
+		payload = strings.NewReader(testJSON(body))
+	}
+
+	req := httptest.NewRequestWithContext(t.Context(), method, path, payload)
+	req.Header.Set("Authorization", "Bearer "+cmt.ValidAccessToken)
+	req.Header.Set("Content-Type", "application/vnd.contentful.management.v1+json")
+
+	if version != "" {
+		req.Header.Set("X-Contentful-Version", version)
+	}
+
+	resp := httptest.NewRecorder()
+	server.ServeHTTP(resp, req)
+	require.Equal(t, status, resp.Code)
+
+	return testJSONObject(resp.Body.String())
 }
