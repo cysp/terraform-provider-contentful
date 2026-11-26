@@ -1,6 +1,7 @@
 package cmtesting
 
 import (
+	"fmt"
 	"reflect"
 	"slices"
 
@@ -10,7 +11,9 @@ import (
 
 func NewWebhookDefinitionFromFields(spaceID, webhookDefinitionID string, webhookDefinitionFields cm.WebhookDefinitionData) cm.WebhookDefinition {
 	webhookDefinition := cm.WebhookDefinition{
-		Sys: cm.NewWebhookDefinitionSys(spaceID, webhookDefinitionID),
+		Sys:               cm.NewWebhookDefinitionSys(spaceID, webhookDefinitionID),
+		HttpBasicUsername: cm.NewOptNilStringNull(),
+		HttpBasicPassword: cm.NewOptNilStringNull(),
 	}
 
 	setWebhookDefinitionFields(&webhookDefinition, webhookDefinitionFields)
@@ -19,6 +22,10 @@ func NewWebhookDefinitionFromFields(spaceID, webhookDefinitionID string, webhook
 }
 
 func UpdateWebhookDefinitionFromFields(webhook *cm.WebhookDefinition, fields cm.WebhookDefinitionData) *cm.ErrorStatusCode {
+	if err := validateWebhookBasicAuth(webhook, &fields); err != nil {
+		return err
+	}
+
 	updated := *webhook
 	setWebhookDefinitionFields(&updated, fields)
 
@@ -45,6 +52,31 @@ func UpdateWebhookDefinitionFromFields(webhook *cm.WebhookDefinition, fields cm.
 	return nil
 }
 
+func validateWebhookBasicAuth(stored *cm.WebhookDefinition, fields *cm.WebhookDefinitionData) *cm.ErrorStatusCode {
+	username, password := fields.HttpBasicUsername, fields.HttpBasicPassword
+
+	const loneNull = "HTTP Basic Auth username and password must both be provided when setting to null"
+
+	var field, detail string
+
+	switch {
+	case username.Or("") != "" && password.Or("") == "":
+		field, detail = "httpBasicPassword", "HTTP Basic Auth password is required when username is provided"
+	case password.Or("") != "" && username.Or("") == "":
+		field, detail = "httpBasicUsername", "HTTP Basic Auth username is required when password is provided"
+	case stored != nil && username.IsNull() && password.IsEmpty() && stored.HttpBasicUsername.Or("") != "":
+		field, detail = "httpBasicPassword", loneNull
+	case stored != nil && password.IsNull() && username.IsEmpty() && stored.HttpBasicPassword.Or("") != "":
+		field, detail = "httpBasicUsername", loneNull
+	default:
+		return nil
+	}
+
+	details := fmt.Appendf(nil, `{"errors":[{"name":%q,"path":[],"details":%q}]}`, field, detail)
+
+	return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), details)
+}
+
 func missingWebhookHeaderValueError(key string) *cm.ErrorStatusCode {
 	var details jx.Encoder
 	details.ObjStart()
@@ -57,9 +89,15 @@ func missingWebhookHeaderValueError(key string) *cm.ErrorStatusCode {
 
 func setWebhookDefinitionFields(webhookDefinition *cm.WebhookDefinition, webhookDefinitionFields cm.WebhookDefinitionData) {
 	webhookDefinition.Name = webhookDefinitionFields.Name
+
 	webhookDefinition.URL = webhookDefinitionFields.URL
-	webhookDefinition.HttpBasicUsername = webhookDefinitionFields.HttpBasicUsername
-	webhookDefinition.HttpBasicPassword = webhookDefinitionFields.HttpBasicPassword
+	if webhookDefinitionFields.HttpBasicUsername.IsSet() {
+		webhookDefinition.HttpBasicUsername = webhookDefinitionFields.HttpBasicUsername
+	}
+
+	if webhookDefinitionFields.HttpBasicPassword.IsSet() {
+		webhookDefinition.HttpBasicPassword = webhookDefinitionFields.HttpBasicPassword
+	}
 
 	webhookDefinition.Headers = append(cm.WebhookDefinitionHeaders{}, webhookDefinitionFields.Headers...)
 	webhookDefinition.Topics = webhookDefinitionFields.Topics

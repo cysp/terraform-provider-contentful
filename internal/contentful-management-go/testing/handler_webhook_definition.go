@@ -22,7 +22,7 @@ func (ts *Handler) CreateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
-	validationResponse, err := validateWebhookCreationHeaders(http.MethodPost, req.Headers)
+	validationResponse, err := validateWebhookCreation(http.MethodPost, req)
 	if err != nil || validationResponse != nil {
 		return validationResponse, err
 	}
@@ -67,7 +67,7 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 
 	webhookDefinition := ts.webhookDefinitions.Get(params.SpaceID, params.WebhookDefinitionID)
 	if webhookDefinition == nil {
-		validationResponse, err := validateWebhookCreationHeaders(http.MethodPut, req.Headers)
+		validationResponse, err := validateWebhookCreation(http.MethodPut, req)
 		if err != nil || validationResponse != nil {
 			return validationResponse, err
 		}
@@ -98,13 +98,17 @@ func (ts *Handler) UpdateWebhookDefinition(_ context.Context, req *cm.WebhookDef
 	}), nil
 }
 
-func validateWebhookCreationHeaders(method string, headers cm.WebhookDefinitionHeaders) (*cm.ErrorStatusCode, error) {
+func validateWebhookCreation(method string, fields *cm.WebhookDefinitionData) (*cm.ErrorStatusCode, error) {
+	if err := validateWebhookBasicAuth(nil, fields); err != nil {
+		return err, nil
+	}
+
 	var (
 		failures     []map[string]any
 		missingValue bool
 	)
 
-	for index, header := range headers {
+	for index, header := range fields.Headers {
 		if header.Value.IsSet() {
 			continue
 		}

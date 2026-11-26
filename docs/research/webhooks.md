@@ -127,6 +127,33 @@ Omission is a read limitation: it cannot reconstruct the submitted password or p
 that a stored password still equals a previous value. Explicit response null and an
 absent property must not be assumed equivalent without evidence.
 
+## Basic authentication field presence and version changes
+
+On 2026-11-26 (UTC), raw JSON requests exercised inactive disposable Webhooks.
+Every PUT to an existing ID used its current version. Every successful POST or PUT
+returned 200 and was followed by GET. Both responses omitted
+`httpBasicPassword` and agreed on the username, name, and version.
+
+| Operation | Observed result |
+| --- | --- |
+| POST with a nonempty pair, then rename with both fields omitted | POST returned the username at version 0. PUT retained it at version 1. Resending the original pair with the new name kept version 1. Resending both fields with the same username and a different password advanced the version to 2. |
+| PUT a nonempty username with the password omitted, null, or empty, or the reverse | 422 `ValidationFailed`. The message was `Validation error` and `details.errors` contained one entry with an empty `path`, the required field as its `name`, and a detail saying why it was required. GET returned the previous username and version. When the rejected PUT also attempted a rename, GET returned the original name. |
+| PUT one null and omit the other field on a nonempty pair | 422 with the omitted field as the error name and detail `HTTP Basic Auth username and password must both be provided when setting to null`. GET retained the version and username. |
+| PUT paired nulls on a nonempty pair | The version advanced once and both PUT and GET included an explicit null username. Subsequent lone-null writes on a cleared pair preserved the version. |
+| Collection POST or specified-ID PUT to an unused ID | A lone nonempty string in either direction returned the same field-specific 422. GET on each rejected specified ID returned 404. Omitting both, supplying only a null password, or sending paired nulls created a definition at version 0 with an explicit null username. |
+
+Empty strings also differed from null. Starting with a nonempty pair, a lone
+empty password advanced the version and retained the username. A lone empty
+username advanced the version and returned an empty username. After either
+write, setting the **empty** field alone to null succeeded and advanced the
+version. Setting the **nonempty** field alone to null returned 422. Two empty
+strings were accepted. A null and an empty string were accepted together in
+both directions.
+
+The version comparison supports the inference that omitting both fields retained
+the password. The probes triggered no deliveries, and the redacted responses
+cannot establish which password a delivery would use.
+
 ## Existing-configuration read observations
 
 Observed: 2026-09-09 (UTC), passive collection reads and two definition-detail
