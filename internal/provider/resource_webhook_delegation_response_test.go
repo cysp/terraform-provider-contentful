@@ -95,7 +95,7 @@ func TestAccWebhookResourceDelegatedPasswordAfterDeletion(t *testing.T) {
 		state := reply.model(t)
 		require.Equal(t, types.Int64Value(0), state.Version)
 		require.True(t, state.HTTPBasicUsername.IsNull())
-		require.Nil(t, reply.verifiers(t).Basic)
+		require.Empty(t, reply.verifiers(t))
 	}
 	testObservedWebhookResource(t, fixture, &observed, []resource.TestStep{importedWebhookRecoveryStep(t, fixture), update, cleanup})
 }

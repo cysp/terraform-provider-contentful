@@ -232,6 +232,8 @@ and null username. The conditional header did not prevent recreation.
 
 A disposable inactive Webhook returned the same `sys.createdAt` on GET and on a successful update to version 1. After deletion and creation at the same ID, the version-0 Webhook returned a different creation time. The final DELETE returned 204 and GET returned 404. These observations establish a way to distinguish those two lifetimes. They do not establish that creation times are unique.
 
+A 2026-11-27 Terraform 1.17.2 saved-plan probe recreated an inactive version-0 Webhook at the same ID and version with an already-readable header. The two creation times differed. A version-0 PUT retaining the exact key without a value returned 200 at version 1 with the replacement's readable marker and original false flag. A separate saved deletion at version 1 ran after another recreation at version 2. The unversioned DELETE returned 204 and GET returned 404. Neither operation triggered delivery.
+
 ## Header names, order, and secret updates
 
 On 2026-11-21 (UTC), disposable inactive webhook definitions were created by POST
