@@ -244,20 +244,26 @@ func validatePlannedWebhookUpdateCredentials(ctx context.Context, private Privat
 	diags.Append(validatePreliminaryWebhookBasicPair(plan, state, config, password, passwordPath, usernameChanged)...)
 
 	lengthDiags := validateWebhookPasswordLength(password, passwordPath)
-	if len(lengthDiags) == 0 {
-		return diags
-	}
+	retainedUsernameTooLong := !usernameChanged && cm.WebhookBasicUsernameTooLong(plan.HTTPBasicUsername.ValueString()) && knownWebhookPassword(password)
 
 	// In the preliminary update plan, even Config can contain an ignored
 	// ordinary value that Core will discard when planning a replacement.
 	if knownWebhookPassword(plan.HTTPBasicPassword) &&
 		(password.Equal(state.HTTPBasicPassword) || !password.Equal(config.HTTPBasicPassword)) {
+		lengthDiags = nil
+	}
+
+	if len(lengthDiags) == 0 && !retainedUsernameTooLong {
 		return diags
 	}
 
 	if usernameChanged || (fullyKnown && webhookSettingsRequirePUT(plan, state)) ||
-		oversizedWebhookPasswordNeedsWrite(ctx, private, state, plan, config, password, fullyKnown) {
+		webhookPasswordNeedsWrite(ctx, private, state, plan, config, password, fullyKnown) {
 		diags.Append(lengthDiags...)
+
+		if retainedUsernameTooLong {
+			diags.AddWarning("Basic username too long for an in-place webhook update", "Terraform’s normalized username exceeds Contentful’s 50 UTF-16 code unit limit. An in-place update that sends a password will fail before writing the webhook. Other resources may change first. Supply a shorter username and its password, or delegate the existing pair. Terraform checks the configured pair separately for a replacement.")
+		}
 	}
 
 	return diags
@@ -288,9 +294,9 @@ func validatePreliminaryWebhookBasicPair(plan, state, config WebhookModel, passw
 }
 
 // Both password forms can match the last acknowledged value and change only
-// Terraform storage. Compare only oversized candidates here so ordinary plans
+// Terraform storage. Compare only credentials affected by a length limit here so ordinary plans
 // keep their existing verifier cost and replacement can recover corrupt state.
-func oversizedWebhookPasswordNeedsWrite(ctx context.Context, private PrivateProviderData, state, plan, config WebhookModel, password types.String, fullyKnown bool) bool {
+func webhookPasswordNeedsWrite(ctx context.Context, private PrivateProviderData, state, plan, config WebhookModel, password types.String, fullyKnown bool) bool {
 	store, diags := readWebhookVerifiers(ctx, private, state)
 	if diags.HasError() {
 		return false

@@ -54,7 +54,7 @@ func webhookReadRedaction(state WebhookModel) webhookRedaction {
 // absent from the effective plan, even when this PUT only delegates the path.
 func (mask webhookRedaction) guardMutationResponse(state, plan WebhookModel) webhookRedaction {
 	guard := webhookReadRedaction(state)
-	guard.password = (guard.password && plan.HTTPBasicPassword.IsNull()) || mask.password
+	guard.password = mask.password || (plan.HTTPBasicPassword.IsNull() && (guard.password || !plan.HTTPBasicUsername.IsNull()))
 
 	for key := range guard.headers {
 		if !plan.Headers.Elements()[key].Value().Value.IsNull() {
@@ -244,11 +244,11 @@ func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData,
 // An inconsistent response can still identify a newly created webhook. Keep
 // its ordinary recovery state and endpoint version while retaining only
 // previously acknowledged credentials and verifiers.
-func publishWebhookResponse(ctx context.Context, private PrivateProviderData, priorVerifiers webhookVerifiers, change writeOnlySecretVerifierChange, identity *tfsdk.ResourceIdentity, target *tfsdk.State, response cm.WebhookDefinition, state, plan WebhookModel, mask webhookRedaction) diag.Diagnostics {
+func publishWebhookResponse(ctx context.Context, private PrivateProviderData, priorVerifiers webhookVerifiers, change writeOnlySecretVerifierChange, identity *tfsdk.ResourceIdentity, target *tfsdk.State, response cm.WebhookDefinition, state, plan WebhookModel, mask webhookRedaction, sentPassword bool) diag.Diagnostics {
 	guard := mask.guardMutationResponse(state, plan)
 	sanitized, secretDiags := guard.redact(response, plan)
 
-	if mask.password && plan.HTTPBasicPassword.IsNull() && !plan.HTTPBasicUsername.IsNull() && response.HttpBasicPassword.IsNull() {
+	if sentPassword && plan.HTTPBasicPassword.IsNull() && response.HttpBasicPassword.IsNull() {
 		secretDiags.AddAttributeError(path.Root("http_basic_password"), "Unconfirmed webhook Basic password", "Contentful returned an explicit null password for the configured Basic credentials.")
 	}
 

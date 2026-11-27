@@ -68,7 +68,7 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"filters": WebhookFiltersSchema(ctx, true),
 			"http_basic_password": schema.StringAttribute{
-				MarkdownDescription: "HTTP Basic authentication password. Requires a username in the effective plan. When Contentful omits the password, refresh retains the previously managed value for the same username. If the response omits both fields, refresh retains the prior username and password. Import leaves an omitted password null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.",
+				MarkdownDescription: "HTTP Basic authentication password. Requires a username in the effective plan. Import leaves an omitted password null. See [Secrets and Terraform state](../guides/secrets-and-state#webhook-credentials-and-secret-headers) for delegation, refresh and recovery.",
 				Optional:            true,
 				Sensitive:           true,
 			},
@@ -79,7 +79,7 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				WriteOnly:           true,
 			},
 			"http_basic_username": schema.StringAttribute{
-				Description: "HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.",
+				Description: "HTTP Basic authentication username. Supply a password when setting a new username. Retain the same username with both password arguments omitted to preserve an existing password. Removing all Basic credentials from the effective plan clears authentication.",
 				Optional:    true,
 			},
 			"headers":        WebhookHeadersSchema(ctx),

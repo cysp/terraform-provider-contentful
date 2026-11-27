@@ -17,48 +17,67 @@ import (
 
 func TestAccWebhookResourceWriteOnlyLostUpdate(t *testing.T) {
 	t.Parallel()
+	fixture := newSeededWebhookFixture(t)
 
-	runtime, fixture, first := importWebhookRecoveryFixture(t)
-	prior := readWebhookRecoveryInstance(t, runtime).verifiers
-	// The fixture commits the request before returning an inconclusive 503.
-	fixture.onNextResponse(http.MethodPut, func(w http.ResponseWriter, _ *httptest.ResponseRecorder) {
-		http.Error(w, "fixture discarded acknowledged response", http.StatusServiceUnavailable)
+	var observed webhookProtocolObservations
+
+	hcl := webhookRecoveryConfig(true, "")
+	first := webhookExpectedRecoveryPut("0", webhookPriorPassword, webhookPriorHeader, true)
+	attempted := webhookExpectedRecoveryPut("1", webhookRotatedPassword, webhookRotatedHeader, true)
+
+	var prior webhookPrivateVerifiers
+
+	rotate := webhookRecoveryStep(hcl, webhookRotatedPassword, webhookRotatedHeader)
+	rotate.PreConfig = func() {
+		prior = observed.lastApply().verifiers(t)
+		require.NotNil(t, prior.Basic)
+		require.NotEmpty(t, prior.Headers)
+		// The fixture commits the request before returning an ambiguous response.
+		fixture.onNextResponse(http.MethodPut, func(w http.ResponseWriter, _ *httptest.ResponseRecorder) {
+			http.Error(w, "fixture discarded acknowledged response", http.StatusServiceUnavailable)
+		})
+	}
+	rotate.ExpectError = regexp.MustCompile("Failed to update webhook")
+
+	reverted := webhookRecoveryStep(hcl, webhookPriorPassword, webhookPriorHeader)
+	reverted.PlanOnly = true
+	reverted.PreConfig = func() {
+		require.Equal(t, prior, observed.lastApply().verifiers(t))
+		fixture.requirePuts(t, first, attempted)
+		fixture.requireStored(t, webhookRotatedPassword, webhookRotatedHeader, true)
+	}
+
+	// Reconcile the header while the password remains externally owned.
+	delegated := webhookExpectedRecoveryPut("2", "", webhookRotatedHeader, true)
+	delegated.body = mutateTestJSON(delegated.body, func(doc map[string]any) {
+		delete(doc, "httpBasicUsername")
+		delete(doc, "httpBasicPassword")
 	})
+	header := webhookRecoveryStep(strings.Replace(hcl, "http_basic_password_wo = var.password", "", 1), webhookPriorPassword, webhookRotatedHeader)
+	header.PostApplyFunc = func() {
+		fixture.requirePuts(t, first, attempted, delegated)
+		require.Equal(t, prior.Basic, observed.lastApply().verifiers(t).Basic)
+		fixture.requireStored(t, webhookRotatedPassword, webhookRotatedHeader, true)
+	}
 
-	output, err := runWebhookRecoveryCLI(t, runtime, webhookRotatedPassword, webhookRotatedHeader, "apply", "-auto-approve")
-	require.Error(t, err, output)
-	require.Contains(t, output, "Failed to update webhook")
+	priorPassword := webhookRecoveryStep(hcl, webhookPriorPassword, webhookRotatedHeader)
+	priorPassword.PlanOnly = true
+	acknowledged := webhookExpectedRecoveryPut("2", webhookRotatedPassword, "", true)
+	confirm := webhookRecoveryStep(hcl, webhookRotatedPassword, webhookRotatedHeader)
+	confirm.PostApplyFunc = func() {
+		fixture.requirePuts(t, first, attempted, delegated, acknowledged)
+		require.NotEqual(t, prior, observed.lastApply().verifiers(t))
+		fixture.requireStored(t, webhookRotatedPassword, webhookRotatedHeader, true)
+	}
 
-	second := webhookExpectedRecoveryPut("1", webhookRotatedPassword, webhookRotatedHeader, true)
-	fixture.requirePuts(t, first, second)
-	fixture.requireStored(t, webhookRotatedPassword, webhookRotatedHeader, true)
-	require.Equal(t, prior, readWebhookRecoveryInstance(t, runtime).verifiers)
-
-	output, err = runWebhookRecoveryCLI(t, runtime, webhookPriorPassword, webhookPriorHeader, "plan", "-detailed-exitcode")
-	require.NoError(t, err, output)
-	fixture.requirePuts(t, first, second)
-	fixture.requireStored(t, webhookRotatedPassword, webhookRotatedHeader, true)
-
-	// Recovery of the header still needs a complete Basic pair on the full PUT.
-	runtime.writeConfig(t, strings.Replace(webhookRecoveryConfig(true, ""), "http_basic_password_wo = var.password", "", 1))
-	output, err = runWebhookRecoveryCLI(t, runtime, webhookPriorPassword, webhookRotatedHeader, "apply", "-auto-approve")
-	require.Error(t, err, output)
-	require.Contains(t, output, "Missing webhook Basic password")
-	fixture.requirePuts(t, first, second)
-	require.Equal(t, prior, readWebhookRecoveryInstance(t, runtime).verifiers)
-	runtime.writeConfig(t, webhookRecoveryConfig(true, ""))
-
-	output, err = runWebhookRecoveryCLI(t, runtime, webhookRotatedPassword, webhookRotatedHeader, "apply", "-auto-approve")
-	require.NoError(t, err, output)
-
-	third := webhookExpectedRecoveryPut("2", webhookRotatedPassword, webhookRotatedHeader, true)
-	fixture.requirePuts(t, first, second, third)
-	require.NotEqual(t, prior, readWebhookRecoveryInstance(t, runtime).verifiers)
-	runtime.writeConfig(t, webhookRecoveryConfig(false, ""))
-	output, err = runWebhookRecoveryCLI(t, runtime, webhookRotatedPassword, webhookRotatedHeader, "apply", "-auto-approve")
-	require.NoError(t, err, output)
-	fixture.requirePuts(t, first, second, third, webhookExpectedRecoveryPut("2", webhookRotatedPassword, "", false))
-	fixture.requireStored(t, webhookRotatedPassword, webhookRotatedHeader, false)
+	removeSibling := webhookRecoveryStep(webhookRecoveryConfig(false, ""), webhookRotatedPassword, webhookRotatedHeader)
+	removeSibling.PostApplyFunc = func() {
+		fixture.requirePuts(t, first, attempted, delegated, acknowledged, webhookExpectedRecoveryPut("2", webhookRotatedPassword, "", false))
+		fixture.requireStored(t, webhookRotatedPassword, webhookRotatedHeader, false)
+	}
+	testObservedWebhookResource(t, fixture, &observed, []resource.TestStep{
+		importedWebhookRecoveryStep(t, fixture), rotate, reverted, header, priorPassword, confirm, removeSibling,
+	})
 }
 
 func TestAccWebhookResourceWriteOnlyCreateRecovery(t *testing.T) {

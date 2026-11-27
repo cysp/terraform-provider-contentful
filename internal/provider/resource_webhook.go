@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"golang.org/x/text/unicode/norm"
 )
 
 var (
@@ -126,7 +127,8 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, webhookVerifiers{}, change, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, mask)...)
+	_, sentPassword := request.HttpBasicPassword.Get()
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, webhookVerifiers{}, change, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, mask, sentPassword)...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -288,7 +290,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, path.Empty())
+	request, requestDiags := requestModel.toWebhookDefinitionData(ctx, path.Empty(), state.HTTPBasicUsername)
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -314,7 +316,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	definition, ok := response.(*cm.WebhookDefinitionStatusCode)
 	if err != nil || !ok {
-		resp.Diagnostics.AddError("Failed to update webhook", webhookMutationErrorDetail(response, err, mask.any() || webhookReadRedaction(state).any()))
+		resp.Diagnostics.AddError("Failed to update webhook", webhookMutationErrorDetail(response, err, request.HttpBasicUsername.IsEmpty() || mask.any() || webhookReadRedaction(state).any()))
 
 		return
 	}
@@ -328,7 +330,30 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, priorVerifiers, change, resp.Identity, &resp.State, definition.Response, state, plan, mask)...)
+	responsePlan := plan
+
+	responsePlan.HTTPBasicUsername = expectedWebhookResponseUsername(plan.HTTPBasicUsername, request.HttpBasicUsername, definition.Response.HttpBasicUsername)
+	if preparedVerifiers.discardMismatchedBasicVerifier(responsePlan.HTTPBasicUsername) {
+		change, encodeDiags = preparedVerifiers.encode()
+		resp.Diagnostics.Append(encodeDiags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	_, sentPassword := request.HttpBasicPassword.Get()
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, priorVerifiers, change, resp.Identity, &resp.State, definition.Response, state, responsePlan, mask, sentPassword)...)
+}
+
+// Core stores strings in NFC. A delegated PUT sent no username, so its
+// response may use the original spelling. Verifiers still bind to that spelling.
+func expectedWebhookResponseUsername(planned types.String, sent, returned cm.OptNilString) types.String {
+	if username, ok := returned.Get(); sent.IsEmpty() && ok && norm.NFC.String(username) == planned.ValueString() {
+		return types.StringValue(username)
+	}
+
+	return planned
 }
 
 // A saved plan can pin sys.version before an ephemeral credential first

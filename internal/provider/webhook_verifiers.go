@@ -22,6 +22,17 @@ type webhookVerifiers struct {
 	changed bool
 }
 
+func (v *webhookVerifiers) discardMismatchedBasicVerifier(username types.String) bool {
+	if v.Basic == nil || username.Equal(types.StringValue(v.Basic.Username)) {
+		return false
+	}
+
+	v.Basic = nil
+	v.changed = true
+
+	return true
+}
+
 // A returned header list can rule out an old verifier even when recovery
 // keeps the planned descriptor to guard the next Read.
 func (v *webhookVerifiers) discardAbsentHeaders(returned TypedMap[TypedObject[WebhookHeaderValue]]) {
@@ -34,10 +45,11 @@ func (v *webhookVerifiers) discardAbsentHeaders(returned TypedMap[TypedObject[We
 }
 
 func (v *webhookVerifiers) retain(mask webhookRedaction, username types.String) {
-	if v.Basic != nil && (!mask.password || !username.Equal(types.StringValue(v.Basic.Username))) {
-		v.Basic = nil
-		v.changed = true
+	if !mask.password {
+		username = types.StringNull()
 	}
+
+	v.discardMismatchedBasicVerifier(username)
 
 	for name := range v.Headers {
 		if !mask.headers[name] {

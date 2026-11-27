@@ -109,13 +109,11 @@ func webhookSettingsRequirePUT(plan, state WebhookModel) bool {
 }
 
 func prepareWebhookPassword(ctx context.Context, state, plan, config WebhookModel, store *webhookVerifiers) (bool, diag.Diagnostics) {
-	if state.HTTPBasicPassword.IsNull() && plan.HTTPBasicPassword.IsNull() && config.HTTPBasicPasswordWO.IsNull() && !plan.HTTPBasicUsername.IsNull() {
-		// A local update can retain an unreadable password. Request conversion
-		// will require the password if another field needs a full PUT.
+	sameUser := !state.HTTPBasicUsername.IsNull() && state.HTTPBasicUsername.Equal(plan.HTTPBasicUsername)
+	if sameUser && plan.HTTPBasicPassword.IsNull() && config.HTTPBasicPasswordWO.IsNull() {
 		return true, nil
 	}
 
-	sameUser := !state.HTTPBasicUsername.IsNull() && state.HTTPBasicUsername.Equal(plan.HTTPBasicUsername)
 	prior := store.passwordHash()
 
 	next, matches, diags := prepareWebhookCredential(ctx, prior, rootWriteOnlySecretPath(webhookPasswordWO),

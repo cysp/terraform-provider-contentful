@@ -3,9 +3,11 @@ package provider_test
 import (
 	"net/http"
 	"regexp"
+	"strings"
 	"sync/atomic"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -73,4 +75,41 @@ resource "terraform_data" "pending" { input = "resolved-at-apply" }
 			require.False(t, warned.Load(), "an unresolved counterpart can still form a valid pair")
 		})
 	}
+}
+
+func TestAccWebhookResourceImportedUsernameExceedsLimitAfterNormalization(t *testing.T) {
+	t.Parallel()
+	server, recorder, adapter := newWebhookBasicTestServer(t)
+	server.SetWebhookDefinition("space", "existing", cm.WebhookDefinitionData{
+		Name: "Imported", URL: "https://example.com/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
+		HttpBasicUsername: cm.NewOptNilString(strings.Repeat("1", 49) + "\u0344"), HttpBasicPassword: cm.NewOptNilString("initial"),
+	})
+
+	const lifecycle = `lifecycle {
+ ignore_changes = [http_basic_username]
+ replace_triggered_by = [terraform_data.trigger]
+}`
+
+	delegated := webhookBasicAuthConfig("Imported", `"new-user"`, "null", lifecycle) + webhookTriggerBefore
+	rotation := webhookBasicAuthConfig("Imported", `"new-user"`, "null", lifecycle+`
+ http_basic_password_wo = "rotated"
+ depends_on = [terraform_data.prerequisite]
+`) + `resource "terraform_data" "prerequisite" { input = "applied" }
+`
+
+	var warned atomic.Bool
+	testWebhookPlanWarning(t, adapter, "Basic username too long for an in-place webhook update", &warned, []resource.TestStep{
+		importExistingBasicWebhook(delegated),
+		{Config: delegated},
+		{Config: rotation + webhookTriggerBefore, PlanOnly: true, ExpectNonEmptyPlan: true, PreConfig: func() { require.False(t, warned.Load()) }},
+		{Config: rotation + webhookTriggerBefore, ExpectError: regexp.MustCompile("(?s)Error running apply:.*Webhook Basic credential too long"), PreConfig: func() { require.True(t, warned.Load()) }},
+		{Config: rotation + webhookTriggerAfter, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction("terraform_data.prerequisite", plancheck.ResourceActionNoop),
+			plancheck.ExpectResourceAction(webhookBasicAddress, plancheck.ResourceActionDestroyBeforeCreate),
+		}}},
+	})
+	require.Empty(t, recorder.matchingRequests(http.MethodPut, ""))
+	posts := recorder.matchingRequests(http.MethodPost, "")
+	require.Len(t, posts, 1)
+	require.Equal(t, "new-user", testJSONObject(string(posts[0].body))["httpBasicUsername"])
 }

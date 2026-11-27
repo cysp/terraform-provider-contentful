@@ -154,7 +154,7 @@ The version comparison supports the inference that omitting both fields retained
 the password. The probes triggered no deliveries, and the redacted responses
 cannot establish which password a delivery would use.
 
-### Credential limits
+### Credential limits and receiver changes
 
 Follow-up probes on two disposable inactive Webhooks tested the documented
 50-character username and 255-character password limits. A specified-ID PUT
@@ -172,6 +172,30 @@ boundary pair and returned 422 for each overlong field. The control was deleted
 also produced a missing-counterpart error before its length error. CMA accepted a colon in the
 username, although the [HTTP Basic encoding](https://www.rfc-editor.org/rfc/rfc7617.html#section-2)
 reserves the first colon as the separator.
+
+Changing the URL and name while omitting both Basic fields retained the
+username and advanced the version from 4 to 5. Resending the prior pair kept
+version 5. Changing the password advanced it to 6. On the second Webhook,
+Terraform 1.17.2 renamed the definition with its write-only argument evaluating
+to null after an external password rotation. Resending the external pair left
+version 4 unchanged. Restoring the last acknowledged write-only input produced
+an empty plan. Renaming with that input supplied advanced the version to 5,
+and resending the Terraform pair kept version 5. These controls support
+retention during delegation and a write on the later managed rename. No
+delivery was inspected. Both probe IDs were deleted (204) and GET confirmed
+absence (404).
+
+A raw PUT to a disposable inactive Webhook stored a username ending in U+0065
+U+0301. GET preserved that spelling. Terraform 1.17.2 CLI import stored the
+canonically equivalent U+00E9 in state. A subsequent password-free rename
+changed the name and retained the original username spelling in CMA. With
+the username held constant, resubmitting the original password preserved
+`sys.version`; changing only its spelling from decomposed to composed advanced
+the version once. With the delegated username comparison in place, import and
+rename succeeded, GET returned the original spelling at version 1, and the
+next plan was empty. GET after deletion returned 404. No delivery was inspected.
+
+On 2026-11-27, a specified-ID PUT created an inactive Webhook with a 50-unit username ending in U+0344 after 49 ASCII digits. The NFC spelling required 51 UTF-16 units. Submitting it with a rename returned 422 `ValidationFailed`. GET retained the original spelling, name and version 0.
 
 ## Existing-configuration read observations
 
@@ -196,6 +220,13 @@ the secret advanced the version by one. Missing, stale, and future versions
 returned 409 `Conflict`, including on otherwise identical requests. GET
 confirmed the stored versions. All disposable definitions were deleted (204)
 and their absence confirmed by GET (404).
+
+A follow-up GET on an inactive Webhook returned no `ETag`. A JSON Patch rename
+returned 404 and GET showed the definition still at version 6. A versioned PUT
+with `If-Match: *` renamed the same Webhook at version 7. After DELETE and a
+confirming GET 404, repeating a PUT with `If-Match: *` and the last observed
+version created the ID at version 0 (200). GET confirmed the inactive definition
+and null username. The conditional header did not prevent recreation.
 
 ## Header names, order, and secret updates
 
