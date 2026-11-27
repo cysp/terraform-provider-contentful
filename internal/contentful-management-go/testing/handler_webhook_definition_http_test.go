@@ -9,6 +9,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"testing/synctest"
+	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
@@ -152,6 +154,11 @@ func TestContentfulManagementServerRejectsMissingOrEmptyWebhookTopics(t *testing
 
 func TestWebhookDefinitionHTTPVersions(t *testing.T) {
 	t.Parallel()
+	synctest.Test(t, testWebhookDefinitionHTTPVersions)
+}
+
+func testWebhookDefinitionHTTPVersions(t *testing.T) {
+	t.Helper()
 
 	const collection = "/spaces/space/webhook_definitions"
 
@@ -176,11 +183,17 @@ func TestWebhookDefinitionHTTPVersions(t *testing.T) {
 		id := "webhook" + version
 		sys := request(http.MethodPut, collection+"/"+id, version, body, http.StatusOK)
 		require.Equal(t, id, sys["id"])
+		require.NotEmpty(t, sys["createdAt"])
 		require.Equal(t, json.Number("0"), sys["version"])
 		require.Equal(t, sys, request(http.MethodGet, collection+"/"+id, "", nil, http.StatusOK))
 	}
 
 	created := request(http.MethodPost, collection, "", body, http.StatusOK)
+	stamp, ok := created["createdAt"].(string)
+	require.True(t, ok)
+
+	_, err = time.Parse(time.RFC3339Nano, stamp)
+	require.NoError(t, err)
 	require.Equal(t, json.Number("0"), created["version"])
 	webhookID, ok := created["id"].(string)
 	require.True(t, ok)
@@ -196,6 +209,7 @@ func TestWebhookDefinitionHTTPVersions(t *testing.T) {
 	header["value"] = "rotated"
 	rotated := request(http.MethodPut, path, "0", body, http.StatusOK)
 	require.Equal(t, json.Number("1"), rotated["version"])
+	require.Equal(t, stamp, rotated["createdAt"])
 	require.Equal(t, "Conflict", request(http.MethodPut, path, "0", body, http.StatusConflict)["id"])
 	require.Equal(t, rotated, request(http.MethodGet, path, "", nil, http.StatusOK))
 
@@ -214,6 +228,21 @@ func TestWebhookDefinitionHTTPVersions(t *testing.T) {
 	require.Len(t, stored.Headers, 1)
 	require.Equal(t, cm.NewOptBool(true), stored.Headers[0].Secret)
 	require.Equal(t, cm.NewOptString("rotated"), stored.Headers[0].Value)
+	del := httptest.NewRequestWithContext(t.Context(), http.MethodDelete, path, nil)
+	del.Header.Set("Authorization", "Bearer "+cmt.ValidAccessToken)
+
+	rec := httptest.NewRecorder()
+	server.ServeHTTP(rec, del)
+	require.Equal(t, http.StatusNoContent, rec.Code)
+
+	time.Sleep(time.Millisecond) // Advance the fixture clock between creations.
+
+	header["value"] = "fresh"
+	recreated := request(http.MethodPut, path, "1", body, http.StatusOK)
+	require.Equal(t, json.Number("0"), recreated["version"])
+	require.NotEmpty(t, recreated["createdAt"])
+	require.NotEqual(t, stamp, recreated["createdAt"])
+	require.Equal(t, recreated, request(http.MethodGet, path, "", nil, http.StatusOK))
 }
 
 func TestWebhookDefinitionRejectsMissingValueForNewSecretHeader(t *testing.T) {

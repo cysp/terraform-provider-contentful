@@ -32623,13 +32623,20 @@ func (s *WebhookDefinitionSys) encodeFields(e *jx.Encoder) {
 		e.FieldStart("version")
 		e.Int(s.Version)
 	}
+	{
+		if s.CreatedAt.Set {
+			e.FieldStart("createdAt")
+			s.CreatedAt.Encode(e, json.NewTimeEncoder("2006-01-02T15:04:05.999999999Z07:00"))
+		}
+	}
 }
 
-var jsonFieldsNameOfWebhookDefinitionSys = [4]string{
+var jsonFieldsNameOfWebhookDefinitionSys = [5]string{
 	0: "space",
 	1: "type",
 	2: "id",
 	3: "version",
+	4: "createdAt",
 }
 
 // Decode decodes WebhookDefinitionSys from json.
@@ -32684,6 +32691,16 @@ func (s *WebhookDefinitionSys) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
+			}
+		case "createdAt":
+			if err := func() error {
+				s.CreatedAt.Reset()
+				if err := s.CreatedAt.Decode(d, json.NewTimeDecoder("2006-01-02T15:04:05.999999999Z07:00")); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"createdAt\"")
 			}
 		default:
 			return d.Skip()

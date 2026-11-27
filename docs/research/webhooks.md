@@ -230,6 +230,8 @@ confirming GET 404, repeating a PUT with `If-Match: *` and the last observed
 version created the ID at version 0 (200). GET confirmed the inactive definition
 and null username. The conditional header did not prevent recreation.
 
+A disposable inactive Webhook returned the same `sys.createdAt` on GET and on a successful update to version 1. After deletion and creation at the same ID, the version-0 Webhook returned a different creation time. The final DELETE returned 204 and GET returned 404. These observations establish a way to distinguish those two lifetimes. They do not establish that creation times are unique.
+
 ## Header names, order, and secret updates
 
 On 2026-11-21 (UTC), disposable inactive webhook definitions were created by POST

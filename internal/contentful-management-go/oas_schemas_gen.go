@@ -14898,9 +14898,10 @@ func (*WebhookDefinitionStatusCode) updateWebhookDefinitionRes() {}
 type WebhookDefinitionSys struct {
 	Space SpaceLink `json:"space"`
 	// Merged property.
-	Type    WebhookDefinitionSysType `json:"type"`
-	ID      string                   `json:"id"`
-	Version int                      `json:"version"`
+	Type      WebhookDefinitionSysType `json:"type"`
+	ID        string                   `json:"id"`
+	Version   int                      `json:"version"`
+	CreatedAt OptDateTime              `json:"createdAt"`
 }
 
 // GetSpace returns the value of Space.
@@ -14923,6 +14924,11 @@ func (s *WebhookDefinitionSys) GetVersion() int {
 	return s.Version
 }
 
+// GetCreatedAt returns the value of CreatedAt.
+func (s *WebhookDefinitionSys) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
 // SetSpace sets the value of Space.
 func (s *WebhookDefinitionSys) SetSpace(val SpaceLink) {
 	s.Space = val
@@ -14941,6 +14947,11 @@ func (s *WebhookDefinitionSys) SetID(val string) {
 // SetVersion sets the value of Version.
 func (s *WebhookDefinitionSys) SetVersion(val int) {
 	s.Version = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *WebhookDefinitionSys) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
 }
 
 // Merged schema.
