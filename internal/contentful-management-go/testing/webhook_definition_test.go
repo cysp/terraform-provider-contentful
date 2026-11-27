@@ -17,11 +17,11 @@ func TestWebhookDefinitionActiveDefault(t *testing.T) {
 	require.Equal(t, cm.NewOptBool(true), webhook.Active)
 
 	fields.Active = cm.NewOptBool(false)
-	require.Nil(t, UpdateWebhookDefinitionFromFields(&webhook, fields))
+	require.Nil(t, applyWebhookDefinitionUpdate(&webhook, fields))
 	require.Equal(t, cm.NewOptBool(false), webhook.Active)
 
 	fields.Active.Reset()
-	require.Nil(t, UpdateWebhookDefinitionFromFields(&webhook, fields))
+	require.Nil(t, applyWebhookDefinitionUpdate(&webhook, fields))
 	require.Equal(t, cm.NewOptBool(true), webhook.Active)
 }
 
@@ -33,17 +33,17 @@ func TestWebhookSecretValueIsPreservedAndRedacted(t *testing.T) {
 		URL:               "https://example.com/webhook",
 		HttpBasicUsername: cm.NewOptNilString("user"),
 		HttpBasicPassword: cm.NewOptNilString("basic-password-test-sentinel"),
-		Headers: cm.WebhookDefinitionHeaders{
-			{Key: "Authorization", Value: cm.NewOptString("existing-secret"), Secret: cm.NewOptBool(true)},
+		Headers: cm.WebhookDefinitionRequestHeaders{
+			{Key: "Authorization", Value: cm.NewOptNilString("existing-secret"), Secret: cm.NewOptBool(true)},
 		},
 	})
 
-	require.Nil(t, UpdateWebhookDefinitionFromFields(&webhook, cm.WebhookDefinitionData{
+	require.Nil(t, applyWebhookDefinitionUpdate(&webhook, cm.WebhookDefinitionData{
 		Name:              "Updated webhook",
 		URL:               "https://example.com/webhook",
 		HttpBasicUsername: cm.NewOptNilString("user"),
 		HttpBasicPassword: cm.NewOptNilString("basic-password-test-sentinel"),
-		Headers: cm.WebhookDefinitionHeaders{
+		Headers: cm.WebhookDefinitionRequestHeaders{
 			{Key: "Authorization", Secret: cm.NewOptBool(true)},
 		},
 	}))
@@ -57,4 +57,24 @@ func TestWebhookSecretValueIsPreservedAndRedacted(t *testing.T) {
 	assert.True(t, response.HttpBasicPassword.IsEmpty())
 	assert.Equal(t, cm.NewOptNilString("basic-password-test-sentinel"), webhook.HttpBasicPassword)
 	assert.Equal(t, cm.NewOptString("existing-secret"), webhook.Headers[0].Value)
+}
+
+func TestWebhookUpdateRetainsExistingHeaderFlags(t *testing.T) {
+	t.Parallel()
+
+	ordinary := cm.WebhookDefinitionRequestHeader{Key: "X-Readable", Secret: cm.NewOptBool(false), Value: cm.NewOptNilString("first")}
+	secret := cm.WebhookDefinitionRequestHeader{Key: "X-Secret", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("second")}
+	fields := cm.WebhookDefinitionData{Headers: cm.WebhookDefinitionRequestHeaders{ordinary, secret}}
+	webhook := NewWebhookDefinitionFromFields("space", "webhook", fields)
+
+	fields.Headers = cm.WebhookDefinitionRequestHeaders{
+		{Key: ordinary.Key, Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("new-readable")},
+		{Key: secret.Key, Secret: cm.NewOptBool(false), Value: cm.NewOptNilString("new-secret")},
+	}
+	require.Nil(t, applyWebhookDefinitionUpdate(&webhook, fields))
+	response := redactWebhookDefinitionSecrets(webhook)
+	require.Equal(t, cm.WebhookDefinitionHeaders{
+		{Key: ordinary.Key, Secret: cm.NewOptBool(false), Value: cm.NewOptString("new-readable")},
+		{Key: secret.Key, Secret: cm.NewOptBool(true)},
+	}, response.Headers)
 }

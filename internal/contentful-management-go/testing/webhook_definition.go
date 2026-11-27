@@ -1,9 +1,10 @@
 package cmtesting
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"reflect"
-	"slices"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
@@ -21,27 +22,32 @@ func NewWebhookDefinitionFromFields(spaceID, webhookDefinitionID string, webhook
 	return webhookDefinition
 }
 
-func UpdateWebhookDefinitionFromFields(webhook *cm.WebhookDefinition, fields cm.WebhookDefinitionData) *cm.ErrorStatusCode {
-	if err := validateWebhookBasicAuth(webhook, &fields); err != nil {
-		return err
-	}
-
+// applyWebhookDefinitionUpdate resolves retained values after request validation
+// and the version check. Commit only after every retained name was found.
+func applyWebhookDefinitionUpdate(webhook *cm.WebhookDefinition, fields cm.WebhookDefinitionData) *cm.ErrorStatusCode {
 	updated := *webhook
 	setWebhookDefinitionFields(&updated, fields)
 
+	byName := make(map[string]cm.WebhookDefinitionHeader, len(webhook.Headers))
+	for _, header := range webhook.Headers {
+		byName[header.Key] = header
+	}
+
 	for i, header := range updated.Headers {
-		if header.Value.IsSet() || !header.Secret.Or(false) {
+		stored, exists := byName[header.Key]
+		if header.Value.IsSet() {
+			if exists {
+				updated.Headers[i].Secret = stored.Secret
+			}
+
 			continue
 		}
 
-		index := slices.IndexFunc(webhook.Headers, func(stored cm.WebhookDefinitionHeader) bool {
-			return stored.Key == header.Key
-		})
-		if index < 0 {
+		if !exists {
 			return missingWebhookHeaderValueError(header.Key)
 		}
 
-		updated.Headers[i] = webhook.Headers[index]
+		updated.Headers[i] = stored
 	}
 
 	if !reflect.DeepEqual(*webhook, updated) {
@@ -52,29 +58,85 @@ func UpdateWebhookDefinitionFromFields(webhook *cm.WebhookDefinition, fields cm.
 	return nil
 }
 
-func validateWebhookBasicAuth(stored *cm.WebhookDefinition, fields *cm.WebhookDefinitionData) *cm.ErrorStatusCode {
+type webhookValidationIssue struct {
+	Name    string `json:"name"`
+	Path    []any  `json:"path"`
+	Details string `json:"details"`
+}
+
+// Header shape errors precede definition validation. Both precede a PUT's
+// version check, but retaining an omitted value needs a matching version.
+func validateWebhookDefinition(stored *cm.WebhookDefinition, fields *cm.WebhookDefinitionData) (*cm.ErrorStatusCode, error) {
+	var shape, issues []webhookValidationIssue
+
+	seen := make(map[string]bool, len(fields.Headers))
+	missingValue := false
+
+	for index, header := range fields.Headers {
+		if _, supplied := header.Value.Get(); !supplied {
+			missingValue = true
+
+			if !header.Secret.IsSet() {
+				shape = append(shape, webhookValidationIssue{Name: "invalid_union", Path: []any{"headers", index}, Details: fmt.Sprintf(`Invalid input at "headers.%d"`, index)})
+			}
+		}
+
+		if seen[header.Key] {
+			issues = append(issues, webhookValidationIssue{Name: "headers", Path: []any{"key"}, Details: "Header key " + header.Key + " is duplicated"})
+		}
+
+		seen[header.Key] = true
+	}
+
+	if len(shape) > 0 {
+		issues = shape
+	} else {
+		issues = append(issues, webhookBasicAuthIssues(stored, fields)...)
+	}
+
+	if len(issues) > 0 {
+		return webhookValidationError(issues)
+	}
+
+	if stored == nil && missingValue {
+		return NewContentfulManagementErrorStatusCode(http.StatusInternalServerError, "ServerError", new("Failed to create webhook definition/s"), nil), nil
+	}
+
+	return nil, nil //nolint:nilnil // The definition passed validation.
+}
+
+func webhookValidationError(issues []webhookValidationIssue) (*cm.ErrorStatusCode, error) {
+	details, err := json.Marshal(map[string][]webhookValidationIssue{"errors": issues})
+	if err != nil {
+		return nil, fmt.Errorf("encode webhook validation details: %w", err)
+	}
+
+	return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), details), nil
+}
+
+func webhookBasicAuthIssues(stored *cm.WebhookDefinition, fields *cm.WebhookDefinitionData) []webhookValidationIssue {
 	username, password := fields.HttpBasicUsername, fields.HttpBasicPassword
 
 	const loneNull = "HTTP Basic Auth username and password must both be provided when setting to null"
 
-	var field, detail string
+	var issues []webhookValidationIssue
+
+	addError := func(field, detail string) {
+		issues = append(issues, webhookValidationIssue{Name: field, Path: []any{}, Details: detail})
+	}
 
 	switch {
 	case username.Or("") != "" && password.Or("") == "":
-		field, detail = "httpBasicPassword", "HTTP Basic Auth password is required when username is provided"
+		addError("httpBasicPassword", "HTTP Basic Auth password is required when username is provided")
 	case password.Or("") != "" && username.Or("") == "":
-		field, detail = "httpBasicUsername", "HTTP Basic Auth username is required when password is provided"
+		addError("httpBasicUsername", "HTTP Basic Auth username is required when password is provided")
 	case stored != nil && username.IsNull() && password.IsEmpty() && stored.HttpBasicUsername.Or("") != "":
-		field, detail = "httpBasicPassword", loneNull
+		addError("httpBasicPassword", loneNull)
 	case stored != nil && password.IsNull() && username.IsEmpty() && stored.HttpBasicPassword.Or("") != "":
-		field, detail = "httpBasicUsername", loneNull
-	default:
-		return nil
+		addError("httpBasicUsername", loneNull)
 	}
 
-	details := fmt.Appendf(nil, `{"errors":[{"name":%q,"path":[],"details":%q}]}`, field, detail)
-
-	return NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), details)
+	return issues
 }
 
 func missingWebhookHeaderValueError(key string) *cm.ErrorStatusCode {
@@ -99,13 +161,24 @@ func setWebhookDefinitionFields(webhookDefinition *cm.WebhookDefinition, webhook
 		webhookDefinition.HttpBasicPassword = webhookDefinitionFields.HttpBasicPassword
 	}
 
-	webhookDefinition.Headers = append(cm.WebhookDefinitionHeaders{}, webhookDefinitionFields.Headers...)
+	webhookDefinition.Headers = make(cm.WebhookDefinitionHeaders, len(webhookDefinitionFields.Headers))
+	for i, header := range webhookDefinitionFields.Headers {
+		stored := cm.WebhookDefinitionHeader{Key: header.Key, Secret: header.Secret}
+		if value, ok := header.Value.Get(); ok {
+			stored.Value.SetTo(value)
+		}
+
+		webhookDefinition.Headers[i] = stored
+	}
+
 	webhookDefinition.Topics = webhookDefinitionFields.Topics
 	webhookDefinition.Filters = webhookDefinitionFields.Filters
 	webhookDefinition.Active = cm.NewOptBool(webhookDefinitionFields.Active.Or(true))
-	convertOptNil(&webhookDefinition.Transformation, &webhookDefinitionFields.Transformation, func(transformation cm.WebhookDefinitionDataTransformation) cm.WebhookDefinitionTransformation {
-		return cm.WebhookDefinitionTransformation(transformation)
-	})
+
+	webhookDefinition.Transformation = webhookDefinitionFields.Transformation
+	if webhookDefinition.Transformation.IsNull() {
+		webhookDefinition.Transformation.Reset()
+	}
 }
 
 func redactWebhookDefinitionSecrets(webhookDefinition cm.WebhookDefinition) cm.WebhookDefinition {

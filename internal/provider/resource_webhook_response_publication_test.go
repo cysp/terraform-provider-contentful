@@ -30,7 +30,7 @@ func webhookPublicationRuntime(t *testing.T) (*terraformTestRuntime, *mutationJS
 	server.SetWebhookDefinition("space", "existing", cm.WebhookDefinitionData{
 		Name: "Existing", URL: "https://example.com/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
 		HttpBasicUsername: cm.NewOptNilString("user"), HttpBasicPassword: cm.NewOptNilString("remote-password"),
-		Headers: cm.WebhookDefinitionHeaders{{Key: "X-Secret", Secret: cm.NewOptBool(true), Value: cm.NewOptString("remote-header")}},
+		Headers: cm.WebhookDefinitionRequestHeaders{{Key: "X-Secret", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("remote-header")}},
 	})
 	adapter := &mutationJSONResponseAdapter{delegate: server}
 	httpServer := httptest.NewServer(adapter)

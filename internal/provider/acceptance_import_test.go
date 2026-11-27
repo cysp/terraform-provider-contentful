@@ -21,10 +21,16 @@ var errUnexpectedImportedState = errors.New("unexpected imported state")
 // testAccImportAttributes checks a seeded CLI import, where there is no prior
 // applied state for ImportStateVerify. Presence is checked separately from value;
 // a missing flattened attribute does not establish a known empty string or null.
-func testAccImportAttributes(expected map[string]string) resource.ImportStateCheckFunc {
+func testAccImportAttributes(expected map[string]string, absent ...string) resource.ImportStateCheckFunc {
 	return func(states []*terraform.InstanceState) error {
 		if len(states) != 1 || states[0] == nil {
 			return fmt.Errorf("%w: expected one non-nil resource, got %d", errUnexpectedImportedState, len(states))
+		}
+
+		for _, name := range absent {
+			if _, exists := states[0].Attributes[name]; exists {
+				return fmt.Errorf("%w: attribute %q must be absent", errUnexpectedImportedState, name)
+			}
 		}
 
 		for name, want := range expected {

@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -167,100 +166,4 @@ resource "contentful_webhook" "test" {
 	require.Equal(t, "2", puts[2].version)
 	require.JSONEq(t, body("Changed", planned), string(puts[2].body))
 	run("plan", planned, "-detailed-exitcode")
-}
-
-func TestAccWebhookResourceIgnoredWriteOnlyBasicPasswordOnTimeoutUpdate(t *testing.T) {
-	t.Parallel()
-	runtime, server, recorder, _ := newWebhookBasicFixture(t)
-
-	const (
-		original = "synthetic-installed-password"
-		rotated  = "synthetic-timeout-rotation"
-	)
-
-	seed := cm.WebhookDefinitionData{
-		Name: "Imported", URL: "https://example.invalid/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
-		HttpBasicUsername: cm.NewOptNilString("user"), HttpBasicPassword: cm.NewOptNilString(original),
-		Headers: cm.WebhookDefinitionHeaders{
-			{Key: "X-Imported", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-managed-header")},
-			{Key: "x-imported", Secret: cm.NewOptBool(true), Value: cm.NewOptString("another-header")},
-		},
-	}
-	seed.Filters.SetToNull()
-	seed.Transformation.SetToNull()
-	server.SetWebhookDefinition("space", "imported", seed)
-
-	configure := func(lifecycle string) {
-		runtime.writeConfig(t, fmt.Sprintf(`
-variable "password" {
- type=string
- ephemeral=true
- sensitive=true
-}
-resource "contentful_webhook" "test" {
- space_id="space"
- name="Imported"
- url="https://example.invalid/webhook"
- topics=["Entry.publish"]
- http_basic_username="user"
- http_basic_password_wo=var.password
- %s
-}`, lifecycle))
-	}
-	run := func(command, password string, opts ...string) {
-		t.Helper()
-		out, err := runtime.run(t.Context(), append([]string{command, "-input=false", "-no-color", "-var=password=" + password}, opts...)...)
-		require.NoError(t, err, out)
-	}
-
-	configure(`lifecycle { ignore_changes = [headers] }`)
-	run("import", original, "contentful_webhook.test", "space/imported")
-
-	hidden := map[string]any{"secret": true, "value": nil, "value_wo": nil}
-	require.Equal(t, map[string]any{"X-Imported": hidden, "x-imported": hidden}, readWebhookStateInstances(t, runtime)[0].Attributes["headers"])
-	run("apply", original, "-auto-approve")
-	configure(`timeouts = { update = "3m" }
- lifecycle { ignore_changes = [http_basic_password_wo, headers] }`)
-	run("plan", original, "-out=timeout.tfplan")
-	run("apply", rotated, "timeout.tfplan")
-
-	puts := recorder.matchingRequests(http.MethodPut, "")
-	require.Len(t, puts, 2)
-
-	for i, password := range []string{original, rotated} {
-		require.Equal(t, "/spaces/space/webhook_definitions/imported", puts[i].path)
-		// Import carries no verifier; applying the same remote bytes sends a PUT
-		// whose identical definition leaves version zero for the next rotation.
-		require.Equal(t, "0", puts[i].version)
-		require.JSONEq(t, testJSON(map[string]any{
-			"name": "Imported", "url": "https://example.invalid/webhook", "active": true, "topics": []string{"Entry.publish"},
-			"httpBasicUsername": "user", "httpBasicPassword": password, "filters": nil, "transformation": nil, "headers": []map[string]any{{"key": "X-Imported", "secret": true}, {"key": "x-imported", "secret": true}},
-		}), string(puts[i].body))
-	}
-
-	require.Nil(t, readWebhookStateInstances(t, runtime)[0].Attributes["http_basic_password"])
-
-	stored, ok := server.StoredWebhookDefinition("space", "imported")
-	require.True(t, ok)
-	require.Equal(t, rotated, stored.HttpBasicPassword.Or(""))
-	require.Equal(t, "externally-managed-header", stored.Headers[0].Value.Or(""))
-	require.Equal(t, "another-header", stored.Headers[1].Value.Or(""))
-	require.Equal(t, 1, stored.Sys.Version)
-
-	// A timeout-only update needs no full request. A subsequent password
-	// rotation must validate even the delegated ordinary headers.
-	seed.HttpBasicPassword = cm.NewOptNilString(rotated)
-	seed.Headers = cm.WebhookDefinitionHeaders{{Key: "X-External", Secret: cm.NewOptBool(false)}}
-	response, err := server.Handler().UpdateWebhookDefinition(t.Context(), &seed, cm.UpdateWebhookDefinitionParams{
-		SpaceID: "space", WebhookDefinitionID: "imported", XContentfulVersion: cm.NewOptInt(1),
-	})
-	require.NoError(t, err)
-	require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
-	configure(`timeouts = { update = "4m" }
- lifecycle { ignore_changes = [headers] }`)
-	run("apply", rotated, "-auto-approve")
-	out, err := runtime.run(t.Context(), "apply", "-input=false", "-no-color", "-auto-approve", "-var=password="+original)
-	require.Error(t, err, out)
-	require.Contains(t, out, "Missing webhook header value")
-	require.Equal(t, puts, recorder.matchingRequests(http.MethodPut, ""))
 }

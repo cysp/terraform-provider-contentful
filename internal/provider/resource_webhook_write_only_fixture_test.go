@@ -255,9 +255,9 @@ func importWebhookRecoveryFixture(t *testing.T) (*terraformTestRuntime, *webhook
 	fixture.server.SetWebhookDefinition("space", "imported", cm.WebhookDefinitionData{
 		Name: "Imported", URL: "https://example.invalid/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
 		HttpBasicUsername: cm.NewOptNilString("user"), HttpBasicPassword: cm.NewOptNilString(webhookPriorPassword),
-		Headers: cm.WebhookDefinitionHeaders{
-			{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptString(webhookPriorHeader)},
-			{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptString(webhookSiblingHeader)},
+		Headers: cm.WebhookDefinitionRequestHeaders{
+			{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString(webhookPriorHeader)},
+			{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString(webhookSiblingHeader)},
 		},
 	})
 	runtime.writeConfig(t, webhookRecoveryConfig(true, ""))

@@ -2162,7 +2162,7 @@ func (s *Server) handleCreateWebhookDefinitionRequest(args [1]string, argsEscape
 		}
 
 		type (
-			Request  = *WebhookDefinitionData
+			Request  = *WebhookDefinitionCreateData
 			Params   = CreateWebhookDefinitionParams
 			Response = CreateWebhookDefinitionRes
 		)

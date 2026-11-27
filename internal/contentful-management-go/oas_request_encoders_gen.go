@@ -193,7 +193,7 @@ func encodeCreateTeamSpaceMembershipRequest(
 }
 
 func encodeCreateWebhookDefinitionRequest(
-	req *WebhookDefinitionData,
+	req *WebhookDefinitionCreateData,
 	r *http.Request,
 ) error {
 	const contentType = "application/vnd.contentful.management.v1+json"

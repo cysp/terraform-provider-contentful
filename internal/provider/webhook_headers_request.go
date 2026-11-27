@@ -12,7 +12,7 @@ import (
 func ToWebhookDefinitionHeaders(
 	path path.Path,
 	model TypedMap[TypedObject[WebhookHeaderValue]],
-) (cm.WebhookDefinitionHeaders, diag.Diagnostics) {
+) (cm.WebhookDefinitionRequestHeaders, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	if model.IsUnknown() {
 		diags.AddAttributeError(path, "Unexpected unknown webhook headers", "Headers must be known before the webhook can be written.")
@@ -25,7 +25,7 @@ func ToWebhookDefinitionHeaders(
 	}
 
 	plannedHeaders := model.Elements()
-	headers := make(cm.WebhookDefinitionHeaders, len(plannedHeaders))
+	headers := make(cm.WebhookDefinitionRequestHeaders, len(plannedHeaders))
 
 	for index, key := range slices.Sorted(maps.Keys(plannedHeaders)) {
 		plannedHeader := plannedHeaders[key]

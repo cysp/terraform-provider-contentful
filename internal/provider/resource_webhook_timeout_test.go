@@ -31,9 +31,9 @@ func TestAccWebhookResourceImportedTimeoutOnlyUpdate(t *testing.T) {
 		Name: "Before import", URL: "https://example.com/webhook", Topics: []string{"Entry.publish"},
 		HttpBasicUsername: cm.NewOptNilString("user"), HttpBasicPassword: cm.NewOptNilString("remote-password"),
 		Active: cm.NewOptBool(true),
-		Headers: cm.WebhookDefinitionHeaders{
+		Headers: cm.WebhookDefinitionRequestHeaders{
 			{Key: "X-Ordinary", Secret: cm.NewOptBool(false)},
-			{Key: "X-Managed", Value: cm.NewOptString("same"), Secret: cm.NewOptBool(false)},
+			{Key: "X-Managed", Value: cm.NewOptNilString("same"), Secret: cm.NewOptBool(false)},
 		},
 	}
 	server.SetWebhookDefinition("space", "imported-webhook", fields)

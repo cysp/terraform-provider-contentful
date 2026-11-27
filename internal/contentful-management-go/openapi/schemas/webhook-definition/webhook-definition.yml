@@ -4,6 +4,8 @@ WebhookDefinition:
       properties:
         sys:
           $ref: "./sys.yml#/WebhookDefinitionSys"
+        headers:
+          $ref: "./headers.yml#/WebhookDefinitionHeaders"
       required:
         - sys
-    - $ref: "./data.yml#/WebhookDefinitionData"
+    - $ref: "./data.yml#/WebhookDefinitionFields"

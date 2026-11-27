@@ -69,6 +69,18 @@ func TestWebhookDefinitionPOSTRequiresHeaderValues(t *testing.T) {
 	require.Empty(t, value)
 }
 
+func TestWebhookDefinitionRejectedPOSTLeavesCollectionEmpty(t *testing.T) {
+	t.Parallel()
+
+	server, err := NewContentfulManagementServer()
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+
+	headers := []map[string]any{{"key": "X-Review", "value": "first"}, {"key": "X-Review", "value": "second"}}
+	webhookDefinitionRequest(t, server, http.MethodPost, webhookCollectionPath, "", headers, http.StatusUnprocessableEntity)
+	require.Empty(t, server.h.webhookDefinitions.List("space"))
+}
+
 func TestWebhookDefinitionPUTAfterDeletionRequiresHeaderValues(t *testing.T) {
 	t.Parallel()
 

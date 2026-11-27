@@ -8267,74 +8267,6 @@ func (o OptNilString) Or(d string) string {
 	return d
 }
 
-// NewOptNilWebhookDefinitionDataTransformation returns new OptNilWebhookDefinitionDataTransformation with value set to v.
-func NewOptNilWebhookDefinitionDataTransformation(v WebhookDefinitionDataTransformation) OptNilWebhookDefinitionDataTransformation {
-	return OptNilWebhookDefinitionDataTransformation{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilWebhookDefinitionDataTransformation is optional nullable WebhookDefinitionDataTransformation.
-type OptNilWebhookDefinitionDataTransformation struct {
-	Value WebhookDefinitionDataTransformation
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilWebhookDefinitionDataTransformation was set.
-func (o OptNilWebhookDefinitionDataTransformation) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilWebhookDefinitionDataTransformation) Reset() {
-	var v WebhookDefinitionDataTransformation
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilWebhookDefinitionDataTransformation) SetTo(v WebhookDefinitionDataTransformation) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsNull returns true if value is Null.
-func (o OptNilWebhookDefinitionDataTransformation) IsNull() bool { return o.Null }
-
-// SetToNull sets value to null.
-func (o *OptNilWebhookDefinitionDataTransformation) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v WebhookDefinitionDataTransformation
-	o.Value = v
-}
-
-// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
-func (o OptNilWebhookDefinitionDataTransformation) IsEmpty() bool {
-	return !o.Set && !o.Null
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilWebhookDefinitionDataTransformation) Get() (v WebhookDefinitionDataTransformation, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilWebhookDefinitionDataTransformation) Or(d WebhookDefinitionDataTransformation) WebhookDefinitionDataTransformation {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptNilWebhookDefinitionFilterArray returns new OptNilWebhookDefinitionFilterArray with value set to v.
 func NewOptNilWebhookDefinitionFilterArray(v []WebhookDefinitionFilter) OptNilWebhookDefinitionFilterArray {
 	return OptNilWebhookDefinitionFilterArray{
@@ -14356,13 +14288,13 @@ func (s *UserSysType) UnmarshalText(data []byte) error {
 // Ref: #/WebhookDefinition
 type WebhookDefinition struct {
 	Sys               WebhookDefinitionSys                  `json:"sys"`
+	Headers           WebhookDefinitionHeaders              `json:"headers"`
 	Name              string                                `json:"name"`
 	URL               string                                `json:"url"`
 	Topics            []string                              `json:"topics"`
 	Filters           OptNilWebhookDefinitionFilterArray    `json:"filters"`
 	HttpBasicUsername OptNilString                          `json:"httpBasicUsername"`
 	HttpBasicPassword OptNilString                          `json:"httpBasicPassword"`
-	Headers           WebhookDefinitionHeaders              `json:"headers"`
 	Transformation    OptNilWebhookDefinitionTransformation `json:"transformation"`
 	Active            OptBool                               `json:"active"`
 }
@@ -14370,6 +14302,11 @@ type WebhookDefinition struct {
 // GetSys returns the value of Sys.
 func (s *WebhookDefinition) GetSys() WebhookDefinitionSys {
 	return s.Sys
+}
+
+// GetHeaders returns the value of Headers.
+func (s *WebhookDefinition) GetHeaders() WebhookDefinitionHeaders {
+	return s.Headers
 }
 
 // GetName returns the value of Name.
@@ -14402,11 +14339,6 @@ func (s *WebhookDefinition) GetHttpBasicPassword() OptNilString {
 	return s.HttpBasicPassword
 }
 
-// GetHeaders returns the value of Headers.
-func (s *WebhookDefinition) GetHeaders() WebhookDefinitionHeaders {
-	return s.Headers
-}
-
 // GetTransformation returns the value of Transformation.
 func (s *WebhookDefinition) GetTransformation() OptNilWebhookDefinitionTransformation {
 	return s.Transformation
@@ -14420,6 +14352,11 @@ func (s *WebhookDefinition) GetActive() OptBool {
 // SetSys sets the value of Sys.
 func (s *WebhookDefinition) SetSys(val WebhookDefinitionSys) {
 	s.Sys = val
+}
+
+// SetHeaders sets the value of Headers.
+func (s *WebhookDefinition) SetHeaders(val WebhookDefinitionHeaders) {
+	s.Headers = val
 }
 
 // SetName sets the value of Name.
@@ -14452,11 +14389,6 @@ func (s *WebhookDefinition) SetHttpBasicPassword(val OptNilString) {
 	s.HttpBasicPassword = val
 }
 
-// SetHeaders sets the value of Headers.
-func (s *WebhookDefinition) SetHeaders(val WebhookDefinitionHeaders) {
-	s.Headers = val
-}
-
 // SetTransformation sets the value of Transformation.
 func (s *WebhookDefinition) SetTransformation(val OptNilWebhookDefinitionTransformation) {
 	s.Transformation = val
@@ -14469,17 +14401,162 @@ func (s *WebhookDefinition) SetActive(val OptBool) {
 
 func (*WebhookDefinition) getWebhookDefinitionRes() {}
 
+// Merged schema.
+// Ref: #/WebhookDefinitionCreateData
+type WebhookDefinitionCreateData struct {
+	Name              string                                `json:"name"`
+	URL               string                                `json:"url"`
+	Topics            []string                              `json:"topics"`
+	Filters           OptNilWebhookDefinitionFilterArray    `json:"filters"`
+	HttpBasicUsername OptNilString                          `json:"httpBasicUsername"`
+	HttpBasicPassword OptNilString                          `json:"httpBasicPassword"`
+	Transformation    OptNilWebhookDefinitionTransformation `json:"transformation"`
+	Active            OptBool                               `json:"active"`
+	Headers           WebhookDefinitionCreateHeaders        `json:"headers"`
+}
+
+// GetName returns the value of Name.
+func (s *WebhookDefinitionCreateData) GetName() string {
+	return s.Name
+}
+
+// GetURL returns the value of URL.
+func (s *WebhookDefinitionCreateData) GetURL() string {
+	return s.URL
+}
+
+// GetTopics returns the value of Topics.
+func (s *WebhookDefinitionCreateData) GetTopics() []string {
+	return s.Topics
+}
+
+// GetFilters returns the value of Filters.
+func (s *WebhookDefinitionCreateData) GetFilters() OptNilWebhookDefinitionFilterArray {
+	return s.Filters
+}
+
+// GetHttpBasicUsername returns the value of HttpBasicUsername.
+func (s *WebhookDefinitionCreateData) GetHttpBasicUsername() OptNilString {
+	return s.HttpBasicUsername
+}
+
+// GetHttpBasicPassword returns the value of HttpBasicPassword.
+func (s *WebhookDefinitionCreateData) GetHttpBasicPassword() OptNilString {
+	return s.HttpBasicPassword
+}
+
+// GetTransformation returns the value of Transformation.
+func (s *WebhookDefinitionCreateData) GetTransformation() OptNilWebhookDefinitionTransformation {
+	return s.Transformation
+}
+
+// GetActive returns the value of Active.
+func (s *WebhookDefinitionCreateData) GetActive() OptBool {
+	return s.Active
+}
+
+// GetHeaders returns the value of Headers.
+func (s *WebhookDefinitionCreateData) GetHeaders() WebhookDefinitionCreateHeaders {
+	return s.Headers
+}
+
+// SetName sets the value of Name.
+func (s *WebhookDefinitionCreateData) SetName(val string) {
+	s.Name = val
+}
+
+// SetURL sets the value of URL.
+func (s *WebhookDefinitionCreateData) SetURL(val string) {
+	s.URL = val
+}
+
+// SetTopics sets the value of Topics.
+func (s *WebhookDefinitionCreateData) SetTopics(val []string) {
+	s.Topics = val
+}
+
+// SetFilters sets the value of Filters.
+func (s *WebhookDefinitionCreateData) SetFilters(val OptNilWebhookDefinitionFilterArray) {
+	s.Filters = val
+}
+
+// SetHttpBasicUsername sets the value of HttpBasicUsername.
+func (s *WebhookDefinitionCreateData) SetHttpBasicUsername(val OptNilString) {
+	s.HttpBasicUsername = val
+}
+
+// SetHttpBasicPassword sets the value of HttpBasicPassword.
+func (s *WebhookDefinitionCreateData) SetHttpBasicPassword(val OptNilString) {
+	s.HttpBasicPassword = val
+}
+
+// SetTransformation sets the value of Transformation.
+func (s *WebhookDefinitionCreateData) SetTransformation(val OptNilWebhookDefinitionTransformation) {
+	s.Transformation = val
+}
+
+// SetActive sets the value of Active.
+func (s *WebhookDefinitionCreateData) SetActive(val OptBool) {
+	s.Active = val
+}
+
+// SetHeaders sets the value of Headers.
+func (s *WebhookDefinitionCreateData) SetHeaders(val WebhookDefinitionCreateHeaders) {
+	s.Headers = val
+}
+
+// Merged schema.
+// Ref: #/WebhookDefinitionCreateHeader
+type WebhookDefinitionCreateHeader struct {
+	Key    string  `json:"key"`
+	Secret OptBool `json:"secret"`
+	Value  string  `json:"value"`
+}
+
+// GetKey returns the value of Key.
+func (s *WebhookDefinitionCreateHeader) GetKey() string {
+	return s.Key
+}
+
+// GetSecret returns the value of Secret.
+func (s *WebhookDefinitionCreateHeader) GetSecret() OptBool {
+	return s.Secret
+}
+
+// GetValue returns the value of Value.
+func (s *WebhookDefinitionCreateHeader) GetValue() string {
+	return s.Value
+}
+
+// SetKey sets the value of Key.
+func (s *WebhookDefinitionCreateHeader) SetKey(val string) {
+	s.Key = val
+}
+
+// SetSecret sets the value of Secret.
+func (s *WebhookDefinitionCreateHeader) SetSecret(val OptBool) {
+	s.Secret = val
+}
+
+// SetValue sets the value of Value.
+func (s *WebhookDefinitionCreateHeader) SetValue(val string) {
+	s.Value = val
+}
+
+type WebhookDefinitionCreateHeaders []WebhookDefinitionCreateHeader
+
+// Merged schema.
 // Ref: #/WebhookDefinitionData
 type WebhookDefinitionData struct {
-	Name              string                                    `json:"name"`
-	URL               string                                    `json:"url"`
-	Topics            []string                                  `json:"topics"`
-	Filters           OptNilWebhookDefinitionFilterArray        `json:"filters"`
-	HttpBasicUsername OptNilString                              `json:"httpBasicUsername"`
-	HttpBasicPassword OptNilString                              `json:"httpBasicPassword"`
-	Headers           WebhookDefinitionHeaders                  `json:"headers"`
-	Transformation    OptNilWebhookDefinitionDataTransformation `json:"transformation"`
-	Active            OptBool                                   `json:"active"`
+	Name              string                                `json:"name"`
+	URL               string                                `json:"url"`
+	Topics            []string                              `json:"topics"`
+	Filters           OptNilWebhookDefinitionFilterArray    `json:"filters"`
+	HttpBasicUsername OptNilString                          `json:"httpBasicUsername"`
+	HttpBasicPassword OptNilString                          `json:"httpBasicPassword"`
+	Transformation    OptNilWebhookDefinitionTransformation `json:"transformation"`
+	Active            OptBool                               `json:"active"`
+	Headers           WebhookDefinitionRequestHeaders       `json:"headers"`
 }
 
 // GetName returns the value of Name.
@@ -14512,19 +14589,19 @@ func (s *WebhookDefinitionData) GetHttpBasicPassword() OptNilString {
 	return s.HttpBasicPassword
 }
 
-// GetHeaders returns the value of Headers.
-func (s *WebhookDefinitionData) GetHeaders() WebhookDefinitionHeaders {
-	return s.Headers
-}
-
 // GetTransformation returns the value of Transformation.
-func (s *WebhookDefinitionData) GetTransformation() OptNilWebhookDefinitionDataTransformation {
+func (s *WebhookDefinitionData) GetTransformation() OptNilWebhookDefinitionTransformation {
 	return s.Transformation
 }
 
 // GetActive returns the value of Active.
 func (s *WebhookDefinitionData) GetActive() OptBool {
 	return s.Active
+}
+
+// GetHeaders returns the value of Headers.
+func (s *WebhookDefinitionData) GetHeaders() WebhookDefinitionRequestHeaders {
+	return s.Headers
 }
 
 // SetName sets the value of Name.
@@ -14557,13 +14634,8 @@ func (s *WebhookDefinitionData) SetHttpBasicPassword(val OptNilString) {
 	s.HttpBasicPassword = val
 }
 
-// SetHeaders sets the value of Headers.
-func (s *WebhookDefinitionData) SetHeaders(val WebhookDefinitionHeaders) {
-	s.Headers = val
-}
-
 // SetTransformation sets the value of Transformation.
-func (s *WebhookDefinitionData) SetTransformation(val OptNilWebhookDefinitionDataTransformation) {
+func (s *WebhookDefinitionData) SetTransformation(val OptNilWebhookDefinitionTransformation) {
 	s.Transformation = val
 }
 
@@ -14572,51 +14644,9 @@ func (s *WebhookDefinitionData) SetActive(val OptBool) {
 	s.Active = val
 }
 
-type WebhookDefinitionDataTransformation struct {
-	Method               OptString `json:"method"`
-	ContentType          OptString `json:"contentType"`
-	IncludeContentLength OptBool   `json:"includeContentLength"`
-	Body                 jx.Raw    `json:"body"`
-}
-
-// GetMethod returns the value of Method.
-func (s *WebhookDefinitionDataTransformation) GetMethod() OptString {
-	return s.Method
-}
-
-// GetContentType returns the value of ContentType.
-func (s *WebhookDefinitionDataTransformation) GetContentType() OptString {
-	return s.ContentType
-}
-
-// GetIncludeContentLength returns the value of IncludeContentLength.
-func (s *WebhookDefinitionDataTransformation) GetIncludeContentLength() OptBool {
-	return s.IncludeContentLength
-}
-
-// GetBody returns the value of Body.
-func (s *WebhookDefinitionDataTransformation) GetBody() jx.Raw {
-	return s.Body
-}
-
-// SetMethod sets the value of Method.
-func (s *WebhookDefinitionDataTransformation) SetMethod(val OptString) {
-	s.Method = val
-}
-
-// SetContentType sets the value of ContentType.
-func (s *WebhookDefinitionDataTransformation) SetContentType(val OptString) {
-	s.ContentType = val
-}
-
-// SetIncludeContentLength sets the value of IncludeContentLength.
-func (s *WebhookDefinitionDataTransformation) SetIncludeContentLength(val OptBool) {
-	s.IncludeContentLength = val
-}
-
-// SetBody sets the value of Body.
-func (s *WebhookDefinitionDataTransformation) SetBody(val jx.Raw) {
-	s.Body = val
+// SetHeaders sets the value of Headers.
+func (s *WebhookDefinitionData) SetHeaders(val WebhookDefinitionRequestHeaders) {
+	s.Headers = val
 }
 
 // Ref: #/WebhookDefinitionFilter
@@ -14754,11 +14784,12 @@ func (s *WebhookDefinitionFilterNotAdditional) init() WebhookDefinitionFilterNot
 
 type WebhookDefinitionFilterRegexp []jx.Raw
 
+// Merged schema.
 // Ref: #/WebhookDefinitionHeader
 type WebhookDefinitionHeader struct {
 	Key    string    `json:"key"`
-	Value  OptString `json:"value"`
 	Secret OptBool   `json:"secret"`
+	Value  OptString `json:"value"`
 }
 
 // GetKey returns the value of Key.
@@ -14766,14 +14797,14 @@ func (s *WebhookDefinitionHeader) GetKey() string {
 	return s.Key
 }
 
-// GetValue returns the value of Value.
-func (s *WebhookDefinitionHeader) GetValue() OptString {
-	return s.Value
-}
-
 // GetSecret returns the value of Secret.
 func (s *WebhookDefinitionHeader) GetSecret() OptBool {
 	return s.Secret
+}
+
+// GetValue returns the value of Value.
+func (s *WebhookDefinitionHeader) GetValue() OptString {
+	return s.Value
 }
 
 // SetKey sets the value of Key.
@@ -14781,17 +14812,57 @@ func (s *WebhookDefinitionHeader) SetKey(val string) {
 	s.Key = val
 }
 
-// SetValue sets the value of Value.
-func (s *WebhookDefinitionHeader) SetValue(val OptString) {
-	s.Value = val
-}
-
 // SetSecret sets the value of Secret.
 func (s *WebhookDefinitionHeader) SetSecret(val OptBool) {
 	s.Secret = val
 }
 
+// SetValue sets the value of Value.
+func (s *WebhookDefinitionHeader) SetValue(val OptString) {
+	s.Value = val
+}
+
 type WebhookDefinitionHeaders []WebhookDefinitionHeader
+
+// Merged schema.
+// Ref: #/WebhookDefinitionRequestHeader
+type WebhookDefinitionRequestHeader struct {
+	Key    string       `json:"key"`
+	Secret OptBool      `json:"secret"`
+	Value  OptNilString `json:"value"`
+}
+
+// GetKey returns the value of Key.
+func (s *WebhookDefinitionRequestHeader) GetKey() string {
+	return s.Key
+}
+
+// GetSecret returns the value of Secret.
+func (s *WebhookDefinitionRequestHeader) GetSecret() OptBool {
+	return s.Secret
+}
+
+// GetValue returns the value of Value.
+func (s *WebhookDefinitionRequestHeader) GetValue() OptNilString {
+	return s.Value
+}
+
+// SetKey sets the value of Key.
+func (s *WebhookDefinitionRequestHeader) SetKey(val string) {
+	s.Key = val
+}
+
+// SetSecret sets the value of Secret.
+func (s *WebhookDefinitionRequestHeader) SetSecret(val OptBool) {
+	s.Secret = val
+}
+
+// SetValue sets the value of Value.
+func (s *WebhookDefinitionRequestHeader) SetValue(val OptNilString) {
+	s.Value = val
+}
+
+type WebhookDefinitionRequestHeaders []WebhookDefinitionRequestHeader
 
 // WebhookDefinitionStatusCode wraps WebhookDefinition with StatusCode.
 type WebhookDefinitionStatusCode struct {
@@ -14907,6 +14978,7 @@ func (s *WebhookDefinitionSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/WebhookDefinitionTransformation
 type WebhookDefinitionTransformation struct {
 	Method               OptString `json:"method"`
 	ContentType          OptString `json:"contentType"`

@@ -34,12 +34,12 @@ func TestWebhookTransformationRequestValues(t *testing.T) {
 
 	tests := map[string]struct {
 		value         TypedObject[WebhookTransformationValue]
-		expected      cm.OptNilWebhookDefinitionDataTransformation
+		expected      cm.OptNilWebhookDefinitionTransformation
 		expectedPaths []string
 	}{
 		"null is explicit null": {
 			value:    NewTypedObjectNull[WebhookTransformationValue](),
-			expected: cm.OptNilWebhookDefinitionDataTransformation{Set: true, Null: true},
+			expected: cm.OptNilWebhookDefinitionTransformation{Set: true, Null: true},
 		},
 		"unknown object": {
 			value:         NewTypedObjectUnknown[WebhookTransformationValue](),
@@ -47,8 +47,8 @@ func TestWebhookTransformationRequestValues(t *testing.T) {
 		},
 		"null children are omitted": {
 			value: known(nullChildren),
-			expected: cm.NewOptNilWebhookDefinitionDataTransformation(
-				cm.WebhookDefinitionDataTransformation{},
+			expected: cm.NewOptNilWebhookDefinitionTransformation(
+				cm.WebhookDefinitionTransformation{},
 			),
 		},
 		"known": {
@@ -58,8 +58,8 @@ func TestWebhookTransformationRequestValues(t *testing.T) {
 				"include_content_length": types.BoolValue(true),
 				"body":                   NewNormalizedJSONValue([]byte(testJSON(map[string]any{"key": "value"}))),
 			}),
-			expected: cm.NewOptNilWebhookDefinitionDataTransformation(
-				cm.WebhookDefinitionDataTransformation{
+			expected: cm.NewOptNilWebhookDefinitionTransformation(
+				cm.WebhookDefinitionTransformation{
 					Method:               cm.NewOptString("POST"),
 					ContentType:          cm.NewOptString("application/json"),
 					IncludeContentLength: cm.NewOptBool(true),
@@ -122,12 +122,12 @@ func TestWebhookTransformationRequestValues(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			actual, diags := ToOptNilWebhookDefinitionDataTransformation(valuePath, test.value)
+			actual, diags := ToOptNilWebhookDefinitionTransformation(valuePath, test.value)
 
 			if len(test.expectedPaths) > 0 {
 				require.True(t, diags.HasError())
 				assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, diags))
-				assert.Equal(t, cm.OptNilWebhookDefinitionDataTransformation{}, actual)
+				assert.Equal(t, cm.OptNilWebhookDefinitionTransformation{}, actual)
 			} else {
 				require.False(t, diags.HasError())
 				assert.Equal(t, test.expected, actual)

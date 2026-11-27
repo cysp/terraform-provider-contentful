@@ -3,14 +3,49 @@ WebhookDefinitionHeaders:
   items:
     $ref: "#/WebhookDefinitionHeader"
 
-WebhookDefinitionHeader:
+WebhookDefinitionRequestHeaders:
+  type: array
+  items:
+    $ref: "#/WebhookDefinitionRequestHeader"
+
+WebhookDefinitionHeaderFields:
   type: object
   properties:
     key:
-      type: string
-    value:
       type: string
     secret:
       type: boolean
   required:
     - key
+
+WebhookDefinitionHeader:
+  allOf:
+    - $ref: "#/WebhookDefinitionHeaderFields"
+    - type: object
+      properties:
+        value:
+          type: string
+
+WebhookDefinitionRequestHeader:
+  allOf:
+    - $ref: "#/WebhookDefinitionHeaderFields"
+    - type: object
+      properties:
+        value:
+          type: string
+          nullable: true
+
+WebhookDefinitionCreateHeaders:
+  type: array
+  items:
+    $ref: "#/WebhookDefinitionCreateHeader"
+
+WebhookDefinitionCreateHeader:
+  allOf:
+    - $ref: "#/WebhookDefinitionHeaderFields"
+    - type: object
+      properties:
+        value:
+          type: string
+      required:
+        - value

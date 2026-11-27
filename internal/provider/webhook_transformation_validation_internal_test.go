@@ -63,7 +63,7 @@ func TestWebhookTransformationValidation(t *testing.T) {
 
 			var model WebhookModel
 			require.Empty(t, plan.Get(t.Context(), &model))
-			converted, diags := ToOptNilWebhookDefinitionDataTransformation(path.Root("transformation"), model.Transformation)
+			converted, diags := ToOptNilWebhookDefinitionTransformation(path.Root("transformation"), model.Transformation)
 
 			if test.invalid {
 				require.Len(t, response.Diagnostics, 1)

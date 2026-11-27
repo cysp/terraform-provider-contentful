@@ -20,7 +20,7 @@ func TestAccWebhookResourceTransformationValidationRecovery(t *testing.T) {
 	server.RegisterSpaceEnvironment("space", "master")
 	server.SetWebhookDefinition("space", "webhook", cm.WebhookDefinitionData{
 		Name: "Webhook", URL: "https://example.invalid/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
-		Transformation: cm.NewOptNilWebhookDefinitionDataTransformation(cm.WebhookDefinitionDataTransformation{Method: cm.NewOptString("HEAD")}),
+		Transformation: cm.NewOptNilWebhookDefinitionTransformation(cm.WebhookDefinitionTransformation{Method: cm.NewOptString("HEAD")}),
 	})
 
 	var writes, deletes atomic.Int64

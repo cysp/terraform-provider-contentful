@@ -168,7 +168,7 @@ type Invoker interface {
 	// Create a webhook definition.
 	//
 	// POST /spaces/{space_id}/webhook_definitions
-	CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams, options ...RequestOption) (CreateWebhookDefinitionRes, error)
+	CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionCreateData, params CreateWebhookDefinitionParams, options ...RequestOption) (CreateWebhookDefinitionRes, error)
 	// DeactivateContentType invokes deactivateContentType operation.
 	//
 	// Deactivate a content type.
@@ -2609,12 +2609,12 @@ func (c *Client) sendCreateTeamSpaceMembership(ctx context.Context, request *Tea
 // Create a webhook definition.
 //
 // POST /spaces/{space_id}/webhook_definitions
-func (c *Client) CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams, options ...RequestOption) (CreateWebhookDefinitionRes, error) {
+func (c *Client) CreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionCreateData, params CreateWebhookDefinitionParams, options ...RequestOption) (CreateWebhookDefinitionRes, error) {
 	res, err := c.sendCreateWebhookDefinition(ctx, request, params, options...)
 	return res, err
 }
 
-func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionData, params CreateWebhookDefinitionParams, requestOptions ...RequestOption) (res CreateWebhookDefinitionRes, err error) {
+func (c *Client) sendCreateWebhookDefinition(ctx context.Context, request *WebhookDefinitionCreateData, params CreateWebhookDefinitionParams, requestOptions ...RequestOption) (res CreateWebhookDefinitionRes, err error) {
 
 	var reqCfg requestConfig
 	reqCfg.setDefaults(c.baseClient)

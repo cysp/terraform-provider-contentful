@@ -110,14 +110,14 @@ func TestAccWebhookResourceImport(t *testing.T) {
 	server.SetWebhookDefinition("0p38pssr0fi3", "6umfVRwmSpcSRdc1jSW6qQ", cm.WebhookDefinitionData{
 		Name: "test",
 		URL:  "https://example.com",
-		Headers: []cm.WebhookDefinitionHeader{
+		Headers: []cm.WebhookDefinitionRequestHeader{
 			{
 				Key:   "X-Contentful-Test",
-				Value: cm.NewOptString("test"),
+				Value: cm.NewOptNilString("test"),
 			},
 			{
 				Key:    "X-Contentful-Secret",
-				Value:  cm.NewOptString("secret"),
+				Value:  cm.NewOptNilString("secret"),
 				Secret: cm.NewOptBool(true),
 			},
 		},
@@ -151,10 +151,10 @@ func TestAccWebhookResourceOmittedAndEmptyHeaders(t *testing.T) {
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
 
-	imported := cm.WebhookDefinitionHeader{Key: "X-Imported", Secret: cm.NewOptBool(true), Value: cm.NewOptString("imported-secret")}
+	imported := cm.WebhookDefinitionRequestHeader{Key: "X-Imported", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("imported-secret")}
 	fields := cm.WebhookDefinitionData{
 		Name: "Original", URL: "https://example.com/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
-		Headers: cm.WebhookDefinitionHeaders{imported},
+		Headers: cm.WebhookDefinitionRequestHeaders{imported},
 	}
 	server.SetWebhookDefinition("space", "imported-webhook", fields)
 	recorder := &webhookWriteRecorder{next: server}
@@ -173,21 +173,31 @@ func TestAccWebhookResourceOmittedAndEmptyHeaders(t *testing.T) {
 		{
 			Config: webhookHeadersConfig("Renamed", "lifecycle { ignore_changes = [headers] }"),
 			PreConfig: func() {
-				fields.Headers = cm.WebhookDefinitionHeaders{
-					{Key: "X-Empty", Secret: cm.NewOptBool(false), Value: cm.NewOptString("")},
-					{Key: "X-Format", Secret: cm.NewOptBool(false), Value: cm.NewOptString("json")},
-					{Key: "X-Formerly-Plain", Secret: cm.NewOptBool(true), Value: cm.NewOptString("external-first")},
-					imported,
-					{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptString("external-second")},
+				update := func(version int) {
+					t.Helper()
+					response, err := server.Handler().UpdateWebhookDefinition(t.Context(), &fields, cm.UpdateWebhookDefinitionParams{
+						SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: cm.NewOptInt(version),
+					})
+					require.NoError(t, err)
+					require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
 				}
-				response, err := server.Handler().UpdateWebhookDefinition(t.Context(), &fields, cm.UpdateWebhookDefinitionParams{
-					SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: cm.NewOptInt(1),
-				})
-				require.NoError(t, err)
-				require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
+				// Recreate the formerly readable header as secret between refreshes.
+				fields.Headers = cm.WebhookDefinitionRequestHeaders{imported, {Key: "X-Managed", Secret: cm.NewOptBool(true)}}
+
+				update(1)
+
+				fields.Headers = cm.WebhookDefinitionRequestHeaders{
+					{Key: "X-Empty", Secret: cm.NewOptBool(false), Value: cm.NewOptNilString("")},
+					{Key: "X-Format", Secret: cm.NewOptBool(false), Value: cm.NewOptNilString("json")},
+					{Key: "X-Formerly-Plain", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("external-first")},
+					imported,
+					{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("external-second")},
+				}
+
+				update(2)
 			},
 			PostApplyFunc: func() {
-				recorder.requirePut(t, 2, "2", "Renamed", []map[string]any{
+				recorder.requirePut(t, 2, "3", "Renamed", []map[string]any{
 					{"key": "X-Empty", "secret": false, "value": ""},
 					{"key": "X-Format", "secret": false, "value": "json"},
 					{"key": "X-Formerly-Plain", "secret": true},
@@ -197,24 +207,24 @@ func TestAccWebhookResourceOmittedAndEmptyHeaders(t *testing.T) {
 
 				stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 				require.True(t, ok)
-				require.Equal(t, fields.Headers, stored.Headers)
+				require.JSONEq(t, testJSON(fields.Headers), testJSON(stored.Headers))
 			},
 		},
 		{
 			Config: webhookHeadersConfig("Renamed", `headers = {}
   lifecycle { ignore_changes = [headers["X-Imported"]] }`),
 			PostApplyFunc: func() {
-				recorder.requirePut(t, 3, "3", "Renamed", []map[string]any{{"key": "X-Imported", "secret": true}})
+				recorder.requirePut(t, 3, "4", "Renamed", []map[string]any{{"key": "X-Imported", "secret": true}})
 
 				stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 				require.True(t, ok)
-				require.Equal(t, cm.WebhookDefinitionHeaders{imported}, stored.Headers)
+				require.Equal(t, cm.WebhookDefinitionHeaders{{Key: "X-Imported", Secret: cm.NewOptBool(true), Value: cm.NewOptString("imported-secret")}}, stored.Headers)
 			},
 		},
 		{
 			Config: webhookHeadersConfig("Renamed", ""),
 			PostApplyFunc: func() {
-				recorder.requirePut(t, 4, "4", "Renamed", nil)
+				recorder.requirePut(t, 4, "5", "Renamed", nil)
 
 				stored, ok := server.StoredWebhookDefinition("space", "imported-webhook")
 				require.True(t, ok)
@@ -235,7 +245,7 @@ func TestAccWebhookResourceConfiguredSecretHeaders(t *testing.T) {
 
 	imported := cm.WebhookDefinitionData{
 		Name: "Imported webhook", URL: "https://example.com/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
-		Headers: cm.WebhookDefinitionHeaders{{Key: "X-Secret", Secret: cm.NewOptBool(true), Value: cm.NewOptString("imported-value")}},
+		Headers: cm.WebhookDefinitionRequestHeaders{{Key: "X-Secret", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("imported-value")}},
 	}
 	server.SetWebhookDefinition("space", "imported-webhook", imported)
 	recorder := &webhookWriteRecorder{next: server}
@@ -292,7 +302,7 @@ func TestAccWebhookResourceConfiguredSecretHeaders(t *testing.T) {
 		write:         2, requestVersion: "2", responseVersion: "3",
 	})
 	omitted.PreConfig = func() {
-		imported.Headers[0].Value = cm.NewOptString("rotated")
+		imported.Headers[0].Value = cm.NewOptNilString("rotated")
 		response, err := server.Handler().UpdateWebhookDefinition(t.Context(), &imported, cm.UpdateWebhookDefinitionParams{
 			SpaceID: "space", WebhookDefinitionID: "imported-webhook", XContentfulVersion: cm.NewOptInt(1),
 		})
