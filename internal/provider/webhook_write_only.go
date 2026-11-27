@@ -86,16 +86,26 @@ func prepareWebhookWrite(ctx context.Context, state, plan, config WebhookModel, 
 	passwordMatches, passwordDiags := prepareWebhookPassword(ctx, state, plan, config, store)
 	diags.Append(passwordDiags...)
 
-	needsPUT := !passwordMatches || !plan.HTTPBasicUsername.Equal(state.HTTPBasicUsername) ||
-		!plan.Name.Equal(state.Name) || !plan.URL.Equal(state.URL) || !plan.Active.Equal(state.Active) ||
-		!plan.Topics.Equal(state.Topics) || !plan.Filters.Equal(state.Filters) || !plan.Transformation.Equal(state.Transformation)
+	needsPUT := !passwordMatches || webhookSettingsRequirePUT(plan, state)
 
 	headers, headersChanged, headerDiags := prepareWebhookHeaders(ctx, state, plan, config, store)
 	request.Headers = headers
 
 	diags.Append(headerDiags...)
 
-	return request, needsPUT || headersChanged, diags
+	needsPUT = needsPUT || headersChanged
+	if state.WebhookID.IsNull() || needsPUT {
+		diags.Append(validateWebhookBasicPair(plan, config, state.WebhookID.IsNull())...)
+		diags.Append(validatePlannedWebhookHeaderValues(path.Root("headers"), headers.Elements(), state.Headers.Elements(), nil)...)
+	}
+
+	return request, needsPUT, diags
+}
+
+func webhookSettingsRequirePUT(plan, state WebhookModel) bool {
+	return !plan.HTTPBasicUsername.Equal(state.HTTPBasicUsername) ||
+		!plan.Name.Equal(state.Name) || !plan.URL.Equal(state.URL) || !plan.Active.Equal(state.Active) ||
+		!plan.Topics.Equal(state.Topics) || !plan.Filters.Equal(state.Filters) || !plan.Transformation.Equal(state.Transformation)
 }
 
 func prepareWebhookPassword(ctx context.Context, state, plan, config WebhookModel, store *webhookVerifiers) (bool, diag.Diagnostics) {

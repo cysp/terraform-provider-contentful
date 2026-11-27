@@ -241,7 +241,7 @@ func TestAccWebhookResourceBasicPasswordIgnoreChangesUsesEffectivePlan(t *testin
 			Check: checkStoredWebhookPassword(server, cm.NewOptNilString("effective-plan-password")),
 		},
 		{
-			Config: webhookBasicPasswordConfig("Updated webhook", `"changed-config-password"`, "lifecycle { ignore_changes = [http_basic_password] }"),
+			Config: webhookBasicPasswordConfig("Updated webhook", `""`, "lifecycle { ignore_changes = [http_basic_password] }"),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop),
 			}},
@@ -307,4 +307,21 @@ func checkStoredWebhookPassword(server *cmt.Server, expected cm.OptNilString) re
 
 		return nil
 	}
+}
+
+func newWebhookBasicTestServer(t *testing.T) (*cmt.Server, *taxonomyRequestBodyRecorder, *mutationJSONResponseAdapter) {
+	t.Helper()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+	recorder := &taxonomyRequestBodyRecorder{next: server}
+
+	return server, recorder, &mutationJSONResponseAdapter{delegate: recorder}
+}
+
+const webhookBasicAddress = "contentful_webhook.test"
+
+func importExistingBasicWebhook(config string) resource.TestStep {
+	return resource.TestStep{Config: config, ResourceName: webhookBasicAddress, ImportState: true, ImportStateId: "space/existing", ImportStatePersist: true}
 }

@@ -115,7 +115,13 @@ Use Terraform 1.11.1 or later and ephemeral inputs for `http_basic_password_wo` 
 
 ### Basic authentication
 
-Set `http_basic_username` together with either `http_basic_password` or `http_basic_password_wo`. Contentful normally omits the password from reads. The provider sends the configured username and password together on each webhook PUT that retains Basic authentication. With the write-only argument, supply the actual password at apply time, including for changes to other webhook settings.
+To create or replace a webhook with Basic authentication, supply `http_basic_username` and either `http_basic_password` or `http_basic_password_wo`. Changing the username also requires a password. Use a nonempty password for a nonempty username. Contentful limits the username to 50 characters and the password to 255. Some Unicode characters count as two toward these limits. Avoid colons in usernames because HTTP Basic uses the first colon to separate the username from the password. [Contentful configuration](https://www.contentful.com/developers/docs/extensibility/webhooks/configure-webhook/#http-basic-authentication) · [HTTP Basic authentication](https://www.rfc-editor.org/rfc/rfc7617.html#section-2)
+
+An **Incomplete Basic credentials for an in-place webhook update** warning means the visible pair would fail on an update. Supply the missing counterpart before applying. Terraform can otherwise apply prerequisites before the Webhook fails. This warning can also appear on a valid replacement when `ignore_changes` retains an old value during preliminary planning. Review the replacement’s configured pair.
+
+For a replacement, Terraform can validate a known pair during planning. An unknown password can resolve to an invalid value at apply, and an ephemeral password can change between plan and apply. With the default destroy-first order, this can leave the old webhook deleted and the replacement uncreated. If the receiver must remain available and can tolerate overlapping deliveries from two active webhooks, use `create_before_destroy`.
+
+Contentful normally omits the password from reads. The provider sends the configured username and password together on each webhook PUT that retains Basic authentication. With the write-only argument, supply the actual password at apply time, including for changes to other webhook settings.
 
 Import leaves an omitted password null. Terraform can store an ordinary password that Contentful returns on the initial import. Supply a password before updating a webhook that should retain Basic authentication. If the returned username changes, refresh drops the former username’s password. Removing both arguments from the effective Terraform plan sends both fields as null on the next PUT and clears Basic authentication. An ignored ordinary password can supply its prior value only when Terraform has already stored it.
 

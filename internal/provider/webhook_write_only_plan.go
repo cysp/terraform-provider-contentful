@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -32,21 +33,20 @@ func (config *WebhookModel) writeOnlyHeaderValues() map[string]types.String {
 func validateWebhookWriteOnly(plan, config WebhookModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if !config.HTTPBasicPasswordWO.IsNull() {
-		if !plan.HTTPBasicPassword.IsNull() && !plan.HTTPBasicPassword.IsUnknown() {
-			diags.AddAttributeError(path.Root(webhookPasswordWO), "Conflicting webhook Basic passwords", "Configure either http_basic_password or http_basic_password_wo. Remove an ignore_changes rule that retains the ordinary password before migrating.")
-		}
-
-		if plan.HTTPBasicUsername.IsNull() {
-			diags.AddAttributeError(path.Root("http_basic_username"), "Missing webhook Basic username", "Configure http_basic_username together with http_basic_password_wo.")
-		}
+	if knownWebhookPassword(config.HTTPBasicPasswordWO) && knownWebhookPassword(plan.HTTPBasicPassword) {
+		diags.AddAttributeError(path.Root(webhookPasswordWO), "Conflicting webhook Basic passwords", "Configure either http_basic_password or http_basic_password_wo. Remove an ignore_changes rule that retains the ordinary password before migrating.")
 	}
 
 	if plan.Headers.IsUnknown() || config.Headers.IsUnknown() {
 		return diags
 	}
 
-	for _, key := range slices.Sorted(maps.Keys(config.writeOnlyHeaderValues())) {
+	values := config.writeOnlyHeaderValues()
+	for _, key := range slices.Sorted(maps.Keys(values)) {
+		if values[key].IsUnknown() {
+			continue
+		}
+
 		credentialPath := webhookHeaderVerifierPath(key)
 
 		header, ok := plan.Headers.Elements()[key]
@@ -76,6 +76,75 @@ func validateWebhookWriteOnly(plan, config WebhookModel) diag.Diagnostics {
 	}
 
 	return diags
+}
+
+func knownWebhookPassword(password types.String) bool {
+	return !password.IsUnknown() && !password.IsNull()
+}
+
+// An ordinary password in the effective plan still applies when the write-only
+// alternative is unknown. A known conflict is diagnosed separately.
+func webhookPlannedBasicPassword(plan, config WebhookModel) (types.String, path.Path) {
+	if !knownWebhookPassword(plan.HTTPBasicPassword) && !config.HTTPBasicPasswordWO.IsNull() {
+		return config.HTTPBasicPasswordWO, path.Root(webhookPasswordWO)
+	}
+
+	return plan.HTTPBasicPassword, path.Root("http_basic_password")
+}
+
+func validateWebhookBasicPair(plan, config WebhookModel, creating bool) diag.Diagnostics {
+	password, passwordPath := webhookPlannedBasicPassword(plan, config)
+	username := plan.HTTPBasicUsername
+
+	var diags diag.Diagnostics
+	// A PUT with the same username and no password omits both fields.
+	if creating || !password.IsNull() {
+		diags.Append(validateWebhookUsernameLength(username)...)
+	}
+
+	diags.Append(validateWebhookPasswordLength(password, passwordPath)...)
+
+	diags.Append(validateWebhookBasicPairValues(username, password, passwordPath, creating)...)
+
+	return diags
+}
+
+func validateWebhookBasicPairValues(username, password types.String, passwordPath path.Path, requirePair bool) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if username.IsUnknown() || password.IsUnknown() {
+		return diags
+	}
+
+	switch {
+	case requirePair && !username.IsNull() && password.IsNull():
+		diags.AddAttributeError(passwordPath, "Missing webhook Basic password", "Supply a password when creating or replacing a webhook with Basic authentication or changing its username.")
+	case requirePair && username.IsNull() && !password.IsNull():
+		diags.AddAttributeError(path.Root("http_basic_username"), "Missing webhook Basic username", "A password requires a username in the effective plan.")
+	case username.IsNull() || password.IsNull():
+		// Request conversion distinguishes delegation from a changed username.
+	case username.ValueString() == "" && password.ValueString() != "":
+		diags.AddAttributeError(path.Root("http_basic_username"), "Incomplete webhook Basic credentials", "Supply a nonempty username with a nonempty password.")
+	case username.ValueString() != "" && password.ValueString() == "":
+		diags.AddAttributeError(passwordPath, "Incomplete webhook Basic credentials", "Supply a nonempty password with a nonempty username.")
+	}
+
+	return diags
+}
+
+func validateWebhookUsernameLength(username types.String) diag.Diagnostics {
+	if cm.WebhookBasicUsernameTooLong(username.ValueString()) {
+		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(path.Root("http_basic_username"), "Webhook Basic credential too long", "The username must fit within 50 UTF-16 code units.")}
+	}
+
+	return nil
+}
+
+func validateWebhookPasswordLength(password types.String, passwordPath path.Path) diag.Diagnostics {
+	if cm.WebhookBasicPasswordTooLong(password.ValueString()) {
+		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(passwordPath, "Webhook Basic credential too long", "The password must fit within 255 UTF-16 code units.")}
+	}
+
+	return nil
 }
 
 func (r *webhookResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
@@ -108,9 +177,18 @@ func (r *webhookResource) ModifyPlan(ctx context.Context, req resource.ModifyPla
 	headerValues := config.writeOnlyHeaderValues()
 	resp.Diagnostics.Append(validatePreliminaryWebhookHeaders(state, plan, config, headerValues)...)
 
-	if req.State.Raw.IsNull() || resp.Diagnostics.HasError() {
+	// Core may preview an update with ignored prior values before planning
+	// replacement from configuration. Validate that pair on the create plan.
+	if req.State.Raw.IsNull() {
+		resp.Diagnostics.Append(validateWebhookBasicPair(plan, config, true)...)
+
 		return
 	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// A full PUT can advance sys.version. Ignore only version when deciding
 	// whether an otherwise visible update already leaves room for this.
 	candidate := req.Plan
@@ -119,6 +197,8 @@ func (r *webhookResource) ModifyPlan(ctx context.Context, req resource.ModifyPla
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resp.Diagnostics.Append(validatePlannedWebhookUpdateCredentials(ctx, req.Private, plan, state, config, candidate.Raw.IsFullyKnown())...)
 
 	hasWriteOnly := len(headerValues) != 0 || !config.HTTPBasicPasswordWO.IsNull()
 	unchanged, compareDiags := webhookRemoteValuesUnchanged(ctx, candidate, req.State)
@@ -149,6 +229,90 @@ func (r *webhookResource) ModifyPlan(ctx context.Context, req resource.ModifyPla
 	}
 
 	resp.Plan = candidate
+}
+
+func validatePlannedWebhookUpdateCredentials(ctx context.Context, private PrivateProviderData, plan, state, config WebhookModel, fullyKnown bool) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	usernameChanged := !plan.HTTPBasicUsername.IsUnknown() && !plan.HTTPBasicUsername.Equal(state.HTTPBasicUsername)
+	if usernameChanged && plan.HTTPBasicUsername.Equal(config.HTTPBasicUsername) {
+		diags.Append(validateWebhookUsernameLength(plan.HTTPBasicUsername)...)
+	}
+
+	password, passwordPath := webhookPlannedBasicPassword(plan, config)
+
+	diags.Append(validatePreliminaryWebhookBasicPair(plan, state, config, password, passwordPath, usernameChanged)...)
+
+	lengthDiags := validateWebhookPasswordLength(password, passwordPath)
+	if len(lengthDiags) == 0 {
+		return diags
+	}
+
+	// In the preliminary update plan, even Config can contain an ignored
+	// ordinary value that Core will discard when planning a replacement.
+	if knownWebhookPassword(plan.HTTPBasicPassword) &&
+		(password.Equal(state.HTTPBasicPassword) || !password.Equal(config.HTTPBasicPassword)) {
+		return diags
+	}
+
+	if usernameChanged || (fullyKnown && webhookSettingsRequirePUT(plan, state)) ||
+		oversizedWebhookPasswordNeedsWrite(ctx, private, state, plan, config, password, fullyKnown) {
+		diags.Append(lengthDiags...)
+	}
+
+	return diags
+}
+
+func validatePreliminaryWebhookBasicPair(plan, state, config WebhookModel, password types.String, passwordPath path.Path, usernameChanged bool) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	// A selected write-only password cannot come from prior state. An ordinary
+	// pair in Core's preliminary replacement plan can include an ignored value.
+	selectedWriteOnly := passwordPath.Equal(path.Root(webhookPasswordWO)) && knownWebhookPassword(password)
+
+	changedOrdinary := plan.HTTPBasicUsername.Equal(config.HTTPBasicUsername) &&
+		!plan.HTTPBasicPassword.Equal(state.HTTPBasicPassword) && plan.HTTPBasicPassword.Equal(config.HTTPBasicPassword)
+
+	pairDiags := validateWebhookBasicPairValues(plan.HTTPBasicUsername, password, passwordPath, true)
+	switch {
+	case usernameChanged && (selectedWriteOnly || changedOrdinary):
+		diags.Append(pairDiags...)
+	case pairDiags.HasError() && (usernameChanged || (!password.IsNull() && (selectedWriteOnly || changedOrdinary))):
+		// Core also sends this preliminary plan for a valid replacement with
+		// an ignored counterpart. Only the create plan can settle that case.
+		diags.AddWarning("Incomplete Basic credentials for an in-place webhook update",
+			"An in-place update with this Basic username and password would fail. Other resources may already have changed by then. Supply the missing or nonempty counterpart to update the webhook. Terraform checks the configured credentials separately when planning a replacement.")
+	}
+
+	return diags
+}
+
+// Both password forms can match the last acknowledged value and change only
+// Terraform storage. Compare only oversized candidates here so ordinary plans
+// keep their existing verifier cost and replacement can recover corrupt state.
+func oversizedWebhookPasswordNeedsWrite(ctx context.Context, private PrivateProviderData, state, plan, config WebhookModel, password types.String, fullyKnown bool) bool {
+	store, diags := readWebhookVerifiers(ctx, private, state)
+	if diags.HasError() {
+		return false
+	}
+
+	matches, diags := webhookSecretMatches(ctx, store.passwordHash(), rootWriteOnlySecretPath(webhookPasswordWO), state.HTTPBasicPassword, password, !state.HTTPBasicUsername.IsNull())
+	if diags.HasError() {
+		return false
+	}
+
+	if !matches {
+		return true
+	}
+
+	if !fullyKnown || (plan.Headers.Equal(state.Headers) && len(config.writeOnlyHeaderValues()) == 0) {
+		return false
+	}
+
+	// A matching legacy password will still be sent on a header update.
+	_, headersChanged, diags := prepareWebhookHeaders(ctx, state, plan, config, &store)
+
+	return !diags.HasError() && headersChanged
 }
 
 func webhookWriteOnlyChangePlanned(ctx context.Context, private PrivateProviderData, state, config WebhookModel, headerValues map[string]types.String, scheduled bool) (bool, diag.Diagnostics) {

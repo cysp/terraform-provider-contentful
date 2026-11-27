@@ -5,8 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -70,19 +68,15 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"filters": WebhookFiltersSchema(ctx, true),
 			"http_basic_password": schema.StringAttribute{
-				MarkdownDescription: "HTTP Basic authentication password. Configure it together with `http_basic_username`. When Contentful omits the password, refresh retains the previously managed value for the same username. If the response omits both fields, refresh retains the prior username and password. Import leaves an omitted password null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.",
+				MarkdownDescription: "HTTP Basic authentication password. Requires a username in the effective plan. When Contentful omits the password, refresh retains the previously managed value for the same username. If the response omits both fields, refresh retains the prior username and password. Import leaves an omitted password null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.",
 				Optional:            true,
 				Sensitive:           true,
 			},
 			"http_basic_password_wo": schema.StringAttribute{
-				MarkdownDescription: "Write-only alternative to `http_basic_password` for Terraform 1.11.1 or later. Supply it with `http_basic_username` on every apply that writes the webhook. An ephemeral input keeps the password out of saved plans. See [Secrets and Terraform state](../guides/secrets-and-state#basic-authentication).",
+				MarkdownDescription: "Write-only alternative to `http_basic_password` for Terraform 1.11.1 or later. Requires a username in the effective plan to set or rotate the password. An ephemeral input keeps the password out of saved plans. See [Secrets and Terraform state](../guides/secrets-and-state#basic-authentication).",
 				Optional:            true,
 				Sensitive:           true,
 				WriteOnly:           true,
-				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.MatchRoot("http_basic_password")),
-					stringvalidator.AlsoRequires(path.MatchRoot("http_basic_username")),
-				},
 			},
 			"http_basic_username": schema.StringAttribute{
 				Description: "HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.",
