@@ -125,7 +125,8 @@ Declare each managed header in `headers`. For a secret header, set `secret = tru
 
 On a full webhook update, the outcome depends on the header declaration.
 
-- If an external edit changes a readable header to secret, refresh drops its former readable value. A new or renamed secret header needs its value, even if the new name differs only in capitalization. Include only one spelling of each name.
+- Contentful keeps an existing header’s `secret` flag in both directions. Terraform warns about a known change during planning because it can preview an in-place update before resolving a replacement. A replacement can establish new flags. An in-place apply rejects the change before the Webhook PUT, even if prerequisites have already changed. To change the flag, remove the header in one apply and recreate it in a later apply, or use a new name. To rotate the value of an existing secret header, keep `secret = true` and change the value in one apply. If refresh observes a formerly readable header as secret, it drops the former value.
+- A new or renamed secret header needs its value, even if the new name differs only in capitalization. Include only one spelling of each name.
 - A retained secret header can be sent with its exact key and `secret = true`, omitting the value. Contentful keeps the existing remote bytes. This also works after import, when Terraform has neither the value nor a verifier. Supplying a write-only value after import installs it.
 - Removing only `value_wo` while retaining the header declaration preserves the remote header and any previous verifier. A later comparison still uses the last acknowledged value. To delete the remote header, remove its key from `headers`. Omitting the map or setting `headers = {}` clears all headers unless a lifecycle rule retains them. [Contentful custom header updates](https://www.contentful.com/developers/docs/extensibility/webhooks/headers/#custom-headers)
 

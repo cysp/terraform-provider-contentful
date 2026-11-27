@@ -158,7 +158,7 @@ func (v WebhookHeaderValue) SchemaAttributes(_ context.Context) map[string]schem
 			WriteOnly:           true,
 		},
 		"secret": schema.BoolAttribute{
-			Description: "Whether Contentful treats the header value as secret. Defaults to `false`.",
+			Description: "Whether Contentful treats the header value as secret. Defaults to `false`. To change the flag under the same name, remove the header in one apply and recreate it in a later apply.",
 			Optional:    true,
 			Computed:    true,
 			Default:     booldefault.StaticBool(false),

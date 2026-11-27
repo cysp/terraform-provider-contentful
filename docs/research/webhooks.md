@@ -298,6 +298,42 @@ the next plan was empty. Each probe Webhook was deleted (204) and read back
 (404). These probes exercised configuration and local state; no deliveries were
 triggered or inspected.
 
+### Changing the secret flag of an existing header
+
+Follow-up probes on the same date started with an inactive Webhook and a readable
+header. A versioned PUT with its exact name, `secret: true`, and new synthetic
+bytes returned 200. Both the PUT and subsequent GET returned `secret: false`
+**and the newly submitted bytes**. This happened on two separate Webhooks. The
+inverse PUT on an existing secret header requested `secret: false` and new
+bytes. It returned 200 with `secret: true` and no value; GET agreed. The
+redaction prevents determining which bytes were stored in that inverse case.
+
+Removing the readable header in one PUT and recreating it with `secret: true`
+in another produced a redacted secret header. With Terraform 1.17.2 and the
+development provider, both changes occurred between refreshes. Refresh discarded
+the previous readable value. Applying that value as `value_wo` advanced version
+6 to 7, recorded a header verifier, preserved the Basic verifier byte-for-byte,
+and produced an empty next plan. A separate external replacement of both Basic
+credentials exposed the new username and omitted the password. Refresh cleared
+the old ordinary password; applying its bytes to the new user advanced version
+2 to 3, recorded a verifier for that username, and produced an empty next plan.
+The two follow-up Webhooks were deleted (204) and GET confirmed absence (404).
+
+A final live Terraform run checked the provider’s preflight on another inactive
+Webhook. Applying `value_wo` to a known non-secret header failed at version 1;
+GET still returned the original ordinary bytes and version 1. Separate applies
+removing and recreating that header succeeded. At version 3, GET redacted its
+value, Terraform had a header verifier, and the next plan was empty. Cleanup
+returned 204 and GET returned 404.
+
+A final version probe used one inactive Webhook with a secret header and no
+Basic credentials. Requesting `secret: false` with the same bytes kept version
+0; requesting it with different bytes advanced to 1. Resending those bytes with
+`secret: true` kept version 1, and restoring the original bytes advanced to 2.
+Every PUT and GET kept the header secret and omitted its value. The version
+sequence is consistent with accepting the changed bytes, although the responses
+never disclose them. Deletion returned 204 and GET returned 404.
+
 ## Observation limits
 
 These configuration probes do not establish every secret-header projection, filter

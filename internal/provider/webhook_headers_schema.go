@@ -51,3 +51,40 @@ func validatePlannedWebhookHeaderValues(headersPath path.Path, headers map[strin
 
 	return diags
 }
+
+// Contentful retains the secret flag for the lifetime of an exact header name.
+func changedWebhookHeaderSecretFlags(state, plan WebhookModel) []string {
+	// A different space replaces the webhook. None of its header flags carry over.
+	if !state.SpaceID.Equal(plan.SpaceID) {
+		return nil
+	}
+
+	var changed []string
+
+	for _, key := range slices.Sorted(maps.Keys(plan.Headers.Elements())) {
+		before := state.Headers.Elements()[key].Value().Secret
+		after := plan.Headers.Elements()[key].Value().Secret
+
+		if before.IsNull() || before.IsUnknown() || after.IsNull() || after.IsUnknown() || before.Equal(after) {
+			continue
+		}
+
+		changed = append(changed, key)
+	}
+
+	return changed
+}
+
+func validatePreliminaryWebhookHeaders(state, plan, config WebhookModel, headerValues map[string]types.String) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	for _, key := range changedWebhookHeaderSecretFlags(state, plan) {
+		diags.AddWarning("Header flag change requires Webhook replacement or removal", path.Root("headers").AtMapKey(key).AtName("secret").String()+": An in-place update cannot change an existing header’s secret flag. Other resources may change before the update fails. A replacement creates new headers. To keep this webhook, remove the header in one apply and recreate it in another, or choose a new header name.")
+	}
+
+	if !config.Headers.IsUnknown() && !plan.Headers.Equal(state.Headers) {
+		diags.Append(validatePlannedWebhookHeaderValues(path.Root("headers"), plan.Headers.Elements(), headerValues, state.WebhookID.IsNull())...)
+	}
+
+	return diags
+}

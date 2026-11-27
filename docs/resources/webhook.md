@@ -160,7 +160,7 @@ Required:
 
 Optional:
 
-- `secret` (Boolean) Whether Contentful treats the header value as secret. Defaults to `false`.
+- `secret` (Boolean) Whether Contentful treats the header value as secret. Defaults to `false`. To change the flag under the same name, remove the header in one apply and recreate it in a later apply.
 - `value` (String) Supply an initial value or `value_wo` for each configured header when creating or replacing a webhook. Omit both on update to retain an existing secret under its exact name. Ordinary headers require a value. Non-secret values can contain Contentful JSON-pointer templates such as `{ /payload/sys/id }`; secret headers and HTTP Basic credentials are not transformed. Contentful's secret flag does not make the Terraform value sensitive. See [Secrets and Terraform state](../guides/secrets-and-state).
 - `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only alternative to `value` for Terraform 1.11.1 or later. Set `secret = true` and supply a randomly generated secret through an ephemeral input. Omit both values to retain an existing secret header. See [Secrets and Terraform state](../guides/secrets-and-state#secret-custom-headers).
 

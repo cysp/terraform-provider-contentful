@@ -99,24 +99,42 @@ func TestAccWebhookResourceWriteOnlyCreateRecovery(t *testing.T) {
 // readable response at the former write-only path could contain the old secret.
 func TestAccWebhookResourceWriteOnlyHeaderBecomesOrdinary(t *testing.T) {
 	t.Parallel()
+	fixture := newSeededWebhookFixture(t)
 
-	runtime, fixture, _ := importWebhookRecoveryFixture(t)
-	runtime.writeConfig(t, webhookRecoveryConfig(true, "X-Managed"))
-	prior := readWebhookRecoveryInstance(t, runtime).verifiers
+	var (
+		observations webhookProtocolObservations
+		prior        webhookPrivateVerifiers
+	)
 
-	fixture.onNextResponse(http.MethodPut, func(w http.ResponseWriter, rec *httptest.ResponseRecorder) {
-		body := mutateTestJSON(rec.Body.String(), func(document map[string]any) {
-			document["headers"] = []map[string]any{
+	config := webhookRecoveryConfig(true, "")
+	// Only the Terraform storage mode changes. CMA's secret flag stays true.
+	ordinary := webhookRecoveryStep(strings.Replace(config, "value_wo=var.header", `value="public-replacement"`, 1), webhookPriorPassword, webhookPriorHeader)
+	ordinary.PreConfig = func() {
+		prior = observations.lastApply().verifiers(t)
+		require.Contains(t, prior.Headers, "X-Managed")
+		webhookReplyFields(fixture, http.MethodPut, func(doc map[string]any) {
+			doc["headers"] = []map[string]any{
 				{"key": "X-Managed", "secret": false, "value": webhookPriorHeader},
 				{"key": "X-Sibling", "secret": true},
 			}
 		})
-		_, _ = io.WriteString(w, body)
-	})
+	}
+	ordinary.ExpectError = regexp.MustCompile("(?s)Error running apply:.*Unexpected webhook secret header in response")
+	retry := webhookRecoveryStep(ordinary.Config, webhookPriorPassword, webhookPriorHeader)
+	retry.PreConfig = func() {
+		reply := observations.lastApply()
+		require.Equal(t, prior, reply.verifiers(t))
+		require.True(t, reply.model(t).Headers.Elements()["X-Managed"].Value().Value.IsNull())
 
-	output, err := runWebhookRecoveryCLI(t, runtime, webhookPriorPassword, webhookPriorHeader, "apply", "-auto-approve")
-	require.Error(t, err, output)
-	require.Equal(t, prior, readWebhookRecoveryInstance(t, runtime).verifiers)
+		writes := fixture.mutations()
+		require.Len(t, writes, 2)
+		require.Equal(t, "1", writes[1].version)
+		require.Equal(t, []any{
+			map[string]any{"key": "X-Managed", "secret": true, "value": "public-replacement"},
+			map[string]any{"key": "X-Sibling", "secret": true},
+		}, testJSONObject(writes[1].body)["headers"])
+	}
+	testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{importedWebhookRecoveryStep(t, fixture), ordinary, retry})
 }
 
 // A case-only rename has a new Terraform key. Publishing an explicitly
