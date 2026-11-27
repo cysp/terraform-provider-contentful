@@ -136,6 +136,8 @@ Each Webhook instance stores its verifiers together under the private key `write
 
 An otherwise consistent successful PUT acknowledges a planned Basic credential removal even if its response omits the username.
 
+Use provider-authored text for Webhook GET, POST, PUT and DELETE errors. A remote error or decoder message can contain credentials absent from Terraform state. Keep Webhook password and header diagnostic paths in the detail without attaching their HCL source excerpts. The header map validator identifies a null entry by key in the diagnostic detail. A decoded HTTP 422 `ValidationFailed` on POST or PUT directs the practitioner to review the definition. A decoded HTTP 401 directs the practitioner to check the provider’s Contentful management access token. A decoded HTTP 409 `Conflict` on a versioned PUT calls for a fresh plan and review of remote changes. Contentful returned that response for [stale Webhook versions](../research/webhooks.md#webhook-definition-versions). A transport or response-decoding error leaves the outcome of a write uncertain.
+
 A POST reply must identify the requested space and supply a nonempty assigned ID before the provider can record any recovery state. Otherwise, direct the practitioner to inspect the requested space before retrying.
 
 If a PUT reply identifies another Webhook, keep all API-backed fields, identity and credential verifiers from the target’s prior state. Apply local timeout changes and clear the public and private versions. The next write requires a refreshed version.

@@ -3,9 +3,9 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	"github.com/cysp/terraform-provider-contentful/internal/provider/util"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -56,6 +56,8 @@ func (r *webhookResource) ImportState(ctx context.Context, req resource.ImportSt
 }
 
 func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	defer omitWebhookCredentialSource(&resp.Diagnostics)
+
 	var (
 		plan   WebhookModel
 		config WebhookModel
@@ -110,7 +112,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	definition, ok := response.(*cm.WebhookDefinitionStatusCode)
 	if err != nil || !ok {
-		resp.Diagnostics.AddError("Failed to create webhook", webhookMutationErrorDetail(response, err, mask.any()))
+		resp.Diagnostics.AddError("Failed to create webhook", webhookOperationErrorDetail(http.MethodPost, response))
 
 		return
 	}
@@ -132,6 +134,8 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	defer omitWebhookCredentialSource(&resp.Diagnostics)
+
 	var state WebhookModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -154,7 +158,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		WebhookDefinitionID: state.WebhookID.ValueString(),
 	}
 
-	response, err := r.providerData.client.GetWebhookDefinition(ctx, params)
+	response, _ := r.providerData.client.GetWebhookDefinition(ctx, params)
 
 	tflog.Info(ctx, "webhook.read", map[string]any{"params": params})
 
@@ -187,13 +191,13 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	default:
 		if contentfulResponseIsNotFound(response) {
-			resp.Diagnostics.AddWarning("Failed to read webhook", webhookReadErrorDetail(response, err, state))
+			resp.Diagnostics.AddWarning("Failed to read webhook", "HTTP 404. Contentful reported that the webhook does not exist.")
 			removeResourceFromStateWithIdentity(ctx, &resp.State, resp.Identity, &resp.Diagnostics)
 
 			return
 		}
 
-		resp.Diagnostics.AddError("Failed to read webhook", webhookReadErrorDetail(response, err, state))
+		resp.Diagnostics.AddError("Failed to read webhook", webhookOperationErrorDetail(http.MethodGet, response))
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -219,6 +223,8 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	defer omitWebhookCredentialSource(&resp.Diagnostics)
+
 	var (
 		plan   WebhookModel
 		config WebhookModel
@@ -316,7 +322,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	definition, ok := response.(*cm.WebhookDefinitionStatusCode)
 	if err != nil || !ok {
-		resp.Diagnostics.AddError("Failed to update webhook", webhookMutationErrorDetail(response, err, request.HttpBasicUsername.IsEmpty() || mask.any() || webhookReadRedaction(state).any()))
+		resp.Diagnostics.AddError("Failed to update webhook", webhookOperationErrorDetail(http.MethodPut, response))
 
 		return
 	}
@@ -422,7 +428,7 @@ func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest
 		WebhookDefinitionID: state.WebhookID.ValueString(),
 	}
 
-	response, err := r.providerData.client.DeleteWebhookDefinition(ctx, params)
+	response, _ := r.providerData.client.DeleteWebhookDefinition(ctx, params)
 
 	tflog.Info(ctx, "webhook.delete", map[string]any{"params": params})
 
@@ -431,35 +437,46 @@ func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest
 
 	default:
 		if contentfulResponseIsNotFound(response) {
-			resp.Diagnostics.AddWarning("Webhook already deleted", webhookReadErrorDetail(response, err, state))
+			resp.Diagnostics.AddWarning("Webhook already deleted", "HTTP 404. Contentful reported that the webhook does not exist.")
 
 			return
 		}
 
-		resp.Diagnostics.AddError("Failed to delete webhook", webhookReadErrorDetail(response, err, state))
+		resp.Diagnostics.AddError("Failed to delete webhook", webhookOperationErrorDetail(http.MethodDelete, response))
 	}
 }
 
-func webhookMutationErrorDetail(response any, err error, protected bool) string {
-	if protected {
-		return webhookResponseStatus(response) + "Contentful did not acknowledge the webhook write. The operation may have reached Contentful. Reads cannot confirm secret bytes. Coordinate recovery with the webhook receiver before applying again."
+// Free-form response bodies and decoder errors can include remote credential bytes,
+// including credentials that have never appeared in Terraform state.
+func webhookOperationErrorDetail(method string, response any) string {
+	if _, ok := response.(*cm.ApplicationJSONError); ok {
+		// The bare error union represents 401 on all four Webhook operations.
+		return "HTTP 401. Contentful rejected authentication. Check the provider's Contentful management access token."
 	}
 
-	return util.ErrorDetailFromContentfulManagementResponse(response, err)
-}
-
-func webhookResponseStatus(response any) string {
-	if result, ok := response.(cm.StatusCodeResponse); ok {
-		return fmt.Sprintf("HTTP %d. ", result.GetStatusCode())
+	if failure, ok := response.(*cm.ErrorStatusCode); ok {
+		if cmaError, decoded := failure.GetError(); decoded {
+			switch {
+			case method == http.MethodPut && failure.StatusCode == http.StatusConflict && cmaError.Sys.ID == cm.ErrorSysIDConflict:
+				return "HTTP 409. Contentful reported a conflict on the versioned webhook update. Create a fresh Terraform plan and review any remote changes before applying again."
+			case (method == http.MethodPost || method == http.MethodPut) && failure.StatusCode == http.StatusUnprocessableEntity && cmaError.Sys.ID == cm.ErrorSysIDValidationFailed:
+				return "HTTP 422. Contentful rejected the webhook definition. Review the configuration before applying again."
+			}
+		}
 	}
 
-	return ""
-}
+	detail := "Contentful did not confirm the webhook operation."
 
-func webhookReadErrorDetail(response any, err error, state WebhookModel) string {
-	if state.Name.IsNull() || webhookReadRedaction(state).any() {
-		return webhookResponseStatus(response) + "Contentful did not confirm the webhook operation."
+	switch method {
+	case http.MethodPost, http.MethodPut:
+		detail = "Contentful did not acknowledge the webhook write. The operation may have reached Contentful. Reads cannot confirm secret bytes. Coordinate recovery with the webhook receiver before applying again."
+	case http.MethodDelete:
+		detail = "Check whether the webhook still exists before retrying deletion."
 	}
 
-	return util.ErrorDetailFromContentfulManagementResponse(response, err)
+	if status, ok := response.(cm.StatusCodeResponse); ok {
+		return fmt.Sprintf("HTTP %d. %s", status.GetStatusCode(), detail)
+	}
+
+	return detail
 }

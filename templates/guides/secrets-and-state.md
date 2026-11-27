@@ -119,6 +119,8 @@ To create or replace a webhook with Basic authentication, supply `http_basic_use
 
 Terraform normalizes Unicode strings to NFC. A configured password or secret header can therefore send different bytes from a visually identical credential created outside Terraform. During delegation Terraform omits the credential bytes from the PUT. Contentful documents retention of an omitted secret header. For Basic authentication, the observed username and version changes support retention. Verify authentication at the receiver. When taking ownership, coordinate rotation with the receiver. Random ASCII credentials avoid this normalization difference.
 
+Reference a sensitive variable for an ordinary password or an ephemeral sensitive variable for a write-only password. Use variables for secret header values as well. Terraform diagnostics can print a source line from the configuration. In a single-line generated `.tf.json` file, that excerpt can include any inline password on the same line.
+
 An **Incomplete Basic credentials for an in-place webhook update** warning means the visible pair would fail on an update. Supply the missing counterpart before applying. Terraform can otherwise apply prerequisites before the Webhook fails. This warning can also appear on a valid replacement when `ignore_changes` retains an old value during preliminary planning. Review the replacement’s configured pair.
 
 An imported username can exceed Contentful’s 50-unit limit after Terraform normalizes it. If a password would be sent with that username, planning warns and an in-place update fails before the PUT. Keep both password arguments omitted to delegate the pair, or supply a shorter username and its password.

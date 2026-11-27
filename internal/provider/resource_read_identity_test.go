@@ -268,6 +268,7 @@ func readEndpointCases(t *testing.T) []readEndpointCase {
 
 			identity:      map[string]string{"space_id": "space", "webhook_id": "webhook"},
 			absentWarning: "Failed to read webhook",
+			absentDetail:  "HTTP 404. Contentful reported that the webhook does not exist.",
 		},
 		{
 			name:     "webhook_signing_secret",

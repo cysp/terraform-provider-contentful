@@ -5,7 +5,6 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -23,9 +22,27 @@ func WebhookHeadersSchema(ctx context.Context) schema.Attribute {
 		},
 		CustomType: TypedMap[TypedObject[WebhookHeaderValue]]{}.CustomType(ctx),
 		Optional:   true,
-		Validators: []validator.Map{
-			mapvalidator.NoNullValues(),
-		},
+		Validators: []validator.Map{webhookHeaderValuesValidator{}},
+	}
+}
+
+type webhookHeaderValuesValidator struct{}
+
+func (webhookHeaderValuesValidator) Description(context.Context) string {
+	return "Each configured header must be an object."
+}
+
+func (v webhookHeaderValuesValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v webhookHeaderValuesValidator) ValidateMap(ctx context.Context, req validator.MapRequest, resp *validator.MapResponse) {
+	headers := req.ConfigValue.Elements()
+	for _, key := range slices.Sorted(maps.Keys(headers)) {
+		if headers[key].IsNull() {
+			// An attribute diagnostic would print sibling credentials on the same HCL line.
+			resp.Diagnostics.AddError("Null webhook header", req.Path.AtMapKey(key).String()+": "+v.Description(ctx))
+		}
 	}
 }
 

@@ -63,7 +63,7 @@ func (f *webhookSecretRecoveryFixture) ServeHTTP(w http.ResponseWriter, r *http.
 	maps.Copy(w.Header(), rec.Header())
 	w.Header().Del("Content-Length")
 
-	if f.overrideMethod == r.Method && (rec.Code == http.StatusOK || rec.Code == http.StatusCreated) {
+	if f.overrideMethod == r.Method && (rec.Code >= 200 && rec.Code < 300) {
 		f.overrideMethod = ""
 		f.override(w, rec)
 

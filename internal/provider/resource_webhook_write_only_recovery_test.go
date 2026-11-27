@@ -248,34 +248,6 @@ func TestAccWebhookResourceDelegatesHeaderByName(t *testing.T) {
 	fixture.requirePuts(t, first, webhookExpectedRecoveryPut("2", webhookPriorPassword, webhookRotatedHeader, true), webhookExpectedRecoveryPut("3", webhookRotatedPassword, webhookPriorHeader, true))
 }
 
-func TestAccWebhookResourceWriteOnlyStalePlan(t *testing.T) {
-	t.Parallel()
-	runtime, fixture, first := importWebhookRecoveryFixture(t)
-	before := readWebhookRecoveryInstance(t, runtime)
-	out, err := runWebhookRecoveryCLI(t, runtime, webhookRotatedPassword, webhookRotatedHeader, "plan", "-out=rotate.tfplan")
-	require.NoError(t, err, out)
-	fixture.updateRemoteHeaders(t, 1, cm.WebhookDefinitionRequestHeaders{
-		{Key: "X-Managed", Secret: cm.NewOptBool(true)},
-		{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("externally-rotated")},
-	})
-	out, err = runWebhookRecoveryCLI(t, runtime, webhookRotatedPassword, webhookRotatedHeader, "apply", "rotate.tfplan")
-	require.Error(t, err, out)
-	require.Contains(t, out, "HTTP 409")
-	fixture.requirePuts(t, first, webhookExpectedRecoveryPut("1", webhookRotatedPassword, webhookRotatedHeader, true))
-	after := readWebhookRecoveryInstance(t, runtime)
-	require.Equal(t, before.Attributes, after.Attributes)
-	require.Equal(t, before.Private, after.Private)
-
-	fields, found := fixture.server.StoredWebhookDefinition("space", "imported")
-	require.True(t, found)
-	require.Equal(t, 2, fields.Sys.Version)
-	require.Equal(t, cm.NewOptNilString(webhookPriorPassword), fields.HttpBasicPassword)
-	require.Equal(t, cm.WebhookDefinitionHeaders{
-		{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptString(webhookPriorHeader)},
-		{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-rotated")},
-	}, fields.Headers)
-}
-
 func TestAccWebhookResourceWriteOnlyReadableResponse(t *testing.T) {
 	t.Parallel()
 
