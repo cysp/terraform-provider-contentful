@@ -19,9 +19,9 @@ func webhookResponseHeaders(headers cm.WebhookDefinitionHeaders, fallbackHeaders
 		if returned, present := header.Value.Get(); present {
 			value = types.StringValue(returned)
 		} else if secret {
-			fallback := fallbackHeaders.Elements()[header.Key].Value().Value
-			if !fallback.IsUnknown() {
-				value = fallback
+			fallback := fallbackHeaders.Elements()[header.Key].Value()
+			if fallback.Secret.ValueBool() && !fallback.Value.IsUnknown() {
+				value = fallback.Value
 			}
 		}
 

@@ -44,7 +44,7 @@ func (v *webhookVerifiers) encode() (writeOnlySecretVerifierChange, diag.Diagnos
 	return encodeVerifierChange(v)
 }
 
-func readWebhookVerifierRecords(ctx context.Context, private PrivateProviderData, mask webhookRedaction, username types.String) (webhookVerifiers, diag.Diagnostics) {
+func readWebhookVerifierRecords(ctx context.Context, private PrivateProviderData, mask webhookRedaction, username types.String, validate bool) (webhookVerifiers, diag.Diagnostics) {
 	data, diags := readVerifierData(ctx, private)
 	if diags.HasError() || len(data) == 0 {
 		return webhookVerifiers{}, diags
@@ -69,15 +69,17 @@ func readWebhookVerifierRecords(ctx context.Context, private PrivateProviderData
 
 	v.retain(mask, username)
 
-	if v.Basic != nil {
-		if _, _, reason := parseWriteOnlySecretHash(string(v.Basic.Hash)); reason != "" {
-			return webhookVerifiers{}, invalidWriteOnlySecretHashes(reason)
+	if validate {
+		if v.Basic != nil {
+			if _, _, reason := parseWriteOnlySecretHash(string(v.Basic.Hash)); reason != "" {
+				return webhookVerifiers{}, invalidWriteOnlySecretHashes(reason)
+			}
 		}
-	}
 
-	for _, name := range slices.Sorted(maps.Keys(v.Headers)) {
-		if _, _, reason := parseWriteOnlySecretHash(string(v.Headers[name])); reason != "" {
-			return webhookVerifiers{}, invalidWriteOnlySecretHashes(reason)
+		for _, name := range slices.Sorted(maps.Keys(v.Headers)) {
+			if _, _, reason := parseWriteOnlySecretHash(string(v.Headers[name])); reason != "" {
+				return webhookVerifiers{}, invalidWriteOnlySecretHashes(reason)
+			}
 		}
 	}
 

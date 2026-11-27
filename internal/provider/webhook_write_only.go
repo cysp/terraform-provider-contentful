@@ -120,7 +120,7 @@ func prepareWebhookPassword(ctx context.Context, state, plan, config WebhookMode
 }
 
 func readWebhookVerifiers(ctx context.Context, private PrivateProviderData, state WebhookModel) (webhookVerifiers, diag.Diagnostics) {
-	return readWebhookVerifierRecords(ctx, private, webhookReadRedaction(state), state.HTTPBasicUsername)
+	return readWebhookVerifierRecords(ctx, private, webhookReadRedaction(state), state.HTTPBasicUsername, true)
 }
 
 func prepareWebhookHeaders(ctx context.Context, state, plan, config WebhookModel, store *webhookVerifiers) (TypedMap[TypedObject[WebhookHeaderValue]], bool, diag.Diagnostics) {

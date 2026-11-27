@@ -45,7 +45,7 @@ func TestWebhookReadsPathBoundVerifiers(t *testing.T) {
 	private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: data}}
 	mask := webhookRedaction{password: true, headers: map[string]bool{"X-Token.v1": true}}
 	user := types.StringValue("user")
-	store, diags := readWebhookVerifierRecords(t.Context(), private, mask, user)
+	store, diags := readWebhookVerifierRecords(t.Context(), private, mask, user, true)
 	require.Empty(t, diags)
 
 	value := types.StringValue("synthetic vector")
@@ -66,7 +66,7 @@ func TestWebhookReadsPathBoundVerifiers(t *testing.T) {
 
 	// Even if public state already names a different user, this hash cannot
 	// acknowledge a password for that user. The header continues untouched.
-	store, diags = readWebhookVerifierRecords(t.Context(), private, mask, types.StringValue("other"))
+	store, diags = readWebhookVerifierRecords(t.Context(), private, mask, types.StringValue("other"), true)
 	require.Empty(t, diags)
 	require.Nil(t, store.Basic)
 	change, diags = store.encode()
@@ -99,7 +99,7 @@ func TestWebhookVerifierEnvelope(t *testing.T) {
 			t.Parallel()
 
 			private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(data)}}
-			_, diags := readWebhookVerifierRecords(t.Context(), private, webhookRedaction{password: true}, types.StringValue("a"))
+			_, diags := readWebhookVerifierRecords(t.Context(), private, webhookRedaction{password: true}, types.StringValue("a"), false)
 			require.True(t, diags.HasError())
 			require.Zero(t, private.writes)
 		})
@@ -112,6 +112,51 @@ func TestWebhookVerifierEnvelope(t *testing.T) {
 	require.Empty(t, diags)
 	require.Equal(t, &webhookBasicVerifier{Username: "", Hash: "malformed"}, v.Basic)
 	require.Equal(t, map[string]secretVerifier{"x.y": "one", "X.Y": "two", `x"\`: "three"}, v.Headers)
+}
+
+func TestWebhookRefreshPrunesOnlyObsoleteVerifierWithMalformedSibling(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	state := WebhookModel{
+		HTTPBasicUsername: types.StringValue("user"),
+		Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
+			"X-Token": NewTypedObject(WebhookHeaderValue{Secret: types.BoolValue(true)}),
+		}),
+	}
+	// Each repetition takes 6 bytes in this valid JSON string and 24 bytes
+	// under HTML/JS escaping. Pruning the Basic verifier must still fit.
+	hash := strings.Repeat("&<>\u2028", 80000)
+	input := `{"basic":{"username":"user","hash":"obsolete"},"headers":{"X-Token":"` + hash + `"}}`
+	private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(input)}}
+	change, diags := webhookVerifiersAfterRead(ctx, private, state, state, true)
+	require.Empty(t, diags)
+	require.Empty(t, change.publish(ctx, private))
+	require.JSONEq(t, `{"headers":{"X-Token":"`+hash+`"}}`, string(private.data[writeOnlySecretHashesPrivateKey]))
+	_, diags = readWebhookVerifierRecords(ctx, private, webhookReadRedaction(state), state.HTTPBasicUsername, true)
+	require.True(t, diags.HasError())
+}
+
+func TestWebhookRefreshDiscardsInvalidVerifiersWhenNoCredentialContinues(t *testing.T) {
+	t.Parallel()
+
+	redacted := func(name string) WebhookModel {
+		return WebhookModel{Headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
+			name: NewTypedObject(WebhookHeaderValue{Secret: types.BoolValue(true)}),
+		})}
+	}
+	prior, refreshed := redacted("old"), redacted("new")
+	private := &writeOnlyTestPrivateData{data: map[string][]byte{writeOnlySecretHashesPrivateKey: []byte(`{"unknown":"envelope"}`)}}
+	change, diags := webhookVerifiersAfterRead(t.Context(), private, prior, refreshed, false)
+	require.Empty(t, diags)
+	require.Empty(t, change.publish(t.Context(), private))
+	require.Nil(t, private.data[writeOnlySecretHashesPrivateKey])
+	_, diags = readWebhookVerifierRecords(t.Context(), private, webhookReadRedaction(refreshed), refreshed.HTTPBasicUsername, true)
+	require.Empty(t, diags)
+
+	private.failRead = true
+	_, diags = webhookVerifiersAfterRead(t.Context(), private, prior, refreshed, false)
+	require.True(t, diags.HasError())
+	require.Equal(t, "Private read failed", diags.Errors()[0].Summary())
 }
 
 // Only the final collection must fit when renaming a header in nearly full private data.

@@ -34,7 +34,8 @@ func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition 
 	model.HTTPBasicUsername = types.StringPointerValue(webhookDefinition.HttpBasicUsername.ValueStringPointer())
 
 	model.HTTPBasicPassword = types.StringPointerValue(webhookDefinition.HttpBasicPassword.ValueStringPointer())
-	if webhookDefinition.HttpBasicPassword.IsEmpty() && !fallback.HTTPBasicPassword.IsUnknown() {
+	if webhookDefinition.HttpBasicPassword.IsEmpty() && !model.HTTPBasicUsername.IsNull() &&
+		model.HTTPBasicUsername.Equal(fallback.HTTPBasicUsername) && !fallback.HTTPBasicPassword.IsUnknown() {
 		model.HTTPBasicPassword = fallback.HTTPBasicPassword
 	}
 

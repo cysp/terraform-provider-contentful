@@ -28,7 +28,7 @@ func TestWebhookResponseUsesExactKeyForOmittedSecretValues(t *testing.T) {
 	state, diags := NewWebhookResourceModelFromResponse(t.Context(), response, fallback)
 	require.Empty(t, diags)
 	require.Equal(t, map[string]TypedObject[WebhookHeaderValue]{
-		"X-Token":   NewTypedObject(WebhookHeaderValue{Secret: types.BoolValue(true), Value: types.StringValue("previous")}),
+		"X-Token":   NewTypedObject(WebhookHeaderValue{Secret: types.BoolValue(true), Value: types.StringNull()}),
 		"x-token":   NewTypedObject(WebhookHeaderValue{Secret: types.BoolValue(true), Value: types.StringNull()}),
 		"X-Empty":   NewTypedObject(WebhookHeaderValue{Secret: types.BoolValue(true), Value: types.StringValue("")}),
 		"X-Unknown": NewTypedObject(WebhookHeaderValue{Secret: types.BoolValue(true), Value: types.StringNull()}),
