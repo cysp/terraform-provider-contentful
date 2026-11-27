@@ -268,6 +268,36 @@ Boolean, both stored names (one readable, one secret) succeeded and a new name
 returned 422 with the missing-value message. GET confirmed the original
 definition after each rejection. Cleanup returned 204 and GET returned 404.
 
+## Credential removal and recreation
+
+On 2026-11-25 (UTC), sequential requests against a disposable inactive Webhook
+used its current version for every PUT. Each row includes a subsequent GET. All
+successful responses with a configured Basic username omitted the password, and
+all returned secret headers omitted their values.
+
+| Version before | PUT | Response and GET |
+| --- | --- | --- |
+| 0 | Supply the Basic pair, retain one exact-name secret header without a value, remove the other | 200, version 1. Only the retained name appeared. |
+| 1 | Change only the retained name’s case without supplying bytes | 422. GET still returned version 1 and the original spelling. |
+| 1 | Supply the same username with the password omitted, then with the password null | Both returned 422. GET remained at version 1. |
+| 1 | Change the username and supply a password | 200, version 2. The username was present and the password omitted. |
+| 2 | Send both Basic fields as null and an empty header list | 200, version 3. PUT and GET returned a null username, omitted password and empty header list. |
+| 3 | Recreate the removed header under its former name without a value | 422. GET still showed no headers at version 3. |
+| 3 | Supply the former username and header name with different credential bytes | 200, version 4. PUT and GET again returned redacted descriptors. |
+| 4 | Omit both Basic fields, retain the header by exact name, and change the Webhook name | 200, version 5. PUT and GET still included a non-null username. |
+
+A second inactive Webhook exercised the development provider through Terraform
+1.17.2. Import followed by configuration of both write-only credentials produced
+a nonempty plan. Apply recorded a Basic verifier and one header verifier at
+version 1, and the next plan was empty. Migrating the same header bytes to
+ordinary storage removed only the header verifier. Migrating back produced a
+fresh header hash. Both checkpoints stayed at version 1. Delegating that header
+while changing the Webhook name retained both verifier records byte-for-byte at
+version 2. Removing both credentials removed the private key at version 3, and
+the next plan was empty. Each probe Webhook was deleted (204) and read back
+(404). These probes exercised configuration and local state; no deliveries were
+triggered or inspected.
+
 ## Observation limits
 
 These configuration probes do not establish every secret-header projection, filter

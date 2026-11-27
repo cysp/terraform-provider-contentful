@@ -115,9 +115,9 @@ Use Terraform 1.11.1 or later and ephemeral inputs for `http_basic_password_wo` 
 
 ### Basic authentication
 
-Set `http_basic_username` together with either `http_basic_password` or `http_basic_password_wo`. Contentful normally omits the password from reads. The provider must resend the password on each webhook PUT that retains Basic authentication. With the write-only argument, supply the actual password at apply time, including for changes to other webhook settings.
+Set `http_basic_username` together with either `http_basic_password` or `http_basic_password_wo`. Contentful normally omits the password from reads. The provider sends the configured username and password together on each webhook PUT that retains Basic authentication. With the write-only argument, supply the actual password at apply time, including for changes to other webhook settings.
 
-Import leaves an omitted password null. Terraform can store an ordinary password that Contentful returns on the initial import. Supply a password before updating a webhook that should retain Basic authentication. Omitting both the username and password clears the remote credentials on the next PUT. An ignored ordinary password can supply its prior value only when Terraform has already stored it.
+Import leaves an omitted password null. Terraform can store an ordinary password that Contentful returns on the initial import. Supply a password before updating a webhook that should retain Basic authentication. If the returned username changes, refresh drops the former username’s password. Removing both arguments from the effective Terraform plan sends both fields as null on the next PUT and clears Basic authentication. An ignored ordinary password can supply its prior value only when Terraform has already stored it.
 
 ### Secret custom headers
 
@@ -125,7 +125,7 @@ Declare each managed header in `headers`. For a secret header, set `secret = tru
 
 On a full webhook update, the outcome depends on the header declaration.
 
-- A new or renamed secret header needs its value, even if the new name differs only in capitalization. Include only one spelling of each name.
+- If an external edit changes a readable header to secret, refresh drops its former readable value. A new or renamed secret header needs its value, even if the new name differs only in capitalization. Include only one spelling of each name.
 - A retained secret header can be sent with its exact key and `secret = true`, omitting the value. Contentful keeps the existing remote bytes. This also works after import, when Terraform has neither the value nor a verifier. Supplying a write-only value after import installs it.
 - Removing only `value_wo` while retaining the header declaration preserves the remote header and any previous verifier. A later comparison still uses the last acknowledged value. To delete the remote header, remove its key from `headers`. Omitting the map or setting `headers = {}` clears all headers unless a lifecycle rule retains them. [Contentful custom header updates](https://www.contentful.com/developers/docs/extensibility/webhooks/headers/#custom-headers)
 

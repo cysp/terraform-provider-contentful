@@ -3,6 +3,8 @@ package provider_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -10,6 +12,8 @@ import (
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	. "github.com/cysp/terraform-provider-contentful/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -27,7 +31,23 @@ type webhookPrivateVerifiers struct {
 // Private state and failed Apply replies are unavailable to TestStep state checks.
 // Observe the real provider replies produced during the framework's lifecycle.
 type webhookProtocolResult struct {
+	state   *tfprotov6.DynamicValue
 	private []byte
+}
+
+func (r webhookProtocolResult) model(t *testing.T) WebhookModel {
+	t.Helper()
+	require.NotNil(t, r.state)
+	schema := WebhookResourceSchema(t.Context())
+	raw, err := r.state.Unmarshal(schema.Type().TerraformType(t.Context()))
+	require.NoError(t, err)
+
+	state := tfsdk.State{Schema: schema, Raw: raw}
+
+	var model WebhookModel
+	require.Empty(t, state.Get(t.Context(), &model))
+
+	return model
 }
 
 func (r webhookProtocolResult) privateFields(t *testing.T) map[string][]byte {
@@ -53,8 +73,23 @@ func (r webhookProtocolResult) verifiers(t *testing.T) webhookPrivateVerifiers {
 }
 
 type webhookProtocolObservations struct {
-	mu      sync.Mutex
-	applies []webhookProtocolResult
+	mu                sync.Mutex
+	reads, applies    []webhookProtocolResult
+	nextReadVerifiers []byte
+}
+
+func (o *webhookProtocolObservations) firstApply() webhookProtocolResult {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+
+	return o.applies[0]
+}
+
+func (o *webhookProtocolObservations) injectNextReadVerifiers(verifiers []byte) {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+
+	o.nextReadVerifiers = verifiers
 }
 
 func (o *webhookProtocolObservations) lastApply() webhookProtocolResult {
@@ -62,6 +97,13 @@ func (o *webhookProtocolObservations) lastApply() webhookProtocolResult {
 	defer o.mu.Unlock()
 
 	return o.applies[len(o.applies)-1]
+}
+
+func (o *webhookProtocolObservations) lastRead() webhookProtocolResult {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+
+	return o.reads[len(o.reads)-1]
 }
 
 type observedWebhookProvider struct {
@@ -76,7 +118,46 @@ func (p observedWebhookProvider) ApplyResourceChange(ctx context.Context, req *t
 		p.observations.mu.Lock()
 		defer p.observations.mu.Unlock()
 
-		p.observations.applies = append(p.observations.applies, webhookProtocolResult{private: resp.Private})
+		p.observations.applies = append(p.observations.applies, webhookProtocolResult{state: resp.NewState, private: resp.Private})
+	}
+
+	return resp, err //nolint:wrapcheck // Preserve the provider RPC error.
+}
+
+func (p observedWebhookProvider) ReadResource(ctx context.Context, req *tfprotov6.ReadResourceRequest) (*tfprotov6.ReadResourceResponse, error) {
+	if req.TypeName != "contentful_webhook" {
+		return p.ProviderServer.ReadResource(ctx, req) //nolint:wrapcheck // Preserve the provider RPC error.
+	}
+
+	p.observations.mu.Lock()
+	stale := p.observations.nextReadVerifiers
+	p.observations.nextReadVerifiers = nil
+	p.observations.mu.Unlock()
+
+	if stale != nil {
+		var fields map[string][]byte
+
+		err := json.Unmarshal(req.Private, &fields)
+		if err != nil {
+			return nil, fmt.Errorf("decode prior private fields: %w", err)
+		}
+
+		fields["write_only_secret_hashes"] = stale
+
+		data, err := json.Marshal(fields)
+		if err != nil {
+			return nil, fmt.Errorf("encode injected private fields: %w", err)
+		}
+
+		req.Private = data
+	}
+
+	resp, err := p.ProviderServer.ReadResource(ctx, req)
+	if resp != nil {
+		p.observations.mu.Lock()
+		defer p.observations.mu.Unlock()
+
+		p.observations.reads = append(p.observations.reads, webhookProtocolResult{state: resp.NewState, private: resp.Private})
 	}
 
 	return resp, err //nolint:wrapcheck // Preserve the provider RPC error.
@@ -128,6 +209,19 @@ import {
     id="space/imported"
 }
 `
+
+func webhookReplyFields(fixture *webhookSecretRecoveryFixture, method string, edit func(map[string]any)) {
+	fixture.onNextResponse(method, func(w http.ResponseWriter, rec *httptest.ResponseRecorder) {
+		_, _ = w.Write([]byte(mutateTestJSON(rec.Body.String(), edit)))
+	})
+}
+
+func webhookPUTWithFields(version, password, header string, fields map[string]any) webhookMutation {
+	put := webhookExpectedRecoveryPut(version, password, header, true)
+	put.body = mutateTestJSON(put.body, func(doc map[string]any) { maps.Copy(doc, fields) })
+
+	return put
+}
 
 func (o *webhookProtocolObservations) providerFactories(t *testing.T, handler http.Handler) map[string]func() (tfprotov6.ProviderServer, error) {
 	t.Helper()

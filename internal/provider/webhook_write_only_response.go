@@ -176,36 +176,22 @@ func (mask webhookRedaction) retainUnconfirmed(data *WebhookModel, state, plan W
 	data.Headers = NewTypedMap(headers)
 }
 
-// A Read that witnesses a credential disappear invalidates its comparison
-// baseline. A recreated same-name header may use different secret bytes.
-func removedWebhookVerifiers(prior, refreshed WebhookModel) []writeOnlySecretPath {
-	var removed []writeOnlySecretPath
-	if !prior.HTTPBasicUsername.IsNull() && prior.HTTPBasicPassword.IsNull() && !prior.HTTPBasicUsername.Equal(refreshed.HTTPBasicUsername) {
-		removed = append(removed, rootWriteOnlySecretPath(webhookPasswordWO))
-	}
+func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData, prior, refreshed WebhookModel, passwordNull bool) (writeOnlySecretVerifierChange, diag.Diagnostics) {
+	before, after := webhookReadRedaction(prior), webhookReadRedaction(refreshed)
 
-	for key, item := range prior.Headers.Elements() {
-		header := item.Value()
-
-		next, present := refreshed.Headers.Elements()[key].GetValue()
-		if header.Secret.ValueBool() && header.Value.IsNull() && (!present || !next.Secret.ValueBool()) {
-			removed = append(removed, webhookHeaderVerifierPath(key))
-		}
-	}
-
-	return removed
-}
-
-func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData, prior, refreshed WebhookModel) (writeOnlySecretVerifierChange, diag.Diagnostics) {
-	removed := removedWebhookVerifiers(prior, refreshed)
-	if len(removed) == 0 {
+	sameUser := prior.HTTPBasicUsername.Equal(refreshed.HTTPBasicUsername)
+	if maps.Equal(before.headers, after.headers) && before.password == after.password &&
+		(!before.password || (sameUser && !passwordNull)) {
 		return writeOnlySecretVerifierChange{}, nil
 	}
 
-	store, diags := readWebhookVerifiers(ctx, private, prior)
+	after.password = before.password && after.password && sameUser && !passwordNull
+	maps.DeleteFunc(after.headers, func(key string, _ bool) bool { return !before.headers[key] })
+	store, diags := readWebhookVerifierRecords(ctx, private, after, refreshed.HTTPBasicUsername, false)
+
 	if diags.HasError() {
-		// Keep malformed contents in private state. Refresh and destruction
-		// remain available; subsequent Update fails closed without a baseline.
+		// An unreadable envelope remains unusable for comparison. Read and
+		// Delete remain available, but private access failures are still errors.
 		var accessDiags diag.Diagnostics
 
 		for _, diagnostic := range diags {
@@ -216,8 +202,6 @@ func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData,
 
 		return writeOnlySecretVerifierChange{}, accessDiags
 	}
-
-	store.retain(webhookReadRedaction(refreshed), refreshed.HTTPBasicUsername)
 
 	change, encodeDiags := store.encode()
 	diags.Append(encodeDiags...)

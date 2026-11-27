@@ -86,12 +86,14 @@ func TestWebhookMutationResponsePreservesPasswordOnlyWhenAbsent(t *testing.T) {
 				Sys:               cm.NewWebhookDefinitionSys("space", "webhook"),
 				Name:              "Webhook",
 				URL:               "https://example.com/webhook",
+				HttpBasicUsername: cm.NewOptNilString("user"),
 				HttpBasicPassword: test.responsePassword,
 			}
 			plan := WebhookModel{
 				WebhookID:         types.StringUnknown(),
 				Name:              types.StringUnknown(),
 				URL:               types.StringUnknown(),
+				HTTPBasicUsername: types.StringValue("user"),
 				HTTPBasicPassword: test.planPassword,
 				Filters:           NewTypedListNull[TypedObject[WebhookFilterValue]](),
 				Headers:           NewTypedMapUnknown[TypedObject[WebhookHeaderValue]](),

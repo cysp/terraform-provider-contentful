@@ -680,7 +680,7 @@ func TestCompleteWebhookPlanRejectsIndependentAttributeContradictions(t *testing
 
 	tests := map[string]struct {
 		mutate             func(*testing.T, *WebhookModel, *cm.WebhookDefinition)
-		expectedPath       string
+		expectedPaths      []string
 		stateValue         func(WebhookModel) any
 		expectedStateValue any
 	}{
@@ -688,7 +688,7 @@ func TestCompleteWebhookPlanRejectsIndependentAttributeContradictions(t *testing
 			mutate: func(_ *testing.T, plan *WebhookModel, _ *cm.WebhookDefinition) {
 				plan.ID = types.StringValue("different/legacy/id")
 			},
-			expectedPath:       "id",
+			expectedPaths:      []string{"id"},
 			stateValue:         func(state WebhookModel) any { return state.ID.ValueString() },
 			expectedStateValue: "space/webhook",
 		},
@@ -696,7 +696,7 @@ func TestCompleteWebhookPlanRejectsIndependentAttributeContradictions(t *testing
 			mutate: func(_ *testing.T, _ *WebhookModel, response *cm.WebhookDefinition) {
 				response.Name = "Response webhook"
 			},
-			expectedPath:       "name",
+			expectedPaths:      []string{"name"},
 			stateValue:         func(state WebhookModel) any { return state.Name.ValueString() },
 			expectedStateValue: "Response webhook",
 		},
@@ -704,7 +704,7 @@ func TestCompleteWebhookPlanRejectsIndependentAttributeContradictions(t *testing
 			mutate: func(_ *testing.T, _ *WebhookModel, response *cm.WebhookDefinition) {
 				response.Topics = []string{"Entry.save", "Entry.create"}
 			},
-			expectedPath:       "topics",
+			expectedPaths:      []string{"topics"},
 			stateValue:         func(state WebhookModel) any { return state.Topics.Elements() },
 			expectedStateValue: []types.String{types.StringValue("Entry.save"), types.StringValue("Entry.create")},
 		},
@@ -712,7 +712,7 @@ func TestCompleteWebhookPlanRejectsIndependentAttributeContradictions(t *testing
 			mutate: func(_ *testing.T, _ *WebhookModel, response *cm.WebhookDefinition) {
 				response.HttpBasicUsername = cm.NewOptNilString("response-username")
 			},
-			expectedPath:       "http_basic_username",
+			expectedPaths:      []string{"http_basic_password", "http_basic_username"},
 			stateValue:         func(state WebhookModel) any { return state.HTTPBasicUsername.ValueString() },
 			expectedStateValue: "response-username",
 		},
@@ -726,7 +726,7 @@ func TestCompleteWebhookPlanRejectsIndependentAttributeContradictions(t *testing
 				transformation.Method = cm.NewOptString("PUT")
 				response.Transformation.SetTo(transformation)
 			},
-			expectedPath:       "transformation",
+			expectedPaths:      []string{"transformation"},
 			stateValue:         func(state WebhookModel) any { return state.Transformation.Value().Method.ValueString() },
 			expectedStateValue: "PUT",
 		},
@@ -744,7 +744,7 @@ func TestCompleteWebhookPlanRejectsIndependentAttributeContradictions(t *testing
 
 			assert.Empty(t, responseDiags)
 			require.True(t, consistencyDiags.HasError())
-			assert.Equal(t, []string{test.expectedPath}, attributeDiagnosticPaths(t, consistencyDiags))
+			assert.Equal(t, test.expectedPaths, attributeDiagnosticPaths(t, consistencyDiags))
 			assert.Equal(t, test.expectedStateValue, test.stateValue(state))
 		})
 	}

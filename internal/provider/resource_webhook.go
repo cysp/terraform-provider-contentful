@@ -152,10 +152,13 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	version := 0
 
+	var passwordNull bool
+
 	var data WebhookModel
 
 	switch response := response.(type) {
 	case *cm.WebhookDefinition:
+		passwordNull = response.HttpBasicPassword.IsNull()
 		sanitized, secretDiags := webhookReadRedaction(state).redact(*response, state)
 		resp.Diagnostics.Append(secretDiags...)
 
@@ -167,6 +170,11 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
+		if response.HttpBasicUsername.IsEmpty() && response.HttpBasicPassword.IsEmpty() {
+			data.HTTPBasicUsername = state.HTTPBasicUsername
+			data.HTTPBasicPassword = state.HTTPBasicPassword
+		}
+
 		version = response.Sys.Version
 
 	default:
@@ -192,7 +200,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	change, pruneDiags := webhookVerifiersAfterRead(ctx, req.Private, state, data)
+	change, pruneDiags := webhookVerifiersAfterRead(ctx, req.Private, state, data, passwordNull)
 	resp.Diagnostics.Append(pruneDiags...)
 
 	if resp.Diagnostics.HasError() {
