@@ -1,12 +1,21 @@
 package provider_test
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync/atomic"
 	"testing"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-testing/config"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/require"
 )
 
@@ -146,4 +155,108 @@ resource "contentful_webhook" "test" {
 			require.Equal(t, writes, fixture.mutations())
 		})
 	}
+}
+
+func TestAccWebhookResourceWrongTargetPUTKeepsPriorState(t *testing.T) {
+	t.Parallel()
+	fixture := newSeededWebhookFixture(t)
+	fixture.server.SetWebhookDefinition("space", "foreign", cm.WebhookDefinitionData{
+		Name: "Foreign", URL: "https://example.invalid/foreign", Topics: []string{"Asset.publish"}, Active: cm.NewOptBool(false),
+		HttpBasicUsername: cm.NewOptNilString("other-user"),
+		Headers:           cm.WebhookDefinitionRequestHeaders{{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString(rand.Text())}},
+	})
+
+	var divert atomic.Bool
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut && divert.CompareAndSwap(true, false) {
+			other := r.Clone(r.Context())
+			other.Method = http.MethodGet
+			other.Body = http.NoBody
+			other.URL.Path = "/spaces/space/webhook_definitions/foreign"
+			fixture.server.ServeHTTP(w, other)
+
+			return
+		}
+
+		fixture.ServeHTTP(w, r)
+	})
+
+	var observations webhookProtocolObservations
+
+	priorPassword, priorHeader, nextPassword, nextHeader := rand.Text(), rand.Text(), rand.Text(), rand.Text()
+	hcl := func(password, header string) string {
+		return webhookBasicAuthConfig("Managed", `"user"`, strconv.Quote(password), fmt.Sprintf(`headers={
+"X-Managed"={secret=true,value=sensitive(%q)}
+"X-Sibling"={secret=true,value_wo=var.sibling}
+}`, header)) + "\nvariable \"sibling\" {\n type=string\n ephemeral=true\n sensitive=true\n}"
+	}
+	inputs := config.Variables{"sibling": config.StringVariable(webhookSiblingHeader)}
+	create := resource.TestStep{Config: hcl(priorPassword, priorHeader), ConfigVariables: inputs}
+
+	var before webhookProtocolResult
+
+	rotate := resource.TestStep{Config: hcl(nextPassword, nextHeader), ConfigVariables: inputs, ExpectError: regexp.MustCompile("Contentful returned a different webhook identity")}
+	rotate.PreConfig = func() { before = observations.lastApply(); divert.Store(true) }
+	retry := resource.TestStep{Config: rotate.Config, ConfigVariables: inputs, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate)}}}
+	retry.PreConfig = func() {
+		response := observations.lastApply()
+		prior, after := before.model(t), response.model(t)
+		require.True(t, after.Version.IsNull())
+		require.NotContains(t, response.privateFields(t), "version")
+
+		prior.Version = after.Version
+		require.True(t, prior.Name.Equal(after.Name), "the foreign name must not enter the target checkpoint")
+		require.Equal(t, prior, after)
+		require.Equal(t, before.verifiers(t), response.verifiers(t))
+
+		stored, ok := fixture.server.StoredWebhookDefinition("space", prior.WebhookID.ValueString())
+		require.True(t, ok)
+		require.Equal(t, 0, stored.Sys.Version)
+		require.Equal(t, stored.HttpBasicPassword.Or(""), priorPassword)
+	}
+	retry.PostApplyFunc = func() {
+		webhookID := before.model(t).WebhookID.ValueString()
+		writes := fixture.mutations()
+		require.Len(t, writes, 2)
+		require.Equal(t, "0", writes[1].version)
+		require.Equal(t, "/spaces/space/webhook_definitions/"+webhookID, writes[1].path)
+
+		headers := []map[string]any{{"key": "X-Managed", "secret": true, "value": nextHeader}, {"key": "X-Sibling", "secret": true}}
+		require.Equal(t, testJSON(testJSONObject(writes[1].body)["headers"]), testJSON(headers))
+
+		stored, ok := fixture.server.StoredWebhookDefinition("space", webhookID)
+		require.True(t, ok)
+		require.True(t, stored.HttpBasicPassword.Or("") == nextPassword && stored.Headers[0].Value.Or("") == nextHeader && stored.Headers[1].Value.Or("") == webhookSiblingHeader)
+	}
+	testObservedWebhookResource(t, handler, &observations, []resource.TestStep{create, rotate, retry})
+}
+
+func TestAccWebhookResourceRecoveryForeignBasicUsername(t *testing.T) {
+	t.Parallel()
+	fixture := newSeededWebhookFixture(t)
+
+	var observations webhookProtocolObservations
+
+	initial := importedWebhookRecoveryStep(t, fixture)
+	renamed := strings.Replace(webhookRecoveryConfig(true, ""), `name     = "Imported"`, `name     = "Renamed"`, 1)
+	update := webhookRecoveryStep(renamed, webhookPriorPassword, webhookPriorHeader)
+	update.PreConfig = func() {
+		webhookReplyFields(fixture, http.MethodPut, func(doc map[string]any) {
+			sys, _ := doc["sys"].(map[string]any)
+			sys["id"] = "foreign"
+			doc["httpBasicUsername"] = "other-user"
+		})
+	}
+	update.ExpectError = regexp.MustCompile("Contentful returned a different webhook identity")
+	refresh := webhookRecoveryStep(renamed, webhookPriorPassword, webhookPriorHeader)
+	refresh.PreConfig = func() {
+		response := observations.lastApply()
+		require.Equal(t, "user", response.model(t).HTTPBasicUsername.ValueString())
+		require.Equal(t, observations.firstApply().verifiers(t), response.verifiers(t))
+		fixture.requirePuts(t, webhookExpectedRecoveryPut("0", webhookPriorPassword, webhookPriorHeader, true), webhookPUTWithFields("1", webhookPriorPassword, "", map[string]any{"name": "Renamed"}))
+		fixture.requireStored(t, webhookPriorPassword, webhookPriorHeader, true)
+	}
+	refresh.ConfigPlanChecks = resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop)}}
+	testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{initial, update, refresh})
 }

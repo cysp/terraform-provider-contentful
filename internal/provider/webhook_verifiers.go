@@ -22,6 +22,17 @@ type webhookVerifiers struct {
 	changed bool
 }
 
+// A returned header list can rule out an old verifier even when recovery
+// keeps the planned descriptor to guard the next Read.
+func (v *webhookVerifiers) discardAbsentHeaders(returned TypedMap[TypedObject[WebhookHeaderValue]]) {
+	for name := range v.Headers {
+		if _, present := returned.Elements()[name]; !present {
+			delete(v.Headers, name)
+			v.changed = true
+		}
+	}
+}
+
 func (v *webhookVerifiers) retain(mask webhookRedaction, username types.String) {
 	if v.Basic != nil && (!mask.password || !username.Equal(types.StringValue(v.Basic.Username))) {
 		v.Basic = nil

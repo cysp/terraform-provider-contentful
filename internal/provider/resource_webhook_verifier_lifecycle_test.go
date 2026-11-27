@@ -2,6 +2,7 @@ package provider_test
 
 import (
 	"net/http"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -11,6 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/require"
 )
+
+func contradictNextWebhookName(fixture *webhookSecretRecoveryFixture) {
+	webhookReplyFields(fixture, http.MethodPut, func(doc map[string]any) { doc["name"] = "Unexpected name" })
+}
 
 func TestAccWebhookResourceRefreshBasicCredentialPresence(t *testing.T) {
 	t.Parallel()
@@ -151,4 +156,34 @@ func TestAccWebhookResourceRefreshOrphanHeaderVerifier(t *testing.T) {
 		return nil
 	}
 	testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{initial, remove, restore})
+}
+
+func TestAccWebhookResourceRecoverySupersededHeaderVerifier(t *testing.T) {
+	t.Parallel()
+	fixture := newSeededWebhookFixture(t)
+
+	var observations webhookProtocolObservations
+
+	config := webhookRecoveryConfig(true, "")
+	initial := importedWebhookRecoveryStep(t, fixture)
+
+	const ordinary = "synthetic-ordinary-header"
+
+	migrate := webhookRecoveryStep(strings.Replace(config, "value_wo=var.header", `value="`+ordinary+`"`, 1), webhookPriorPassword, webhookPriorHeader)
+
+	var original []byte
+
+	migrate.PreConfig = func() { original = observations.lastApply().privateFields(t)["write_only_secret_hashes"] }
+	rotate := webhookRecoveryStep(config, webhookPriorPassword, webhookRotatedHeader)
+	rotate.PreConfig = func() { observations.injectNextReadVerifiers(original); contradictNextWebhookName(fixture) }
+	rotate.ExpectError = regexp.MustCompile("Contentful returned a different webhook name")
+	retry := webhookRecoveryStep(config, webhookPriorPassword, webhookPriorHeader)
+	retry.PreConfig = func() {
+		prior := observations.firstApply().verifiers(t)
+		require.Equal(t, webhookPrivateVerifiers{Basic: prior.Basic}, observations.lastApply().verifiers(t))
+	}
+	retry.PostApplyFunc = func() {
+		fixture.requirePuts(t, webhookExpectedRecoveryPut("0", webhookPriorPassword, webhookPriorHeader, true), webhookExpectedRecoveryPut("1", webhookPriorPassword, ordinary, true), webhookExpectedRecoveryPut("2", webhookPriorPassword, webhookRotatedHeader, true), webhookExpectedRecoveryPut("3", webhookPriorPassword, webhookPriorHeader, true))
+	}
+	testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{initial, migrate, rotate, retry})
 }

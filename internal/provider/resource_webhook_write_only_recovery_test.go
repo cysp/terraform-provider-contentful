@@ -4,12 +4,14 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"strconv"
+	"regexp"
 	"strings"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/require"
 )
 
@@ -57,71 +59,6 @@ func TestAccWebhookResourceWriteOnlyLostUpdate(t *testing.T) {
 	require.NoError(t, err, output)
 	fixture.requirePuts(t, first, second, third, webhookExpectedRecoveryPut("2", webhookRotatedPassword, "", false))
 	fixture.requireStored(t, webhookRotatedPassword, webhookRotatedHeader, false)
-}
-
-func TestAccWebhookResourceWriteOnlyReadableResponse(t *testing.T) {
-	t.Parallel()
-
-	runtime, fixture, first := importWebhookRecoveryFixture(t)
-	prior := readWebhookRecoveryInstance(t, runtime).verifiers
-	puts := []webhookMutation{first}
-
-	// Faults share one webhook. Only a change to the stored definition increments its remote version.
-	for _, method := range []string{http.MethodGet, http.MethodPut} {
-		for _, field := range []string{"password", "header", "case alias"} {
-			t.Log(method, field)
-
-			echo := func(w http.ResponseWriter, rec *httptest.ResponseRecorder) {
-				body := mutateTestJSON(rec.Body.String(), func(document map[string]any) {
-					if field == "password" {
-						document["httpBasicPassword"] = webhookRotatedPassword
-						delete(document, "httpBasicUsername")
-
-						return
-					}
-
-					key := "X-Managed"
-					if field == "case alias" {
-						key = "x-managed"
-					}
-
-					document["headers"] = []map[string]any{
-						{"key": key, "secret": false, "value": webhookRotatedHeader},
-						{"key": "X-Sibling", "secret": true},
-					}
-				})
-				_, _ = io.WriteString(w, body)
-			}
-
-			fixture.onNextResponse(method, echo)
-
-			options := []string{"-auto-approve"}
-			if method == http.MethodGet {
-				options = append(options, "-refresh-only")
-			}
-
-			output, err := runWebhookRecoveryCLI(t, runtime, webhookRotatedPassword, webhookRotatedHeader, "apply", options...)
-			require.Error(t, err, output)
-
-			if method == http.MethodPut {
-				puts = append(puts, webhookExpectedRecoveryPut(strconv.Itoa(min(len(puts), 2)), webhookRotatedPassword, webhookRotatedHeader, true))
-				fixture.requireStored(t, webhookRotatedPassword, webhookRotatedHeader, true)
-				// A rejected PUT can checkpoint safe recovery state. Its next Read
-				// must still recognize the redacted path if the same echo recurs.
-				fixture.onNextResponse(http.MethodGet, echo)
-
-				output, err = runWebhookRecoveryCLI(t, runtime, webhookRotatedPassword, webhookRotatedHeader, "apply", "-auto-approve", "-refresh-only")
-				require.Error(t, err, output)
-			}
-
-			fixture.requirePuts(t, puts...)
-			require.Equal(t, prior, readWebhookRecoveryInstance(t, runtime).verifiers)
-		}
-	}
-
-	logs, err := os.ReadFile(runtime.logPath)
-	require.NoError(t, err)
-	requireNoWebhookRecoverySecrets(t, string(logs))
 }
 
 func TestAccWebhookResourceWriteOnlyCreateRecovery(t *testing.T) {
@@ -300,4 +237,149 @@ func TestAccWebhookResourceWriteOnlyStalePlan(t *testing.T) {
 		{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptString(webhookPriorHeader)},
 		{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-rotated")},
 	}, fields.Headers)
+}
+
+func TestAccWebhookResourceWriteOnlyReadableResponse(t *testing.T) {
+	t.Parallel()
+
+	for _, method := range []string{http.MethodPut, http.MethodGet} {
+		for _, name := range []string{"", "X-Managed", "x-managed"} {
+			t.Run(method+"/"+name, func(t *testing.T) {
+				t.Parallel()
+				fixture := newSeededWebhookFixture(t)
+
+				var observations webhookProtocolObservations
+
+				initial := importedWebhookRecoveryStep(t, fixture)
+				config := webhookRecoveryConfig(true, "")
+				echo := func(doc map[string]any) {
+					if name == "" {
+						doc["httpBasicPassword"] = webhookRotatedPassword
+						delete(doc, "httpBasicUsername")
+
+						return
+					}
+
+					doc["headers"] = []map[string]any{{"key": name, "secret": false, "value": webhookRotatedHeader}, {"key": "X-Sibling", "secret": true}}
+				}
+				diagnostic := regexp.MustCompile("Unexpected webhook (Basic password|secret header) in response")
+				fault := webhookRecoveryStep(config, webhookRotatedPassword, webhookRotatedHeader)
+				fault.PreConfig = func() { webhookReplyFields(fixture, method, echo) }
+				fault.ExpectError = diagnostic
+				steps := []resource.TestStep{initial, fault}
+				checkSafe := func(response webhookProtocolResult, operation string) {
+					require.Contains(t, response.logs, operation)
+					requireNoWebhookRecoverySecrets(t, response.logs)
+					requireNoWebhookRecoverySecrets(t, testJSON(response.diagnostics))
+
+					for _, field := range response.privateFields(t) {
+						requireNoWebhookRecoverySecrets(t, string(field))
+					}
+
+					model := response.model(t)
+					require.True(t, model.HTTPBasicPassword.IsNull() && model.HTTPBasicPasswordWO.IsNull())
+					requireNoWebhookRecoverySecrets(t, model.Headers.String())
+				}
+
+				if method == http.MethodPut {
+					repeat := webhookRecoveryStep(config, webhookRotatedPassword, webhookRotatedHeader)
+					repeat.ExpectError = diagnostic
+					repeat.PreConfig = func() {
+						response := observations.lastApply()
+						checkSafe(response, "webhook.update")
+
+						expected := observations.firstApply().verifiers(t)
+						if name == "x-managed" {
+							expected.Headers = nil
+						}
+
+						require.Equal(t, expected, response.verifiers(t))
+						fixture.requireStored(t, webhookRotatedPassword, webhookRotatedHeader, true)
+						webhookReplyFields(fixture, http.MethodGet, echo)
+					}
+					steps = append(steps, repeat)
+				}
+				// A clean refresh after the rejected echo can reassert the configured bytes.
+				repair := webhookRecoveryStep(config, webhookRotatedPassword, webhookRotatedHeader)
+
+				var priorPrivate []byte
+
+				repair.PreConfig = func() {
+					failedRead := observations.lastRead()
+					checkSafe(failedRead, "webhook.read")
+					priorPrivate = failedRead.priorPrivate
+					require.NotEmpty(t, priorPrivate)
+
+					expected := []webhookMutation{webhookExpectedRecoveryPut("0", webhookPriorPassword, webhookPriorHeader, true)}
+					if method == http.MethodPut {
+						expected = append(expected, webhookExpectedRecoveryPut("1", webhookRotatedPassword, webhookRotatedHeader, true))
+					}
+
+					fixture.requirePuts(t, expected...)
+				}
+				repair.Check = func(*terraform.State) error {
+					require.Equal(t, priorPrivate, observations.lastRead().priorPrivate, "Core must retry Read with the checkpoint preceding its rejected echo")
+
+					return nil
+				}
+				testObservedWebhookResource(t, fixture, &observations, append(steps, repair))
+			})
+		}
+	}
+}
+
+func TestAccWebhookResourceOrdinaryHeaderEchoOnUnrelatedContradiction(t *testing.T) {
+	t.Parallel()
+
+	for _, name := range []string{"X-Managed", "x-managed"} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			fixture := newSeededWebhookFixture(t)
+
+			var observations webhookProtocolObservations
+
+			initial := importedWebhookRecoveryStep(t, fixture)
+			exact := name == "X-Managed"
+
+			config := webhookRecoveryConfig(true, name)
+			if exact {
+				config = strings.Replace(config, "secret=false", "secret=true", 1)
+			}
+
+			const value = "public-replacement"
+
+			headers := []map[string]any{{"key": name, "secret": exact, "value": value}, {"key": "X-Sibling", "secret": true}}
+			if !exact {
+				headers[0], headers[1] = headers[1], headers[0]
+			}
+
+			update := webhookRecoveryStep(config, webhookPriorPassword, webhookPriorHeader)
+			update.PreConfig = func() {
+				webhookReplyFields(fixture, http.MethodPut, func(doc map[string]any) {
+					doc["name"] = "Unexpected name"
+					if exact {
+						doc["headers"] = headers
+					}
+				})
+			}
+			update.ExpectError = regexp.MustCompile("Contentful returned a different webhook name")
+			refresh := webhookRecoveryStep(config, webhookPriorPassword, webhookPriorHeader)
+			refresh.PreConfig = func() {
+				fixture.requirePuts(t, webhookExpectedRecoveryPut("0", webhookPriorPassword, webhookPriorHeader, true), webhookPUTWithFields("1", webhookPriorPassword, "", map[string]any{"headers": headers}))
+
+				result := observations.lastApply()
+				header := result.model(t).Headers.Elements()[name].Value()
+				require.Equal(t, exact, header.Secret.ValueBool())
+				require.Equal(t, value, header.Value.ValueString())
+				require.True(t, header.ValueWO.IsNull())
+				require.Equal(t, webhookPrivateVerifiers{Basic: observations.firstApply().verifiers(t).Basic}, result.verifiers(t))
+
+				if exact {
+					webhookReplyFields(fixture, http.MethodGet, func(doc map[string]any) { doc["headers"] = headers })
+				}
+			}
+			refresh.ConfigPlanChecks = resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop)}}
+			testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{initial, update, refresh})
+		})
+	}
 }

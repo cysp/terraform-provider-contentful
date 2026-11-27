@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-log/tflogtest"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/require"
@@ -31,8 +33,11 @@ type webhookPrivateVerifiers struct {
 // Private state and failed Apply replies are unavailable to TestStep state checks.
 // Observe the real provider replies produced during the framework's lifecycle.
 type webhookProtocolResult struct {
-	state   *tfprotov6.DynamicValue
-	private []byte
+	state        *tfprotov6.DynamicValue
+	private      []byte
+	priorPrivate []byte
+	diagnostics  []*tfprotov6.Diagnostic
+	logs         string
 }
 
 func (r webhookProtocolResult) model(t *testing.T) WebhookModel {
@@ -112,13 +117,38 @@ type observedWebhookProvider struct {
 	observations *webhookProtocolObservations
 }
 
+// The testing framework already attached a logging sink to the RPC context.
+// Installing tflogtest directly there would reuse that sink and ignore the buffer.
+// Override only the test logger's keys, retaining RPC cancellation and metadata.
+type webhookRPCLogContext struct {
+	context.Context //nolint:containedctx // Forward cancellation, deadlines and remaining values to the live RPC.
+
+	logValue func(any) any
+}
+
+func (c webhookRPCLogContext) Value(key any) any {
+	if value := c.logValue(key); value != nil {
+		return value
+	}
+
+	return c.Context.Value(key)
+}
+
+func captureWebhookRPCLogs(ctx context.Context, logs *bytes.Buffer) context.Context {
+	logger := tflogtest.RootLogger(context.Background(), logs)
+
+	return webhookRPCLogContext{Context: ctx, logValue: logger.Value}
+}
+
 func (p observedWebhookProvider) ApplyResourceChange(ctx context.Context, req *tfprotov6.ApplyResourceChangeRequest) (*tfprotov6.ApplyResourceChangeResponse, error) {
-	resp, err := p.ProviderServer.ApplyResourceChange(ctx, req)
+	var logs bytes.Buffer
+
+	resp, err := p.ProviderServer.ApplyResourceChange(captureWebhookRPCLogs(ctx, &logs), req)
 	if req.TypeName == "contentful_webhook" && resp != nil {
 		p.observations.mu.Lock()
 		defer p.observations.mu.Unlock()
 
-		p.observations.applies = append(p.observations.applies, webhookProtocolResult{state: resp.NewState, private: resp.Private})
+		p.observations.applies = append(p.observations.applies, webhookProtocolResult{state: resp.NewState, private: resp.Private, diagnostics: resp.Diagnostics, logs: logs.String()})
 	}
 
 	return resp, err //nolint:wrapcheck // Preserve the provider RPC error.
@@ -152,12 +182,14 @@ func (p observedWebhookProvider) ReadResource(ctx context.Context, req *tfprotov
 		req.Private = data
 	}
 
-	resp, err := p.ProviderServer.ReadResource(ctx, req)
+	var logs bytes.Buffer
+
+	resp, err := p.ProviderServer.ReadResource(captureWebhookRPCLogs(ctx, &logs), req)
 	if resp != nil {
 		p.observations.mu.Lock()
 		defer p.observations.mu.Unlock()
 
-		p.observations.reads = append(p.observations.reads, webhookProtocolResult{state: resp.NewState, private: resp.Private})
+		p.observations.reads = append(p.observations.reads, webhookProtocolResult{priorPrivate: req.Private, state: resp.NewState, private: resp.Private, diagnostics: resp.Diagnostics, logs: logs.String()})
 	}
 
 	return resp, err //nolint:wrapcheck // Preserve the provider RPC error.

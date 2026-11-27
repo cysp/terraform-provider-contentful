@@ -30,6 +30,36 @@ func TestWebhookRedactedResponseDuplicates(t *testing.T) {
 	}
 }
 
+func TestWebhookRecoveryRequiresExplicitOrdinaryPasswordEcho(t *testing.T) {
+	t.Parallel()
+
+	plan := WebhookModel{HTTPBasicUsername: types.StringValue("user"), HTTPBasicPassword: types.StringValue("configured")}
+
+	mask := webhookRedaction{password: true}
+	for _, test := range []struct {
+		name     string
+		user     string
+		password cm.OptNilString
+		endpoint bool
+		want     types.String
+	}{
+		{"confirmed ordinary value", "user", cm.NewOptNilString("configured"), true, plan.HTTPBasicPassword},
+		{"omitted value", "user", cm.OptNilString{}, true, types.StringNull()},
+		{"different username", "other", cm.NewOptNilString("configured"), true, types.StringNull()},
+		{"different endpoint", "user", cm.NewOptNilString("configured"), false, types.StringNull()},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			recovery := plan
+			recovery.HTTPBasicUsername = types.StringValue(test.user)
+			response := cm.WebhookDefinition{HttpBasicPassword: test.password}
+			mask.retainUnconfirmed(&recovery, WebhookModel{}, plan, response, test.endpoint)
+			require.Equal(t, test.want, recovery.HTTPBasicPassword)
+		})
+	}
+}
+
 // Node OpenSSL vectors use the literal credential path, NUL, "synthetic vector"
 // and salt bytes 0..15. Swapping two stored hashes must not transfer equality.
 func TestWebhookReadsPathBoundVerifiers(t *testing.T) {
