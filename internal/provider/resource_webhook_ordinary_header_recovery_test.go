@@ -262,23 +262,37 @@ func TestAccWebhookResourceRecoveryForeignBasicUsername(t *testing.T) {
 
 	initial := importedWebhookRecoveryStep(t, fixture)
 	renamed := strings.Replace(webhookRecoveryConfig(true, ""), `name     = "Imported"`, `name     = "Renamed"`, 1)
-	update := webhookRecoveryStep(renamed, webhookPriorPassword, webhookPriorHeader)
-	update.PreConfig = func() {
-		webhookReplyFields(fixture, http.MethodPut, func(doc map[string]any) {
-			sys, _ := doc["sys"].(map[string]any)
-			sys["id"] = "foreign"
-			doc["httpBasicUsername"] = "other-user"
-		})
+	foreign := func(doc map[string]any) {
+		sys, _ := doc["sys"].(map[string]any)
+		sys["id"] = "foreign"
+		sys["createdAt"] = "2000-01-01T00:00:00Z"
+		doc["httpBasicUsername"] = "other-user"
 	}
+	update := webhookRecoveryStep(renamed, webhookPriorPassword, webhookPriorHeader)
+	update.PreConfig = func() { webhookReplyFields(fixture, http.MethodPut, foreign) }
 	update.ExpectError = regexp.MustCompile("Contentful returned a different webhook identity")
-	refresh := webhookRecoveryStep(renamed, webhookPriorPassword, webhookPriorHeader)
-	refresh.PreConfig = func() {
-		response := observations.lastApply()
-		require.Equal(t, "user", response.model(t).HTTPBasicUsername.ValueString())
-		require.Equal(t, observations.firstApply().verifiers(t), response.verifiers(t))
+
+	read := webhookRecoveryStep(renamed, webhookPriorPassword, webhookPriorHeader)
+	read.PreConfig = func() {
+		prior := observations.firstApply()
+		reply := observations.lastApply()
+		require.Equal(t, "user", reply.model(t).HTTPBasicUsername.ValueString())
+		require.Equal(t, prior.verifiers(t), reply.verifiers(t))
+		created := prior.privateFields(t)["created_at"]
+		require.NotEmpty(t, created)
+		require.Equal(t, created, reply.privateFields(t)["created_at"], "a foreign PUT cannot establish a new creation time")
 		fixture.requirePuts(t, webhookExpectedRecoveryPut("0", webhookPriorPassword, webhookPriorHeader, true), webhookPUTWithFields("1", webhookPriorPassword, "", map[string]any{"name": "Renamed"}))
 		fixture.requireStored(t, webhookPriorPassword, webhookPriorHeader, true)
+		webhookReplyFields(fixture, http.MethodGet, foreign)
+	}
+	read.ExpectError = regexp.MustCompile("Unexpected Contentful read identity")
+
+	refresh := webhookRecoveryStep(renamed, webhookPriorPassword, webhookPriorHeader)
+	refresh.PreConfig = func() {
+		reply := observations.lastRead()
+		require.Equal(t, observations.lastApply().private, reply.priorPrivate)
+		require.Equal(t, reply.priorPrivate, reply.private, "a foreign GET cannot replace the target's private state")
 	}
 	refresh.ConfigPlanChecks = resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop)}}
-	testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{initial, update, refresh})
+	testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{initial, update, read, refresh})
 }

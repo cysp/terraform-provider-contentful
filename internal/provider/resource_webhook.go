@@ -129,8 +129,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	_, sentPassword := request.HttpBasicPassword.Get()
-	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, webhookVerifiers{}, change, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, mask, sentPassword)...)
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, webhookVerifiers{}, change, nil, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, mask, requestModel)...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -164,7 +163,10 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	version := 0
 
-	var passwordNull bool
+	var (
+		passwordNull bool
+		creation     webhookCreationObservation
+	)
 
 	var data WebhookModel
 
@@ -178,16 +180,29 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 			return
 		}
 
-		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, sanitized, state)
+		version = response.Sys.Version
+		prior, timeDiags := readWebhookCreationTime(ctx, req.Private)
+		resp.Diagnostics.Append(timeDiags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		creation = observeWebhookCreation(prior, state.Version, response.Sys)
+
+		fallback := state
+		if creation.recreated {
+			fallback = webhookWithoutCredentialHistory(state)
+		}
+
+		responseModel, responseModelDiags := NewWebhookResourceModelFromResponse(ctx, sanitized, fallback)
 		resp.Diagnostics.Append(responseModelDiags...)
 
 		data = responseModel
 		if response.HttpBasicUsername.IsEmpty() && response.HttpBasicPassword.IsEmpty() {
-			data.HTTPBasicUsername = state.HTTPBasicUsername
-			data.HTTPBasicPassword = state.HTTPBasicPassword
+			data.HTTPBasicUsername = fallback.HTTPBasicUsername
+			data.HTTPBasicPassword = fallback.HTTPBasicPassword
 		}
-
-		version = response.Sys.Version
 
 	default:
 		if contentfulResponseIsNotFound(response) {
@@ -212,14 +227,19 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	change, pruneDiags := webhookVerifiersAfterRead(ctx, req.Private, state, data, passwordNull)
-	resp.Diagnostics.Append(pruneDiags...)
+	change := writeOnlySecretVerifierChange{changed: creation.recreated}
+	if !creation.recreated {
+		var pruneDiags diag.Diagnostics
+
+		change, pruneDiags = webhookVerifiersAfterRead(ctx, req.Private, state, data, passwordNull)
+		resp.Diagnostics.Append(pruneDiags...)
+	}
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(publishWebhookState(ctx, resp.Private, change, resp.Identity, &resp.State, data, version, true)...)
+	resp.Diagnostics.Append(publishWebhookState(ctx, resp.Private, change, creation, resp.Identity, &resp.State, data, version, true)...)
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -310,6 +330,13 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	priorCreation, timeDiags := readWebhookCreationTime(ctx, req.Private)
+	resp.Diagnostics.Append(timeDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	params := cm.UpdateWebhookDefinitionParams{
 		SpaceID:             plan.SpaceID.ValueString(),
 		WebhookDefinitionID: plan.WebhookID.ValueString(),
@@ -350,8 +377,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 	}
 
-	_, sentPassword := request.HttpBasicPassword.Get()
-	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, priorVerifiers, change, resp.Identity, &resp.State, definition.Response, state, responsePlan, mask, sentPassword)...)
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, priorVerifiers, change, priorCreation, resp.Identity, &resp.State, definition.Response, state, responsePlan, mask, requestModel)...)
 }
 
 // Core stores strings in NFC. A delegated PUT sent no username, so its

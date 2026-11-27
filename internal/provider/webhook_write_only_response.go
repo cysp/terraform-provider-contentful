@@ -5,6 +5,7 @@ import (
 	"maps"
 	"slices"
 	"strings"
+	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -253,11 +254,11 @@ func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData,
 // An inconsistent response can still identify a newly created webhook. Keep
 // its ordinary recovery state and endpoint version while retaining only
 // previously acknowledged credentials and verifiers.
-func publishWebhookResponse(ctx context.Context, private PrivateProviderData, priorVerifiers webhookVerifiers, change writeOnlySecretVerifierChange, identity *tfsdk.ResourceIdentity, target *tfsdk.State, response cm.WebhookDefinition, state, plan WebhookModel, mask webhookRedaction, sentPassword bool) diag.Diagnostics {
+func publishWebhookResponse(ctx context.Context, private PrivateProviderData, priorVerifiers webhookVerifiers, change writeOnlySecretVerifierChange, priorCreation *time.Time, identity *tfsdk.ResourceIdentity, target *tfsdk.State, response cm.WebhookDefinition, state, plan WebhookModel, mask webhookRedaction, submitted WebhookModel) diag.Diagnostics {
 	guard := mask.guardMutationResponse(state, plan)
 	sanitized, secretDiags := guard.redact(response, plan)
 
-	if sentPassword && plan.HTTPBasicPassword.IsNull() && response.HttpBasicPassword.IsNull() {
+	if !submitted.HTTPBasicPassword.IsNull() && plan.HTTPBasicPassword.IsNull() && response.HttpBasicPassword.IsNull() {
 		secretDiags.AddAttributeError(path.Root("http_basic_password"), "Unconfirmed webhook Basic password", "Contentful returned an explicit null password for the configured Basic credentials.")
 	}
 
@@ -270,7 +271,24 @@ func publishWebhookResponse(ctx context.Context, private PrivateProviderData, pr
 
 	consistency.Append(secretDiags...)
 
-	if consistency.HasError() {
+	var creation webhookCreationObservation
+	if confirmed {
+		creation = observeWebhookCreation(priorCreation, state.Version, response.Sys)
+	}
+
+	switch {
+	case creation.recreated:
+		consistency.AddError("Webhook was recreated", "The PUT response identifies a new webhook at the same address. The write may already have applied. Check the header flags in Contentful. If a submitted credential became readable, remove the header and rotate the credential at the receiver, and update the Terraform input before applying a fresh plan.")
+
+		passwordDiscarded := response.HttpBasicPassword.IsSet() && sanitized.HttpBasicPassword.IsEmpty()
+
+		data, diags = recreatedWebhookUpdateState(ctx, sanitized, state, plan, submitted, passwordDiscarded)
+		if diags.HasError() {
+			return append(diags, consistency...)
+		}
+
+		change = writeOnlySecretVerifierChange{changed: true}
+	case consistency.HasError():
 		// Use the original password field: redaction can discard a returned value.
 		if confirmed && response.HttpBasicUsername.IsNull() && response.HttpBasicPassword.ValueStringPointer() == nil {
 			guard.password = false
@@ -301,18 +319,23 @@ func publishWebhookResponse(ctx context.Context, private PrivateProviderData, pr
 		}
 	}
 
-	diags.Append(publishWebhookState(ctx, private, change, identity, target, data, response.Sys.Version, confirmed)...)
+	diags.Append(publishWebhookState(ctx, private, change, creation, identity, target, data, response.Sys.Version, confirmed)...)
 
 	diags.Append(consistency...)
 
 	return diags
 }
 
-func publishWebhookState(ctx context.Context, private PrivateProviderData, change writeOnlySecretVerifierChange, identity *tfsdk.ResourceIdentity, state *tfsdk.State, model WebhookModel, version int, confirmed bool) diag.Diagnostics {
+func publishWebhookState(ctx context.Context, private PrivateProviderData, change writeOnlySecretVerifierChange, creation webhookCreationObservation, identity *tfsdk.ResourceIdentity, state *tfsdk.State, model WebhookModel, version int, confirmed bool) diag.Diagnostics {
 	if !change.changed {
 		// With no verifier publication pending, retain the ordinary webhook's
 		// state/identity checkpoint even if recording the version fails.
-		return setResourceIdentityStateAndMutationVersion(ctx, identity, state, private, webhookIdentityAttributeNames(), &model, version, confirmed)
+		diags := setResourceIdentityStateAndMutationVersion(ctx, identity, state, private, webhookIdentityAttributeNames(), &model, version, confirmed)
+		if !diags.HasError() {
+			diags.Append(creation.publish(ctx, private)...)
+		}
+
+		return diags
 	}
 
 	return publishStateAfterPrivate(ctx, identity, state, webhookIdentityAttributeNames(), &model, func() diag.Diagnostics {
@@ -321,6 +344,11 @@ func publishWebhookState(ctx context.Context, private PrivateProviderData, chang
 		diags := setResourceMutationVersion(ctx, private, version, confirmed)
 		if !diags.HasError() {
 			diags.Append(change.publish(ctx, private)...)
+		}
+
+		// Keep the prior timestamp until inherited verifiers have been removed.
+		if !diags.HasError() {
+			diags.Append(creation.publish(ctx, private)...)
 		}
 
 		return diags
