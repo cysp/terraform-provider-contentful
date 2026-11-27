@@ -215,7 +215,8 @@ on POST and PUT.
 
 **Default fake behavior:** An omitted Basic field retains its stored value on
 update. Both fields default to null on creation. A nonempty string requires a
-nonempty counterpart in the same request. Paired nulls clear both fields. When a
+nonempty counterpart in the same request. Submitted usernames and passwords are limited
+to 50 and 255 UTF-16 code units. Paired nulls clear both fields. When a
 PUT sets one field to null and omits the other, the fixture rejects the request
 if the field being cleared holds a nonempty string. Invalid pairs return a
 field-specific 422 before the fixture applies any changes. On update, this
