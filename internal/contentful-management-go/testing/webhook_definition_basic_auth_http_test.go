@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"maps"
 	"net/http"
+	"strings"
 	"testing"
 
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
@@ -160,5 +161,47 @@ func TestWebhookDefinitionBasicAuthCreation(t *testing.T) {
 			require.NotEmpty(t, id)
 			require.Equal(t, response, webhookHTTP(t, server, http.MethodGet, webhookCollection+"/"+id, "", nil, http.StatusOK))
 		})
+	}
+}
+
+func TestWebhookDefinitionBasicAuthLengthLimits(t *testing.T) {
+	t.Parallel()
+	server := newWebhookBasicServer(t)
+
+	const path = webhookCollection + "/existing"
+
+	username, password := strings.Repeat("😀", 25), strings.Repeat("😀", 127)+"x"
+	body := webhookBasicBody("Original", map[string]any{basicUsername: username, basicPassword: password})
+	original := webhookHTTP(t, server, http.MethodPut, path, "", body, http.StatusOK)
+	checkWebhookBasicResponse(t, original, "Original", username, "0")
+
+	userError := map[string]any{"name": basicUsername, "path": []any{}, "details": "HTTP Basic Auth username must not exceed 50 characters"}
+
+	passwordError := map[string]any{"name": basicPassword, "path": []any{}, "details": "HTTP Basic Auth password must not exceed 255 characters"}
+	for _, test := range []struct {
+		fields map[string]any
+		errors []any
+	}{
+		{fields: map[string]any{basicUsername: username + "x", basicPassword: password}, errors: []any{userError}},
+		{fields: map[string]any{basicUsername: username, basicPassword: password + "x"}, errors: []any{passwordError}},
+		{fields: map[string]any{basicUsername: username + "x", basicPassword: password + "x"}, errors: []any{userError, passwordError}},
+		{fields: map[string]any{basicUsername: username + "x"}, errors: []any{
+			map[string]any{"name": basicPassword, "path": []any{}, "details": "HTTP Basic Auth password is required when username is provided"}, userError,
+		}},
+	} {
+		rejected := webhookBasicBody("Rejected rename", test.fields)
+		for _, response := range []map[string]any{
+			webhookHTTP(t, server, http.MethodPost, webhookCollection, "", rejected, http.StatusUnprocessableEntity),
+			webhookHTTP(t, server, http.MethodPut, webhookCollection+"/unused", "", rejected, http.StatusUnprocessableEntity),
+			webhookHTTP(t, server, http.MethodPut, path, "0", rejected, http.StatusUnprocessableEntity),
+		} {
+			require.Equal(t, map[string]any{"type": "Error", "id": "ValidationFailed"}, response["sys"])
+			require.Equal(t, map[string]any{"errors": test.errors}, response["details"])
+		}
+
+		webhookHTTP(t, server, http.MethodGet, webhookCollection+"/unused", "", nil, http.StatusNotFound)
+		require.Equal(t, original, webhookHTTP(t, server, http.MethodGet, path, "", nil, http.StatusOK))
+		// GET redacts the password. Resubmitting the original pair must leave the version unchanged.
+		require.Equal(t, original, webhookHTTP(t, server, http.MethodPut, path, "0", body, http.StatusOK))
 	}
 }

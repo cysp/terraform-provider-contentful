@@ -136,6 +136,14 @@ func webhookBasicAuthIssues(stored *cm.WebhookDefinition, fields *cm.WebhookDefi
 		addError("httpBasicUsername", loneNull)
 	}
 
+	if cm.WebhookBasicUsernameTooLong(username.Or("")) {
+		addError("httpBasicUsername", "HTTP Basic Auth username must not exceed 50 characters")
+	}
+
+	if cm.WebhookBasicPasswordTooLong(password.Or("")) {
+		addError("httpBasicPassword", "HTTP Basic Auth password must not exceed 255 characters")
+	}
+
 	return issues
 }
 

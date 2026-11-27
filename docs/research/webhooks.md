@@ -154,6 +154,25 @@ The version comparison supports the inference that omitting both fields retained
 the password. The probes triggered no deliveries, and the redacted responses
 cannot establish which password a delivery would use.
 
+### Credential limits
+
+Follow-up probes on two disposable inactive Webhooks tested the documented
+50-character username and 255-character password limits. A specified-ID PUT
+accepted ASCII strings at both limits. Adding one character to either field
+returned 422 `ValidationFailed` on update, and GET retained the prior name,
+username, and version. Repeated U+00E9 fit at both limits. A username of 25
+supplementary characters and a password of 127 supplementary characters plus
+one ASCII character were accepted together. A username of 26 or a password of
+128 supplementary characters was rejected independently. These boundaries are
+consistent with counting UTF-16 code units. Collection POST also accepted the ASCII
+boundary pair and returned 422 for each overlong field. The control was deleted
+(204) and GET confirmed absence (404). When both fields exceeded the limits,
+`details.errors` listed the username then the password, each with an empty
+`path` and a field-specific length message. An oversized field submitted alone
+also produced a missing-counterpart error before its length error. CMA accepted a colon in the
+username, although the [HTTP Basic encoding](https://www.rfc-editor.org/rfc/rfc7617.html#section-2)
+reserves the first colon as the separator.
+
 ## Existing-configuration read observations
 
 Observed: 2026-09-09 (UTC), passive collection reads and two definition-detail
