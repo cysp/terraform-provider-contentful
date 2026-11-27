@@ -95,7 +95,7 @@ type Handler interface {
 	// Create a webhook definition.
 	//
 	// POST /spaces/{space_id}/webhook_definitions
-	CreateWebhookDefinition(ctx context.Context, req *WebhookDefinitionData, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error)
+	CreateWebhookDefinition(ctx context.Context, req *WebhookDefinitionCreateData, params CreateWebhookDefinitionParams) (CreateWebhookDefinitionRes, error)
 	// DeactivateContentType implements deactivateContentType operation.
 	//
 	// Deactivate a content type.

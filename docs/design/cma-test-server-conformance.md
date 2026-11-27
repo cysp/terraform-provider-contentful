@@ -166,15 +166,33 @@ existing definition requires the exact `X-Contentful-Version`. The mock compares
 the stored fields before redacting secrets and increments the version only
 when those fields change. See the [live version observations](../research/webhooks.md#webhook-definition-versions).
 
-On an existing webhook, a PUT header with `secret: true` and no `value`
-retains the stored header at that exact key. If the key is absent, the mock
-returns 422 and preserves the entire definition.
+On an existing webhook, a PUT header with an explicit Boolean `secret` and no
+`value` retains the stored flag and value at that exact key. If the key is
+absent, the mock checks the version before returning 422 and preserves the
+entire definition. With an explicit string value, the fixture preserves the
+flag of an existing exact-name header. Newly supplied
+bytes on a readable header remain readable. The fixture stores supplied bytes
+on a secret header for request testing. Live PUT and GET responses expose only
+its redacted descriptor. See the [flag and version observations](../research/webhooks.md#changing-the-secret-flag-of-an-existing-header).
 
-Creation requires a value for each header. The mock returns the route-specific
-errors recorded in the
+POST requires a value for each header. PUT requires either a value or an explicit
+secret flag. The fixture checks these request shapes first, then reports repeated
+exact header keys in encounter order, followed by Basic credential errors.
+These failures precede the existing definition’s version check. A PUT creating
+an unused ID cannot retain a header value. The route-specific responses and
+the tested error combinations are recorded in the
 [header observations](../research/webhooks.md#header-names-order-and-secret-updates).
 
+The generated POST client requires a string value on each header. A malformed
+raw POST distinguishes omission from JSON null in its validation error. The
+PUT client can send either form to retain a value by exact name when it
+supplies a Boolean secret flag. The response decoder accepts
+a string or an omitted value. Terraform delegates by omitting the member.
+See the [raw null and version controls](../research/webhooks.md#header-validation-order-and-omitted-values-on-put).
+
 ### Webhook topics
+
+For a collection POST missing a header value and `topics`, return the header issue first and the missing-topic issue second. See the [raw CMA observation](../research/webhooks.md#header-validation-order-and-omitted-values-on-put).
 
 **Evidence:** Contentful's [Webhook configuration
 documentation](https://www.contentful.com/developers/docs/extensibility/webhooks/configure-webhook/#topics)

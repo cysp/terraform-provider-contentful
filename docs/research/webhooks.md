@@ -199,6 +199,56 @@ These observations concern the webhook definition. The hooks were inactive, so
 the experiments did not measure the header order, casing, or secret values a
 recipient receives.
 
+### Header validation order and omitted values on PUT
+
+A collection POST on 2026-11-27 omitted both `topics` and the first header’s `value`. CMA returned 422 `ValidationFailed` with two `invalid_type` issues, at `headers[0].value` followed by `topics`. The reply had no version. A collection GET found no definition with the inactive probe’s unique name and URL.
+
+On 2026-11-26 (UTC), raw requests on inactive Webhooks distinguished three
+stages of validation. POST, specified-ID creation PUT, and existing-ID PUT
+all returned 422 `ValidationFailed` for exact duplicate header keys. For
+`X-A, X-B, X-B, X-A, X-B`, each repeat produced a `headers` issue with
+path `["key"]`, in order X-B, X-A, X-B. When the request also supplied a nonempty Basic
+username with a null password, the missing-password issue followed those
+three. Adding a header with neither value nor secret flag produced only the
+POST missing-value or PUT invalid-union issue at that index. GET found no
+definition at the rejected specified ID. After each rejected existing-ID
+PUT, GET returned the complete preceding public definition, including its
+original name and version.
+
+At version 0, PUT with version 7 still returned 422 for duplicate keys, a
+header with neither member, an incomplete Basic pair, an oversized username,
+or a lone null username on a stored nonempty pair. In contrast, a new header
+with an explicit false flag and no value returned 409 `Conflict` with
+version 7 and 422 with version 0. At the current version the error contained
+a string at `details.errors` naming the missing header.
+
+A PUT to an existing definition supplied `secret: false` and omitted the
+values for two already-stored headers differing only in case, one secret and
+one readable. PUT and GET returned the original flags, the readable value
+and no secret value, still at version 0. Resending the original bytes kept
+version 0. Changing just the secret bytes advanced to 1. This supports
+retention of the hidden value.
+
+With `secret: true` and an explicit JSON null `value`, POST returned 422
+`ValidationFailed` with `invalid_type` at `headers.0.value` (expected
+string, received null). PUT to an unused ID returned 500 `ServerError`, and
+GET returned 404. PUT to an existing exact-name secret returned 200 and a
+redacted descriptor. In a version control with the sibling header and name
+held constant, sending null and then resending the original bytes both kept
+version 0. Changing just the secret bytes advanced to 1. GET agreed with
+each successful PUT.
+
+The six disposable definitions were deleted (204) and GET confirmed absence
+(404). The probes exercised CMA configuration without triggering deliveries.
+
+A subsequent probe on another inactive Webhook checked explicit null with
+different secret flags. On specified-ID creation PUT, an absent flag produced
+422 `invalid_union`, while either Boolean produced 500. On an existing
+definition, an absent flag produced 422 for stored and new names. With either
+Boolean, both stored names (one readable, one secret) succeeded and a new name
+returned 422 with the missing-value message. GET confirmed the original
+definition after each rejection. Cleanup returned 204 and GET returned 404.
+
 ## Observation limits
 
 These configuration probes do not establish every secret-header projection, filter

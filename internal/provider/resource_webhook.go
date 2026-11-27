@@ -91,7 +91,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	request, requestDiags := requestModel.ToWebhookDefinitionData(ctx, path.Empty())
+	request, requestDiags := requestModel.toWebhookDefinitionCreateData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 
 	if resp.Diagnostics.HasError() {

@@ -2136,7 +2136,7 @@ paths:
         content:
           application/vnd.contentful.management.v1+json:
             schema:
-              $ref: "./schemas/webhook-definition/data.yml#/WebhookDefinitionData"
+              $ref: "./schemas/webhook-definition/data.yml#/WebhookDefinitionCreateData"
       responses:
         2XX:
           description: A webhook definition

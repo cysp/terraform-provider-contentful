@@ -214,15 +214,15 @@ func TestAccWebhookResourceWriteOnlyHeaderRecreatedAfterRefresh(t *testing.T) {
 
 	runtime, fixture, first := importWebhookRecoveryFixture(t)
 
-	sibling := cm.WebhookDefinitionHeader{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptString(webhookSiblingHeader)}
-	fixture.updateRemoteHeaders(t, 1, cm.WebhookDefinitionHeaders{sibling})
+	sibling := cm.WebhookDefinitionRequestHeader{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString(webhookSiblingHeader)}
+	fixture.updateRemoteHeaders(t, 1, cm.WebhookDefinitionRequestHeaders{sibling})
 
 	output, err := runWebhookRecoveryCLI(t, runtime, webhookPriorPassword, webhookPriorHeader, "apply", "-refresh-only", "-auto-approve")
 	require.NoError(t, err, output)
 	require.Equal(t, map[string]any{"X-Sibling": map[string]any{"secret": true, "value": nil, "value_wo": nil}}, readWebhookRecoveryInstance(t, runtime).Attributes["headers"])
 	fixture.requirePuts(t, first)
 
-	fixture.updateRemoteHeaders(t, 2, cm.WebhookDefinitionHeaders{{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-recreated-secret")}, sibling})
+	fixture.updateRemoteHeaders(t, 2, cm.WebhookDefinitionRequestHeaders{{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("externally-recreated-secret")}, sibling})
 
 	output, err = runWebhookRecoveryCLI(t, runtime, webhookPriorPassword, webhookPriorHeader, "apply", "-auto-approve")
 	require.NoError(t, err, output)
@@ -230,7 +230,7 @@ func TestAccWebhookResourceWriteOnlyHeaderRecreatedAfterRefresh(t *testing.T) {
 	fixture.requireStored(t, webhookPriorPassword, webhookPriorHeader, true)
 }
 
-func (fixture *webhookSecretRecoveryFixture) updateRemoteHeaders(t *testing.T, version int, headers cm.WebhookDefinitionHeaders) {
+func (fixture *webhookSecretRecoveryFixture) updateRemoteHeaders(t *testing.T, version int, headers cm.WebhookDefinitionRequestHeaders) {
 	t.Helper()
 	response, err := fixture.server.Handler().UpdateWebhookDefinition(t.Context(), &cm.WebhookDefinitionData{
 		Name: "Imported", URL: "https://example.invalid/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),
@@ -246,9 +246,9 @@ func TestAccWebhookResourceDelegatesHeaderByName(t *testing.T) {
 	runtime, fixture, first := importWebhookRecoveryFixture(t)
 
 	const outside = "synthetic-externally-rotated-sibling"
-	fixture.updateRemoteHeaders(t, 1, cm.WebhookDefinitionHeaders{
+	fixture.updateRemoteHeaders(t, 1, cm.WebhookDefinitionRequestHeaders{
 		{Key: "X-Managed", Secret: cm.NewOptBool(true)},
-		{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptString(outside)},
+		{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString(outside)},
 	})
 
 	runtime.writeConfig(t, webhookRecoveryHeaderConfig("", "", `lifecycle { ignore_changes = [headers["X-Sibling"]] }`))
@@ -280,9 +280,9 @@ func TestAccWebhookResourceWriteOnlyStalePlan(t *testing.T) {
 	before := readWebhookRecoveryInstance(t, runtime)
 	out, err := runWebhookRecoveryCLI(t, runtime, webhookRotatedPassword, webhookRotatedHeader, "plan", "-out=rotate.tfplan")
 	require.NoError(t, err, out)
-	fixture.updateRemoteHeaders(t, 1, cm.WebhookDefinitionHeaders{
+	fixture.updateRemoteHeaders(t, 1, cm.WebhookDefinitionRequestHeaders{
 		{Key: "X-Managed", Secret: cm.NewOptBool(true)},
-		{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptString("externally-rotated")},
+		{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("externally-rotated")},
 	})
 	out, err = runWebhookRecoveryCLI(t, runtime, webhookRotatedPassword, webhookRotatedHeader, "apply", "rotate.tfplan")
 	require.Error(t, err, out)

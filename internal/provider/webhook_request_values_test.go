@@ -142,7 +142,7 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 
 	tests := map[string]struct {
 		headers       TypedMap[TypedObject[WebhookHeaderValue]]
-		expected      cm.WebhookDefinitionHeaders
+		expected      cm.WebhookDefinitionRequestHeaders
 		expectedPaths []string
 	}{
 		"null is omitted": {
@@ -154,7 +154,7 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 		},
 		"empty is preserved": {
 			headers:  NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{}),
-			expected: cm.WebhookDefinitionHeaders{},
+			expected: cm.WebhookDefinitionRequestHeaders{},
 		},
 		"sorted keys preserve empty and omitted values": {
 			headers: NewTypedMap(map[string]TypedObject[WebhookHeaderValue]{
@@ -163,11 +163,11 @@ func TestWebhookHeadersRequestValues(t *testing.T) {
 				"X-Empty-Secret": header(types.StringValue(""), types.BoolValue(true)),
 				"X-Empty":        header(types.StringValue(""), types.BoolValue(false)),
 			}),
-			expected: cm.WebhookDefinitionHeaders{
-				{Key: "X-Empty", Value: cm.NewOptString(""), Secret: cm.NewOptBool(false)},
-				{Key: "X-Empty-Secret", Value: cm.NewOptString(""), Secret: cm.NewOptBool(true)},
+			expected: cm.WebhookDefinitionRequestHeaders{
+				{Key: "X-Empty", Value: cm.NewOptNilString(""), Secret: cm.NewOptBool(false)},
+				{Key: "X-Empty-Secret", Value: cm.NewOptNilString(""), Secret: cm.NewOptBool(true)},
 				{Key: "X-Retained", Secret: cm.NewOptBool(true)},
-				{Key: "X-Secret", Value: cm.NewOptString("token"), Secret: cm.NewOptBool(true)},
+				{Key: "X-Secret", Value: cm.NewOptNilString("token"), Secret: cm.NewOptBool(true)},
 			},
 		},
 		"unknown object": {

@@ -70,7 +70,7 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path pat
 
 	req.Headers = headersList
 
-	transformation, transformationDiags := ToOptNilWebhookDefinitionDataTransformation(path.AtName("transformation"), model.Transformation)
+	transformation, transformationDiags := ToOptNilWebhookDefinitionTransformation(path.AtName("transformation"), model.Transformation)
 	diags.Append(transformationDiags...)
 
 	req.Transformation = transformation
@@ -80,4 +80,34 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path pat
 	}
 
 	return req, diags
+}
+
+func (model *WebhookModel) toWebhookDefinitionCreateData(ctx context.Context, root path.Path) (cm.WebhookDefinitionCreateData, diag.Diagnostics) {
+	fields, diags := model.ToWebhookDefinitionData(ctx, root)
+	if diags.HasError() {
+		return cm.WebhookDefinitionCreateData{}, diags
+	}
+
+	create := cm.WebhookDefinitionCreateData{
+		Name: fields.Name, URL: fields.URL, Topics: fields.Topics, Filters: fields.Filters,
+		HttpBasicUsername: fields.HttpBasicUsername, HttpBasicPassword: fields.HttpBasicPassword,
+		Transformation: fields.Transformation, Active: fields.Active,
+	}
+	if fields.Headers != nil {
+		create.Headers = make(cm.WebhookDefinitionCreateHeaders, 0, len(fields.Headers))
+	}
+
+	for _, header := range fields.Headers {
+		value, ok := header.Value.Get()
+		if !ok {
+			diags.AddAttributeError(root.AtName("headers").AtMapKey(header.Key).AtName("value"),
+				"Missing initial webhook header value", "Supply an initial value for each header when creating a webhook.")
+
+			continue
+		}
+
+		create.Headers = append(create.Headers, cm.WebhookDefinitionCreateHeader{Key: header.Key, Secret: header.Secret, Value: value})
+	}
+
+	return create, diags
 }

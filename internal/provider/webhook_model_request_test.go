@@ -45,7 +45,7 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 				HttpBasicPassword: cm.NewOptNilStringNull(),
 				Topics:            []string{"Entry.create", "Entry.delete"},
 				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation:    cm.OptNilWebhookDefinitionDataTransformation{Set: true, Null: true},
+				Transformation:    cm.OptNilWebhookDefinitionTransformation{Set: true, Null: true},
 			},
 			expectErr: false,
 		},
@@ -68,7 +68,7 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 				HttpBasicPassword: cm.NewOptNilString("pass"),
 				Topics:            []string{"Entry.*"},
 				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation:    cm.OptNilWebhookDefinitionDataTransformation{Set: true, Null: true},
+				Transformation:    cm.OptNilWebhookDefinitionTransformation{Set: true, Null: true},
 			},
 			expectErr: false,
 		},
@@ -91,15 +91,15 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 				URL:               "https://example.com/webhook",
 				HttpBasicUsername: cm.NewOptNilStringNull(),
 				HttpBasicPassword: cm.NewOptNilStringNull(),
-				Headers: []cm.WebhookDefinitionHeader{
+				Headers: []cm.WebhookDefinitionRequestHeader{
 					{
 						Key:    "X-Header",
-						Value:  cm.NewOptString("value"),
+						Value:  cm.NewOptNilString("value"),
 						Secret: cm.NewOptBool(false),
 					},
 				},
 				Filters:        cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation: cm.OptNilWebhookDefinitionDataTransformation{Set: true, Null: true},
+				Transformation: cm.OptNilWebhookDefinitionTransformation{Set: true, Null: true},
 			},
 		},
 		"with transformation": {
@@ -121,7 +121,7 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 				HttpBasicUsername: cm.NewOptNilStringNull(),
 				HttpBasicPassword: cm.NewOptNilStringNull(),
 				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation: cm.OptNilWebhookDefinitionDataTransformation{Set: true, Value: cm.WebhookDefinitionDataTransformation{
+				Transformation: cm.OptNilWebhookDefinitionTransformation{Set: true, Value: cm.WebhookDefinitionTransformation{
 					Method:               cm.NewOptString("POST"),
 					ContentType:          cm.NewOptString("application/json"),
 					IncludeContentLength: cm.NewOptBool(true),
@@ -147,7 +147,7 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 				HttpBasicUsername: cm.NewOptNilStringNull(),
 				HttpBasicPassword: cm.NewOptNilStringNull(),
 				Filters:           cm.NewOptNilWebhookDefinitionFilterArrayNull(),
-				Transformation: cm.OptNilWebhookDefinitionDataTransformation{Set: true, Value: cm.WebhookDefinitionDataTransformation{
+				Transformation: cm.OptNilWebhookDefinitionTransformation{Set: true, Value: cm.WebhookDefinitionTransformation{
 					Method:               cm.NewOptString("POST"),
 					ContentType:          cm.NewOptString("application/json"),
 					IncludeContentLength: cm.NewOptBool(true),
@@ -196,7 +196,7 @@ func TestWebhookModelToWebhookDefinitionData(t *testing.T) {
 						}),
 					},
 				}),
-				Transformation: cm.OptNilWebhookDefinitionDataTransformation{Set: true, Null: true},
+				Transformation: cm.OptNilWebhookDefinitionTransformation{Set: true, Null: true},
 			},
 			expectErr: false,
 		},

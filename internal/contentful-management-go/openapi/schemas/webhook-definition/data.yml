@@ -1,4 +1,4 @@
-WebhookDefinitionData:
+WebhookDefinitionFields:
   type: object
   properties:
     name:
@@ -20,22 +20,39 @@ WebhookDefinitionData:
     httpBasicPassword:
       type: string
       nullable: true
-    headers:
-      $ref: "./headers.yml#/WebhookDefinitionHeaders"
     transformation:
-      type: object
-      properties:
-        method:
-          type: string
-        contentType:
-          type: string
-        includeContentLength:
-          type: boolean
-        body: {}
-      nullable: true
+      $ref: "#/WebhookDefinitionTransformation"
     active:
       type: boolean
   required:
     - name
     - url
     - topics
+
+WebhookDefinitionData:
+  allOf:
+    - $ref: "#/WebhookDefinitionFields"
+    - type: object
+      properties:
+        headers:
+          $ref: "./headers.yml#/WebhookDefinitionRequestHeaders"
+
+WebhookDefinitionCreateData:
+  allOf:
+    - $ref: "#/WebhookDefinitionFields"
+    - type: object
+      properties:
+        headers:
+          $ref: "./headers.yml#/WebhookDefinitionCreateHeaders"
+
+WebhookDefinitionTransformation:
+  type: object
+  properties:
+    method:
+      type: string
+    contentType:
+      type: string
+    includeContentLength:
+      type: boolean
+    body: {}
+  nullable: true

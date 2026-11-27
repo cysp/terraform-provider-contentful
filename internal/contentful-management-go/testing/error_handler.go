@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
+	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/ogen-go/ogen/ogenerrors"
 	"github.com/ogen-go/ogen/validate"
 )
@@ -31,16 +33,11 @@ func errorHandler(ctx context.Context, w http.ResponseWriter, r *http.Request, e
 		}
 	}
 
-	if isMissingWebhookTopics(err) {
-		message := "Validation error"
-		_ = WriteContentfulManagementErrorResponse(
-			w,
-			http.StatusUnprocessableEntity,
-			"ValidationFailed",
-			&message,
-			missingWebhookTopicsValidationDetails(),
-		)
+	if writeWebhookCreateHeaderDecodeError(w, err) {
+		return
+	}
 
+	if isMissingWebhookTopics(err) && writeWebhookValidationIssues(w, []webhookValidationIssue{missingWebhookTopicsIssue()}) {
 		return
 	}
 
@@ -148,4 +145,71 @@ func writeWebhookSigningSecretDecodeError(w http.ResponseWriter, err error) bool
 	}
 
 	return false
+}
+
+// The POST decoder requires a value for each header. Recover field presence
+// from a malformed POST so the fixture returns CMA's ordered header issues.
+func writeWebhookCreateHeaderDecodeError(w http.ResponseWriter, err error) bool {
+	request, ok := errors.AsType[*ogenerrors.DecodeRequestError](err)
+	if !ok || request.OperationName() != "CreateWebhookDefinition" {
+		return false
+	}
+
+	body, ok := errors.AsType[*ogenerrors.DecodeBodyError](request)
+	if !ok {
+		return false
+	}
+
+	var fields struct {
+		Headers cm.WebhookDefinitionRequestHeaders `json:"headers"`
+		Topics  json.RawMessage                    `json:"topics"`
+	}
+
+	err = json.Unmarshal(body.Body, &fields)
+	if err != nil {
+		return false
+	}
+
+	var issues []webhookValidationIssue
+
+	for i, header := range fields.Headers {
+		if _, supplied := header.Value.Get(); supplied {
+			continue
+		}
+
+		received := "undefined"
+		if header.Value.IsNull() {
+			received = "null"
+		}
+
+		issues = append(issues, webhookValidationIssue{
+			Name: "invalid_type", Path: []any{"headers", i, "value"},
+			Details: fmt.Sprintf(`Invalid input: expected string, received %s at "headers.%d.value"`, received, i),
+		})
+	}
+
+	if len(issues) == 0 {
+		return false
+	}
+
+	if fields.Topics == nil {
+		issues = append(issues, missingWebhookTopicsIssue())
+	}
+
+	return writeWebhookValidationIssues(w, issues)
+}
+
+func missingWebhookTopicsIssue() webhookValidationIssue {
+	return webhookValidationIssue{Name: "invalid_type", Path: []any{"topics"}, Details: `Invalid input: expected array, received undefined at "topics"`}
+}
+
+func writeWebhookValidationIssues(w http.ResponseWriter, issues []webhookValidationIssue) bool {
+	response, err := webhookValidationError(issues)
+	if err != nil {
+		return false
+	}
+
+	_ = WriteContentfulManagementResponse(w, response.StatusCode, &response.Response)
+
+	return true
 }

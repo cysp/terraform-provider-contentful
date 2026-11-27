@@ -9,14 +9,14 @@ import (
 func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
 	path path.Path,
 	key string,
-) (cm.WebhookDefinitionHeader, diag.Diagnostics) {
+) (cm.WebhookDefinitionRequestHeader, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	secret, secretDiags := requestRequiredBool(v.Secret, path.AtName("secret"))
 	diags.Append(secretDiags...)
 
 	if diags.HasError() {
-		return cm.WebhookDefinitionHeader{}, diags
+		return cm.WebhookDefinitionRequestHeader{}, diags
 	}
 
 	diags.Append(v.validateValueOmission(path)...)
@@ -24,10 +24,15 @@ func (v WebhookHeaderValue) ToWebhookDefinitionHeader(
 	diags.Append(valueDiags...)
 
 	if diags.HasError() {
-		return cm.WebhookDefinitionHeader{}, diags
+		return cm.WebhookDefinitionRequestHeader{}, diags
 	}
 
-	return cm.WebhookDefinitionHeader{Key: key, Secret: cm.NewOptBool(secret), Value: value}, diags
+	header := cm.WebhookDefinitionRequestHeader{Key: key, Secret: cm.NewOptBool(secret)}
+	if supplied, ok := value.Get(); ok {
+		header.Value.SetTo(supplied)
+	}
+
+	return header, diags
 }
 
 func (v WebhookHeaderValue) validateValueOmission(headerPath path.Path) diag.Diagnostics {
