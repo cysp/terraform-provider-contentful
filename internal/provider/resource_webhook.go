@@ -85,12 +85,6 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(validatePlannedWebhookHeaderValues(path.Root("headers"), requestModel.Headers.Elements(), nil, true)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	request, requestDiags := requestModel.toWebhookDefinitionCreateData(ctx, path.Empty())
 	resp.Diagnostics.Append(requestDiags...)
 

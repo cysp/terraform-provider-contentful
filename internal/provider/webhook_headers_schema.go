@@ -29,7 +29,7 @@ func WebhookHeadersSchema(ctx context.Context) schema.Attribute {
 	}
 }
 
-func validatePlannedWebhookHeaderValues(headersPath path.Path, headers map[string]TypedObject[WebhookHeaderValue], writeOnly map[string]types.String, creating bool) diag.Diagnostics {
+func validatePlannedWebhookHeaderValues(headersPath path.Path, headers, prior map[string]TypedObject[WebhookHeaderValue], writeOnly map[string]types.String) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	for _, key := range slices.Sorted(maps.Keys(headers)) {
@@ -39,9 +39,9 @@ func validatePlannedWebhookHeaderValues(headersPath path.Path, headers map[strin
 		}
 
 		headerPath := headersPath.AtMapKey(key)
-		if creating && header.Value.IsNull() && writeOnly[key].IsNull() {
+		if _, exists := prior[key]; !exists && header.Value.IsNull() && writeOnly[key].IsNull() {
 			diags.AddAttributeError(headerPath.AtName("value"), "Missing initial webhook header value",
-				"Supply an initial value for this header when creating or replacing a webhook.")
+				"Supply an initial value for each new header name, including when creating or replacing a webhook.")
 
 			continue
 		}
@@ -83,7 +83,7 @@ func validatePreliminaryWebhookHeaders(state, plan, config WebhookModel, headerV
 	}
 
 	if !config.Headers.IsUnknown() && !plan.Headers.Equal(state.Headers) {
-		diags.Append(validatePlannedWebhookHeaderValues(path.Root("headers"), plan.Headers.Elements(), headerValues, state.WebhookID.IsNull())...)
+		diags.Append(validatePlannedWebhookHeaderValues(path.Root("headers"), plan.Headers.Elements(), state.Headers.Elements(), headerValues)...)
 	}
 
 	return diags

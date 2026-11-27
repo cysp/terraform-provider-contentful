@@ -82,6 +82,7 @@ resource "contentful_webhook" "plan" {
   name                = "Plan Webhook"
   url                 = "https://example.invalid/webhook"
   topics              = ["Entry.publish"]
+  http_basic_username = "plan-user"
   http_basic_password = var.webhook_password
 
   headers = {

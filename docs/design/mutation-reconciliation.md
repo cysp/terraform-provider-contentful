@@ -93,7 +93,7 @@ state clears both versions.
 
 The effective plan owns header membership. Omitting the map clears the collection unless a lifecycle rule retains it. Send ordinary header values, including empty strings. For an existing secret key absent from configuration and retained by a lifecycle rule, send its exact key and `secret = true` without a `value` member. Contentful retains the secret stored under that name. If the webhook was deleted after refresh, the PUT can fail because there is no stored secret to retain.
 
-On creation or replacement, each configured header needs an initial value. Reject known null values during planning, defer unknowns, and validate the resolved values before POST.
+Each header name absent from prior state needs an initial value, including on creation, replacement or rename. Reject a known absence during planning, defer unknown inputs, and validate resolved values before writing.
 
 For configured ordinary values on update, send each known planned string verbatim, including an empty string or a value retained by `ignore_changes`. If the planned value is null, require `secret = true` and omit the `value` member from the PUT. Compare the refreshed and effective planned secret flags for each exact name retained in the same space. Warn on a known change in the preliminary plan and reject it before an in-place PUT. Contentful retains the old flag and can expose newly submitted bytes on a previously readable header. A new Webhook or a change of space has no prior header at its destination. Terraform 1.17.2 initially plans an explicit same-space `-replace` against prior state, so the preliminary warning can also appear on a valid replacement. Check the returned headers against the plan, including the secret flag. See the [observed results for existing, new, and renamed headers](../research/webhooks.md#header-names-order-and-secret-updates).
 
@@ -109,6 +109,12 @@ For configured ordinary values on update, send each known planned string verbati
 Report differences at the affected top-level attribute. A lossy response cannot establish equivalence with a known plan. See the [Webhook observations](../research/webhooks.md) for Contentful's wire representations.
 
 ## Webhook credential responses
+
+Validate both Basic password forms against the effective planned username. An in-place update may retain an imported username through `ignore_changes`. A creation plan, including the create phase of replacement, must reject a known username without a password or a known password without a username. Check each known credential against its CMA length limit on the create plan, even if the other password form is unknown. The two password forms conflict once both have known, non-null values. When a known username changes and a write-only password is selected, reject an incomplete pair during planning.
+
+When the visible Basic credential change is incomplete but a preliminary replacement plan could retain an ignored counterpart, issue a resource-level warning. Reject a provably invalid pair on the create plan and recheck resolved inputs before sending a PUT. An unchanged username with both password inputs null delegates the password.
+
+Terraform can preview an update using ignored prior values before planning a replacement. Validate a newly configured username against its length limit. For either password form, reject a known oversized value when comparison with the previous ordinary password or verifier establishes a rotation, or when a fully known plan requires a PUT to change settings or headers. Matching bytes can migrate between ordinary and write-only storage without a PUT. Defer checking an ordinary password retained from state because replacement can discard an ignored value. Check mixed empty and nonempty pairs on the create plan or before a credential write, and recheck resolved lengths before sending them.
 
 For ordinary credentials, use returned bytes, including an empty string. On initial import a single readable value has no write-only history. Previously redacted paths follow the rules below. An explicit JSON null clears the Basic password. A difference from a
 known plan is reported after the returned state is saved for recovery.

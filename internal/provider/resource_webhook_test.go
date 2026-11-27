@@ -342,7 +342,8 @@ resource "terraform_data" "flag" {
 		omitted, declared, withoutValue,
 		{
 			Config:      webhookHeadersConfig(imported.Name, `headers = { x-secret = { secret = true, value = null } }`),
-			ExpectError: regexp.MustCompile("Failed to update webhook"),
+			PlanOnly:    true,
+			ExpectError: regexp.MustCompile("Missing initial webhook header value"),
 		},
 		{
 			Config:      webhookHeadersConfig(imported.Name, `headers = { X-Managed = { secret = true }, X-Secret = { secret = true } }`),
@@ -351,9 +352,8 @@ resource "terraform_data" "flag" {
 		{Config: strings.Replace(withoutValue.Config, `space_id = "space"`, `space_id = "another-space"`, 1), PlanOnly: true, ExpectError: regexp.MustCompile("Missing initial webhook header value")},
 		{Config: unknownSecret, Taint: []string{address}, PlanOnly: true, ExpectError: regexp.MustCompile("Missing initial webhook header value")},
 	}})
-	recorder.requirePut(t, 5, "5", imported.Name, []map[string]any{{"key": "x-secret", "secret": true}})
-	require.Len(t, recorder.writes, 6)
-	require.Equal(t, http.MethodDelete, recorder.writes[5].method)
+	require.Len(t, recorder.writes, 5)
+	require.Equal(t, http.MethodDelete, recorder.writes[4].method)
 }
 
 func TestAccWebhookResourceCreateWithNullHeaderValue(t *testing.T) {
