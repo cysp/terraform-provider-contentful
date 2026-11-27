@@ -129,6 +129,8 @@ Each Webhook instance stores its verifiers together under the private key `write
 
 An otherwise consistent successful PUT acknowledges a planned Basic credential removal even if its response omits the username.
 
+A POST reply must identify the requested space and supply a nonempty assigned ID before the provider can record any recovery state. Otherwise, direct the practitioner to inspect the requested space before retrying.
+
 If a PUT reply identifies another Webhook, keep all API-backed fields, identity and credential verifiers from the target’s prior state. Apply local timeout changes and clear the public and private versions. The next write requires a refreshed version.
 
 A contradictory PUT can still identify the target Webhook and supply its version. Withhold proposed verifiers. Build recovery state using the same redacted paths that guarded the reply, including delegated headers that have no verifier.

@@ -245,10 +245,6 @@ func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData,
 // its ordinary recovery state and endpoint version while retaining only
 // previously acknowledged credentials and verifiers.
 func publishWebhookResponse(ctx context.Context, private PrivateProviderData, priorVerifiers webhookVerifiers, change writeOnlySecretVerifierChange, identity *tfsdk.ResourceIdentity, target *tfsdk.State, response cm.WebhookDefinition, state, plan WebhookModel, mask webhookRedaction) diag.Diagnostics {
-	if state.WebhookID.IsNull() && response.Sys.ID == "" {
-		return diag.Diagnostics{diag.NewErrorDiagnostic("Missing created webhook ID", "Contentful returned an empty ID. The provider could not identify the created webhook or acknowledge its credentials. Inspect webhooks in the space before retrying.")}
-	}
-
 	guard := mask.guardMutationResponse(state, plan)
 	sanitized, secretDiags := guard.redact(response, plan)
 

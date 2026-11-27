@@ -7,10 +7,14 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -168,4 +172,53 @@ func TestAccWebhookResourceEmptyAssignedID(t *testing.T) {
 	assert.Contains(t, output, "Missing created webhook ID")
 	assert.Empty(t, readWebhookStateInstances(t, runtime))
 	require.Error(t, err)
+}
+
+func TestAccWebhookResourceWrongSpaceCreate(t *testing.T) {
+	t.Parallel()
+	fixture := newSeededWebhookFixture(t)
+	fixture.server.RegisterSpaceEnvironment("other", "master")
+
+	for _, space := range []string{"space", "other"} {
+		fixture.server.SetWebhookDefinition(space, "reserved", cm.WebhookDefinitionData{
+			Name: "Independent", URL: "https://example.invalid/independent", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(false),
+		})
+	}
+
+	created := make(chan string, 1)
+
+	fixture.onNextResponse(http.MethodPost, func(w http.ResponseWriter, rec *httptest.ResponseRecorder) {
+		sys, _ := testJSONObject(rec.Body.String())["sys"].(map[string]any)
+
+		id, _ := sys["id"].(string)
+		created <- id
+
+		req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/spaces/other/webhook_definitions/reserved", nil)
+		req.Header.Set("Authorization", "Bearer "+cmt.ValidAccessToken)
+		fixture.server.ServeHTTP(w, req)
+	})
+
+	config := webhookBasicAuthConfig("New resource", "null", "null", "")
+
+	var createdID string
+
+	testAccMockedResource(t, fixture, resource.TestCase{Steps: []resource.TestStep{
+		{Config: config, ExpectError: regexp.MustCompile("Unexpected space in created webhook")},
+		{Config: config, PlanOnly: true, ExpectNonEmptyPlan: true, ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionCreate)}}},
+		{ResourceName: "contentful_webhook.test", ImportState: true, ImportStatePersist: true, ImportStateIdFunc: func(*terraform.State) (string, error) {
+			require.Len(t, created, 1)
+			createdID = <-created
+			require.NotEmpty(t, createdID)
+
+			return "space/" + createdID, nil
+		}},
+		{Config: config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop)}}},
+	}})
+	require.NotEmpty(t, createdID)
+
+	for _, space := range []string{"space", "other"} {
+		reserved, ok := fixture.server.StoredWebhookDefinition(space, "reserved")
+		require.True(t, ok)
+		require.Equal(t, 0, reserved.Sys.Version)
+	}
 }

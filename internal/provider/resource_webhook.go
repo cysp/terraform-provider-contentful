@@ -120,6 +120,18 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
+	if definition.Response.Sys.ID == "" {
+		resp.Diagnostics.AddError("Missing created webhook ID", "Contentful returned an empty ID. The provider could not identify the created webhook or acknowledge its credentials. Inspect webhooks in the space before retrying.")
+
+		return
+	}
+
+	if definition.Response.Sys.Space.Sys.ID != params.SpaceID {
+		resp.Diagnostics.AddError("Unexpected space in created webhook", "Contentful returned a webhook from a different space. Inspect the requested space and import the created webhook if present before retrying.")
+
+		return
+	}
+
 	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, webhookVerifiers{}, change, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, mask)...)
 }
 
