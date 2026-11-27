@@ -11,7 +11,8 @@ const (
 )
 
 const (
-	ErrorSysIDConflict        = "Conflict"
-	ErrorSysIDNotFound        = "NotFound"
-	ErrorSysIDVersionMismatch = "VersionMismatch"
+	ErrorSysIDConflict         = "Conflict"
+	ErrorSysIDValidationFailed = "ValidationFailed"
+	ErrorSysIDNotFound         = "NotFound"
+	ErrorSysIDVersionMismatch  = "VersionMismatch"
 )

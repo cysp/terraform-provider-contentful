@@ -2,6 +2,7 @@
 package provider
 
 import (
+	"strings"
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -39,6 +40,7 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 		resourceSchema schema.Schema
 		create         func(*cm.Client, resource.CreateRequest, *resource.CreateResponse)
 		expectedPath   string
+		omitSource     bool
 	}{
 		"webhook initial header value": {
 			model: webhook, config: webhook, resourceSchema: WebhookResourceSchema(ctx),
@@ -46,7 +48,7 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 				implementation := webhookResource{providerData: ContentfulProviderData{client: client}}
 				implementation.Create(ctx, request, response)
 			},
-			expectedPath: `headers["X-Token"].value`,
+			expectedPath: `headers["X-Token"].value`, omitSource: true,
 		},
 		"app signing secret": {
 			model: AppSigningSecretModel{
@@ -303,7 +305,7 @@ func TestCreateRequestConversionErrorsStopBeforeAPIRequest(t *testing.T) {
 			test.create(client, request, &response)
 
 			require.True(t, response.Diagnostics.HasError())
-			assert.Contains(t, mutationDiagnosticPaths(t, response.Diagnostics), test.expectedPath)
+			assertMutationDiagnosticLocation(t, response.Diagnostics, test.expectedPath, test.omitSource)
 			assert.Zero(t, requestCount.Load())
 		})
 	}
@@ -703,6 +705,7 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 		create         func(*cm.Client, resource.CreateRequest, *resource.CreateResponse)
 		update         func(*cm.Client, resource.UpdateRequest, *resource.UpdateResponse)
 		expectedPath   string
+		omitSource     bool
 	}{
 		"delivery API key": {
 			plan:           deliveryAPIKeyPlan,
@@ -772,7 +775,7 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 				implementation := webhookResource{providerData: ContentfulProviderData{client: client}}
 				implementation.Update(ctx, request, response)
 			},
-			expectedPath: "headers",
+			expectedPath: "headers", omitSource: true,
 		},
 		"space enablements": {
 			plan:           spaceEnablementsPlan,
@@ -807,14 +810,14 @@ func TestUnknownPlannedConfigurationOwnedValueStopsBeforeAPIRequest(t *testing.T
 			test.create(client, resource.CreateRequest{Config: config, Plan: plan}, &createResponse)
 
 			require.True(t, createResponse.Diagnostics.HasError())
-			assert.Contains(t, mutationDiagnosticPaths(t, createResponse.Diagnostics), test.expectedPath)
+			assertMutationDiagnosticLocation(t, createResponse.Diagnostics, test.expectedPath, test.omitSource)
 			assert.Zero(t, requestCount.Load())
 
 			updateResponse := resource.UpdateResponse{State: tfsdk.State{Schema: test.resourceSchema}}
 			test.update(client, resource.UpdateRequest{Config: config, Plan: plan, State: tfsdk.State(config)}, &updateResponse)
 
 			require.True(t, updateResponse.Diagnostics.HasError())
-			assert.Contains(t, mutationDiagnosticPaths(t, updateResponse.Diagnostics), test.expectedPath)
+			assertMutationDiagnosticLocation(t, updateResponse.Diagnostics, test.expectedPath, test.omitSource)
 			assert.Zero(t, requestCount.Load())
 		})
 	}
@@ -848,4 +851,25 @@ func spaceEnablementsTimeoutsNull() timeouts.Value {
 		"read":   types.StringType,
 		"update": types.StringType,
 	})}
+}
+
+func assertMutationDiagnosticLocation(t *testing.T, diagnostics diag.Diagnostics, expectedPath string, omitSource bool) {
+	t.Helper()
+
+	if !omitSource {
+		assert.Contains(t, mutationDiagnosticPaths(t, diagnostics), expectedPath)
+
+		return
+	}
+
+	for _, diagnostic := range diagnostics.Errors() {
+		if strings.HasPrefix(diagnostic.Detail(), expectedPath+": ") {
+			_, attached := diagnostic.(diag.DiagnosticWithPath)
+			assert.False(t, attached, "credential diagnostic attached an HCL source expression")
+
+			return
+		}
+	}
+
+	t.Errorf("credential diagnostic omitted path %q from its detail", expectedPath)
 }

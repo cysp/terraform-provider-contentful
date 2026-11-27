@@ -147,7 +147,26 @@ func validateWebhookPasswordLength(password types.String, passwordPath path.Path
 	return nil
 }
 
+// Terraform includes the source expression for attribute errors, including
+// literal passwords and sibling header values. Keep the path in the detail.
+func omitWebhookCredentialSource(diagnostics *diag.Diagnostics) {
+	for i, diagnostic := range *diagnostics {
+		attribute, ok := diagnostic.(diag.DiagnosticWithPath)
+		if !ok || diagnostic.Severity() != diag.SeverityError {
+			continue
+		}
+
+		steps := attribute.Path().Steps()
+		if (len(steps) > 0 && steps[0] == path.PathStepAttributeName("headers")) ||
+			attribute.Path().Equal(path.Root("http_basic_password")) || attribute.Path().Equal(path.Root(webhookPasswordWO)) {
+			(*diagnostics)[i] = diag.NewErrorDiagnostic(diagnostic.Summary(), attribute.Path().String()+": "+diagnostic.Detail())
+		}
+	}
+}
+
 func (r *webhookResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	defer omitWebhookCredentialSource(&resp.Diagnostics)
+
 	var config WebhookModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
@@ -157,6 +176,8 @@ func (r *webhookResource) ValidateConfig(ctx context.Context, req resource.Valid
 }
 
 func (r *webhookResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	defer omitWebhookCredentialSource(&resp.Diagnostics)
+
 	if req.Plan.Raw.IsNull() {
 		return
 	}
