@@ -6,9 +6,14 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path path.Path) (cm.WebhookDefinitionData, diag.Diagnostics) {
+	return model.toWebhookDefinitionData(ctx, path, types.StringNull())
+}
+
+func (model *WebhookModel) toWebhookDefinitionData(ctx context.Context, path path.Path, priorUsername types.String) (cm.WebhookDefinitionData, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	name, nameDiags := requestRequiredString(model.Name, path.AtName("name"))
@@ -27,8 +32,13 @@ func (model *WebhookModel) ToWebhookDefinitionData(ctx context.Context, path pat
 	diags.Append(httpBasicPasswordDiags...)
 
 	if _, hasUsername := httpBasicUsername.Get(); hasUsername && httpBasicPassword.IsNull() {
-		diags.AddAttributeError(path.AtName("http_basic_password"), "Missing webhook Basic password",
-			"Supply a password with the username, or omit both credentials to clear Basic authentication.")
+		if model.HTTPBasicUsername.Equal(priorUsername) {
+			httpBasicUsername.Reset()
+			httpBasicPassword.Reset()
+		} else {
+			diags.AddAttributeError(path.AtName("http_basic_password"), "Missing webhook Basic password",
+				"Supply a password when setting a new Basic username.")
+		}
 	}
 
 	if _, hasPassword := httpBasicPassword.Get(); hasPassword && httpBasicUsername.IsNull() {

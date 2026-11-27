@@ -68,9 +68,9 @@ resource "contentful_webhook" "this" {
 - `active` (Boolean) Whether the webhook is active. Defaults to `true`.
 - `filters` (Attributes List) Filtering constraints applied after `topics`. Contentful combines filters with logical AND; each filter configures exactly one of `equals`, `in`, `regexp`, or `not`. Null or omitted filters default to the `master` environment; `filters = []` sends no constraints. Supported payload paths and event restrictions are defined by [Contentful webhook filters](https://www.contentful.com/developers/docs/extensibility/webhooks/filters/). (see [below for nested schema](#nestedatt--filters))
 - `headers` (Attributes Map) HTTP headers sent by the webhook, keyed by header name. Omitting the map or setting `headers = {}` removes all headers unless `ignore_changes` retains the map or a key. To keep an externally managed header, omit its key and ignore that exact key. See [Secrets and Terraform state](../guides/secrets-and-state#secret-custom-headers). (see [below for nested schema](#nestedatt--headers))
-- `http_basic_password` (String, Sensitive) HTTP Basic authentication password. Requires a username in the effective plan. When Contentful omits the password, refresh retains the previously managed value for the same username. If the response omits both fields, refresh retains the prior username and password. Import leaves an omitted password null. See [Secrets and Terraform state](../guides/secrets-and-state) for credential and state-handling guidance.
+- `http_basic_password` (String, Sensitive) HTTP Basic authentication password. Requires a username in the effective plan. Import leaves an omitted password null. See [Secrets and Terraform state](../guides/secrets-and-state#webhook-credentials-and-secret-headers) for delegation, refresh and recovery.
 - `http_basic_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only alternative to `http_basic_password` for Terraform 1.11.1 or later. Requires a username in the effective plan to set or rotate the password. An ephemeral input keeps the password out of saved plans. See [Secrets and Terraform state](../guides/secrets-and-state#basic-authentication).
-- `http_basic_username` (String) HTTP Basic authentication username. Configure username and password together. Omitting both clears Basic authentication on an update unless ignore_changes retains previously managed credentials.
+- `http_basic_username` (String) HTTP Basic authentication username. Supply a password when setting a new username. Retain the same username with both password arguments omitted to preserve an existing password. Removing all Basic credentials from the effective plan clears authentication.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `transformation` (Attributes) Customizes the outgoing webhook HTTP method, Content-Type, Content-Length header, and request body. When omitted, Contentful uses its standard webhook request behavior. Unsupported methods and content types prevent writes, including values retained by ignore_changes. Read and import preserve returned values. (see [below for nested schema](#nestedatt--transformation))
 
@@ -187,6 +187,10 @@ Optional:
 - `method` (String) HTTP method for outgoing webhook requests. Contentful defaults to `POST` and supports `POST`, `GET`, `PUT`, `PATCH`, and `DELETE`. `GET` and `DELETE` webhook calls do not include a request body.
 
 ## Import
+
+CLI import reads the Webhook into state. An import-block apply can update it immediately. Review the planned receiver URL, topics, filters, transformation and headers before applying. Active defaults to true. Set `active = false` to keep an imported Webhook inactive. Omitting the header map can clear existing headers. [Keeping imported headers](../guides/secrets-and-state#secret-custom-headers)
+
+When applying an import block for a webhook with Basic authentication, keep the existing username in the effective plan and leave both password arguments null to preserve its password. If the username and both passwords are null in the plan, the same apply clears authentication. [Managing imported credentials](../guides/secrets-and-state#basic-authentication)
 
 ### By identity (Terraform 1.12 or later)
 

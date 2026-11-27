@@ -16,6 +16,7 @@ variable "webhook_secret" {
 variable "webhook_password" {
   description = "Basic authentication password supplied for webhook writes with Terraform 1.11.1 or later."
   type        = string
+  nullable    = false
   ephemeral   = true
   sensitive   = true
 }
