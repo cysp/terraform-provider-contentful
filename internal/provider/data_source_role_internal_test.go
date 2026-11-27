@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -11,38 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestRoleDataSourceResponseOrderWarningPaths(t *testing.T) {
-	t.Parallel()
-
-	// Unknown effects fail decoding; typed values exercise projector warning paths.
-	firstRole := cm.Role{Sys: cm.NewRoleSys("space", "item-a"), Name: "First", Permissions: cm.RolePermissions{}, Policies: []cm.RolePoliciesItem{}}
-	warningRole := cm.Role{Sys: cm.NewRoleSys("space", "item-b"), Name: "Second", Permissions: cm.RolePermissions{}, Policies: []cm.RolePoliciesItem{{Effect: cm.RolePoliciesItemEffect("future"), Actions: cm.NewStringRolePoliciesItemActions("all")}}}
-
-	_, singularDiagnostics := newRoleDataSourceItem(t.Context(), warningRole, path.Empty())
-	require.Len(t, singularDiagnostics.Warnings(), 1)
-	assertDiagnosticPath(t, singularDiagnostics.Warnings()[0], path.Root("policies").AtListIndex(0).AtName("effect"))
-
-	items, diagnostics := readContentfulCollection(t.Context(), "Failed to read roles",
-		func(_ context.Context, skip int64) (contentfulCollection[cm.Role], diag.Diagnostics) {
-			if skip == 0 {
-				return &cm.RoleCollection{Total: cm.NewOptInt(2), Items: []cm.Role{warningRole}}, nil
-			}
-
-			return &cm.RoleCollection{Total: cm.NewOptInt(2), Items: []cm.Role{firstRole}}, nil
-		},
-		func(index int, entity cm.Role) (RoleDataSourceItemModel, diag.Diagnostics) {
-			return newRoleDataSourceItem(t.Context(), entity, path.Root("roles").AtListIndex(index))
-		},
-	)
-	require.False(t, diagnostics.HasError(), diagnostics)
-	require.Len(t, diagnostics.Warnings(), 1)
-	assertDiagnosticPath(t, diagnostics.Warnings()[0], path.Root("roles").AtListIndex(0).AtName("policies").AtListIndex(0).AtName("effect"))
-	require.Len(t, items, 2)
-	assert.Equal(t, "item-b", items[0].RoleID.ValueString())
-	assert.Equal(t, "item-a", items[1].RoleID.ValueString())
-	assert.True(t, items[0].Policies[0].Effect.IsNull())
-}
 
 //nolint:forcetypeassert // Fixture mutations target independently defined object shapes.
 func TestRoleDataSourceDecoderRejectsUnsupportedEffect(t *testing.T) {
@@ -68,8 +35,12 @@ func TestRoleDataSourceProjectionWarningsFromTypedIrregularResponse(t *testing.T
 			Actions: cm.RolePoliciesItemActions{},
 		}},
 	}
+	_, singular := newRoleDataSourceItem(t.Context(), role, path.Empty())
+	require.Len(t, singular.Warnings(), 3)
+	assertDiagnosticPath(t, singular.Warnings()[1], path.Root("policies").AtListIndex(0).AtName("effect"))
+
 	root := path.Root("roles").AtListIndex(2)
-	item, diagnostics := newRoleDataSourceItem(t.Context(), role, root)
+	item, diagnostics := newRoleCollectionItem(t.Context(), role, "space", 2)
 	require.False(t, diagnostics.HasError(), diagnostics)
 	require.Len(t, diagnostics.Warnings(), 3)
 	assertDiagnosticPath(t, diagnostics.Warnings()[0], root.AtName("permissions").AtMapKey("ContentModel"))
@@ -105,7 +76,7 @@ func TestRolesDataSourceStableDuplicateIDs(t *testing.T) {
 	second := mutateTestJSON(body, func(document map[string]any) { document["name"] = "Second arrival" })
 
 	response := discoveryReadTest(t.Context(), t, NewRolesDataSource, map[string]any{"space_id": "space"}, roundTripFunc(func(request *http.Request) (*http.Response, error) {
-		if request.URL.Query().Get("skip") == "0" {
+		if request.URL.Query().Get("skip") == "" {
 			return discoveryHTTPResponse(request, 200, discoveryPage(0, 1, 2, first)), nil
 		}
 

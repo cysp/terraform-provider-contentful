@@ -2,7 +2,7 @@
 
 Space, Environment, Environment Alias, Locale, Role, and Content Type data sources
 provide read-only reference and discovery. Singular forms require addressing
-IDs. Plural forms use scoped offset collections. Space, Environment, Environment
+IDs. Plural forms use scoped collections. Space, Environment, Environment
 Alias, and Locale results are sorted by addressing ID; Role and Content Type results
 retain response order.
 The [practitioner guide](../guides/existing-configuration.md) supplies composition
@@ -72,7 +72,7 @@ live-verified assertion that every collection/detail response contains those fie
 
 ## Offset traversal
 
-Teams, Spaces, Environments, Environment Aliases, Locales, Roles, and Content Types
+Teams, Spaces, Environments, Environment Aliases, Locales, and Content Types
 share one collection reader. Each endpoint decodes its generated response into
 a typed collection or diagnostics before traversal. The collection element
 type and item projection input must agree at compile time. As with Terraform
@@ -87,7 +87,7 @@ projection errors abort the lookup without publishing partial state; not-found
 and permission errors are not reclassified as empty inventories.
 The reader projects each item at its global response-order index and retains
 page and projection diagnostics across the traversal, including warnings before
-a later error. Role and Content Type diagnostic paths therefore refer directly
+a later error. Content Type diagnostic paths therefore refer directly
 to the returned list positions without an additional projection pass.
 
 All pages share the data source's operation timeout and the existing
@@ -99,6 +99,45 @@ Offset traversal does not establish a snapshot. Concurrent edits can cause
 omissions or duplicates, and alias reads do not establish uninterrupted target
 stability. A single-read Environment alias projection avoids a resolution race
 but does not promise stability after that response.
+
+## Role traversal
+
+Roles use a dedicated reader for the
+[announced cursor migration](../research/collections-and-errors.md#space-role-cursor-migration).
+The initial request supplies only `limit=100`. An offset member (`total` or
+`skip`) establishes legacy traversal. The reader advances by the number of
+returned items and stops at an empty page or the reported total. Later offset
+pages may omit all pagination metadata.
+
+A `pages` object establishes cursor traversal. An absent `next` ends the read.
+After a cursor request, an absent `pages` also ends it. Mixing offset and cursor
+metadata, or returning cursor metadata for an offset request, is an error.
+
+A nonempty initial page without `total`, `skip`, or `pages` is ambiguous. To
+preserve legacy reads the provider tries the next offset. It continues through
+distinct pages and permits one consecutive duplicate of a whole page. Three
+identical consecutive nonempty pages without any offset metadata could mean
+the server ignores `skip`. The read then returns an error without publishing
+state, including when the service genuinely has three such pages. This guard
+compares complete decoded items in order and applies only until the first
+explicit offset member. A server that rejects the tentative offset also returns
+a read error. An empty initial response without navigation is terminal. The
+eventual Role-specific cursor contract for this ambiguous shape is unverified.
+
+The reader extracts exactly one nonempty `pageNext` from the next URL, whose
+path must address the original space Role collection. It accepts root-relative
+or HTTP(S) absolute links; it never follows their authority. Every request uses
+the configured client, API base path, original space and fixed page limit.
+Userinfo, fragments, malformed URLs/queries, `skip`, and `pagePrev` in forward
+links are rejected. Other link query parameters are not forwarded. Repeated
+cursor values after URL query decoding, including longer cycles, are errors.
+An empty intermediate page with a fresh next cursor is followed; continually
+changing cursors remain bounded by the operation deadline.
+
+Role response order and duplicate IDs are retained, with existing Space-link
+validation. Items are projected as pages arrive using their global list indexes;
+projection diagnostics are retained even when a later page fails. All pages and retries share one read
+deadline, and a failed traversal publishes no partial state.
 
 ## Verification boundary
 

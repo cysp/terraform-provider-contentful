@@ -45,6 +45,35 @@ A successful out-of-range response from the team endpoint was not established by
 retained evidence. The documented requested-offset meaning remains independent of that
 unverified status and item behavior.
 
+## Space Role cursor migration
+
+Primary sources checked on 2026-11-18 (UTC).
+
+The [Space Role announcement](https://www.contentful.com/developers/api-changes/space-roles-collection-endpoints-update/)
+says the space Role collection will replace `total` and `skip` with `pages`
+navigation, accept `pageNext` and `pagePrev`, and retain `limit`. Its body says
+February 15, 2027; its header says February 14. The scope is
+`GET /spaces/{space_id}/roles`, not singular Role reads or mutations.
+
+The [CMA cursor overview](https://www.contentful.com/developers/docs/references/content-management-api/overview/#cursor-pagination)
+shows root-relative URL strings in `pages.next` and `pages.prev`, carrying
+`pageNext` and `pagePrev` opaque tokens. Forward traversal ends when `next`
+is absent. It permits changing `limit` between pages. Its general opt-in
+`cursor=true` example concerns Entries; the Role announcement describes an
+endpoint migration and does not mention that parameter.
+Neither source specifies an overlap period or the mechanics of the Role rollout.
+
+The [Role endpoint reference](https://www.contentful.com/developers/docs/references/content-management-api/roles/get-all-roles/)
+still shows an offset envelope. The pinned SDK's
+[cursor collection type](https://github.com/contentful/contentful-management.js/blob/1b080d46936332bce96499fc4d68532588981013/lib/common-types.ts#L585-L593)
+omits `total`/`skip` and makes `pages`, `next`, and `prev` optional. This supports
+representing absent terminal navigation, but does not establish the eventual
+Role wire shape.
+
+The provider's [Role traversal policy](../design/configuration-data-sources.md#role-traversal)
+uses these published cursor conventions alongside the existing offset behavior.
+Raw local fixtures establish provider behavior, not deployment of the announced change or the service's cursor encoding.
+
 ## Endpoint-specific collection observations
 
 Observed: 2026-09-09 (UTC), passive configuration reads. These samples demonstrate
