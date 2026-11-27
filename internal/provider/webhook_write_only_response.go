@@ -143,13 +143,19 @@ func (mask webhookRedaction) redactHeaders(headers cm.WebhookDefinitionHeaders, 
 // Keep the redacted descriptor even when the response omits or renames that
 // credential. The next Read can then reject an unexpected echo. Ordinary
 // siblings already have their reconciled response or effective-plan fallback.
-func (mask webhookRedaction) retainUnconfirmed(data *WebhookModel, state, plan WebhookModel) {
-	if mask.password {
+func (mask webhookRedaction) retainUnconfirmed(data *WebhookModel, state, plan WebhookModel, sanitized cm.WebhookDefinition, confirmed bool) {
+	// Only an explicit ordinary echo from the target can release a guard.
+	// Reconciled state can also contain planned fallbacks for omitted fields.
+	password, present := sanitized.HttpBasicPassword.Get()
+
+	ordinaryPassword := confirmed && present && data.HTTPBasicUsername.Equal(plan.HTTPBasicUsername) &&
+		plan.HTTPBasicPassword.Equal(types.StringValue(password))
+	if mask.password && !ordinaryPassword {
 		data.HTTPBasicPassword = types.StringNull()
-		if data.HTTPBasicUsername.IsNull() {
-			data.HTTPBasicUsername = plan.HTTPBasicUsername
+		if !confirmed || data.HTTPBasicUsername.IsNull() {
+			data.HTTPBasicUsername = state.HTTPBasicUsername
 			if data.HTTPBasicUsername.IsNull() {
-				data.HTTPBasicUsername = state.HTTPBasicUsername
+				data.HTTPBasicUsername = plan.HTTPBasicUsername
 			}
 		}
 	}
@@ -163,9 +169,18 @@ func (mask webhookRedaction) retainUnconfirmed(data *WebhookModel, state, plan W
 		headers = make(map[string]TypedObject[WebhookHeaderValue])
 	}
 
+	var ordinary map[string]bool
+	if confirmed {
+		ordinary = matchingOrdinaryWebhookHeaders(sanitized.Headers, plan.Headers)
+	}
+
 	for key := range mask.headers {
+		if ordinary[key] {
+			continue
+		}
+
 		for returned := range headers {
-			if returned != key && strings.EqualFold(returned, key) && !mask.headers[returned] {
+			if returned != key && strings.EqualFold(returned, key) && !mask.headers[returned] && !ordinary[returned] {
 				delete(headers, returned)
 			}
 		}
@@ -174,6 +189,23 @@ func (mask webhookRedaction) retainUnconfirmed(data *WebhookModel, state, plan W
 	}
 
 	data.Headers = NewTypedMap(headers)
+}
+
+// Redaction has already discarded ambiguous or unauthorized echoes. A
+// fallback from the plan cannot establish that the endpoint returned a value.
+func matchingOrdinaryWebhookHeaders(headers cm.WebhookDefinitionHeaders, plan TypedMap[TypedObject[WebhookHeaderValue]]) map[string]bool {
+	matching := make(map[string]bool)
+
+	for _, header := range headers {
+		planned := plan.Elements()[header.Key].Value()
+
+		value, present := header.Value.Get()
+		if present && planned.Value.Equal(types.StringValue(value)) && planned.Secret.Equal(types.BoolValue(header.Secret.Or(false))) {
+			matching[header.Key] = true
+		}
+	}
+
+	return matching
 }
 
 func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData, prior, refreshed WebhookModel, passwordNull bool) (writeOnlySecretVerifierChange, diag.Diagnostics) {
@@ -212,12 +244,14 @@ func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData,
 // An inconsistent response can still identify a newly created webhook. Keep
 // its ordinary recovery state and endpoint version while retaining only
 // previously acknowledged credentials and verifiers.
-func publishWebhookResponse(ctx context.Context, private PrivateProviderData, change writeOnlySecretVerifierChange, identity *tfsdk.ResourceIdentity, target *tfsdk.State, response cm.WebhookDefinition, state, plan WebhookModel, mask webhookRedaction) diag.Diagnostics {
+func publishWebhookResponse(ctx context.Context, private PrivateProviderData, priorVerifiers webhookVerifiers, change writeOnlySecretVerifierChange, identity *tfsdk.ResourceIdentity, target *tfsdk.State, response cm.WebhookDefinition, state, plan WebhookModel, mask webhookRedaction) diag.Diagnostics {
 	if state.WebhookID.IsNull() && response.Sys.ID == "" {
 		return diag.Diagnostics{diag.NewErrorDiagnostic("Missing created webhook ID", "Contentful returned an empty ID. The provider could not identify the created webhook or acknowledge its credentials. Inspect webhooks in the space before retrying.")}
 	}
 
-	sanitized, secretDiags := mask.guardMutationResponse(state, plan).redact(response, plan)
+	guard := mask.guardMutationResponse(state, plan)
+	sanitized, secretDiags := guard.redact(response, plan)
+
 	if mask.password && plan.HTTPBasicPassword.IsNull() && !plan.HTTPBasicUsername.IsNull() && response.HttpBasicPassword.IsNull() {
 		secretDiags.AddAttributeError(path.Root("http_basic_password"), "Unconfirmed webhook Basic password", "Contentful returned an explicit null password for the configured Basic credentials.")
 	}
@@ -232,11 +266,37 @@ func publishWebhookResponse(ctx context.Context, private PrivateProviderData, ch
 	consistency.Append(secretDiags...)
 
 	if consistency.HasError() {
-		mask.retainUnconfirmed(&data, state, plan)
-		diags.Append(setResourceIdentityStateAndMutationVersion(ctx, identity, target, private, webhookIdentityAttributeNames(), &data, response.Sys.Version, confirmed)...)
-	} else {
-		diags.Append(publishWebhookState(ctx, private, change, identity, target, data, response.Sys.Version, confirmed)...)
+		// Use the original password field: redaction can discard a returned value.
+		if confirmed && response.HttpBasicUsername.IsNull() && response.HttpBasicPassword.ValueStringPointer() == nil {
+			guard.password = false
+		}
+
+		if confirmed && response.Headers != nil {
+			priorVerifiers.discardAbsentHeaders(data.Headers)
+			maps.DeleteFunc(guard.headers, func(key string, _ bool) bool {
+				_, planned := plan.Headers.Elements()[key]
+				_, returned := data.Headers.Elements()[key]
+
+				return !planned && !returned
+			})
+		}
+
+		guard.retainUnconfirmed(&data, state, plan, sanitized, confirmed)
+		priorVerifiers.retain(webhookReadRedaction(data), data.HTTPBasicUsername)
+
+		var encodeDiags diag.Diagnostics
+
+		change, encodeDiags = priorVerifiers.encode()
+		diags.Append(encodeDiags...)
+
+		if diags.HasError() {
+			diags.Append(consistency...)
+
+			return diags
+		}
 	}
+
+	diags.Append(publishWebhookState(ctx, private, change, identity, target, data, response.Sys.Version, confirmed)...)
 
 	diags.Append(consistency...)
 

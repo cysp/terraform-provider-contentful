@@ -10,6 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+func (m *WebhookModel) identifiesWebhook(sys cm.WebhookDefinitionSys) bool {
+	return m.SpaceID.ValueString() == sys.Space.Sys.ID && m.WebhookID.ValueString() == sys.ID
+}
+
 func NewWebhookResourceModelFromResponse(ctx context.Context, webhookDefinition cm.WebhookDefinition, fallback WebhookModel) (WebhookModel, diag.Diagnostics) {
 	var filterDiags diag.Diagnostics
 

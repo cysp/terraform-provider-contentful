@@ -120,7 +120,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, change, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, mask)...)
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, webhookVerifiers{}, change, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, mask)...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -248,22 +248,23 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	store, hashDiags := readWebhookVerifiers(ctx, req.Private, state)
+	priorVerifiers, hashDiags := readWebhookVerifiers(ctx, req.Private, state)
 	resp.Diagnostics.Append(hashDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	mask := webhookMutationRedaction(store, config)
-	requestModel, needsPUT, prepareDiags := prepareWebhookWrite(ctx, state, plan, config, &store)
+	preparedVerifiers := priorVerifiers
+	mask := webhookMutationRedaction(priorVerifiers, config)
+	requestModel, needsPUT, prepareDiags := prepareWebhookWrite(ctx, state, plan, config, &preparedVerifiers)
 	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	change, encodeDiags := store.encode()
+	change, encodeDiags := preparedVerifiers.encode()
 	resp.Diagnostics.Append(encodeDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -312,7 +313,16 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, change, resp.Identity, &resp.State, definition.Response, state, plan, mask)...)
+	if !plan.identifiesWebhook(definition.Response.Sys) {
+		state.Version = types.Int64Null()
+		state.Timeouts = plan.Timeouts
+		resp.Diagnostics.Append(setResourceIdentityStateAndMutationVersion(ctx, resp.Identity, &resp.State, resp.Private, webhookIdentityAttributeNames(), &state, definition.Response.Sys.Version, false)...)
+		resp.Diagnostics.AddError("Contentful returned a different webhook identity", "The PUT response identifies another webhook. Terraform retained the target’s prior settings and credentials and cleared its version. Refresh the target before applying again.")
+
+		return
+	}
+
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, priorVerifiers, change, resp.Identity, &resp.State, definition.Response, state, plan, mask)...)
 }
 
 // A saved plan can pin sys.version before an ephemeral credential first
