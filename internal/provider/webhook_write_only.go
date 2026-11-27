@@ -65,6 +65,11 @@ func (s *webhookVerifiers) passwordHash() secretVerifier {
 // full definition. A local update may retain an imported, unreadable credential.
 func prepareWebhookWrite(ctx context.Context, state, plan, config WebhookModel, store *webhookVerifiers) (WebhookModel, bool, diag.Diagnostics) {
 	diags := validateWebhookWriteOnly(plan, config)
+	for _, key := range changedWebhookHeaderSecretFlags(state, plan) {
+		diags.AddAttributeError(path.Root("headers").AtMapKey(key).AtName("secret"), "Cannot change webhook header secret flag",
+			"Contentful keeps the original secret flag when updating a header with the same name. Remove the header in one apply and recreate it in a later apply, or use a new header name.")
+	}
+
 	if config.Headers.IsUnknown() {
 		diags.AddAttributeError(path.Root("headers"), "Unresolved webhook headers", "Configured headers must be known before the webhook can be written.")
 	}
@@ -161,6 +166,7 @@ func prepareWebhookHeader(ctx context.Context, verifier secretVerifier, key stri
 	} // Request conversion reports the unresolved object.
 
 	previous, present := prior.GetValue()
+	wasSecret := previous.Secret.ValueBool()
 
 	writeOnly := configured.Value().ValueWO
 	if configured.IsUnknown() || writeOnly.IsUnknown() {
@@ -168,7 +174,7 @@ func prepareWebhookHeader(ctx context.Context, verifier secretVerifier, key stri
 	}
 
 	changed := !present || !header.Secret.Equal(previous.Secret)
-	if configured.IsNull() && present && previous.Secret.ValueBool() && header.Secret.ValueBool() {
+	if configured.IsNull() && wasSecret && header.Secret.ValueBool() {
 		// Sending the exact key without a value preserves any external rotation.
 		header.Value = types.StringNull()
 
@@ -181,10 +187,8 @@ func prepareWebhookHeader(ctx context.Context, verifier secretVerifier, key stri
 		return planned, verifier, changed || (!previous.Value.IsNull() && !header.Secret.ValueBool()), nil
 	}
 
-	wasSecret := present && previous.Secret.ValueBool()
-
-	hash, equal, diags := prepareWebhookCredential(ctx, verifier, webhookHeaderVerifierPath(key), previous.Value, header.Value, writeOnly, present && (!previous.Value.IsNull() || wasSecret))
-	if !writeOnly.IsNull() && (!equal || !wasSecret) {
+	hash, equal, diags := prepareWebhookCredential(ctx, verifier, webhookHeaderVerifierPath(key), previous.Value, header.Value, writeOnly, !previous.Value.IsNull() || wasSecret)
+	if !writeOnly.IsNull() && !equal {
 		header.Value = writeOnly
 	}
 

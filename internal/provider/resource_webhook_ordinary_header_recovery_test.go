@@ -15,7 +15,10 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,49 +26,68 @@ import (
 // Keep both refresh drift and a contradictory write independently observable.
 func TestAccWebhookResourceOrdinaryHeaderRecovery(t *testing.T) {
 	t.Parallel()
-	runtime, fixture := newWebhookRecoveryFixture(t)
-	runtime.writeConfig(t, `
-resource "contentful_webhook" "test" {
- space_id = "space"
- name = "Ordinary header"
- url = "https://example.invalid/webhook"
- topics = ["Entry.publish"]
- headers = {"X-Ordinary" = {secret=true, value="configured-public-value"}}
-}
-`)
+	fixture := newSeededWebhookFixture(t)
 
-	apply := func(args ...string) (string, error) {
-		return runtime.run(t.Context(), append([]string{"apply", "-input=false", "-auto-approve", "-no-color"}, args...)...)
-	}
-	returnedHeader := func(secret bool, value string) func(http.ResponseWriter, *httptest.ResponseRecorder) {
-		return func(w http.ResponseWriter, rec *httptest.ResponseRecorder) {
-			body := mutateTestJSON(rec.Body.String(), func(document map[string]any) {
-				document["headers"] = []map[string]any{{"key": "X-Ordinary", "secret": secret, "value": value}}
-			})
-			_, _ = io.WriteString(w, body)
-		}
-	}
-	output, err := apply()
-	require.NoError(t, err, output)
-	fixture.onNextResponse(http.MethodGet, returnedHeader(false, "changed-public-value"))
+	var observations webhookProtocolObservations
 
-	output, err = apply("-refresh-only")
-	require.NoError(t, err, output)
-	instance := readWebhookRecoveryInstance(t, runtime)
-	require.Equal(t, map[string]any{"X-Ordinary": map[string]any{"secret": false, "value": "changed-public-value", "value_wo": nil}}, instance.Attributes["headers"])
-	require.Len(t, fixture.mutations(), 1)
+	const config = `resource "contentful_webhook" "test" {
+  space_id = "space"
+  name = "Ordinary header"
+  url = "https://example.invalid/webhook"
+  topics = ["Entry.publish"]
+  headers = { "X-Ordinary" = { secret = true, value = "configured-public-value" } }
+}`
 
-	fixture.onNextResponse(http.MethodPut, returnedHeader(true, "contradictory-public-value"))
+	ordinary := strings.Replace(config, "secret = true", "secret = false", 1)
 
-	output, err = apply("-refresh=false")
-	require.Error(t, err, output)
-	require.Contains(t, output, "Contentful returned different webhook headers")
-	instance = readWebhookRecoveryInstance(t, runtime)
-	require.Equal(t, map[string]any{"X-Ordinary": map[string]any{"secret": true, "value": "contradictory-public-value", "value_wo": nil}}, instance.Attributes["headers"])
+	testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{
+		{Config: config},
+		{
+			Config: ordinary, PreConfig: func() {
+				// An external owner removes the secret header before adding a readable header with the same name.
+				webhookID := observations.lastApply().model(t).WebhookID.ValueString()
 
-	mutations := fixture.mutations()
-	require.Len(t, mutations, 2)
-	require.Equal(t, http.MethodPut, mutations[1].method)
+				updated := cm.WebhookDefinitionData{Name: "Ordinary header", URL: "https://example.invalid/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true)}
+				for version, headers := range []cm.WebhookDefinitionRequestHeaders{
+					{},
+					{{Key: "X-Ordinary", Secret: cm.NewOptBool(false), Value: cm.NewOptNilString("changed-public-value")}},
+				} {
+					updated.Headers = headers
+					response, err := fixture.server.Handler().UpdateWebhookDefinition(t.Context(), &updated, cm.UpdateWebhookDefinitionParams{
+						SpaceID: "space", WebhookDefinitionID: webhookID, XContentfulVersion: cm.NewOptInt(version),
+					})
+					require.NoError(t, err)
+					require.IsType(t, &cm.WebhookDefinitionStatusCode{}, response)
+				}
+
+				webhookReplyFields(fixture, http.MethodPut, func(doc map[string]any) {
+					doc["headers"] = []map[string]any{{"key": "X-Ordinary", "secret": true, "value": "contradictory-public-value"}}
+				})
+			}, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),
+				testAccPriorState{check: statecheck.ExpectKnownValue("contentful_webhook.test", tfjsonpath.New("headers"), knownvalue.MapExact(map[string]knownvalue.Check{
+					"X-Ordinary": knownvalue.ObjectExact(map[string]knownvalue.Check{
+						"secret": knownvalue.Bool(false), "value": knownvalue.StringExact("changed-public-value"), "value_wo": knownvalue.Null(),
+					}),
+				}))},
+			}},
+			ExpectError: regexp.MustCompile("(?s)Error running apply:.*Contentful returned different webhook headers"),
+		},
+		{Config: ordinary, PreConfig: func() {
+			headers := observations.lastApply().model(t).Headers.Elements()
+			require.Len(t, headers, 1)
+			header := headers["X-Ordinary"].Value()
+			require.True(t, header.Secret.ValueBool())
+			require.Equal(t, "contradictory-public-value", header.Value.ValueString())
+			require.True(t, header.ValueWO.IsNull())
+
+			writes := fixture.mutations()
+			require.Len(t, writes, 2)
+			require.Equal(t, http.MethodPut, writes[1].method)
+			require.Equal(t, "2", writes[1].version)
+			require.Equal(t, []any{map[string]any{"key": "X-Ordinary", "secret": false, "value": "configured-public-value"}}, testJSONObject(writes[1].body)["headers"])
+		}},
+	})
 }
 
 // A contradictory name does not change the omission fallback for an ordinary

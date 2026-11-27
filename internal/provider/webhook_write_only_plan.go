@@ -106,9 +106,7 @@ func (r *webhookResource) ModifyPlan(ctx context.Context, req resource.ModifyPla
 	}
 
 	headerValues := config.writeOnlyHeaderValues()
-	if !config.Headers.IsUnknown() && !plan.Headers.Equal(state.Headers) {
-		resp.Diagnostics.Append(validatePlannedWebhookHeaderValues(path.Root("headers"), plan.Headers.Elements(), headerValues, req.State.Raw.IsNull())...)
-	}
+	resp.Diagnostics.Append(validatePreliminaryWebhookHeaders(state, plan, config, headerValues)...)
 
 	if req.State.Raw.IsNull() || resp.Diagnostics.HasError() {
 		return

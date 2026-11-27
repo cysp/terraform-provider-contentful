@@ -346,17 +346,14 @@ resource "terraform_data" "flag" {
 		},
 		{
 			Config:      webhookHeadersConfig(imported.Name, `headers = { X-Managed = { secret = true }, X-Secret = { secret = true } }`),
-			ExpectError: regexp.MustCompile("Contentful returned different webhook headers"),
+			ExpectError: regexp.MustCompile("(?s)Error running apply:.*Cannot change webhook header secret flag"),
 		},
 		{Config: strings.Replace(withoutValue.Config, `space_id = "space"`, `space_id = "another-space"`, 1), PlanOnly: true, ExpectError: regexp.MustCompile("Missing initial webhook header value")},
 		{Config: unknownSecret, Taint: []string{address}, PlanOnly: true, ExpectError: regexp.MustCompile("Missing initial webhook header value")},
 	}})
 	recorder.requirePut(t, 5, "5", imported.Name, []map[string]any{{"key": "x-secret", "secret": true}})
-	recorder.requirePut(t, 6, "5", imported.Name, []map[string]any{
-		{"key": "X-Managed", "secret": true}, {"key": "X-Secret", "secret": true},
-	})
-	require.Len(t, recorder.writes, 7)
-	require.Equal(t, http.MethodDelete, recorder.writes[6].method)
+	require.Len(t, recorder.writes, 6)
+	require.Equal(t, http.MethodDelete, recorder.writes[5].method)
 }
 
 func TestAccWebhookResourceCreateWithNullHeaderValue(t *testing.T) {
@@ -610,3 +607,78 @@ func checkWebhookVersionMatchesContentful(t *testing.T, server *cmt.Server) reso
 		return resource.TestCheckResourceAttr(address, "version", strconv.Itoa(webhook.Sys.Version))(state)
 	}
 }
+
+func TestAccWebhookResourceHeaderSecretFlagPlanning(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+	recorder := &taxonomyRequestBodyRecorder{next: server}
+
+	const (
+		address         = "contentful_webhook.test"
+		protectedHeader = `headers = { X-Test = { secret = true, value = "initial" } }`
+		ordinary        = `headers = { X-Test = { value = "initial" } }`
+	)
+
+	config := func(headers string) string { return webhookHeadersConfig("Flag test", headers) }
+
+	// Core considers an update against prior state before a lifecycle-triggered replacement.
+
+	unknown := config(strings.Replace(protectedHeader, "secret = true", "secret = terraform_data.flag.output", 1)) + `
+resource "terraform_data" "flag" { input = false }
+`
+
+	var warned atomic.Bool
+	testWebhookPlanWarning(t, recorder, "Header flag change requires Webhook replacement or removal", &warned, []resource.TestStep{
+		{Config: config(protectedHeader+"\n"+webhookReplacementLifecycle) + webhookTriggerBefore},
+		{Config: config(ordinary+"\ndepends_on = [terraform_data.trigger]") + webhookTriggerAfter, PlanOnly: true, ExpectNonEmptyPlan: true},
+		{
+			Config: config(ordinary+"\ndepends_on = [terraform_data.trigger]") + webhookTriggerAfter, ExpectError: regexp.MustCompile("(?s)Error running apply:.*Cannot change webhook header secret flag"),
+			PreConfig: func() { require.True(t, warned.Load()) },
+		},
+		{Config: config(ordinary+"\n"+`lifecycle { ignore_changes = [headers["X-Test"].secret] }`) + webhookTriggerAfter, PlanOnly: true},
+		{
+			Config:   strings.Replace(config(ordinary), `space_id = "space"`, `space_id = "another"`, 1) + webhookTriggerBefore,
+			PlanOnly: true, ExpectNonEmptyPlan: true,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPreRefresh: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction(address, plancheck.ResourceActionReplace),
+			}},
+		},
+		{
+			Config: unknown, ExpectError: regexp.MustCompile("(?s)Error running apply:.*Cannot change webhook header secret flag"),
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectUnknownValue(address, tfjsonpath.New("headers").AtMapKey("X-Test").AtMapKey("secret")),
+			}},
+		},
+		{Config: config("headers = {}") + "\n" + webhookTriggerAfter, PreConfig: func() {
+			require.Empty(t, recorder.matchingRequests(http.MethodPut, ""))
+			require.Empty(t, recorder.matchingRequests(http.MethodDelete, ""))
+		}},
+		{Config: config(ordinary+"\n"+webhookReplacementLifecycle) + webhookTriggerAfter},
+		{
+			Config: config(protectedHeader+"\n"+webhookReplacementLifecycle) + webhookTriggerBefore,
+			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+				plancheck.ExpectResourceAction(address, plancheck.ResourceActionDestroyBeforeCreate),
+			}},
+		},
+	})
+	posts := recorder.matchingRequests(http.MethodPost, "")
+	require.Len(t, posts, 2)
+	require.Equal(t, []any{map[string]any{"key": "X-Test", "secret": true, "value": "initial"}}, testJSONObject(string(posts[1].body))["headers"])
+
+	puts := recorder.matchingRequests(http.MethodPut, "")
+	require.Len(t, puts, 2)
+	require.Equal(t, puts[0].path, puts[1].path)
+	require.Equal(t, "0", puts[0].version)
+	require.Equal(t, "1", puts[1].version)
+	require.Empty(t, testJSONObject(string(puts[0].body))["headers"])
+	require.Equal(t, []any{map[string]any{"key": "X-Test", "secret": false, "value": "initial"}}, testJSONObject(string(puts[1].body))["headers"])
+}
+
+const webhookTriggerBefore = `resource "terraform_data" "trigger" { input = 0 }`
+
+const webhookTriggerAfter = `resource "terraform_data" "trigger" { input = 1 }`
+
+const webhookReplacementLifecycle = `lifecycle { replace_triggered_by = [terraform_data.trigger] }`
