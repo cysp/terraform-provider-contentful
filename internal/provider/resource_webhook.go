@@ -76,7 +76,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	defer cancel()
 
-	store := writeOnlySecretVerifiers{}
+	store := webhookVerifiers{}
 	mask := webhookMutationRedaction(store, config)
 	requestModel, _, prepareDiags := prepareWebhookWrite(ctx, WebhookModel{}, plan, config, &store)
 	resp.Diagnostics.Append(prepareDiags...)
@@ -98,6 +98,13 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
+	change, encodeDiags := store.encode()
+	resp.Diagnostics.Append(encodeDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	params := cm.CreateWebhookDefinitionParams{
 		SpaceID: plan.SpaceID.ValueString(),
 	}
@@ -113,7 +120,7 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, &store, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, mask)...)
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, change, resp.Identity, &resp.State, definition.Response, WebhookModel{}, plan, mask)...)
 }
 
 func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -185,14 +192,14 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	store, pruneDiags := webhookVerifiersAfterRead(ctx, req.Private, state, data)
+	change, pruneDiags := webhookVerifiersAfterRead(ctx, req.Private, state, data)
 	resp.Diagnostics.Append(pruneDiags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(publishWebhookState(ctx, resp.Private, &store, resp.Identity, &resp.State, data, version, true)...)
+	resp.Diagnostics.Append(publishWebhookState(ctx, resp.Private, change, resp.Identity, &resp.State, data, version, true)...)
 }
 
 func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -248,13 +255,20 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	change, encodeDiags := store.encode()
+	resp.Diagnostics.Append(encodeDiags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	if !needsPUT {
 		// A storage-only migration changes the Plan and verifier without changing
 		// Contentful. Computed fields resolve from the acknowledged prior state.
 		state.HTTPBasicPassword = plan.HTTPBasicPassword
 		state.Headers = plan.Headers
 		state.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(publishStateAfterPrivate(ctx, resp.Identity, &resp.State, webhookIdentityAttributeNames(), &state, func() diag.Diagnostics { return store.publish(ctx, resp.Private) })...)
+		resp.Diagnostics.Append(publishStateAfterPrivate(ctx, resp.Identity, &resp.State, webhookIdentityAttributeNames(), &state, func() diag.Diagnostics { return change.publish(ctx, resp.Private) })...)
 
 		return
 	}
@@ -290,7 +304,7 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, &store, resp.Identity, &resp.State, definition.Response, state, plan, mask)...)
+	resp.Diagnostics.Append(publishWebhookResponse(ctx, resp.Private, change, resp.Identity, &resp.State, definition.Response, state, plan, mask)...)
 }
 
 // A saved plan can pin sys.version before an ephemeral credential first

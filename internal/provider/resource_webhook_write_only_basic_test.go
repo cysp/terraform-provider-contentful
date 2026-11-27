@@ -4,66 +4,55 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
-	"path/filepath"
+	"strings"
 	"testing"
 
 	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
 
-func newWebhookBasicFixture(t *testing.T) (*terraformTestRuntime, *cmt.Server, *taxonomyRequestBodyRecorder, *mutationJSONResponseAdapter) {
-	t.Helper()
-	runtime := newTerraformTestRuntime(t)
+func TestAccWebhookResourceWriteOnlyBasicPassword(t *testing.T) {
+	const (
+		first     = "original-synthetic-basic"
+		planned   = "planned-synthetic-basic"
+		applied   = "applied-synthetic-basic"
+		variable  = "TF_VAR_webhook_basic_rotation"
+		address   = "contentful_webhook.test"
+		writeOnly = "http_basic_password_wo = var.webhook_basic_rotation"
+	)
+	t.Setenv(variable, first)
+
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 	server.RegisterSpaceEnvironment("space", "master")
 	recorder := &taxonomyRequestBodyRecorder{next: server}
 	adapter := &mutationJSONResponseAdapter{delegate: recorder}
-	httpServer := httptest.NewServer(adapter)
-	t.Cleanup(httpServer.Close)
-	runtime.providerURL = httpServer.URL
-	runtime.logPath = filepath.Join(runtime.workingDirectory, "provider.log")
 
-	return runtime, server, recorder, adapter
-}
+	var observations webhookProtocolObservations
 
-func TestAccWebhookResourceWriteOnlyBasicPassword(t *testing.T) {
-	t.Parallel()
-	runtime, _, recorder, adapter := newWebhookBasicFixture(t)
-
-	const (
-		first     = "original-synthetic-basic"
-		planned   = "planned-synthetic-basic"
-		applied   = "applied-synthetic-basic"
-		writeOnly = "http_basic_password_wo = var.password"
-	)
-
-	config := func(password, name string) {
-		runtime.writeConfig(t, fmt.Sprintf(`
-variable "password" {
- type=string
- sensitive=true
- ephemeral=true
+	config := func(name, password string) string {
+		return fmt.Sprintf(`
+variable "webhook_basic_rotation" {
+  type      = string
+  sensitive = true
+  ephemeral = true
 }
 resource "contentful_webhook" "test" {
- space_id="space"
- name=%q
- url="https://example.invalid/webhook"
- topics=["Entry.publish"]
- http_basic_username="user"
- %s
- headers={"X-Key"={secret=true,value="ordinary-header"}}
-}`, name, password))
-	}
-	cli := func(command, password string, opts ...string) (string, error) {
-		return runtime.run(t.Context(), append([]string{command, "-input=false", "-no-color", "-var=password=" + password}, opts...)...)
-	}
-	run := func(command, password string, opts ...string) {
-		t.Helper()
-
-		output, err := cli(command, password, opts...)
-		require.NoError(t, err, output)
+  space_id            = "space"
+  name                = %q
+  url                 = "https://example.invalid/webhook"
+  topics              = ["Entry.publish"]
+  http_basic_username = "user"
+  %s
+  headers = { X-Key = { secret = true, value = "ordinary-header" } }
+}
+`, name, password)
 	}
 	body := func(name, password string) string {
 		return testJSON(map[string]any{
@@ -72,98 +61,132 @@ resource "contentful_webhook" "test" {
 			"headers": []map[string]any{{"key": "X-Key", "secret": true, "value": "ordinary-header"}},
 		})
 	}
-	state := func() webhookStateInstance {
+
+	var (
+		webhookID          string
+		original, baseline webhookPrivateVerifiers
+	)
+
+	requirePut := func(number int, version, name, password string) {
 		t.Helper()
-		instances := readWebhookStateInstances(t, runtime)
-		require.Len(t, instances, 1)
 
-		return instances[0]
+		puts := recorder.matchingRequests(http.MethodPut, "")
+		require.Len(t, puts, number)
+		put := puts[number-1]
+		require.Equal(t, "/spaces/space/webhook_definitions/"+webhookID, put.path)
+		require.Equal(t, version, put.version)
+		require.JSONEq(t, body(name, password), string(put.body))
 	}
-	verifier := func(instance webhookStateInstance) []byte {
-		t.Helper()
-
-		var private map[string][]byte
-		require.NoError(t, json.Unmarshal(instance.Private, &private))
-
-		return private["write_only_secret_hashes"]
+	managed := config("Managed", writeOnly)
+	changed := config("Changed", writeOnly)
+	check := func(key string, value knownvalue.Check) statecheck.StateCheck {
+		return statecheck.ExpectKnownValue(address, tfjsonpath.New(key), value)
 	}
 
-	config(writeOnly, "Managed")
-	run("apply", first, "-auto-approve")
+	var rejected bool
 
-	after := state()
-	webhookID, ok := after.Attributes["webhook_id"].(string)
-	require.True(t, ok)
+	resource.Test(t, validateAcceptanceTestCase(t, resource.TestCase{
+		ProtoV6ProviderFactories: observations.providerFactories(t, adapter),
+		ErrorCheck: func(err error) error {
+			message := err.Error()
+			if strings.Contains(message, first) {
+				t.Fatal("Terraform diagnostic exposed the write-only password")
+			}
 
-	created := recorder.matchingRequests(http.MethodPost, "")
-	require.Len(t, created, 1)
-	require.Equal(t, "/spaces/space/webhook_definitions", created[0].path)
-	require.Empty(t, created[0].version)
-	require.JSONEq(t, body("Managed", first), string(created[0].body))
-	require.Nil(t, after.Attributes["http_basic_password"])
-	require.Nil(t, after.Attributes["http_basic_password_wo"])
-	original := verifier(after)
-	require.Contains(t, string(original), `"path":"http_basic_password_wo"`)
-	require.NotContains(t, string(original), first)
+			if rejected || !strings.Contains(message, "Error running apply:") || !strings.Contains(message, "Contentful returned a different webhook name") {
+				return err
+			}
 
-	run("plan", first, "-out=noop.tfplan", "-detailed-exitcode")
-	run("apply", planned, "noop.tfplan")
-	require.Empty(t, recorder.matchingRequests(http.MethodPut, ""))
-	run("plan", planned, "-out=rotate.tfplan")
-	run("apply", applied, "rotate.tfplan")
+			rejected = true
 
-	puts := recorder.matchingRequests(http.MethodPut, "")
-	require.Len(t, puts, 1)
-	require.Equal(t, "/spaces/space/webhook_definitions/"+webhookID, puts[0].path)
-	require.Equal(t, "0", puts[0].version)
-	require.JSONEq(t, body("Managed", applied), string(puts[0].body))
+			return nil
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: managed,
+				Check: func(state *terraform.State) error {
+					webhookID = state.RootModule().Resources[address].Primary.Attributes["webhook_id"]
+					require.NotEmpty(t, webhookID)
 
-	rotated := verifier(state())
-	require.NotEqual(t, original, rotated)
-	run("plan", applied, "-detailed-exitcode")
+					created := recorder.matchingRequests(http.MethodPost, "")
+					require.Len(t, created, 1)
+					require.Equal(t, "/spaces/space/webhook_definitions", created[0].path)
+					require.Empty(t, created[0].version)
+					require.JSONEq(t, body("Managed", first), string(created[0].body))
 
-	config(fmt.Sprintf("http_basic_password = %q", applied), "Managed")
-	run("apply", planned, "-auto-approve")
+					reply := observations.lastApply()
+					original = reply.verifiers(t)
+					require.NotNil(t, original.Basic)
+					require.Equal(t, "user", original.Basic.Username)
+					require.NotEmpty(t, original.Basic.Hash)
+					require.NotContains(t, string(reply.privateFields(t)["write_only_secret_hashes"]), first)
 
-	after = state()
-	require.Equal(t, applied, after.Attributes["http_basic_password"])
-	require.Empty(t, verifier(after))
-	config(writeOnly, "Managed")
-	run("apply", applied, "-auto-approve")
-	require.Equal(t, puts, recorder.matchingRequests(http.MethodPut, ""))
+					return nil
+				},
+				ConfigStateChecks: []statecheck.StateCheck{check("http_basic_password", knownvalue.Null()), check("http_basic_password_wo", knownvalue.Null())},
+			},
+			{
+				// Applying the saved no-op cannot rotate a password, even if the ephemeral input changes.
+				Config: managed, ExpectNonEmptyPlan: true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectEmptyPlan(), webhookAfterPlan(func() { t.Setenv(variable, planned) })},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate)},
+				},
+				PostApplyFunc: func() { require.Empty(t, recorder.matchingRequests(http.MethodPut, "")) },
+			},
+			{
+				Config: managed,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate), webhookAfterPlan(func() { t.Setenv(variable, applied) }),
+				}},
+				PostApplyFunc: func() {
+					requirePut(1, "0", "Managed", applied)
 
-	baseline := verifier(state())
-	require.NotEmpty(t, baseline)
+					rotated := observations.lastApply().verifiers(t)
+					require.NotNil(t, rotated.Basic)
+					require.NotEqual(t, original.Basic.Hash, rotated.Basic.Hash)
+				},
+			},
+			{
+				Config:            config("Managed", fmt.Sprintf("http_basic_password = %q", applied)),
+				ConfigStateChecks: []statecheck.StateCheck{check("http_basic_password", knownvalue.StringExact(applied))},
+				PostApplyFunc:     func() { require.Nil(t, observations.lastApply().verifiers(t).Basic) },
+			},
+			{Config: managed, PostApplyFunc: func() {
+				requirePut(1, "0", "Managed", applied)
 
-	config(writeOnly, "Changed")
-	adapter.mutateNext(http.MethodPut, func(doc map[string]any) { doc["name"] = "Contradictory" })
-
-	output, err := cli("apply", first, "-auto-approve")
-	require.Error(t, err, output)
-	require.Contains(t, output, "Contentful returned a different webhook name")
-	require.NotContains(t, output, first)
-
-	puts = recorder.matchingRequests(http.MethodPut, "")
-	require.Len(t, puts, 2)
-	require.Equal(t, "1", puts[1].version)
-	require.Equal(t, puts[0].path, puts[1].path)
-	require.JSONEq(t, body("Changed", first), string(puts[1].body))
-
-	after = state()
-	require.Equal(t, baseline, verifier(after))
-	require.Nil(t, after.Attributes["http_basic_password"])
-	require.Equal(t, "Contradictory", after.Attributes["name"])
-	require.Equal(t, "2", testJSON(after.Attributes["version"]))
-	require.Equal(t, map[string]any{"X-Key": map[string]any{"secret": true, "value": "ordinary-header", "value_wo": nil}}, after.Attributes["headers"])
-
-	// A refreshed no-op compares against Terraform's stored acknowledgement;
-	// only a fresh differing value deliberately writes the password again.
-	run("plan", applied, "-detailed-exitcode")
-	run("apply", planned, "-auto-approve")
-
-	puts = recorder.matchingRequests(http.MethodPut, "")
-	require.Len(t, puts, 3)
-	require.Equal(t, "2", puts[2].version)
-	require.JSONEq(t, body("Changed", planned), string(puts[2].body))
-	run("plan", planned, "-detailed-exitcode")
+				baseline = observations.lastApply().verifiers(t)
+				require.NotNil(t, baseline.Basic)
+			}},
+			{Config: changed, PreConfig: func() {
+				t.Setenv(variable, first)
+				adapter.mutateNext(http.MethodPut, func(doc map[string]any) { doc["name"] = "Contradictory" })
+			}},
+			{
+				// A plan without refresh exposes exactly what Core persisted after the failed PUT.
+				Config: changed, PlanOnly: true, ExpectNonEmptyPlan: true,
+				PreConfig: func() {
+					require.True(t, rejected, "contradictory PUT was accepted")
+					requirePut(2, "1", "Changed", first)
+					require.Equal(t, baseline, observations.lastApply().verifiers(t))
+					t.Setenv(variable, planned)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPreRefresh: []plancheck.PlanCheck{
+					testAccPriorState{check: check("name", knownvalue.StringExact("Contradictory"))},
+					expectResponseStateInPlan{address: address, valuePath: tfjsonpath.New("version"), value: json.Number("2")},
+					testAccPriorState{check: check("http_basic_password", knownvalue.Null())},
+					testAccPriorState{check: check("http_basic_password_wo", knownvalue.Null())},
+					testAccPriorState{check: check("headers", knownvalue.MapExact(map[string]knownvalue.Check{
+						"X-Key": knownvalue.ObjectExact(map[string]knownvalue.Check{"secret": knownvalue.Bool(true), "value": knownvalue.StringExact("ordinary-header"), "value_wo": knownvalue.Null()}),
+					}))},
+				}},
+			},
+			{
+				// Refresh accepts the stored acknowledgement. A differing input deliberately sends a new PUT.
+				Config: changed, PreConfig: func() { t.Setenv(variable, applied) },
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}},
+			},
+			{Config: changed, PreConfig: func() { t.Setenv(variable, planned) }, PostApplyFunc: func() { requirePut(3, "2", "Changed", planned) }},
+		},
+	}))
 }

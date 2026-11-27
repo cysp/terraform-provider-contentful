@@ -167,9 +167,14 @@ func testSigningSecretWriteOnlyAcknowledgement(t *testing.T, kind string) {
 	require.True(t, attrs["value"].IsNull())
 	require.True(t, attrs["value_wo"].IsNull())
 
-	private := map[string][]byte{}
+	var (
+		private map[string][]byte
+		hash    string
+	)
+
 	require.NoError(t, json.Unmarshal(response.Private, &private))
-	require.Contains(t, string(private["write_only_secret_hashes"]), "$argon2id$v=19$m=65536,t=3,p=4$")
+	require.NoError(t, json.Unmarshal(private["write_only_secret_hashes"], &hash))
+	require.True(t, strings.HasPrefix(hash, "$argon2id$v=19$m=65536,t=3,p=4$"))
 	require.NotContains(t, string(private["write_only_secret_hashes"]), initial)
 	// Same acknowledged value retains the exact salt and encoded verifier.
 	response, err = providerServer.ApplyResourceChange(t.Context(), &tfprotov6.ApplyResourceChangeRequest{TypeName: "contentful_" + kind + "_signing_secret", PriorState: acknowledged.NewState, PlannedState: &plan, Config: &config, PlannedPrivate: acknowledged.Private, PlannedIdentity: acknowledged.NewIdentity})
@@ -206,10 +211,7 @@ func testSigningSecretWriteOnlyAcknowledgement(t *testing.T, kind string) {
 		plannedPrivate := acknowledged.Private
 
 		if fault.invalidPrivate {
-			records, marshalErr := json.Marshal([]map[string]string{{"path": "value_wo", "hash": "invalid"}})
-			require.NoError(t, marshalErr)
-
-			plannedPrivate, err = json.Marshal(map[string][]byte{"write_only_secret_hashes": records})
+			plannedPrivate, err = json.Marshal(map[string][]byte{"write_only_secret_hashes": []byte(`"invalid"`)})
 			require.NoError(t, err)
 
 			planned, planErr := providerServer.PlanResourceChange(t.Context(), &tfprotov6.PlanResourceChangeRequest{

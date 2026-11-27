@@ -189,7 +189,7 @@ func corruptSigningSecretVerifier(t *testing.T, runtime *terraformTestRuntime) {
 		require.NoError(t, json.Unmarshal(privateData, &private))
 	}
 
-	private["write_only_secret_hashes"] = []byte(testJSON([]map[string]string{{"path": "value_wo", "hash": "invalid"}}))
+	private["write_only_secret_hashes"] = []byte(`"invalid"`)
 	instance["private"] = base64.StdEncoding.EncodeToString([]byte(testJSON(private)))
 	require.NoError(t, os.WriteFile(filename, []byte(testJSON(document)), 0o600))
 }

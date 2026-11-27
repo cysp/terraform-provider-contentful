@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"bytes"
 	"context"
 	"maps"
 	"slices"
@@ -25,18 +24,15 @@ func (mask webhookRedaction) any() bool {
 	return mask.password || len(mask.headers) != 0
 }
 
-func webhookMutationRedaction(prior writeOnlySecretVerifiers, config WebhookModel) webhookRedaction {
+func webhookMutationRedaction(prior webhookVerifiers, config WebhookModel) webhookRedaction {
 	mask := webhookRedaction{password: !config.HTTPBasicPasswordWO.IsNull(), headers: make(map[string]bool)}
 	for key := range config.writeOnlyHeaderValues() {
 		mask.headers[key] = true
 	}
 
-	for _, record := range prior.records {
-		if record.Path == webhookPasswordWO {
-			mask.password = true
-		} else if key, ok := webhookHeaderVerifierKey(record.Path); ok {
-			mask.headers[key] = true
-		}
+	mask.password = mask.password || prior.Basic != nil
+	for key := range prior.Headers {
+		mask.headers[key] = true
 	}
 
 	return mask
@@ -200,10 +196,10 @@ func removedWebhookVerifiers(prior, refreshed WebhookModel) []writeOnlySecretPat
 	return removed
 }
 
-func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData, prior, refreshed WebhookModel) (writeOnlySecretVerifiers, diag.Diagnostics) {
+func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData, prior, refreshed WebhookModel) (writeOnlySecretVerifierChange, diag.Diagnostics) {
 	removed := removedWebhookVerifiers(prior, refreshed)
 	if len(removed) == 0 {
-		return writeOnlySecretVerifiers{}, nil
+		return writeOnlySecretVerifierChange{}, nil
 	}
 
 	store, diags := readWebhookVerifiers(ctx, private, prior)
@@ -218,20 +214,21 @@ func webhookVerifiersAfterRead(ctx context.Context, private PrivateProviderData,
 			}
 		}
 
-		return writeOnlySecretVerifiers{}, accessDiags
+		return writeOnlySecretVerifierChange{}, accessDiags
 	}
 
-	for _, credentialPath := range removed {
-		diags.Append(store.remove(credentialPath)...)
-	}
+	store.retain(webhookReadRedaction(refreshed), refreshed.HTTPBasicUsername)
 
-	return store, diags
+	change, encodeDiags := store.encode()
+	diags.Append(encodeDiags...)
+
+	return change, diags
 }
 
 // An inconsistent response can still identify a newly created webhook. Keep
 // its ordinary recovery state and endpoint version while retaining only
 // previously acknowledged credentials and verifiers.
-func publishWebhookResponse(ctx context.Context, private PrivateProviderData, store *writeOnlySecretVerifiers, identity *tfsdk.ResourceIdentity, target *tfsdk.State, response cm.WebhookDefinition, state, plan WebhookModel, mask webhookRedaction) diag.Diagnostics {
+func publishWebhookResponse(ctx context.Context, private PrivateProviderData, change writeOnlySecretVerifierChange, identity *tfsdk.ResourceIdentity, target *tfsdk.State, response cm.WebhookDefinition, state, plan WebhookModel, mask webhookRedaction) diag.Diagnostics {
 	if state.WebhookID.IsNull() && response.Sys.ID == "" {
 		return diag.Diagnostics{diag.NewErrorDiagnostic("Missing created webhook ID", "Contentful returned an empty ID. The provider could not identify the created webhook or acknowledge its credentials. Inspect webhooks in the space before retrying.")}
 	}
@@ -254,7 +251,7 @@ func publishWebhookResponse(ctx context.Context, private PrivateProviderData, st
 		mask.retainUnconfirmed(&data, state, plan)
 		diags.Append(setResourceIdentityStateAndMutationVersion(ctx, identity, target, private, webhookIdentityAttributeNames(), &data, response.Sys.Version, confirmed)...)
 	} else {
-		diags.Append(publishWebhookState(ctx, private, store, identity, target, data, response.Sys.Version, confirmed)...)
+		diags.Append(publishWebhookState(ctx, private, change, identity, target, data, response.Sys.Version, confirmed)...)
 	}
 
 	diags.Append(consistency...)
@@ -262,8 +259,8 @@ func publishWebhookResponse(ctx context.Context, private PrivateProviderData, st
 	return diags
 }
 
-func publishWebhookState(ctx context.Context, private PrivateProviderData, store *writeOnlySecretVerifiers, identity *tfsdk.ResourceIdentity, state *tfsdk.State, model WebhookModel, version int, confirmed bool) diag.Diagnostics {
-	if bytes.Equal(store.original, store.prepared) {
+func publishWebhookState(ctx context.Context, private PrivateProviderData, change writeOnlySecretVerifierChange, identity *tfsdk.ResourceIdentity, state *tfsdk.State, model WebhookModel, version int, confirmed bool) diag.Diagnostics {
+	if !change.changed {
 		// With no verifier publication pending, retain the ordinary webhook's
 		// state/identity checkpoint even if recording the version fails.
 		return setResourceIdentityStateAndMutationVersion(ctx, identity, state, private, webhookIdentityAttributeNames(), &model, version, confirmed)
@@ -274,7 +271,7 @@ func publishWebhookState(ctx context.Context, private PrivateProviderData, store
 		// endpoint. It must never acknowledge unrecorded secret bytes.
 		diags := setResourceMutationVersion(ctx, private, version, confirmed)
 		if !diags.HasError() {
-			diags.Append(store.publish(ctx, private)...)
+			diags.Append(change.publish(ctx, private)...)
 		}
 
 		return diags

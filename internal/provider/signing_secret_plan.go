@@ -59,7 +59,7 @@ func modifySigningSecretPlan(ctx context.Context, req resource.ModifyPlanRequest
 		}
 
 		if !hashDiags.HasError() && !configuredWO.IsUnknown() && planValue.IsNull() {
-			matches, matchDiags := writeOnlySecretValueMatches(ctx, &verifier, rootWriteOnlySecretPath(signingSecretWO), stateValue, configuredWO)
+			matches, matchDiags := matchesPriorValue(ctx, verifier.hash, rootWriteOnlySecretPath(signingSecretWO), stateValue, configuredWO)
 			resp.Diagnostics.Append(matchDiags...)
 
 			if resp.Diagnostics.HasError() {
