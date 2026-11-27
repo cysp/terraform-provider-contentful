@@ -145,7 +145,7 @@ func prepareWebhookHeaders(ctx context.Context, state, plan, config WebhookModel
 
 	next := make(map[string]secretVerifier, len(store.Headers))
 	for _, key := range slices.Sorted(maps.Keys(headers)) {
-		header, verifier, changed, headerDiags := prepareWebhookHeader(ctx, store.Headers[key], key, state.Headers.Elements()[key], headers[key], config.Headers.Elements()[key])
+		header, verifier, changed, headerDiags := prepareWebhookHeader(ctx, store.Headers[key], key, state.Headers.Elements()[key], headers[key], config.Headers.Elements()[key], !plan.URL.Equal(state.URL))
 
 		headers[key] = header
 		if verifier != "" {
@@ -167,7 +167,7 @@ func prepareWebhookHeaders(ctx context.Context, state, plan, config WebhookModel
 	return NewTypedMap(headers), needsPUT, diags
 }
 
-func prepareWebhookHeader(ctx context.Context, verifier secretVerifier, key string, prior, planned, configured TypedObject[WebhookHeaderValue]) (TypedObject[WebhookHeaderValue], secretVerifier, bool, diag.Diagnostics) {
+func prepareWebhookHeader(ctx context.Context, verifier secretVerifier, key string, prior, planned, configured TypedObject[WebhookHeaderValue], receiverChanged bool) (TypedObject[WebhookHeaderValue], secretVerifier, bool, diag.Diagnostics) {
 	header, known := planned.GetValue()
 	if !known {
 		return planned, verifier, true, nil
@@ -196,7 +196,7 @@ func prepareWebhookHeader(ctx context.Context, verifier secretVerifier, key stri
 	}
 
 	hash, equal, diags := prepareWebhookCredential(ctx, verifier, webhookHeaderVerifierPath(key), previous.Value, header.Value, writeOnly, !previous.Value.IsNull() || wasSecret)
-	if !writeOnly.IsNull() && !equal {
+	if !writeOnly.IsNull() && (!equal || receiverChanged) {
 		header.Value = writeOnly
 	}
 

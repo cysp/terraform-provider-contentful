@@ -97,7 +97,31 @@ func TestAccWebhookResourceRetainsDelegatedHeaderVerifier(t *testing.T) {
 	rotate.PostApplyFunc = func() {
 		fixture.requirePuts(t, webhookExpectedRecoveryPut("0", webhookPriorPassword, webhookPriorHeader, true), webhookExpectedRecoveryPut("1", webhookRotatedPassword, "", true), webhookExpectedRecoveryPut("2", webhookRotatedPassword, webhookRotatedHeader, true))
 	}
-	testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{initial, delegate, resume, rotate})
+
+	const newURL = "https://example.invalid/other-path"
+
+	move := webhookRecoveryStep(strings.Replace(config, "https://example.invalid/webhook", newURL, 1), webhookRotatedPassword, webhookRotatedHeader)
+	move.PreConfig = func() {
+		fixture.updateRemoteHeaders(t, 3, cm.WebhookDefinitionRequestHeaders{
+			{Key: "X-Managed", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("external-rotation")},
+			{Key: "X-Sibling", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("external-sibling")},
+		})
+	}
+	move.PostApplyFunc = func() {
+		writes := fixture.mutations()
+		require.Len(t, writes, 4)
+		last := writes[3]
+		require.Equal(t, "4", last.version)
+		body := testJSONObject(last.body)
+		require.Equal(t, newURL, body["url"])
+		require.Equal(t, []any{map[string]any{"key": "X-Managed", "secret": true, "value": webhookRotatedHeader}, map[string]any{"key": "X-Sibling", "secret": true}}, body["headers"])
+
+		stored, ok := fixture.server.StoredWebhookDefinition("space", "imported")
+		require.True(t, ok)
+		require.Equal(t, webhookRotatedHeader, stored.Headers[0].Value.Or(""))
+		require.Equal(t, "external-sibling", stored.Headers[1].Value.Or(""))
+	}
+	testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{initial, delegate, resume, rotate, move})
 }
 
 func TestAccWebhookResourceRefreshNewlySecretHeader(t *testing.T) {

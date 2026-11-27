@@ -197,6 +197,8 @@ next plan was empty. GET after deletion returned 404. No delivery was inspected.
 
 On 2026-11-27, a specified-ID PUT created an inactive Webhook with a 50-unit username ending in U+0344 after 49 ASCII digits. The NFC spelling required 51 UTF-16 units. Submitting it with a rename returned 422 `ValidationFailed`. GET retained the original spelling, name and version 0.
 
+On another inactive Webhook, Terraform 1.17.2 with the development provider at `ec14bce9` delegated a previously ordinary secret header while renaming the Webhook. The version-0 PUT omitted the value, the response and refresh retained a redacted descriptor, and the next plan was empty. After an external rotation, a version-4 PUT changed only the receiver path and omitted the header value. CMA returned version 5. Resending the external value kept version 5, and resending the prior Terraform input advanced it to 6. The version controls support retention of the external value across the path change. Neither probe inspected delivery. GET confirmed deletion of both IDs with 404.
+
 ## Existing-configuration read observations
 
 Observed: 2026-09-09 (UTC), passive collection reads and two definition-detail
