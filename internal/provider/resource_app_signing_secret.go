@@ -80,13 +80,11 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 
 	defer cancel()
 
-	var verifier writeOnlySecretVerifiers
-	if !plan.ValueWO.IsNull() {
-		resp.Diagnostics.Append(verifier.set(ctx, rootWriteOnlySecretPath(signingSecretWO), plan.ValueWO)...)
+	_, change, prepareDiags := prepareSigningSecretValue(ctx, signingSecretVerifier{}, types.StringNull(), request.Value, plan.ValueWO)
+	resp.Diagnostics.Append(prepareDiags...)
 
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	// Create always writes, including replacement and recreation after absence.
@@ -97,7 +95,7 @@ func (r *appSigningSecretResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
+	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, change, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
 }
 
 func (r *appSigningSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -187,8 +185,10 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	// Ordinary fields retain their effective values in Plan, including ignores.
 	if plan.ValueWO.IsNull() && !plan.Value.IsUnknown() && plan.Value.Equal(state.Value) {
+		change := writeOnlySecretVerifierChange{changed: verifier.superseded}
+
 		state.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &state)...)
+		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, change, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &state)...)
 
 		return
 	}
@@ -211,7 +211,7 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 
 	defer cancel()
 
-	matches, prepareDiags := prepareWriteOnlySecretValue(ctx, &verifier, rootWriteOnlySecretPath(signingSecretWO), state.Value, request.Value, plan.ValueWO)
+	matches, change, prepareDiags := prepareSigningSecretValue(ctx, verifier, state.Value, request.Value, plan.ValueWO)
 	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -223,7 +223,7 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		state.Value = plan.Value
 		state.ValueWO = types.StringNull()
 		state.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &state)...)
+		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, change, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &state)...)
 
 		return
 	}
@@ -235,7 +235,7 @@ func (r *appSigningSecretResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
+	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, change, resp.Identity, &resp.State, appSigningSecretIdentityAttributeNames(), &data)...)
 }
 
 func appSigningSecretLogError(err error, values ...types.String) any {

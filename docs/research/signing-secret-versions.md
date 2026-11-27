@@ -37,6 +37,16 @@ This demonstrates the behavior of those tested headers on that endpoint at that
 time. Without a returned version, the experiment cannot classify `1` as a current
 or stale version, and it does not exclude other conditional mechanisms.
 
+### Distinct App Signing Secrets with the same suffix
+
+On 2026-11-25 (UTC), an uninstalled disposable App Definition received two
+different 64-character signing secrets with identical final four characters.
+The first PUT returned 201 and the second returned 200. Both PUTs and their
+subsequent GETs identified the new App Definition, omitted the full value and
+`sys.version`, and returned the same `redactedValue`. This demonstrates why a
+matching suffix cannot establish equality. Deleting the signing secret and the
+App Definition returned 204 for each, and subsequent GETs returned 404.
+
 ### AppSigningSecret metadata and replacement
 
 On **2026-09-30**, an experiment inspected raw JSON and response headers using the

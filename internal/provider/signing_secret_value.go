@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json/v2"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -25,11 +26,82 @@ func resolveSigningSecretValue(value, valueWO types.String, modelPath path.Path)
 	return value, valuePath, nil
 }
 
+type signingSecretVerifier struct {
+	hash       secretVerifier
+	superseded bool
+}
+
+func readSigningSecretVerifier(ctx context.Context, private PrivateProviderData, priorValue types.String) (signingSecretVerifier, diag.Diagnostics) {
+	data, diags := readVerifierData(ctx, private)
+	if diags.HasError() || len(data) == 0 {
+		return signingSecretVerifier{}, diags
+	}
+
+	// The known ordinary value supersedes even unreadable verifier contents.
+	if !priorValue.IsNull() && !priorValue.IsUnknown() {
+		return signingSecretVerifier{superseded: true}, diags
+	}
+
+	diags.Append(validateVerifierData(data)...)
+
+	if diags.HasError() {
+		return signingSecretVerifier{}, diags
+	}
+
+	var hash secretVerifier
+
+	err := json.Unmarshal(data, &hash)
+	if err != nil || hash == "" {
+		return signingSecretVerifier{}, invalidWriteOnlySecretHashes("Expected a non-empty JSON string containing the signing secret verifier.")
+	}
+
+	if _, _, reason := parseWriteOnlySecretHash(string(hash)); reason != "" {
+		return signingSecretVerifier{}, invalidWriteOnlySecretHashes(reason)
+	}
+
+	return signingSecretVerifier{hash: hash}, diags
+}
+
+func (v signingSecretVerifier) changeTo(next secretVerifier) (writeOnlySecretVerifierChange, diag.Diagnostics) {
+	if v.hash == next && !v.superseded {
+		return writeOnlySecretVerifierChange{}, nil
+	}
+
+	if next == "" {
+		return writeOnlySecretVerifierChange{changed: true}, nil
+	}
+
+	return encodeVerifierChange(next)
+}
+
+// Compare the selected bytes and finish encoding their representation before PUT.
+// Create supplies an empty verifier and always writes, regardless of the match.
+func prepareSigningSecretValue(ctx context.Context, verifier signingSecretVerifier, prior types.String, requestValue string, valueWO types.String) (bool, writeOnlySecretVerifierChange, diag.Diagnostics) {
+	credential := rootWriteOnlySecretPath(signingSecretWO)
+
+	matches, diags := matchesPriorValue(ctx, verifier.hash, credential, prior, types.StringValue(requestValue))
+	if diags.HasError() {
+		return false, writeOnlySecretVerifierChange{}, diags
+	}
+
+	next, prepareDiags := prepareSecretVerifier(ctx, verifier.hash, credential, prior, valueWO, matches)
+	diags.Append(prepareDiags...)
+
+	if diags.HasError() {
+		return false, writeOnlySecretVerifierChange{}, diags
+	}
+
+	change, encodeDiags := verifier.changeTo(next)
+	diags.Append(encodeDiags...)
+
+	return matches, change, diags
+}
+
 // Encode public state and identity before publishing the prepared private
 // value. Diagnostics do not roll back Framework response mutations.
-func publishSigningSecretState(ctx context.Context, private PrivateProviderData, verifier *writeOnlySecretVerifiers, identity *tfsdk.ResourceIdentity, state *tfsdk.State, identityNames []string, model any) diag.Diagnostics {
+func publishSigningSecretState(ctx context.Context, private PrivateProviderData, change writeOnlySecretVerifierChange, identity *tfsdk.ResourceIdentity, state *tfsdk.State, identityNames []string, model any) diag.Diagnostics {
 	return publishStateAfterPrivate(ctx, identity, state, identityNames, model, func() diag.Diagnostics {
-		return verifier.publish(ctx, private)
+		return change.publish(ctx, private)
 	})
 }
 

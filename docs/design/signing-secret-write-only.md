@@ -38,12 +38,12 @@ cover representation changes and the resulting requests.
 
 ## Private verifier format
 
-Each signing resource stores one verifier under the private key `write_only_secret_hashes`.
-Its JSON representation is a single-record array with `path` set to `value_wo` and
-`hash` set to the PHC-encoded hash. An absent key or empty array supplies no
-comparison value. The reader rejects other paths, extra records, unknown fields,
-malformed values, and verifier data larger than 1 MiB when it needs to decode it.
-Changing this format requires a compatibility decision for already acknowledged secrets.
+A write-only secret verifier lets the provider compare supplied bytes with the value represented in Terraform private state at one resource-relative attribute path. Each signing resource instance stores its verifier under the private key `write_only_secret_hashes`.
+The private value is a JSON string containing the PHC-encoded hash. An absent
+key supplies no comparison value. When comparison depends on private state,
+the reader rejects an empty or malformed string, other JSON types, trailing
+data, and verifier data larger than 1 MiB. The resource instance identifies
+the singleton, so the stored value needs no resource ID or attribute name.
 
 The verifier uses the memory-constrained profile from
 [RFC 9106 §4](https://www.rfc-editor.org/rfc/rfc9106.html#section-4).

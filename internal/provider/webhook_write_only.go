@@ -5,7 +5,6 @@ import (
 	"maps"
 	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -16,76 +15,55 @@ const webhookPasswordWO = "http_basic_password_wo" // #nosec G101 -- Terraform a
 
 func webhookHeaderVerifierPath(key string) writeOnlySecretPath {
 	return writeOnlySecretPath{
-		key:       "headers[" + strconv.Quote(key) + "].value_wo",
-		attribute: path.Root("headers").AtMapKey(key).AtName("value_wo"),
+		key:           "headers[" + strconv.Quote(key) + "].value_wo",
+		attributePath: path.Root("headers").AtMapKey(key).AtName("value_wo"),
 	}
 }
 
-func webhookHeaderVerifierKey(encoded string) (string, bool) {
-	quoted, ok := strings.CutPrefix(encoded, "headers[")
-	if !ok {
-		return "", false
-	}
-
-	quoted, ok = strings.CutSuffix(quoted, "].value_wo")
-	if !ok {
-		return "", false
-	}
-
-	key, err := strconv.Unquote(quoted)
-
-	return key, err == nil && webhookHeaderVerifierPath(key).key == encoded
-}
-
-func webhookVerifierPath(encoded string) bool {
-	if encoded == webhookPasswordWO {
-		return true
-	}
-
-	_, ok := webhookHeaderVerifierKey(encoded)
-
-	return ok
-}
-
-func webhookSecretMatches(ctx context.Context, store *writeOnlySecretVerifiers, credentialPath writeOnlySecretPath, prior, candidate types.String, previouslyPresent bool) (bool, diag.Diagnostics) {
+func webhookSecretMatches(ctx context.Context, verifier secretVerifier, credentialPath writeOnlySecretPath, prior, candidate types.String, previouslyPresent bool) (bool, diag.Diagnostics) {
 	if candidate.IsUnknown() || !previouslyPresent {
 		return false, nil
 	}
 
-	return writeOnlySecretValueMatches(ctx, store, credentialPath, prior, candidate)
+	return matchesPriorValue(ctx, verifier, credentialPath, prior, candidate)
 }
 
-// Compare actual apply-time bytes before any mutation. An acknowledged ordinary
-// value takes precedence over an obsolete verifier for the same path.
-func prepareWebhookCredential(ctx context.Context, store *writeOnlySecretVerifiers, credentialPath writeOnlySecretPath, prior, ordinary, writeOnly types.String, previouslyPresent bool) (bool, diag.Diagnostics) {
+// Return the verifier to publish and whether the wire value can be retained.
+func prepareWebhookCredential(ctx context.Context, verifier secretVerifier, credentialPath writeOnlySecretPath, prior, ordinary, writeOnly types.String, previouslyPresent bool) (secretVerifier, bool, diag.Diagnostics) {
 	candidate := ordinary
 	if !writeOnly.IsNull() {
 		candidate = writeOnly
 	}
 
 	if candidate.IsUnknown() {
-		return false, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(credentialPath.attribute, "Unresolved webhook credential", "The credential must be known before the webhook can be written.")}
+		return "", false, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(credentialPath.attributePath, "Unresolved webhook credential", "The credential must be known before the webhook can be written.")}
 	}
 
 	if candidate.IsNull() {
-		changed := !prior.IsNull() || store.has(credentialPath)
-
-		return !changed, store.remove(credentialPath)
+		return "", prior.IsNull() && verifier == "", nil
 	}
 
-	matches, diags := webhookSecretMatches(ctx, store, credentialPath, prior, candidate, previouslyPresent)
+	matches, diags := webhookSecretMatches(ctx, verifier, credentialPath, prior, candidate, previouslyPresent)
 	if diags.HasError() {
-		return false, diags
+		return "", false, diags
 	}
 
-	diags.Append(store.prepareValue(ctx, credentialPath, prior, writeOnly, matches)...)
+	next, diags := prepareSecretVerifier(ctx, verifier, credentialPath, prior, writeOnly, matches)
 
-	return matches, diags
+	return next, matches, diags
+}
+
+func (s *webhookVerifiers) passwordHash() secretVerifier {
+	if s.Basic == nil {
+		return ""
+	}
+
+	return s.Basic.Hash
 }
 
 // Compare the effective Plan and apply-time credentials before requiring a writable
 // full definition. A local update may retain an imported, unreadable credential.
-func prepareWebhookWrite(ctx context.Context, state, plan, config WebhookModel, store *writeOnlySecretVerifiers) (WebhookModel, bool, diag.Diagnostics) {
+func prepareWebhookWrite(ctx context.Context, state, plan, config WebhookModel, store *webhookVerifiers) (WebhookModel, bool, diag.Diagnostics) {
 	diags := validateWebhookWriteOnly(plan, config)
 	if config.Headers.IsUnknown() {
 		diags.AddAttributeError(path.Root("headers"), "Unresolved webhook headers", "Configured headers must be known before the webhook can be written.")
@@ -100,16 +78,10 @@ func prepareWebhookWrite(ctx context.Context, state, plan, config WebhookModel, 
 		request.HTTPBasicPassword = config.HTTPBasicPasswordWO
 	}
 
-	matches := true
+	passwordMatches, passwordDiags := prepareWebhookPassword(ctx, state, plan, config, store)
+	diags.Append(passwordDiags...)
 
-	if !state.HTTPBasicPassword.IsNull() || !request.HTTPBasicPassword.IsNull() || plan.HTTPBasicUsername.IsNull() {
-		var passwordDiags diag.Diagnostics
-
-		matches, passwordDiags = prepareWebhookCredential(ctx, store, rootWriteOnlySecretPath(webhookPasswordWO), state.HTTPBasicPassword, plan.HTTPBasicPassword, config.HTTPBasicPasswordWO, !state.HTTPBasicUsername.IsNull())
-		diags.Append(passwordDiags...)
-	}
-
-	needsPUT := !matches || !plan.HTTPBasicUsername.Equal(state.HTTPBasicUsername) ||
+	needsPUT := !passwordMatches || !plan.HTTPBasicUsername.Equal(state.HTTPBasicUsername) ||
 		!plan.Name.Equal(state.Name) || !plan.URL.Equal(state.URL) || !plan.Active.Equal(state.Active) ||
 		!plan.Topics.Equal(state.Topics) || !plan.Filters.Equal(state.Filters) || !plan.Transformation.Equal(state.Transformation)
 
@@ -121,45 +93,59 @@ func prepareWebhookWrite(ctx context.Context, state, plan, config WebhookModel, 
 	return request, needsPUT || headersChanged, diags
 }
 
-func readWebhookVerifiers(ctx context.Context, private PrivateProviderData, state WebhookModel) (writeOnlySecretVerifiers, diag.Diagnostics) {
-	if !webhookReadRedaction(state).any() {
-		return readSupersededWriteOnlySecretVerifiers(ctx, private)
+func prepareWebhookPassword(ctx context.Context, state, plan, config WebhookModel, store *webhookVerifiers) (bool, diag.Diagnostics) {
+	if state.HTTPBasicPassword.IsNull() && plan.HTTPBasicPassword.IsNull() && config.HTTPBasicPasswordWO.IsNull() && !plan.HTTPBasicUsername.IsNull() {
+		// A local update can retain an unreadable password. Request conversion
+		// will require the password if another field needs a full PUT.
+		return true, nil
 	}
 
-	return readWriteOnlySecretVerifiers(ctx, private, webhookVerifierPath, func(encoded string) bool {
-		if encoded == webhookPasswordWO {
-			return !state.HTTPBasicPassword.IsNull()
-		}
+	sameUser := !state.HTTPBasicUsername.IsNull() && state.HTTPBasicUsername.Equal(plan.HTTPBasicUsername)
+	prior := store.passwordHash()
 
-		key, _ := webhookHeaderVerifierKey(encoded)
-		header, present := state.Headers.Elements()[key].GetValue()
+	next, matches, diags := prepareWebhookCredential(ctx, prior, rootWriteOnlySecretPath(webhookPasswordWO),
+		state.HTTPBasicPassword, plan.HTTPBasicPassword, config.HTTPBasicPasswordWO, sameUser)
+	if diags.HasError() || prior == next {
+		return matches, diags
+	}
 
-		return present && !header.Value.IsNull()
-	})
+	store.changed = true
+	if next == "" {
+		store.Basic = nil
+	} else {
+		store.Basic = &webhookBasicVerifier{Username: plan.HTTPBasicUsername.ValueString(), Hash: next}
+	}
+
+	return matches, diags
 }
 
-func prepareWebhookHeaders(ctx context.Context, state, plan, config WebhookModel, store *writeOnlySecretVerifiers) (TypedMap[TypedObject[WebhookHeaderValue]], bool, diag.Diagnostics) {
+func readWebhookVerifiers(ctx context.Context, private PrivateProviderData, state WebhookModel) (webhookVerifiers, diag.Diagnostics) {
+	return readWebhookVerifierRecords(ctx, private, webhookReadRedaction(state), state.HTTPBasicUsername)
+}
+
+func prepareWebhookHeaders(ctx context.Context, state, plan, config WebhookModel, store *webhookVerifiers) (TypedMap[TypedObject[WebhookHeaderValue]], bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	needsPUT := plan.Headers.IsUnknown() || len(plan.Headers.Elements()) != len(state.Headers.Elements())
 
 	headers := maps.Clone(plan.Headers.Elements())
+
+	next := make(map[string]secretVerifier, len(store.Headers))
 	for _, key := range slices.Sorted(maps.Keys(headers)) {
-		header, changed, headerDiags := prepareWebhookHeader(ctx, store, key, state.Headers.Elements()[key], headers[key], config.Headers.Elements()[key])
+		header, verifier, changed, headerDiags := prepareWebhookHeader(ctx, store.Headers[key], key, state.Headers.Elements()[key], headers[key], config.Headers.Elements()[key])
+
 		headers[key] = header
+		if verifier != "" {
+			next[key] = verifier
+		}
+
 		needsPUT = needsPUT || changed
 
 		diags.Append(headerDiags...)
 	}
 
-	for _, record := range store.records {
-		key, ok := webhookHeaderVerifierKey(record.Path)
-		if ok {
-			if _, present := headers[key]; !present {
-				diags.Append(store.remove(webhookHeaderVerifierPath(key))...)
-			}
-		}
-	}
+	store.changed = store.changed || !maps.Equal(store.Headers, next)
+	store.Headers = next
 
 	if plan.Headers.IsNull() || plan.Headers.IsUnknown() {
 		return plan.Headers, needsPUT, diags
@@ -168,17 +154,17 @@ func prepareWebhookHeaders(ctx context.Context, state, plan, config WebhookModel
 	return NewTypedMap(headers), needsPUT, diags
 }
 
-func prepareWebhookHeader(ctx context.Context, store *writeOnlySecretVerifiers, key string, prior, planned, configured TypedObject[WebhookHeaderValue]) (TypedObject[WebhookHeaderValue], bool, diag.Diagnostics) {
+func prepareWebhookHeader(ctx context.Context, verifier secretVerifier, key string, prior, planned, configured TypedObject[WebhookHeaderValue]) (TypedObject[WebhookHeaderValue], secretVerifier, bool, diag.Diagnostics) {
 	header, known := planned.GetValue()
 	if !known {
-		return planned, true, nil
+		return planned, verifier, true, nil
 	} // Request conversion reports the unresolved object.
 
 	previous, present := prior.GetValue()
 
 	writeOnly := configured.Value().ValueWO
 	if configured.IsUnknown() || writeOnly.IsUnknown() {
-		return planned, false, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(webhookHeaderVerifierPath(key).attribute, "Unresolved webhook header credential", "The write-only value must be known before the webhook can be written.")}
+		return planned, verifier, false, diag.Diagnostics{diag.NewAttributeErrorDiagnostic(webhookHeaderVerifierPath(key).attributePath, "Unresolved webhook header credential", "The write-only value must be known before the webhook can be written.")}
 	}
 
 	changed := !present || !header.Secret.Equal(previous.Secret)
@@ -186,21 +172,21 @@ func prepareWebhookHeader(ctx context.Context, store *writeOnlySecretVerifiers, 
 		// Sending the exact key without a value preserves any external rotation.
 		header.Value = types.StringNull()
 
-		return NewTypedObject(header), changed, nil
+		return NewTypedObject(header), verifier, changed, nil
 	}
 
 	if header.Value.IsNull() && writeOnly.IsNull() {
 		// Contentful can retain an existing secret by exact name. A full PUT
 		// must still validate an ordinary header whose value is unavailable.
-		return planned, changed || (!previous.Value.IsNull() && !header.Secret.ValueBool()), nil
+		return planned, verifier, changed || (!previous.Value.IsNull() && !header.Secret.ValueBool()), nil
 	}
 
 	wasSecret := present && previous.Secret.ValueBool()
 
-	equal, diags := prepareWebhookCredential(ctx, store, webhookHeaderVerifierPath(key), previous.Value, header.Value, writeOnly, present && (!previous.Value.IsNull() || wasSecret))
+	hash, equal, diags := prepareWebhookCredential(ctx, verifier, webhookHeaderVerifierPath(key), previous.Value, header.Value, writeOnly, present && (!previous.Value.IsNull() || wasSecret))
 	if !writeOnly.IsNull() && (!equal || !wasSecret) {
 		header.Value = writeOnly
 	}
 
-	return NewTypedObject(header), changed || !equal, diags
+	return NewTypedObject(header), hash, changed || !equal, diags
 }

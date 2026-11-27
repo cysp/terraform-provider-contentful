@@ -52,22 +52,22 @@ func validateWebhookWriteOnly(plan, config WebhookModel) diag.Diagnostics {
 		header, ok := plan.Headers.Elements()[key]
 		switch {
 		case !ok || header.IsNull():
-			diags.AddAttributeError(credentialPath.attribute, "Missing webhook header", "The effective plan must contain this header to apply its write-only value. Check ignore_changes for this key.")
+			diags.AddAttributeError(credentialPath.attributePath, "Missing webhook header", "The effective plan must contain this header to apply its write-only value. Check ignore_changes for this key.")
 		case header.IsUnknown():
 			continue
 		default:
 			value := header.Value()
 			if !value.Secret.IsUnknown() && !value.Secret.ValueBool() {
-				diags.AddAttributeError(credentialPath.attribute, "Write-only webhook header must be secret", "Set secret = true on the matching header.")
+				diags.AddAttributeError(credentialPath.attributePath, "Write-only webhook header must be secret", "Set secret = true on the matching header.")
 			}
 
 			if !value.Value.IsNull() && !value.Value.IsUnknown() {
-				diags.AddAttributeError(credentialPath.attribute, "Conflicting webhook header values", "Configure either an ordinary value or a write-only value for each header. Remove an ignore_changes rule that retains the ordinary value before migrating.")
+				diags.AddAttributeError(credentialPath.attributePath, "Conflicting webhook header values", "Configure either an ordinary value or a write-only value for each header. Remove an ignore_changes rule that retains the ordinary value before migrating.")
 			}
 
 			for other := range plan.Headers.Elements() {
 				if other != key && strings.EqualFold(other, key) {
-					diags.AddAttributeError(credentialPath.attribute, "Ambiguous webhook header name", "Use one spelling of each write-only header name. HTTP header names differing only in case cannot identify independent secrets.")
+					diags.AddAttributeError(credentialPath.attributePath, "Ambiguous webhook header name", "Use one spelling of each write-only header name. HTTP header names differing only in case cannot identify independent secrets.")
 
 					break
 				}
@@ -170,9 +170,9 @@ func webhookWriteOnlyChangePlanned(ctx context.Context, private PrivateProviderD
 	}
 
 	// Core can hide an ignored write-only argument during planning and supply it again at apply.
-	changed := hashDiags.HasError() || (scheduled && len(store.records) > 0)
+	changed := hashDiags.HasError() || (scheduled && (store.Basic != nil || len(store.Headers) != 0))
 	if !changed && !config.HTTPBasicPasswordWO.IsNull() {
-		equal, d := webhookSecretMatches(ctx, &store, rootWriteOnlySecretPath(webhookPasswordWO), state.HTTPBasicPassword, config.HTTPBasicPasswordWO, !state.HTTPBasicUsername.IsNull())
+		equal, d := webhookSecretMatches(ctx, store.passwordHash(), rootWriteOnlySecretPath(webhookPasswordWO), state.HTTPBasicPassword, config.HTTPBasicPasswordWO, !state.HTTPBasicUsername.IsNull())
 		diags.Append(d...)
 
 		changed = !equal
@@ -184,7 +184,7 @@ func webhookWriteOnlyChangePlanned(ctx context.Context, private PrivateProviderD
 		}
 
 		prior, known := state.Headers.Elements()[key].GetValue()
-		equal, d := webhookSecretMatches(ctx, &store, webhookHeaderVerifierPath(key), prior.Value, headerValues[key], known && prior.Secret.ValueBool())
+		equal, d := webhookSecretMatches(ctx, store.Headers[key], webhookHeaderVerifierPath(key), prior.Value, headerValues[key], known && prior.Secret.ValueBool())
 		diags.Append(d...)
 
 		changed = !equal

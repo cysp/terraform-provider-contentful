@@ -80,16 +80,15 @@ func (r *webhookSigningSecretResource) Create(ctx context.Context, req resource.
 
 	defer cancel()
 
-	var verifier writeOnlySecretVerifiers
-	if !plan.ValueWO.IsNull() {
-		resp.Diagnostics.Append(verifier.set(ctx, rootWriteOnlySecretPath(signingSecretWO), plan.ValueWO)...)
+	_, change, prepareDiags := prepareSigningSecretValue(ctx, signingSecretVerifier{}, types.StringNull(), request.Value, plan.ValueWO)
+	resp.Diagnostics.Append(prepareDiags...)
 
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	tflog.Info(ctx, "webhook_signing_secret.create")
+
 	// Create always writes, including replacement and recreation after absence.
 	data, putDiags := r.put(ctx, plan, request, types.StringNull())
 	resp.Diagnostics.Append(putDiags...)
@@ -98,7 +97,7 @@ func (r *webhookSigningSecretResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &data)...)
+	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, change, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &data)...)
 }
 
 func (r *webhookSigningSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -172,8 +171,10 @@ func (r *webhookSigningSecretResource) Update(ctx context.Context, req resource.
 
 	// Ordinary fields retain their effective values in Plan, including ignores.
 	if plan.ValueWO.IsNull() && !plan.Value.IsUnknown() && plan.Value.Equal(state.Value) {
+		change := writeOnlySecretVerifierChange{changed: verifier.superseded}
+
 		state.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &state)...)
+		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, change, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &state)...)
 
 		return
 	}
@@ -196,7 +197,7 @@ func (r *webhookSigningSecretResource) Update(ctx context.Context, req resource.
 
 	defer cancel()
 
-	matches, prepareDiags := prepareWriteOnlySecretValue(ctx, &verifier, rootWriteOnlySecretPath(signingSecretWO), state.Value, request.Value, plan.ValueWO)
+	matches, change, prepareDiags := prepareSigningSecretValue(ctx, verifier, state.Value, request.Value, plan.ValueWO)
 	resp.Diagnostics.Append(prepareDiags...)
 
 	if resp.Diagnostics.HasError() {
@@ -208,7 +209,7 @@ func (r *webhookSigningSecretResource) Update(ctx context.Context, req resource.
 		state.Value = plan.Value
 		state.ValueWO = types.StringNull()
 		state.Timeouts = plan.Timeouts
-		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &state)...)
+		resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, change, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &state)...)
 
 		return
 	}
@@ -221,7 +222,7 @@ func (r *webhookSigningSecretResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, &verifier, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &data)...)
+	resp.Diagnostics.Append(publishSigningSecretState(ctx, resp.Private, change, resp.Identity, &resp.State, webhookSigningSecretIdentityAttributeNames(), &data)...)
 }
 
 const webhookSigningSecretMutationRecovery = " The operation may have reached Contentful. Reads cannot verify the complete secret. Coordinate with all webhook receivers before retrying; a later apply can overwrite or delete intervening changes."
