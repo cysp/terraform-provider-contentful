@@ -194,3 +194,57 @@ func TestAccWebhookResourceDelegatedNullPasswordResponse(t *testing.T) {
 func (check webhookPlanCheck) CheckPlan(_ context.Context, req plancheck.CheckPlanRequest, _ *plancheck.CheckPlanResponse) {
 	check(req.Plan)
 }
+
+func TestAccWebhookResourceDelegatedOrdinaryHeaderEcho(t *testing.T) {
+	t.Parallel()
+
+	for _, ignored := range []bool{false, true} {
+		name := "omitted value"
+		if ignored {
+			name = "omitted key retained by lifecycle"
+		}
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			fixture := newWebhookDelegationFixture(t)
+
+			var observed webhookProtocolObservations
+
+			const sibling = `"X-Sibling" = {secret=true,value_wo="unchanged"}`
+
+			original := webhookHeadersConfig("Original", `headers = { "X-Managed" = {secret=true,value="prior"}, `+sibling+` }`)
+
+			headers := `headers = { "X-Managed" = {secret=true}, ` + sibling + ` }`
+			if ignored {
+				headers = `headers = { ` + sibling + ` }
+ lifecycle { ignore_changes = [headers["X-Managed"]] }`
+			}
+
+			delegated := webhookHeadersConfig("Renamed", headers)
+			testObservedWebhookResource(t, fixture, &observed, []resource.TestStep{
+				{Config: original},
+				{Config: delegated, PreConfig: func() {
+					webhookReplyFields(fixture, http.MethodPut, func(doc map[string]any) {
+						headers, ok := doc["headers"].([]any)
+						require.True(t, ok)
+
+						headers[0] = map[string]any{"key": "X-Managed", "secret": false, "value": webhookRotatedHeader}
+					})
+				}, ExpectError: regexp.MustCompile("Unexpected webhook secret header in response")},
+				{Config: delegated, PreConfig: func() {
+					writes := fixture.mutations()
+					require.Len(t, writes, 2)
+					require.Equal(t, "0", writes[1].version)
+					require.Equal(t, []any{map[string]any{"key": "X-Managed", "secret": true}, map[string]any{"key": "X-Sibling", "secret": true}}, testJSONObject(writes[1].body)["headers"])
+
+					reply := observed.lastApply()
+					require.True(t, reply.model(t).Headers.Elements()["X-Managed"].Value().Value.IsNull())
+					require.Equal(t, observed.firstApply().verifiers(t), reply.verifiers(t))
+					requireNoWebhookRecoverySecrets(t, reply.logs)
+				}, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionNoop),
+				}}},
+			})
+		})
+	}
+}

@@ -59,7 +59,7 @@ resource "contentful_webhook" "this" {
 - `name` (String) Name of the webhook.
 - `space_id` (String) ID of the space containing the webhook. Changing this value replaces the resource.
 - `topics` (List of String) One or more Contentful event topics, such as `Entry.publish`, `Entry.unpublish`, or `Asset.save`.
-- `url` (String) HTTP endpoint that receives events matching the webhook topics and filters.
+- `url` (String) HTTP endpoint that receives events matching the webhook topics and filters. Changing any part of the URL, including its path, sends explicitly supplied write-only header values. Omitted values for retained secret headers and delegated Basic authentication can carry over to the new receiver.
 
 ### Optional
 

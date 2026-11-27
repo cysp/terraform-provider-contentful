@@ -38,6 +38,15 @@ func webhookMutationRedaction(prior webhookVerifiers, config WebhookModel) webho
 	return mask
 }
 
+// Guard actual omissions, including when the effective plan retained an ordinary value.
+func (mask webhookRedaction) guardDelegatedHeaders(headers cm.WebhookDefinitionRequestHeaders) {
+	for _, header := range headers {
+		if header.Secret.Or(false) && !header.Value.IsSet() {
+			mask.headers[header.Key] = true
+		}
+	}
+}
+
 func webhookReadRedaction(state WebhookModel) webhookRedaction {
 	mask := webhookRedaction{password: state.HTTPBasicPassword.IsNull() && !state.HTTPBasicUsername.IsNull(), headers: make(map[string]bool)}
 	for key, item := range state.Headers.Elements() {

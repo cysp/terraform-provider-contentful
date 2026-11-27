@@ -330,6 +330,8 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	mask.guardDelegatedHeaders(request.Headers)
+
 	responsePlan := plan
 
 	responsePlan.HTTPBasicUsername = expectedWebhookResponseUsername(plan.HTTPBasicUsername, request.HttpBasicUsername, definition.Response.HttpBasicUsername)

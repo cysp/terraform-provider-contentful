@@ -53,7 +53,7 @@ func WebhookResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"url": schema.StringAttribute{
-				Description: "HTTP endpoint that receives events matching the webhook topics and filters.",
+				Description: "HTTP endpoint that receives events matching the webhook topics and filters. Changing any part of the URL, including its path, sends explicitly supplied write-only header values. Omitted values for retained secret headers and delegated Basic authentication can carry over to the new receiver.",
 				Required:    true,
 			},
 			"topics": schema.ListAttribute{
