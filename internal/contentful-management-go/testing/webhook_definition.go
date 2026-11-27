@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"time"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/go-faster/jx"
@@ -17,6 +18,7 @@ func NewWebhookDefinitionFromFields(spaceID, webhookDefinitionID string, webhook
 		HttpBasicPassword: cm.NewOptNilStringNull(),
 	}
 
+	webhookDefinition.Sys.CreatedAt.SetTo(time.Now().UTC())
 	setWebhookDefinitionFields(&webhookDefinition, webhookDefinitionFields)
 
 	return webhookDefinition

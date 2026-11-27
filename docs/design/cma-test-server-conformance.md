@@ -166,6 +166,8 @@ existing definition requires the exact `X-Contentful-Version`. The mock compares
 the stored fields before redacting secrets and increments the version only
 when those fields change. See the [live version observations](../research/webhooks.md#webhook-definition-versions).
 
+The fixture assigns a UTC creation time on POST and creation PUT and preserves it on updates. The fixture clock supplies its own fractional-second precision.
+
 On an existing webhook, a PUT header with an explicit Boolean `secret` and no
 `value` retains the stored flag and value at that exact key. If the key is
 absent, the mock checks the version before returning 422 and preserves the
