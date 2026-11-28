@@ -5,6 +5,58 @@ Entries through 0.0.70 preserve the existing
 [GitHub release notes](https://github.com/cysp/terraform-provider-contentful/releases);
 dates are UTC publication dates.
 
+## [0.3.0](https://github.com/cysp/terraform-provider-contentful/compare/v0.2.1...v0.3.0) (2026-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **provider:** omitting headers on a Webhook now removes them unless a lifecycle rule retains the collection. Declare the headers to manage or delegate them before upgrading.
+* **provider:** Omitting contentful_app_definition.src now plans to remove an existing frontend URL, including after import. Before upgrading, configure the current URL or add lifecycle.ignore_changes = [src] to delegate it. To remove the frontend entirely, omit src and set locations = [].
+
+### Features
+
+* **provider:** allow clearing the App Definition frontend URL ([345377b](https://github.com/cysp/terraform-provider-contentful/commit/345377b3f3a08868a206bdc263eedee0a55c8d2a))
+* **provider:** preserve delegated Basic passwords on Webhook updates ([248de7b](https://github.com/cysp/terraform-provider-contentful/commit/248de7b764c5acbbd52796b5b74bdbf6d861344e))
+* **provider:** support write-only App and Webhook Signing Secret values ([3e72163](https://github.com/cysp/terraform-provider-contentful/commit/3e72163f6805f8a0480d294bca94554494be36dc))
+* **provider:** support write-only Webhook Basic authentication passwords ([676b1f6](https://github.com/cysp/terraform-provider-contentful/commit/676b1f63c2d379f75e7921fdf499eb091e8dc383))
+* **provider:** support write-only Webhook secret headers ([9549578](https://github.com/cysp/terraform-provider-contentful/commit/954957874b7ae5a66afea5a907a9255646b53e7f))
+
+
+### Bug fixes
+
+* **contentful-management-go:** distinguish Webhook POST and PUT headers ([31c242c](https://github.com/cysp/terraform-provider-contentful/commit/31c242c91d45fd2b407ec09e9522fbacbda13bc5))
+* **contentful-management-go:** match CMA’s Webhook Basic credential limits ([bf7f71a](https://github.com/cysp/terraform-provider-contentful/commit/bf7f71a582f8baf02879dad2dba853f779496708))
+* **contentful-management-go:** preserve Webhook creation timestamps ([164284c](https://github.com/cysp/terraform-provider-contentful/commit/164284ce64ef6ca49eb08408857b91e629b7672e))
+* **contentful-management-go:** retain omitted Webhook credentials ([a88a339](https://github.com/cysp/terraform-provider-contentful/commit/a88a339bdf1135c6c4fd0dbdfa545fb4ab859ea3))
+* **provider:** check the space before adopting a created Webhook ([8e67086](https://github.com/cysp/terraform-provider-contentful/commit/8e670866936f88cc60cb06ade57af83817f97f9b))
+* **provider:** drop stale Webhook credentials on refresh ([1c26efd](https://github.com/cysp/terraform-provider-contentful/commit/1c26efd9ea766166c03c1b713ad6d1bf6152a39a))
+* **provider:** forget prior credentials after same-ID Webhook recreation ([26503ac](https://github.com/cysp/terraform-provider-contentful/commit/26503acc405329e42e7b42f7c21fa34cd3a2ce17))
+* **provider:** honor Webhook header ownership when the receiver changes ([2b3ec3c](https://github.com/cysp/terraform-provider-contentful/commit/2b3ec3c2e6044e301c76cf0f7bf2e0ea92ada509))
+* **provider:** keep credentials out of Webhook diagnostics ([f29d0c9](https://github.com/cysp/terraform-provider-contentful/commit/f29d0c9a16c17c7edbe8c3878047f9c619878aed))
+* **provider:** reject Webhook header flag changes only on in-place writes ([a35a9ca](https://github.com/cysp/terraform-provider-contentful/commit/a35a9cab32115b6716bfcc02b659d7833fe53b14))
+* **provider:** retain the Webhook target’s checkpoint after contradictory PUTs ([7a239da](https://github.com/cysp/terraform-provider-contentful/commit/7a239da79d33e5dfdbe6d2134388a4a28bc8566a))
+* **provider:** validate Webhook credentials against the effective plan ([5843891](https://github.com/cysp/terraform-provider-contentful/commit/584389103d98373f666c05a3534ad4de4b21e6f7))
+* **provider:** verify the App Signing Secret suffix before acknowledgement ([7a12ecb](https://github.com/cysp/terraform-provider-contentful/commit/7a12ecb06c53ede341adb1f4c5be1f81f65d186e))
+
+
+### Tests
+
+* **provider:** cover App Definition source ownership across upgrade ([5bc5935](https://github.com/cysp/terraform-provider-contentful/commit/5bc5935f105f35bdc0e37a0ab176e65afeb278f1))
+
+
+### Refactoring
+
+* **provider:** bind write-only verifiers to individual credentials ([7cedfb8](https://github.com/cysp/terraform-provider-contentful/commit/7cedfb889272d6d49f6b2d7f49d0815307fc654d))
+
+
+### Maintenance
+
+* **deps:** bump indirect dependencies ([ae88c5e](https://github.com/cysp/terraform-provider-contentful/commit/ae88c5ee78db0146fdc9436073356a458f155f6f))
+* **deps:** bump indirect dependencies ([488285a](https://github.com/cysp/terraform-provider-contentful/commit/488285a8d38cd6faa1a5ad35fc1a0ed92ba442e3))
+* **deps:** bump indirect dependencies ([0637da0](https://github.com/cysp/terraform-provider-contentful/commit/0637da03bdee9ee4b9f501841cfad5b9e55a66ab))
+* **deps:** bump indirect dependencies ([7aaca16](https://github.com/cysp/terraform-provider-contentful/commit/7aaca169175c2e3fd3e1a491c124742edbd5f39c))
+* **deps:** bump indirect dependencies ([9ed9de6](https://github.com/cysp/terraform-provider-contentful/commit/9ed9de62a2e1d0785e2f31a85f1452b78020faf1))
+
 ## [0.2.1](https://github.com/cysp/terraform-provider-contentful/compare/v0.2.0...v0.2.1) (2026-11-23)
 
 
