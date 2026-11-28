@@ -17,7 +17,10 @@ Open this repository in your coding agent. Select a skill by name if your agent 
 
 | When to use it | Skill | Example request |
 | --- | --- | --- |
+| Before opening a PR, on an open PR, or after a fix | [`review-implementation-pr`](.agents/skills/review-implementation-pr/SKILL.md) | “Review my working tree before I open a PR.” You can also give a branch or PR URL. Include a particular finding if you want it rechecked. |
 | Writing or checking migration advice | [`assess-upgrade-impact`](.agents/skills/assess-upgrade-impact/SKILL.md) | “Can someone with existing state follow this guide? What happens to modules that use the changed attribute?” |
+
+An implementation review includes the upgrade assessment when the change could affect existing users. Use the upgrade skill directly when that is your only question.
 
 ## Commit conventions
 
