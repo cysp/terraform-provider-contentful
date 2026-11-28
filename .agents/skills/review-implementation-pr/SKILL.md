@@ -1,9 +1,12 @@
 ---
 name: review-implementation-pr
-description: Review an implementation PR, branch, or local diff against its intended outcome, including re-review after fixes or a rebase.
+description: Review an implementation PR, branch, or local diff against its intended outcome, including re-review after fixes or a rebase, or prepare a prompt for an independent reviewer.
 ---
 
 # Review an implementation PR
+
+- For a direct review, give the maintainer one recommendation that accounts for any upgrade findings. Say when no material findings remain.
+- For a requested prompt or a delegated review, [prepare the handoff](../../../docs/reviewing.md#preparing-a-review-prompt). Give the reviewer the decision to make, the settled requirements and the evidence to examine. Leave the recommendation to that reviewer.
 
 ## Select the change
 
@@ -13,9 +16,7 @@ Establish the intended outcome from the request, PR description, any linked issu
 
 ## Review the implementation
 
-Follow the [repository review guidance](../../../docs/reviewing.md), including its upgrade assessment when the diff affects existing users. Trace the changed behavior from a caller through the operation that delivers the requested outcome. Look for a missing outcome even when the code is internally consistent and CI is green. Evaluate design concerns by their effect on a caller, lifecycle guarantee, or maintenance task.
-
-Before relying on an existing check, identify the revision it ran on and the behavior it exercised. Give the author one review ordered by consequence, including any upgrade findings. State what needs to change before merge, label optional improvements, and say when no material findings remain.
+Use the [repository review guidance](../../../docs/reviewing.md) to test the intended outcome across the changed components, including upgrade impact where applicable. Start from the documented entry point. Compare the prerequisites a reader can infer there with those the implementation and tests actually use. When a simpler design could reduce a concrete burden on callers or maintainers, compare it against the same lifecycle guarantees.
 
 ## Review after a fix or rebase
 

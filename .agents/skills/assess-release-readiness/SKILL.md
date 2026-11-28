@@ -1,6 +1,6 @@
 ---
 name: assess-release-readiness
-description: Assess the next release action for terraform-provider-contentful from origin/main or an explicit release PR, or prepare a release-specific assessment prompt.
+description: Assess the next release action for terraform-provider-contentful from origin/main or a specified release, or prepare a release-specific assessment prompt.
 ---
 
 # Assess release readiness
@@ -9,7 +9,7 @@ Default to a readiness decision. Use an isolated checkout when a local check nee
 
 ## Identify the release decision
 
-If the maintainer supplies a release PR, assess that release even if it has merged. Otherwise fetch `origin/main` and record its commit. Use the [release process](../../../docs/releasing.md) at the revision under review to determine the next action.
+If the maintainer supplies a release PR, version tag or merged release commit, resolve it to the specified release and assess that release. Otherwise fetch `origin/main` and record its commit. Use the [release process](../../../docs/releasing.md) at the revision under review to determine the next action.
 
 | State of the release | Decision |
 | --- | --- |
@@ -32,7 +32,7 @@ Trace migration claims from the candidate’s practitioner documentation to the 
 
 ## Report the decision or prepare a prompt
 
-**Prompt request.** Write a prompt another reviewer can use in a fresh conversation. Include the release PR or pinned main revision, published baseline, questions, evidence to inspect, and decision to make. Include a pinned link to this procedure or the relevant instructions. Ask the reviewer to inspect the rest of the diff for other risks and refresh the revisions and publication status before recommending an action. If the maintainer requests a separate thread, use the same prompt there when the agent supports it.
+**Review handoff.** When preparing a prompt or delegating the assessment, use the [review prompt guidance](../../../docs/reviewing.md#preparing-a-review-prompt). Include the preceding published version, the candidate, the next release action, and any interaction across merged PRs that could affect it. Ask the reviewer to refresh the refs and publication status before recommending that action. If the maintainer requests a separate thread, use the finished prompt there when the agent supports it.
 
 **Assessment request.** Follow the [review guidance](../../../docs/reviewing.md) and [validation scope](../../../DEVELOPMENT.md#validation-scope). For each CI result you rely on, check the revision, triggering event, jobs, and relevant subtests that ran. PR and main runs can execute different tests on identical trees. Distinguish prior-provider upgrade evidence, mock CMA behavior, and live CMA observations. Run focused checks for material gaps.
 
