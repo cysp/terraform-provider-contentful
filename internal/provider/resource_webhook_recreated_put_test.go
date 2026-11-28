@@ -111,7 +111,7 @@ func TestAccWebhookResourceGuardsDelegatedHeaderAfterRecreation(t *testing.T) {
 
 	testObservedWebhookResource(t, fixture, &observations, []resource.TestStep{
 		{Config: initial},
-		{Config: delegated, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{webhookAfterPlan(func() {
+		{Config: delegated, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{afterPlan(func() {
 			webhookID = observations.lastApply().model(t).WebhookID.ValueString()
 			removed, err := fixture.server.Handler().DeleteWebhookDefinition(t.Context(), cm.DeleteWebhookDefinitionParams{SpaceID: "space", WebhookDefinitionID: webhookID})
 			require.NoError(t, err)

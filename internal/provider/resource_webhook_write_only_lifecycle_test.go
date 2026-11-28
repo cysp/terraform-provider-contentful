@@ -1,9 +1,7 @@
 package provider_test
 
 import (
-	"archive/zip"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -127,19 +125,7 @@ resource "contentful_webhook" "test" {
 	require.NoError(t, err, out)
 	checkSecrets(out)
 
-	archive, err := zip.OpenReader(filepath.Join(runtime.workingDirectory, "update.tfplan"))
-	require.NoError(t, err)
-
-	for _, member := range archive.File {
-		reader, err := member.Open()
-		require.NoError(t, err)
-		content, err := io.ReadAll(reader)
-		require.NoError(t, err)
-		require.NoError(t, reader.Close())
-		checkSecrets(string(content))
-	}
-
-	require.NoError(t, archive.Close())
+	checkSavedPlanMembers(t, filepath.Join(runtime.workingDirectory, "update.tfplan"), checkSecrets)
 	cli("apply", nextPassword, nextToken, "update.tfplan")
 	want = append(want, webhookMutation{method: http.MethodPut, path: collection + "/" + webhookID, version: "0", body: body("Updated", nextPassword, color, secretHeader("X-Sibling"), secretHeader("X-Token", nextToken))})
 	require.Equal(t, want, fixture.mutations())

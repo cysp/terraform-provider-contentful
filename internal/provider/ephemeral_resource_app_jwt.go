@@ -44,7 +44,7 @@ func (*appJWTEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaRequ
 				Sensitive:   true,
 			},
 			"jwt": schema.StringAttribute{
-				Description: "RS256-signed JWT for the app definition.",
+				Description: "Signed JWT for the app definition. To [exchange it for an app access token](app_access_token), register the corresponding public key on the app definition.",
 				Computed:    true,
 				Sensitive:   true,
 			},

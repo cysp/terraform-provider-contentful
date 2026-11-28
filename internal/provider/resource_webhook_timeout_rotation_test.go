@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -16,12 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 )
-
-type webhookAfterPlan func()
-
-func (f webhookAfterPlan) CheckPlan(context.Context, plancheck.CheckPlanRequest, *plancheck.CheckPlanResponse) {
-	f()
-}
 
 func TestAccWebhookResourceIgnoredWriteOnlyBasicPasswordOnTimeoutUpdate(t *testing.T) {
 	const (
@@ -87,7 +80,7 @@ resource "contentful_webhook" "test" {
  lifecycle { ignore_changes = [http_basic_password_wo, headers] }`),
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate),
-				webhookAfterPlan(func() { t.Setenv(variable, rotated) }),
+				afterPlan(func() { t.Setenv(variable, rotated) }),
 			}},
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(address, tfjsonpath.New("http_basic_password"), knownvalue.Null()),

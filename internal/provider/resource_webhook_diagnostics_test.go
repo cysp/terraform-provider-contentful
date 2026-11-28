@@ -188,7 +188,7 @@ func TestAccWebhookResourceWriteOnlyStalePlan(t *testing.T) {
 	rotate := webhookRecoveryStep(webhookRecoveryConfig(true, ""), webhookRotatedPassword, webhookRotatedHeader)
 	rotate.ConfigPlanChecks = resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 		plancheck.ExpectResourceAction("contentful_webhook.test", plancheck.ResourceActionUpdate),
-		webhookAfterPlan(func() {
+		afterPlan(func() {
 			before = observed.lastRead()
 
 			fixture.updateRemoteHeaders(t, 1, cm.WebhookDefinitionRequestHeaders{
