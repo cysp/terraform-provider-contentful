@@ -11,6 +11,6 @@ For each migration claim, work out the configuration and steps a reader would ta
 
 Trace each claim to the first operation that could disprove it. An empty plan shows that Terraform proposes no resource action. To establish that a remote value survives a later write, inspect that write and its result. Check distinct configurations separately when they exercise different behavior.
 
-Identify the provider version that created the starting state when it matters. Distinguish what the test asserts, which checks ran, and what a fixture or the live service demonstrated. Use the repository’s [test conventions](../../../docs/testing.md) and [validation scope](../../../DEVELOPMENT.md#validation-scope) to choose a check.
+Identify the provider version that created the starting state when it matters. If a fixture seeds that state directly, establish that the released provider could produce the relevant values or name the upgrade path that still lacks evidence. Distinguish what the test asserts, which checks ran, and what a fixture or the live service demonstrated. Use the repository’s [test conventions](../../../docs/testing.md) and [validation scope](../../../DEVELOPMENT.md#validation-scope) to choose a check.
 
 When authoring a change, cover the upgrade in the appropriate test and put the steps users need in the documentation they will read. When reviewing, cite the starting version, transition, and evidence for each material claim. If a claim is unsupported, say who is affected and what check or change to the guidance would resolve it.
