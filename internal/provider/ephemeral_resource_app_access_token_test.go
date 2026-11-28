@@ -31,6 +31,10 @@ import (
 )
 
 func TestAccAppAccessTokenEphemeralResourceSavedPlan(t *testing.T) {
+	if os.Getenv(resource.EnvTfAcc) == "" {
+		t.Skip("TF_ACC must be set for acceptance tests")
+	}
+
 	const (
 		variable      = "TF_VAR_app_private_key"
 		defaultLocale = "en-AU"

@@ -81,7 +81,8 @@ func testAccResource(t *testing.T, handler http.Handler, alwaysMock bool, testca
 		}
 
 		var testserver *httptest.Server
-		if handler != nil {
+		// resource.Test validates the case before skipping when TF_ACC is unset.
+		if handler != nil && (os.Getenv(resource.EnvTfAcc) != "" || testcase.IsUnitTest) {
 			testserver = httptest.NewServer(handler)
 			t.Cleanup(testserver.Close)
 		}
