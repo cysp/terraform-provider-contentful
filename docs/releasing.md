@@ -1,5 +1,15 @@
 # Release the provider
 
+## Assess release readiness
+
+For an optional assessment, ask a coding agent working in this repository to follow the [release readiness skill](../.agents/skills/assess-release-readiness/SKILL.md). It compares the candidate with the preceding published provider. You can start with just the repository or a release PR URL.
+
+| What you want to know | What to ask |
+| --- | --- |
+| What should we do next? | “Assess release readiness.” The skill fetches `origin/main`, identifies any release already in progress, and reports the next step or confirms there is nothing to release. |
+| Is this release ready? | “Assess this release PR” and paste its URL. For an open PR, expect a merge recommendation and any blockers. For a merged PR, expect the publication status on GitHub and in the Terraform Registry. |
+| Can another reviewer take this on? | “Write a release readiness prompt for this PR” and paste its URL. The prompt includes the revisions to compare, the questions raised by this release, and the decision to make. |
+
 ## Publish a GitHub release
 
 1. Merge ordinary changes to `main`. When ready to prepare a release, run
