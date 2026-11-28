@@ -61,6 +61,14 @@ shapes have been observed. Applying the same child projection to the remaining
 operations is a fixture inference. A later request observes a retarget
 immediately in the fake. Service propagation time is unverified.
 
+The fake rejects deletion of a [targeted environment][alias-targets] and of the
+[master environment or alias][master-deletion] before changing stored data. It
+uses HTTP 422 with `ValidationFailed` for these refusals. The documentation
+specifies the restriction and leaves the error representation open. Deleting an
+eligible environment discards its child fixtures, Content Type publication history
+and issued tokens scoped to that environment. Recreating the same ID starts empty.
+Clearing those tokens on deletion is a fixture lifecycle convention.
+
 Handlers that use `master` to recognize a Space accept either a concrete
 `master` or a `master` alias whose target exists in the same Space. New servers
 start without either. `RegisterMasterEnvironmentAlias(spaceID)` seeds a ready
@@ -68,6 +76,9 @@ start without either. `RegisterMasterEnvironmentAlias(spaceID)` seeds a ready
 a concrete `master`, before seeding children to be read through `master`. Seed
 those children under the returned concrete ID. `SetSpace` seeds the Space
 document for discovery. `SetSpaceEnablements` seeds only the enablements.
+
+[alias-targets]: https://www.contentful.com/developers/docs/references/content-management-api/environment-aliases/#creating-environment-aliases
+[master-deletion]: https://www.contentful.com/developers/docs/concepts/multiple-environments/#environments-technical-limitations
 
 ### App Definition parent scope
 
@@ -99,6 +110,11 @@ reading the app's own installation, including its Secret parameters. Updating or
 deleting the installation returns HTTP 403. Reading an App Definition returns
 404, and reading a Space or Environment returns 401. Other operations are denied
 by default. App requests follow the shared [environment alias routing](#environment-aliases).
+
+A standalone uninstall in the fake removes the App Installation but retains its
+issued tokens until expiry. Contentful documents [loss of access on uninstall](https://www.contentful.com/help/apps/apps-across-spaces/#how-to-uninstall-an-app).
+The behavior of a previously issued bearer immediately after uninstall has not
+been verified against the live CMA.
 
 See the [App Identity permission observations](../research/app-framework/identity.md#app-access-token-permissions)
 for the operations exercised against Contentful. Locale writes follow the

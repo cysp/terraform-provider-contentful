@@ -435,10 +435,15 @@ func TestLocaleMutationsThroughEnvironmentAliasAndParentDeletion(t *testing.T) {
 	deleted, err := server.Handler().DeleteLocale(t.Context(), cm.DeleteLocaleParams{SpaceID: "space", EnvironmentID: "alias", LocaleID: localeID})
 	require.NoError(t, err)
 	assert.IsType(t, &cm.NoContent{}, deleted)
-	_, err = server.Handler().DeleteEnvironment(t.Context(), cm.DeleteEnvironmentParams{SpaceID: "space", EnvironmentID: "environment"})
+	aliasDeleted, err := server.Handler().DeleteEnvironmentAlias(t.Context(), cm.DeleteEnvironmentAliasParams{SpaceID: "space", EnvironmentAliasID: "alias"})
 	require.NoError(t, err)
+	require.IsType(t, &cm.NoContent{}, aliasDeleted)
+
+	environmentDeleted, err := server.Handler().DeleteEnvironment(t.Context(), cm.DeleteEnvironmentParams{SpaceID: "space", EnvironmentID: "environment"})
+	require.NoError(t, err)
+	require.IsType(t, &cm.NoContent{}, environmentDeleted)
 	server.RegisterSpaceEnvironment("space", "environment")
-	missing, err := server.Handler().GetLocale(t.Context(), cm.GetLocaleParams{SpaceID: "space", EnvironmentID: "alias", LocaleID: "locale-default"})
+	missing, err := server.Handler().GetLocale(t.Context(), cm.GetLocaleParams{SpaceID: "space", EnvironmentID: "environment", LocaleID: "locale-default"})
 	require.NoError(t, err)
 
 	failure, ok := missing.(*cm.ErrorStatusCode)

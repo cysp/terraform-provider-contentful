@@ -81,6 +81,10 @@ func (ts *Handler) DeleteEnvironmentAlias(_ context.Context, params cm.DeleteEnv
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
+	if params.EnvironmentAliasID == "master" {
+		return NewContentfulManagementErrorStatusCodeValidationFailed(new("Cannot delete the master environment alias"), nil), nil
+	}
+
 	ts.environmentAliases.Delete(params.SpaceID, params.EnvironmentAliasID)
 
 	return snapshotResponse(&cm.NoContent{}), nil

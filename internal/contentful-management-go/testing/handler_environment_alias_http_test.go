@@ -100,6 +100,8 @@ func TestEnvironmentAliasChildResponses(t *testing.T) {
 		"entries/entry", "content_types/article", "content_types/article/editor_interface",
 		"extensions/extension", "tags/tag", "app_installations/app", "live_preview/variables", "locales/default",
 	}
+	failure := aliasRequest(t, server, http.MethodDelete, "space/environments/target", "", "", http.StatusUnprocessableEntity)
+	require.Equal(t, "ValidationFailed", failure.Sys.ID)
 
 	for _, path := range paths {
 		viaAlias := aliasRequest(t, server, http.MethodGet, alias+path, "", "", http.StatusOK)
@@ -114,6 +116,14 @@ func TestEnvironmentAliasChildResponses(t *testing.T) {
 		r := aliasRequest(t, server, http.MethodGet, alias+collection, "", "", http.StatusOK)
 		require.Len(t, r.Items, 1, collection)
 		require.Equal(t, cm.NewEnvironmentLink("alias"), r.Items[0].Sys.Environment, collection)
+	}
+
+	aliasRequest(t, server, http.MethodDelete, "space/environment_aliases/alias", "", "", http.StatusNoContent)
+	aliasRequest(t, server, http.MethodDelete, "space/environments/target", "", "", http.StatusNoContent)
+	server.RegisterSpaceEnvironment("space", "target")
+
+	for _, path := range paths {
+		aliasRequest(t, server, http.MethodGet, target+path, "", "", http.StatusNotFound)
 	}
 }
 
@@ -146,9 +156,48 @@ func TestEnvironmentAliasRetargetUsesCurrentTargetVersion(t *testing.T) {
 	require.Equal(t, cm.NewEnvironmentLink("alias"), after.Sys.Environment)
 	require.Equal(t, "Updated", aliasRequest(t, server, http.MethodGet, "space/environments/blue/tags/tag", "", "", http.StatusOK).Name)
 
+	aliasRequest(t, server, http.MethodDelete, "space/environments/blue", "", "", http.StatusUnprocessableEntity)
+	aliasRequest(t, server, http.MethodDelete, "space/environment_aliases/second", "", "", http.StatusNoContent)
+	aliasRequest(t, server, http.MethodDelete, "space/environments/blue", "", "", http.StatusNoContent)
+	require.Equal(t, "Green", aliasRequest(t, server, http.MethodGet, tag, "", "", http.StatusOK).Name)
 	require.Equal(t, "Other space", aliasRequest(t, server, http.MethodGet, "other/environments/alias/tags/tag", "", "", http.StatusOK).Name)
 	aliasRequest(t, server, http.MethodDelete, tag, "", "", http.StatusNoContent)
 	aliasRequest(t, server, http.MethodGet, "space/environments/green/tags/tag", "", "", http.StatusNotFound)
+}
+
+func TestMasterEnvironmentDeletion(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+
+	const (
+		environment = "space/environments/master"
+		alias       = "space/environment_aliases/master"
+	)
+
+	aliasRequest(t, server, http.MethodDelete, environment, "", "", http.StatusNotFound)
+	aliasRequest(t, server, http.MethodDelete, alias, "", "", http.StatusNotFound)
+	server.RegisterSpaceEnvironment("space", "master")
+	aliasRequest(t, server, http.MethodDelete, environment, "", "", http.StatusUnprocessableEntity)
+	aliasRequest(t, server, http.MethodGet, environment, "", "", http.StatusOK)
+	aliasRequest(t, server, http.MethodDelete, alias, "", "", http.StatusNotFound)
+}
+
+func TestMasterEnvironmentAliasDeletion(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterMasterEnvironmentAlias("space")
+
+	aliasRequest(t, server, http.MethodDelete, "space/environment_aliases/master", "", "", http.StatusUnprocessableEntity)
+	aliasRequest(t, server, http.MethodDelete, "space/environments/master", "", "", http.StatusUnprocessableEntity)
+	aliasRequest(t, server, http.MethodDelete, "space/environments/master-1970-01-01", "", "", http.StatusUnprocessableEntity)
+	aliasRequest(t, server, http.MethodGet, "space/environment_aliases/master", "", "", http.StatusOK)
+	listed := aliasRequest(t, server, http.MethodGet, "space/environments", "", "", http.StatusOK)
+	require.Len(t, listed.Items, 1)
+	require.Equal(t, "master-1970-01-01", listed.Items[0].Sys.ID)
 }
 
 func TestSpaceParentRequiresConcreteMasterOrLocalAliasTarget(t *testing.T) {

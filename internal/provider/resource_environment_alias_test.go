@@ -133,6 +133,19 @@ func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 					plancheck.ExpectResourceAction("contentful_environment_alias.test", plancheck.ResourceActionNoop),
 				}},
 			},
+			{
+				// The permanent master alias stays in Contentful after import.
+				Config: `
+removed {
+  from = contentful_environment_alias.test
+  lifecycle {
+    destroy = false
+  }
+}
+`,
+			},
 		},
 	})
+
+	assert.Zero(t, mutations.Load(), "the permanent alias must survive the test")
 }
