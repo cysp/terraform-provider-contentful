@@ -11,6 +11,14 @@ requires Terraform on `PATH`; acceptance-test options are under [Tests](#tests).
 
 Repository-wide guidance lives in [AGENTS.md](AGENTS.md). Use the [design index](docs/design/README.md) for resource contracts and [Reviewing changes](docs/reviewing.md) for code review.
 
+## Review skills for coding agents
+
+Open this repository in your coding agent. Select a skill by name if your agent supports it, or ask it to follow the linked `SKILL.md` file. For example, `Follow .agents/skills/assess-upgrade-impact/SKILL.md and check the migration instructions on this branch.`
+
+| When to use it | Skill | Example request |
+| --- | --- | --- |
+| Writing or checking migration advice | [`assess-upgrade-impact`](.agents/skills/assess-upgrade-impact/SKILL.md) | “Can someone with existing state follow this guide? What happens to modules that use the changed attribute?” |
+
 ## Commit conventions
 
 - Use Conventional Commit messages. The type describes the kind of change, the scope identifies the affected component or maintenance concern, and the subject describes the specific change.
