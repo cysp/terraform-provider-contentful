@@ -35,4 +35,4 @@ ephemeral "contentful_app_jwt" "editorial" {
 
 ### Read-Only
 
-- `jwt` (String, Sensitive) RS256-signed JWT for the app definition.
+- `jwt` (String, Sensitive) Signed JWT for the app definition. To [exchange it for an app access token](app_access_token), register the corresponding public key on the app definition.

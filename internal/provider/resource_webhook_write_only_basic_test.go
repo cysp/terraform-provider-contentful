@@ -129,7 +129,7 @@ resource "contentful_webhook" "test" {
 				// Applying the saved no-op cannot rotate a password, even if the ephemeral input changes.
 				Config: managed, ExpectNonEmptyPlan: true,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply:             []plancheck.PlanCheck{plancheck.ExpectEmptyPlan(), webhookAfterPlan(func() { t.Setenv(variable, planned) })},
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectEmptyPlan(), afterPlan(func() { t.Setenv(variable, planned) })},
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate)},
 				},
 				PostApplyFunc: func() { require.Empty(t, recorder.matchingRequests(http.MethodPut, "")) },
@@ -137,7 +137,7 @@ resource "contentful_webhook" "test" {
 			{
 				Config: managed,
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate), webhookAfterPlan(func() { t.Setenv(variable, applied) }),
+					plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate), afterPlan(func() { t.Setenv(variable, applied) }),
 				}},
 				PostApplyFunc: func() {
 					requirePut(1, "0", "Managed", applied)

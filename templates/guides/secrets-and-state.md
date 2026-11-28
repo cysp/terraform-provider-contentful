@@ -15,6 +15,7 @@ Restrict access to Terraform state and saved plans when managing credentials. Se
 | [Webhook Basic password](#basic-authentication) | Preserves ordinary password or write-only verifier | Null when omitted |
 | [Secret webhook header](#secret-custom-headers) | Preserves ordinary value or write-only verifier by header name | Unreadable value is null |
 | [App Installation `Secret` parameter](#app-installation-secrets), read with a personal access token | Can retain prior state for an all-asterisk response | Retains mask; original value unavailable |
+| App Installation `Secret` parameter, read with the app’s own access token | Reads the secret value | Stores the secret value |
 | [Personal Access Token](#personal-access-tokens) | Preserves token from creation | `token` is null |
 | Delivery API access token | Reads token | Reads token |
 | [App Key public JWK](#app-keys) | Reads public key | Reads public key; private key unavailable |
@@ -188,7 +189,9 @@ If someone rotates `apiKey` in Contentful, refresh can keep the old key in state
 
 ### Importing an installation
 
-Import retains the masks that Contentful returns. Supply the actual values before applying. Sending the exact current mask can preserve the existing secret, even when you meant to set a literal string of asterisks. A stale mask can become the literal secret.
+When you import an installation with the app’s own access token, Contentful returns its Secret parameter values. Terraform stores those values in state, and `terraform state show` can display them.
+
+With a personal access token, import stores the masks that Contentful returns. Supply the actual values before applying. Sending the exact current mask can preserve the existing secret, even when you meant to set a literal string of asterisks. A stale mask can become the literal secret.
 
 ### Recovering after a failed write
 

@@ -229,7 +229,7 @@ variable "replacement_password" {
 			Config: config, Taint: []string{webhookBasicAddress},
 			ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 				plancheck.ExpectResourceAction(webhookBasicAddress, plancheck.ResourceActionDestroyBeforeCreate),
-				webhookAfterPlan(func() { t.Setenv(variable, atLimit+"x") }),
+				afterPlan(func() { t.Setenv(variable, atLimit+"x") }),
 			}},
 		},
 	}})

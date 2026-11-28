@@ -181,6 +181,7 @@ func (p *ContentfulProvider) Configure(ctx context.Context, req provider.Configu
 
 	resp.ActionData = providerData
 	resp.DataSourceData = providerData
+	resp.EphemeralResourceData = providerData
 	resp.ListResourceData = providerData
 	resp.ResourceData = providerData
 }
@@ -233,6 +234,7 @@ func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.
 
 func (p *ContentfulProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
 	return []func() ephemeral.EphemeralResource{
+		NewAppAccessTokenEphemeralResource,
 		NewAppJWTEphemeralResource,
 	}
 }
