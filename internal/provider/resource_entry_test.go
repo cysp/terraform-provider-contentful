@@ -30,18 +30,21 @@ var (
 func TestAccEntryResourceImport(t *testing.T) {
 	t.Parallel()
 
+	const spaceID = "0p38pssr0fi3"
+
 	server := newTestCMAServer(t)
+	targetID := server.RegisterMasterEnvironmentAlias(spaceID)
 
 	configVariables := config.Variables{
-		"space_id":       config.StringVariable("0p38pssr0fi3"),
+		"space_id":       config.StringVariable(spaceID),
 		"environment_id": config.StringVariable("test"),
 		"entry_id":       config.StringVariable("entry"),
 	}
 
-	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData("0p38pssr0fi3", "test", cm.EnvironmentAliasData{
-		Environment: cm.NewEnvironmentLink("target"),
+	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData(spaceID, "test", cm.EnvironmentAliasData{
+		Environment: cm.NewEnvironmentLink(targetID),
 	}))
-	server.SetEntry("0p38pssr0fi3", "target", "test", "entry", cm.EntryRequest{
+	server.SetEntry(spaceID, targetID, "test", "entry", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{"foo": []byte(testJSON("bar"))}),
 		Metadata: cm.NewOptEntryMetadata(cm.EntryMetadata{
 			Concepts: []cm.TaxonomyConceptLink{},
@@ -105,7 +108,7 @@ func TestAccEntryResourceImport(t *testing.T) {
 				}},
 				Check: func(*terraform.State) error {
 					requireNoEntryMutations(t, recorder)
-					entry := getTestEntryForIDs(t, server, "0p38pssr0fi3", "target", "entry")
+					entry := getTestEntryForIDs(t, server, spaceID, targetID, "entry")
 					require.Positive(t, entry.Sys.Version)
 					require.False(t, entry.Sys.PublishedVersion.IsSet())
 
