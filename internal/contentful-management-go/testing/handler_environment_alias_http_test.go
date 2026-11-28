@@ -150,3 +150,24 @@ func TestEnvironmentAliasRetargetUsesCurrentTargetVersion(t *testing.T) {
 	aliasRequest(t, server, http.MethodDelete, tag, "", "", http.StatusNoContent)
 	aliasRequest(t, server, http.MethodGet, "space/environments/green/tags/tag", "", "", http.StatusNotFound)
 }
+
+func TestSpaceParentRequiresConcreteMasterOrLocalAliasTarget(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.SetSpace(cm.Space{Sys: cm.SpaceSys{ID: "space"}})
+	server.RegisterSpaceEnvironment("space", "unrelated")
+	server.SetSpaceEnablements("space", cm.SpaceEnablementData{})
+	aliasRequest(t, server, http.MethodGet, "space/roles", "", "", http.StatusNotFound)
+
+	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData("space", "master", cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink("blue")}))
+	server.RegisterSpaceEnvironment("other", "blue")
+	aliasRequest(t, server, http.MethodGet, "space/roles", "", "", http.StatusNotFound)
+	aliasRequest(t, server, http.MethodGet, "space/environments", "", "", http.StatusNotFound)
+
+	server.RegisterSpaceEnvironment("space", "blue")
+	aliasRequest(t, server, http.MethodGet, "space/roles", "", "", http.StatusOK)
+	created := aliasRequest(t, server, http.MethodPut, "space/environments/sandbox", "", testJSON(map[string]string{"name": "Sandbox"}), http.StatusCreated)
+	require.Equal(t, "sandbox", created.Sys.ID)
+}

@@ -26,7 +26,7 @@ func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
-	server.RegisterSpaceEnvironment("space-id", "master")
+	targetID := server.RegisterMasterEnvironmentAlias("space-id")
 	server.RegisterSpaceEnvironment("space-id", "staging")
 
 	environmentAliasID := "acctest-" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -40,7 +40,7 @@ func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 	configVariables1 := maps.Clone(configVariables)
 
 	configVariables2 := maps.Clone(configVariables)
-	configVariables2["target_environment_id"] = config.StringVariable("master")
+	configVariables2["target_environment_id"] = config.StringVariable(targetID)
 
 	testAccMockedResource(t, server, resource.TestCase{
 		CheckDestroy: func(_ *terraform.State) error {
@@ -86,10 +86,7 @@ func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
 
-	server.RegisterSpaceEnvironment("space-id", "master-1970-01-01")
-	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData("space-id", "master", cm.EnvironmentAliasData{
-		Environment: cm.NewEnvironmentLink("master-1970-01-01"),
-	}))
+	server.RegisterMasterEnvironmentAlias("space-id")
 
 	configVariables := config.Variables{
 		"space_id":                  config.StringVariable("space-id"),

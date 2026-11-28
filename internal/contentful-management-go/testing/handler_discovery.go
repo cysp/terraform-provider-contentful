@@ -98,7 +98,7 @@ func (h *Handler) GetEnvironments(_ context.Context, params cm.GetEnvironmentsPa
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	if h.environments.Get(params.SpaceID, "master") == nil {
+	if !h.hasMasterEnvironment(params.SpaceID) {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
@@ -127,7 +127,7 @@ func (h *Handler) GetEnvironmentAliases(_ context.Context, params cm.GetEnvironm
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	if h.environments.Get(params.SpaceID, "master") == nil {
+	if !h.hasMasterEnvironment(params.SpaceID) {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 

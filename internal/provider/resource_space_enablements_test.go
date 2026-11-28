@@ -41,6 +41,7 @@ func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
+	server.RegisterMasterEnvironmentAlias("0p38pssr0fi3")
 	server.SetSpaceEnablements("0p38pssr0fi3", cm.SpaceEnablementData{
 		CrossSpaceLinks: cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
 		SpaceTemplates:  cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
@@ -132,6 +133,7 @@ func TestAccSpaceEnablementsResourceRetransmitsImportedKnownValues(t *testing.T)
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
+	server.RegisterMasterEnvironmentAlias("space")
 	server.SetSpaceEnablements("space", cm.SpaceEnablementData{
 		CrossSpaceLinks: cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
 		SpaceTemplates:  cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
