@@ -33,8 +33,7 @@ func TestAccAppActionResourceLifecycle(t *testing.T) {
 
 	const organization = "2zuSjSO4A0e6GKBrhJRe2m"
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	endpoint, token := cm.DefaultServerURL, os.Getenv("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN")
 	if os.Getenv("TF_ACC_MOCKED") != "" {

@@ -77,8 +77,7 @@ func TestPreviewEnvironmentMutationConsistencyErrorCheckpointsResponseStateIdent
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "master")
 
 			if test.setup != nil {

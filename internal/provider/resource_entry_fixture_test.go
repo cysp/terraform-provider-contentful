@@ -45,8 +45,7 @@ type entryTestFixture struct {
 func newEntryAcceptanceFixture(t *testing.T) *entryTestFixture {
 	t.Helper()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	errorSink := new(entryFixtureErrorSink)

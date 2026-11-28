@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -19,8 +18,7 @@ import (
 func TestAccResourceTypeResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"organization_id":   config.StringVariable("organization-id"),
@@ -77,8 +75,7 @@ func TestAccResourceTypeResourceLifecycle(t *testing.T) {
 func TestAccResourceTypeResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"organization_id":   config.StringVariable("organization-id"),

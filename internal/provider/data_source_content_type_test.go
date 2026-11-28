@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -15,16 +14,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAccContentTypeDataSourcesComposition(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
-	server.RegisterSpaceEnvironment("space", "master")
-	server.SetContentType("space", "master", "article", cm.ContentTypeRequestData{
+	server := newTestCMAServer(t)
+	targetID := server.RegisterMasterEnvironmentAlias("space")
+	server.SetContentType("space", targetID, "article", cm.ContentTypeRequestData{
 		Name:         "Article",
 		DisplayField: "title",
 		Fields: []cm.ContentTypeRequestDataFieldsItem{{

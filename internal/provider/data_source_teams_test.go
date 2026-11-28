@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/stretchr/testify/require"
 )
 
 var errUnexpectedTeamListRequestCount = errors.New("unexpected team-list request count")
@@ -31,8 +30,7 @@ var errUnexpectedTeamListRequestCount = errors.New("unexpected team-list request
 func TestAccTeamsDataSourceRead(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	organizationID := "2zuSjSO4A0e6GKBrhJRe2m"
 
@@ -68,8 +66,7 @@ func TestAccTeamsDataSourceRead(t *testing.T) {
 func TestAccTeamsDataSourceEmpty(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	organizationID := "2zuSjSO4A0e6GKBrhJRe2m"
 
@@ -260,8 +257,7 @@ func TestAccTeamsDataSourcePaginationWithoutTotal(t *testing.T) {
 func TestAccTeamsDataSourceAssignment(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	organizationID := "2zuSjSO4A0e6GKBrhJRe2m"
 

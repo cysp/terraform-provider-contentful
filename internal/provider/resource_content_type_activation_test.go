@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -20,8 +19,7 @@ import (
 func TestAccContentTypeResourceCreateUsesExactPositiveReturnedVersion(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	offset := &contentTypeVersionOffsetAdapter{delegate: server, offset: 3}
 	handler := &contentTypeActivationTestHandler{delegate: offset}
@@ -89,8 +87,7 @@ func TestAccContentTypeResourceCreateUsesExactPositiveReturnedVersion(t *testing
 func TestAccContentTypeResourceUpdateUsesExactArbitraryPositiveReturnedVersion(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	offset := &contentTypeVersionOffsetAdapter{delegate: server, jumpOnDraftUpdate: 40}
 	handler := &contentTypeActivationTestHandler{delegate: offset}
@@ -127,8 +124,7 @@ func TestAccContentTypeResourceUpdateUsesExactArbitraryPositiveReturnedVersion(t
 func TestAccContentTypeResourceHigherPostActivationVersionIsAccepted(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	higher := &contentTypeHigherPostActivationVersionAdapter{delegate: server, server: server}
 	handler := &contentTypeActivationTestHandler{delegate: higher}
@@ -176,8 +172,7 @@ func TestAccContentTypeResourceHigherPostActivationVersionIsAccepted(t *testing.
 func TestAccContentTypeResourceInitialActivationVersionMismatchRevokesAuthority(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("initial-activation-version-mismatch")
@@ -243,8 +238,7 @@ func TestAccContentTypeResourceDoesNotActivateContradictoryDraftPutResponse(t *t
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "environment")
 			handler := &contentTypeActivationTestHandler{delegate: server}
 			variables := contentTypeActivationConfigVariables("contradictory-put-response-" + strings.ReplaceAll(name, " ", "-"))
@@ -276,8 +270,7 @@ func TestAccContentTypeResourceDoesNotActivateContradictoryDraftPutResponse(t *t
 func TestAccContentTypeResourceContradictoryCreateActivationRevokesRecoveryAuthority(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	handler.mutateActivationResponse = contentTypeResponseMutator(t, removeContentTypePublishedVersion)
@@ -321,8 +314,7 @@ func TestAccContentTypeResourceContradictoryCreateActivationRevokesRecoveryAutho
 func TestAccContentTypeResourceRejectsContradictoryPutUpdateActivationPublication(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("contradictory-put-update-activation-publication")
@@ -357,8 +349,7 @@ func TestAccContentTypeResourceRejectsContradictoryPutUpdateActivationPublicatio
 func TestAccContentTypeResourceNonAdvancingActivationResponseRevokesAuthority(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("nonadvancing-activation-response")

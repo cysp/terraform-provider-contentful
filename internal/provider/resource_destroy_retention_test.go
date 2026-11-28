@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -35,8 +34,7 @@ resource "contentful_space_enablements" "test" {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "master")
 			server.SetContentType("space", "master", "type", cm.ContentTypeRequestData{Name: "Type"})
 			server.SetEditorInterface("space", "master", "type", cm.EditorInterfaceData{})

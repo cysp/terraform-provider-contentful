@@ -130,8 +130,7 @@ func waitForPreviewEnvironmentDeletion(ctx context.Context, t *testing.T, client
 func TestAccPreviewEnvironmentResourceLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 	name := "acctest_preview_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -239,8 +238,7 @@ func TestAccPreviewEnvironmentResourceLifecycle(t *testing.T) {
 func TestAccPreviewEnvironmentResourceSelectedID(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 	previewEnvironmentID := "acctest-preview-" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -299,8 +297,7 @@ func TestAccPreviewEnvironmentResourceSelectedID(t *testing.T) {
 func TestAccPreviewEnvironmentResourceRejectsEmptyContentTypeID(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 	testAccMockableResource(t, server, resource.TestCase{
@@ -316,8 +313,7 @@ func TestAccPreviewEnvironmentResourceRejectsEmptyContentTypeID(t *testing.T) {
 func TestAccPreviewEnvironmentResourceMapOrderIsIgnored(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 	resourceName := "acctest_preview_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -342,8 +338,7 @@ func TestAccPreviewEnvironmentResourceMapOrderIsIgnored(t *testing.T) {
 func TestAccPreviewEnvironmentResourceOutOfBandDeletionRecreates(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 	resourceName := "acctest_preview_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -391,8 +386,7 @@ func TestAccPreviewEnvironmentResourceOutOfBandDeletionRecreates(t *testing.T) {
 func TestAccPreviewEnvironmentResourceStaleVersionConflict(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 	previewEnvironmentID := "acctest-preview-" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -509,8 +503,7 @@ func TestAccPreviewEnvironmentResourceGeneratedIDReplacement(t *testing.T) {
 		t.Run(fmt.Sprintf("create_before_destroy=%t", createBeforeDestroy), func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 			configuration := fmt.Sprintf(`
@@ -546,8 +539,7 @@ resource "contentful_preview_environment" "test" {
 func TestAccPreviewEnvironmentResourceVersionedConfigurationDelta(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 	var (

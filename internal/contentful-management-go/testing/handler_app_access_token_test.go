@@ -219,13 +219,19 @@ func checkAppAccessTokenPermissions(t *testing.T, server *cmt.Server, token stri
 	for _, bearer := range []string{token, cmt.ValidAccessToken} {
 		result := readAliasEntry(bearer)
 		assert.Equal(t, entry.Sys.ID, result.Sys.ID)
+		assert.Equal(t, "editorial", result.Sys.Environment.Sys.ID)
 		assert.Equal(t, entry.Fields, result.Fields)
 	}
 
 	entryPath := environment + "/entries/" + entry.Sys.ID
-	publish := httptest.NewRequestWithContext(t.Context(), http.MethodPut, entryPath+"/published", nil)
+	publish := httptest.NewRequestWithContext(t.Context(), http.MethodPut, aliasEntryPath+"/published", nil)
 	publish.Header.Set("X-Contentful-Version", "1")
-	appIdentityHTTP(t, server, publish, token, http.StatusOK)
+	publishedResponse := appIdentityHTTP(t, server, publish, token, http.StatusOK)
+
+	var published cm.Entry
+	require.NoError(t, json.NewDecoder(publishedResponse.Body).Decode(&published))
+	assert.Equal(t, "editorial", published.Sys.Environment.Sys.ID)
+	assert.Equal(t, entry.Sys.ID, published.Sys.ID)
 	request(http.MethodDelete, entryPath+"/published", token, http.StatusOK)
 	request(http.MethodDelete, entryPath, token, http.StatusNoContent)
 

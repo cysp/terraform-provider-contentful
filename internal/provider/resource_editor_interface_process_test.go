@@ -17,8 +17,7 @@ func TestAccEditorInterfaceResourceProviderProcesses(t *testing.T) {
 	t.Parallel()
 
 	runtime := newTerraformTestRuntime(t)
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &editorInterfaceRequestRecorder{next: server}
 	httpServer := httptest.NewServer(handler)

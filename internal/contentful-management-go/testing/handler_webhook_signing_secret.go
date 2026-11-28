@@ -12,7 +12,7 @@ func (ts *Handler) GetWebhookSigningSecret(_ context.Context, params cm.GetWebho
 	defer ts.mu.Unlock()
 
 	// The master environment is the mock's existing space-presence fixture.
-	if ts.environments.Get(params.SpaceID, "master") == nil {
+	if !ts.hasMasterEnvironment(params.SpaceID) {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
@@ -29,7 +29,7 @@ func (ts *Handler) PutWebhookSigningSecret(_ context.Context, req *cm.WebhookSig
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, "master") == nil {
+	if !ts.hasMasterEnvironment(params.SpaceID) {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
@@ -60,7 +60,7 @@ func (ts *Handler) DeleteWebhookSigningSecret(_ context.Context, params cm.Delet
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, "master") == nil {
+	if !ts.hasMasterEnvironment(params.SpaceID) {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 

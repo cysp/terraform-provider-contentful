@@ -48,10 +48,8 @@ comparison does not establish universal equivalence across these families.
 Content Type detail and ordinary collection reads address the current CMA
 model. The [activated collection][activated-content-types] is a distinct
 `/public/content_types` endpoint that ignores changes since the last
-activation. Published examples do not establish how Content Type
-`sys.environment` is represented on an alias-routed response. The [environment
-alias guide][alias-guide] establishes routing for environment-aware resources,
-not a Content Type-specific response-link guarantee.
+activation. For the Content Type environment link in a recorded CMA detail GET
+through an alias, see [Entry and Content Type detail reads](environment-aliases.md#entry-and-content-type-detail-reads).
 
 On 2026-07-14, direct reads with a personal management token returned `200` from
 `/spaces/{space_id}/environments/{environment_id}/public/content_types`. The
@@ -89,4 +87,3 @@ Their projections are client behavior, not raw response schemas.
 [content-type]: https://www.contentful.com/developers/docs/references/content-management-api/content-types/get-a-content-type/
 [content-types]: https://www.contentful.com/developers/docs/references/content-management-api/content-types/get-all-content-types-of-a-space/
 [activated-content-types]: https://www.contentful.com/developers/docs/references/content-management-api/content-types/get-all-activated-content-types-of-a-space/
-[alias-guide]: https://www.contentful.com/developers/docs/concepts/environment-aliases/

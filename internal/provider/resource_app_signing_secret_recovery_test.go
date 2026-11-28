@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/stretchr/testify/assert"
@@ -18,8 +17,7 @@ import (
 func TestAppSigningSecretLostAcknowledgement(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
 	puts := &appSigningSecretPutRecorder{handler: server}
 

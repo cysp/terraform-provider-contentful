@@ -33,7 +33,11 @@ Record HTTP handler and worker errors and check them in the test goroutine after
 
 Acceptance tests run Terraform CLI through `resource.Test`. Use the shared
 provider harness to configure a local API server or the live Contentful
-account. A provider factory creates a fresh provider instance per invocation.
+account. In `provider_test`, `newTestCMAServer(t, options...)` creates an empty server
+with the provider suite's rate limit. Seed the Space and Environment layout
+each scenario needs. Use the [master alias fixture](design/cma-test-server-conformance.md#environment-aliases)
+for an alias-enabled Space.
+A provider factory creates a fresh provider instance per invocation.
 Call `parallelWhenMocked(t)` for tests that support either mode; mock-only tests
 can use `t.Parallel()` directly. This keeps the library's execution lifecycle
 while preserving the repository's live account serialization requirement.

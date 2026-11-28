@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"testing"
 
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -14,14 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/stretchr/testify/require"
 )
 
+//nolint:paralleltest
 func TestAccDeliveryAPIKeyResourceLifecycle(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -90,11 +88,11 @@ func TestAccDeliveryAPIKeyResourceLifecycle(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccDeliveryAPIKeyResourceImportNotFound(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	apiKeyName := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 

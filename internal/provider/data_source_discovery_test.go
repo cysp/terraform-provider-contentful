@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -32,31 +31,31 @@ func discoveryAcceptanceFixture(t *testing.T, name string) []byte {
 func TestAccDiscoveryDataSourcesComposition(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	var space cm.Space
 	require.NoError(t, json.Unmarshal(discoveryAcceptanceFixture(t, "space"), &space))
 	space.Sys.ID = "space"
 	server.SetSpace(space)
-	server.RegisterSpaceEnvironment("space", "master")
-	server.RegisterSpaceEnvironment("space", "target")
-	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData("space", "master", cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink("target")}))
+	targetID := server.RegisterMasterEnvironmentAlias("space")
 
 	var locale cm.Locale
 	require.NoError(t, json.Unmarshal(discoveryAcceptanceFixture(t, "locale"), &locale))
-	locale.Sys.Environment = cm.NewEnvironmentLink("target")
+	locale.Sys.Environment = cm.NewEnvironmentLink(targetID)
 	server.SetLocale(locale)
-	server.SetContentType("space", "target", "article", cm.ContentTypeRequestData{Name: "Article", Fields: []cm.ContentTypeRequestDataFieldsItem{}})
+	server.SetContentType("space", targetID, "article", cm.ContentTypeRequestData{Name: "Article", Fields: []cm.ContentTypeRequestDataFieldsItem{}})
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{ConfigDirectory: config.TestNameDirectory(), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectUnknownValue("data.contentful_space.test", tfjsonpath.New("space_id")), plancheck.ExpectUnknownValue("data.contentful_locale.test", tfjsonpath.New("code"))}}, ConfigStateChecks: []statecheck.StateCheck{
 			statecheck.ExpectKnownValue("data.contentful_space.test", tfjsonpath.New("organization_id"), knownvalue.StringExact("org")),
 			statecheck.ExpectKnownValue("data.contentful_spaces.test", tfjsonpath.New("spaces"), knownvalue.ListSizeExact(1)),
-			statecheck.ExpectKnownValue("data.contentful_environment.test", tfjsonpath.New("environment_id"), knownvalue.StringExact("target")),
+			statecheck.ExpectKnownValue("data.contentful_environment.test", tfjsonpath.New("environment_id"), knownvalue.StringExact("master-1970-01-01")),
 			statecheck.ExpectKnownValue("data.contentful_environment.test", tfjsonpath.New("aliased_environment_id"), knownvalue.Null()),
-			statecheck.ExpectKnownValue("data.contentful_environments.test", tfjsonpath.New("environments"), knownvalue.ListSizeExact(2)),
-			statecheck.ExpectKnownValue("data.contentful_environment_alias.test", tfjsonpath.New("target_environment_id"), knownvalue.StringExact("target")),
+			statecheck.ExpectKnownValue("data.contentful_environments.test", tfjsonpath.New("environments"), knownvalue.ListSizeExact(1)),
+			statecheck.ExpectKnownValue("data.contentful_environments.test", tfjsonpath.New("environments").AtSliceIndex(0).AtMapKey("environment_id"), knownvalue.StringExact("master-1970-01-01")),
+			statecheck.ExpectKnownValue("data.contentful_environment_alias.test", tfjsonpath.New("target_environment_id"), knownvalue.StringExact("master-1970-01-01")),
 			statecheck.ExpectKnownValue("data.contentful_environment_aliases.test", tfjsonpath.New("environment_aliases"), knownvalue.ListSizeExact(1)),
+			statecheck.ExpectKnownValue("data.contentful_environment_aliases.test", tfjsonpath.New("environment_aliases").AtSliceIndex(0).AtMapKey("environment_alias_id"), knownvalue.StringExact("master")),
+			statecheck.ExpectKnownValue("data.contentful_environment_aliases.test", tfjsonpath.New("environment_aliases").AtSliceIndex(0).AtMapKey("target_environment_id"), knownvalue.StringExact("master-1970-01-01")),
 			statecheck.ExpectKnownValue("data.contentful_locales.test", tfjsonpath.New("locales").AtSliceIndex(0).AtMapKey("locale_id"), knownvalue.StringExact("item-b")),
 			statecheck.ExpectKnownValue("data.contentful_locale.test", tfjsonpath.New("code"), knownvalue.StringExact("en-GB")),
 			statecheck.ExpectKnownValue("data.contentful_locale.test", tfjsonpath.New("fallback_code"), knownvalue.Null()),

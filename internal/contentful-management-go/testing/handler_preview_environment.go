@@ -12,7 +12,7 @@ func (ts *Handler) CreatePreviewEnvironment(_ context.Context, req *cm.PreviewEn
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, "master") == nil {
+	if !ts.hasMasterEnvironment(params.SpaceID) {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
@@ -44,7 +44,7 @@ func (ts *Handler) PutPreviewEnvironment(_ context.Context, req *cm.PreviewEnvir
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, "master") == nil {
+	if !ts.hasMasterEnvironment(params.SpaceID) {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 

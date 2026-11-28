@@ -34,13 +34,13 @@ var (
 func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
 	}
 
+	server.RegisterMasterEnvironmentAlias("0p38pssr0fi3")
 	server.SetSpaceEnablements("0p38pssr0fi3", cm.SpaceEnablementData{
 		CrossSpaceLinks: cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
 		SpaceTemplates:  cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
@@ -63,8 +63,7 @@ func TestAccSpaceEnablementsResourceImport(t *testing.T) {
 func TestAccSpaceEnablementsResourceRejectsOneSidedCreate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	recorder := &spaceEnablementsPutRecorder{next: server}
@@ -82,8 +81,7 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedCreate(t *testing.T) {
 func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConverges(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	recorder := &spaceEnablementsPutRecorder{next: server}
@@ -130,8 +128,8 @@ func TestAccSpaceEnablementsResourceRejectsOneSidedUpdateWithoutMutationAndConve
 func TestAccSpaceEnablementsResourceRetransmitsImportedKnownValues(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
+	server.RegisterMasterEnvironmentAlias("space")
 	server.SetSpaceEnablements("space", cm.SpaceEnablementData{
 		CrossSpaceLinks: cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
 		SpaceTemplates:  cm.NewOptSpaceEnablementField(cm.SpaceEnablementField{Enabled: true}),
@@ -334,8 +332,7 @@ func requireStoredSpaceEnablementsFields(
 func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
@@ -358,8 +355,7 @@ func TestAccSpaceEnablementsResourceImportNotFound(t *testing.T) {
 func TestAccSpaceEnablementsResourceCreateUpdateDelete(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 

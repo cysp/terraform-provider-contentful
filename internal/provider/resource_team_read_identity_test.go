@@ -91,8 +91,7 @@ func TestAccTeamResourceImportRejectsContradictoryReadIdentity(t *testing.T) {
 func teamReadIdentityRuntime(t *testing.T) (*cmt.Server, *mutationJSONResponseAdapter, *terraformTestRuntime) {
 	t.Helper()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	adapter := &mutationJSONResponseAdapter{delegate: server}
 	httpServer := httptest.NewServer(adapter)

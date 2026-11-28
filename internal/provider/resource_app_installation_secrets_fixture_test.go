@@ -44,8 +44,7 @@ type appInstallationSecretRequest struct {
 func newAppInstallationSecretFixture(t *testing.T) *appInstallationSecretFixture {
 	t.Helper()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	server.SetAppDefinition("organization", "app", cm.AppDefinitionData{
 		Name: "App",

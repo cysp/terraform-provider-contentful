@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/require"
 )
@@ -20,8 +19,7 @@ func TestAccEditorInterfaceResourceCreateAfterFirstActivationRecovery(t *testing
 		t.Run(fmt.Sprintf("no_refresh=%t", noRefresh), func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "environment")
 			activation := &contentTypeActivationTestHandler{delegate: server}
 			activation.failActivation.Store(true)
@@ -50,8 +48,7 @@ func TestAccEditorInterfaceResourceCreateAfterFirstActivationRecovery(t *testing
 func TestAccEditorInterfaceResourceCreateAfterImportedDraftActivation(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetContentType("space", "environment", "editor-offset", cm.ContentTypeRequestData{
 		Name: "Offset", Description: cm.NewOptNilString("initial"), DisplayField: "name",
 		Fields: []cm.ContentTypeRequestDataFieldsItem{{ID: "name", Name: "Name", Type: "Symbol"}},
@@ -79,8 +76,7 @@ func TestAccEditorInterfaceResourceUpdateAfterActivationRecovery(t *testing.T) {
 		t.Run(fmt.Sprintf("no_refresh=%t", noRefresh), func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "environment")
 			activation := &contentTypeActivationTestHandler{delegate: server}
 			handler := &editorInterfaceRequestRecorder{next: activation}

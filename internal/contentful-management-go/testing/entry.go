@@ -29,7 +29,9 @@ func publishEntry(entry *cm.Entry) {
 	entry.Sys.Version++
 }
 
-func projectEntryResponse(entry cm.Entry) cm.Entry {
+func projectEntryResponse(entry cm.Entry, environmentID string) cm.Entry {
+	entry.Sys.Environment.Sys.ID = environmentID
+
 	fields, ok := entry.Fields.Get()
 	if !ok {
 		return entry

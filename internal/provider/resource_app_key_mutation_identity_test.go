@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -23,8 +22,7 @@ import (
 func TestAccAppKeyResourceIdentityContradictionRetainsSuppliedKey(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 
 	requested := testAccAppKeyJWKFromDER(bytes.Repeat([]byte{1}, 600))

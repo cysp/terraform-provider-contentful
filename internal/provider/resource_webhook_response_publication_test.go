@@ -28,8 +28,7 @@ func webhookPublicationRuntime(t *testing.T) (*terraformTestRuntime, *mutationJS
 	t.Helper()
 
 	runtime := newTerraformTestRuntime(t)
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	server.SetWebhookDefinition("space", "existing", cm.WebhookDefinitionData{
 		Name: "Existing", URL: "https://example.com/webhook", Topics: []string{"Entry.publish"}, Active: cm.NewOptBool(true),

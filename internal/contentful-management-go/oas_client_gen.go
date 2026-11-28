@@ -2119,7 +2119,10 @@ func (c *Client) sendCreateOrUpdateEnvironmentAlias(ctx context.Context, request
 			Explode: false,
 		}
 		if err := h.EncodeParam(cfg, func(e uri.Encoder) error {
-			return e.EncodeValue(conv.IntToString(params.XContentfulVersion))
+			if val, ok := params.XContentfulVersion.Get(); ok {
+				return e.EncodeValue(conv.IntToString(val))
+			}
+			return nil
 		}); err != nil {
 			return res, errors.Wrap(err, "encode header")
 		}

@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -22,8 +21,7 @@ type webhookPlanCheck func(*tfjson.Plan)
 func newWebhookDelegationFixture(t *testing.T) *webhookSecretRecoveryFixture {
 	t.Helper()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	return &webhookSecretRecoveryFixture{server: server}

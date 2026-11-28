@@ -2,6 +2,7 @@ package cmtesting
 
 import (
 	"context"
+	"maps"
 	"net/http"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
@@ -12,8 +13,12 @@ func (ts *Handler) CreateOrUpdateEnvironment(_ context.Context, req *cm.Environm
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, "master") == nil {
+	if !ts.hasMasterEnvironment(params.SpaceID) {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
+	}
+
+	if ts.environmentAliases.Get(params.SpaceID, params.EnvironmentID) != nil {
+		return NewContentfulManagementErrorStatusCodeConflict(nil, nil), nil
 	}
 
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
@@ -72,14 +77,31 @@ func (ts *Handler) DeleteEnvironment(_ context.Context, params cm.DeleteEnvironm
 	defer ts.mu.Unlock()
 
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
+	if params.EnvironmentID == "master" && (environment != nil || ts.environmentAliases.Get(params.SpaceID, "master") != nil) {
+		return NewContentfulManagementErrorStatusCodeValidationFailed(new("Cannot delete the master environment or alias"), nil), nil
+	}
+
 	if environment == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
-	for _, locale := range ts.locales.List(params.SpaceID, params.EnvironmentID) {
-		ts.locales.Delete(params.SpaceID, params.EnvironmentID, locale.Sys.ID)
+	for _, alias := range ts.environmentAliases.List(params.SpaceID) {
+		if alias.Environment.Sys.ID == params.EnvironmentID {
+			return NewContentfulManagementErrorStatusCodeValidationFailed(new("Cannot delete an environment targeted by an alias"), nil), nil
+		}
 	}
 
+	ts.locales.DeleteEnvironment(params.SpaceID, params.EnvironmentID)
+	ts.appInstallations.DeleteEnvironment(params.SpaceID, params.EnvironmentID)
+	maps.DeleteFunc(ts.appAccessTokens, func(_ string, token issuedAppAccessToken) bool {
+		return token.installation.SpaceID == params.SpaceID && token.installation.EnvironmentID == params.EnvironmentID
+	})
+	ts.contentTypes.DeleteEnvironment(params.SpaceID, params.EnvironmentID)
+	ts.contentTypePublications.DeleteEnvironment(params.SpaceID, params.EnvironmentID)
+	ts.editorInterfaces.DeleteEnvironment(params.SpaceID, params.EnvironmentID)
+	ts.entries.DeleteEnvironment(params.SpaceID, params.EnvironmentID)
+	ts.extensions.DeleteEnvironment(params.SpaceID, params.EnvironmentID)
+	ts.tags.DeleteEnvironment(params.SpaceID, params.EnvironmentID)
 	ts.environments.Delete(params.SpaceID, params.EnvironmentID)
 	ts.livePreviewVariables.Delete(params.SpaceID, params.EnvironmentID)
 

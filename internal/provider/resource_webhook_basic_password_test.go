@@ -89,8 +89,7 @@ func (rawWebhookPasswordOmissionHandler) ServeHTTP(responseWriter http.ResponseW
 func TestAccWebhookResourceBasicPasswordLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	passwordPath := tfjsonpath.New("http_basic_password")
@@ -131,8 +130,7 @@ func TestAccWebhookResourceBasicPasswordLifecycle(t *testing.T) {
 func TestAccWebhookResourceBasicPasswordDelegationAfterImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	server.SetWebhookDefinition("space", "imported-webhook", cm.WebhookDefinitionData{
 		Name:              "Imported webhook",
@@ -231,8 +229,7 @@ func TestAccWebhookResourceBasicPasswordDelegationAfterImport(t *testing.T) {
 func TestAccWebhookResourceImportBlockClearsOmittedBasicCredentials(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	recorder := &taxonomyRequestBodyRecorder{next: server}
 	server.SetWebhookDefinition("space", "existing", cm.WebhookDefinitionData{
@@ -259,8 +256,7 @@ import {
 func TestAccWebhookResourceBasicPasswordIgnoreChangesUsesEffectivePlan(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
@@ -285,8 +281,7 @@ func TestAccWebhookResourceBasicPasswordIgnoreChangesUsesEffectivePlan(t *testin
 func TestAccWebhookResourceIncompleteBasicCredentialsOnCreate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	counter := &webhookCreateCounter{next: server}
 	testAccMockedResource(t, counter, resource.TestCase{Steps: []resource.TestStep{
@@ -345,8 +340,7 @@ func checkStoredWebhookPassword(server *cmt.Server, expected cm.OptNilString) re
 func newWebhookBasicTestServer(t *testing.T) (*cmt.Server, *taxonomyRequestBodyRecorder, *mutationJSONResponseAdapter) {
 	t.Helper()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	recorder := &taxonomyRequestBodyRecorder{next: server}
 

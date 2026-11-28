@@ -9,12 +9,23 @@ import (
 	"sync"
 	"testing"
 
+	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/require"
 )
+
+func newTestCMAServer(t *testing.T, options ...cmt.ServerOption) *cmt.Server {
+	t.Helper()
+
+	options = append([]cmt.ServerOption{cmt.WithRateLimitPerSecond(1000)}, options...)
+	server, err := cmt.NewContentfulManagementServer(options...)
+	require.NoError(t, err)
+
+	return server
+}
 
 func makeTestAccProtoV6ProviderFactories(options ...Option) map[string]func() (tfprotov6.ProviderServer, error) {
 	return map[string]func() (tfprotov6.ProviderServer, error){
@@ -70,7 +81,8 @@ func testAccResource(t *testing.T, handler http.Handler, alwaysMock bool, testca
 		}
 
 		var testserver *httptest.Server
-		if handler != nil {
+		// resource.Test validates the case before skipping when TF_ACC is unset.
+		if handler != nil && (os.Getenv(resource.EnvTfAcc) != "" || testcase.IsUnitTest) {
 			testserver = httptest.NewServer(handler)
 			t.Cleanup(testserver.Close)
 		}
@@ -101,7 +113,7 @@ func testProviderOptionsWithHTTPServer(testserver *httptest.Server) []Option {
 	return []Option{
 		WithContentfulURL(testserver.URL),
 		WithHTTPClient(testserver.Client()),
-		WithAccessToken("CFPAT-12345"),
+		WithAccessToken(cmt.ValidAccessToken),
 	}
 }
 

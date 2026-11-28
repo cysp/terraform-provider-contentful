@@ -12,7 +12,7 @@ func (ts *Handler) CreateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequest
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, "master") == nil {
+	if !ts.hasMasterEnvironment(params.SpaceID) {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
@@ -55,7 +55,7 @@ func (ts *Handler) UpdateDeliveryAPIKey(_ context.Context, req *cm.ApiKeyRequest
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, "master") == nil {
+	if !ts.hasMasterEnvironment(params.SpaceID) {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 

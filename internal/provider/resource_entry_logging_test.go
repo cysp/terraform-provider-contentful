@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,8 +21,7 @@ func TestAccEntryResourceLifecycleLogsExcludeContent(t *testing.T) {
 			t.Parallel()
 
 			runtime := newTerraformTestRuntime(t)
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("log-space", "master")
 			testServer := httptest.NewServer(server)
 			t.Cleanup(testServer.Close)

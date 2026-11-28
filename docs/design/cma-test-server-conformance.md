@@ -40,6 +40,63 @@ storage; callers must not mutate that storage while the server retains it.
 
 A passing mock test establishes how the provider behaves against that fixture. For a claim about Contentful, use the published contract or the scoped service observations linked under the endpoint.
 
+### Environment aliases
+
+Each child request resolves its environment address once. An app request uses
+the target selected during authorization, even if the alias moves before the
+handler runs. Management requests and direct handler calls resolve the address
+while holding the handler lock.
+Parent checks, version checks, reads, writes and lifecycle side effects use the
+selected concrete environment in that Space. Each returned child's own
+`sys.environment.sys.id` carries the address from the request, including in
+collection items and mutation responses. Stored fixtures keep their concrete
+environment identity. An Environment read through an alias has its own
+`sys.aliasedEnvironment` link, and an EnvironmentAlias document identifies its
+target in its top-level `environment` link.
+
+This applies to Entries, Content Types, Editor Interfaces, Locales, Tags, UI
+Extensions, App Installations and Live Preview Variables. The
+[alias research](../research/environment-aliases.md) records which response
+shapes have been observed. Applying the same child projection to the remaining
+operations is a fixture inference. A later request observes a retarget
+immediately in the fake. Service propagation time is unverified.
+
+The fake rejects deletion of a [targeted environment][alias-targets] and of the
+[master environment or alias][master-deletion] before changing stored data. It
+uses HTTP 422 with `ValidationFailed` for these refusals. The documentation
+specifies the restriction and leaves the error representation open. Deleting an
+eligible environment discards its child fixtures, Content Type publication history
+and issued tokens scoped to that environment. Recreating the same ID starts empty.
+Clearing those tokens on deletion is a fixture lifecycle convention.
+
+Handlers that use `master` to recognize a Space accept either a concrete
+`master` or a `master` alias whose target exists in the same Space. New servers
+start without either. `RegisterMasterEnvironmentAlias(spaceID)` seeds a ready
+`master-1970-01-01` Environment and the `master` alias. Use it in a Space without
+a concrete `master`, before seeding children to be read through `master`. Seed
+those children under the returned concrete ID. `SetSpace` seeds the Space
+document for discovery. `SetSpaceEnablements` seeds only the enablements.
+
+Creating a custom alias requires a `master` alias with a concrete target in
+the same Space. With a concrete `master`, a PUT at a free alias ID returns
+HTTP 403 with `sys.id = EnvironmentAliasNotOptedIn` before target lookup, as
+[observed in the example Space](../research/environment-aliases.md#custom-alias-creation-before-opt-in).
+The fake models opt-in independently of subscription limits.
+
+A caller can omit `X-Contentful-Version` when creating an alias. Retargeting
+an existing alias requires its current version. The fake returns HTTP 409
+`VersionMismatch` for an absent or stale version on update.
+[CMA alias PUT reference](https://www.contentful.com/developers/docs/references/content-management-api/environment-aliases/create-or-update-an-environment-alias/)
+· [SDK creation and update requests](https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/environment-alias.ts#L47-L72)
+
+The fake reserves Environment and Environment Alias IDs in the same namespace
+within a Space. A PUT using an ID occupied by the other kind returns HTTP 409
+with `sys.id = Conflict` and preserves both collections. This models an ID
+collision. The exact live CMA response to either PUT is unverified.
+
+[alias-targets]: https://www.contentful.com/developers/docs/references/content-management-api/environment-aliases/#creating-environment-aliases
+[master-deletion]: https://www.contentful.com/developers/docs/concepts/multiple-environments/#environments-technical-limitations
+
 ### App Definition parent scope
 
 The [App Framework endpoint map](../research/app-framework/README.md#api-inventory)
@@ -69,10 +126,12 @@ Content Type, Editor Interface, Entry, Tag and Locale operations. It also permit
 reading the app's own installation, including its Secret parameters. Updating or
 deleting the installation returns HTTP 403. Reading an App Definition returns
 404, and reading a Space or Environment returns 401. Other operations are denied
-by default. For these environment resources, app and management requests through
-an alias use the same target. Each request resolves the target once, and app
-authorization uses that target. Locale and App Installation responses echo the
-[addressed environment](../research/environment-aliases.md#direct-read-observations).
+by default. App requests follow the shared [environment alias routing](#environment-aliases).
+
+A standalone uninstall in the fake removes the App Installation but retains its
+issued tokens until expiry. Contentful documents [loss of access on uninstall](https://www.contentful.com/help/apps/apps-across-spaces/#how-to-uninstall-an-app).
+The behavior of a previously issued bearer immediately after uninstall has not
+been verified against the live CMA.
 
 See the [App Identity permission observations](../research/app-framework/identity.md#app-access-token-permissions)
 for the operations exercised against Contentful. Locale writes follow the
@@ -93,10 +152,8 @@ DELETE return the observed 500. Rejected writes preserve values and versions.
 Fallback checks reject missing/cyclic targets, non-null default fallbacks, and
 referenced-target renames/deletion. Delivery-disabled nondefault targets are
 rejected; the observed default exception is retained. Exact errors for unprobed
-nondefault restrictions are fixture conventions. Alias mutations reuse the
-existing Locale read routing; echoing the addressed environment in mutation
-responses is inferred from reads, not live mutation evidence. Parent deletion
-removes Locale fixtures. Reads require an existing parent environment.
+nondefault restrictions are fixture conventions. Reads require an existing
+parent environment.
 Positive pagination and zero-limit defaulting are modeled; ID ordering remains
 a fixture convention.
 
@@ -165,8 +222,8 @@ status/shape observations.
 and 200 for replacement. Both include a Space link and the final four characters
 of the secret, without `sys.version`. Conditional headers do not prevent
 PUT/DELETE. DELETE returns 204.
-The fake stores only the redacted representation. A registered `master` Environment
-stands in for space presence; a missing parent returns 404 `NotFound`. GET and
+The fake stores only the redacted representation. It uses the shared
+[Space parent check](#environment-aliases). A missing parent returns 404 `NotFound`. GET and
 DELETE also return 404 `NotFound` when the secret is absent.
 Malformed JSON returns 400 `BadRequest`; empty bodies and invalid values return
 422 `ValidationFailed`. The existing decoder-error handler maps these failures
@@ -491,7 +548,7 @@ BMP/astral examples; combining-sequence and grapheme semantics remain unverified
 Missing-parent PUT/DELETE and cleanup after environment deletion are mock lifecycle
 conventions, not observations from the variables probes.
 
-Alias routing, response update metadata, HEAD, trailing-slash GET, and service-style
+Response update metadata, HEAD, trailing-slash GET, and service-style
 404 responses for POST/PATCH and the space-level route are not modeled. Generated
 handler errors use ordinary JSON, including conflicts; independent client fixtures
 cover vendor-JSON decoding. Whole non-object request bodies receive generated

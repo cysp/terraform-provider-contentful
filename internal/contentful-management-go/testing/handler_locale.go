@@ -14,7 +14,7 @@ func (ts *Handler) CreateLocale(ctx context.Context, req *cm.LocaleData, params 
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	environmentID, addressedID := ts.localeEnvironmentIDs(ctx, params.SpaceID, params.EnvironmentID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
 
 	if ts.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
@@ -35,7 +35,7 @@ func (ts *Handler) CreateLocale(ctx context.Context, req *cm.LocaleData, params 
 
 	return snapshotResponse(&cm.LocaleStatusCode{
 		StatusCode: http.StatusCreated,
-		Response:   projectLocaleResponse(newLocale, addressedID),
+		Response:   projectLocaleResponse(newLocale, params.EnvironmentID),
 	}), nil
 }
 
@@ -44,7 +44,7 @@ func (ts *Handler) PutLocale(ctx context.Context, req *cm.LocaleData, params cm.
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	environmentID, addressedID := ts.localeEnvironmentIDs(ctx, params.SpaceID, params.EnvironmentID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
 
 	if ts.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
@@ -61,7 +61,7 @@ func (ts *Handler) PutLocale(ctx context.Context, req *cm.LocaleData, params cm.
 
 	// CMA accepts identical PUTs with stale or future versions.
 	if localeDataEqual(locale, req) {
-		return snapshotResponse(&cm.LocaleStatusCode{StatusCode: http.StatusOK, Response: projectLocaleResponse(*locale, addressedID)}), nil
+		return snapshotResponse(&cm.LocaleStatusCode{StatusCode: http.StatusOK, Response: projectLocaleResponse(*locale, params.EnvironmentID)}), nil
 	}
 
 	if params.XContentfulVersion != locale.Sys.Version.Or(0) {
@@ -86,7 +86,7 @@ func (ts *Handler) PutLocale(ctx context.Context, req *cm.LocaleData, params cm.
 
 	return snapshotResponse(&cm.LocaleStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   projectLocaleResponse(*locale, addressedID),
+		Response:   projectLocaleResponse(*locale, params.EnvironmentID),
 	}), nil
 }
 
@@ -95,7 +95,7 @@ func (ts *Handler) DeleteLocale(ctx context.Context, params cm.DeleteLocaleParam
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	environmentID, _ := ts.localeEnvironmentIDs(ctx, params.SpaceID, params.EnvironmentID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
 
 	if ts.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil

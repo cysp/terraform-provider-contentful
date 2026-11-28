@@ -48,8 +48,7 @@ func livePreviewVariablesStep(value string) resource.TestStep {
 func TestAccLivePreviewVariablesResource(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	client := livePreviewVariablesTestClient(t, server)
 
@@ -121,8 +120,7 @@ func TestAccLivePreviewVariablesResource(t *testing.T) {
 func TestAccLivePreviewVariablesResourceIgnoreChanges(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	var (
@@ -167,8 +165,7 @@ func TestAccLivePreviewVariablesResourceIgnoreChanges(t *testing.T) {
 func TestAccLivePreviewVariablesResourceIdentityReplacement(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	server.RegisterSpaceEnvironment("space", "other")
 	server.RegisterSpaceEnvironment("other-space", "other")
@@ -190,8 +187,7 @@ func TestAccLivePreviewVariablesResourceRefusesExistingDocument(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "environment")
 			client := livePreviewVariablesTestClient(t, server)
 			seeded, err := client.PutLivePreviewVariables(t.Context(), &cm.LivePreviewVariablesData{Variables: []byte(variables)}, cm.PutLivePreviewVariablesParams{SpaceID: "space", EnvironmentID: "environment"})
@@ -225,8 +221,7 @@ func TestAccLivePreviewVariablesResourceInvalidConfigurationAndImport(t *testing
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "environment")
 
 			step := livePreviewVariablesStep(test.variables)
@@ -255,8 +250,7 @@ func TestAccLivePreviewVariablesResourceServiceValidation(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "environment")
 			client := livePreviewVariablesTestClient(t, server)
 

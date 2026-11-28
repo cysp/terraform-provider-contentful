@@ -83,3 +83,8 @@ func (sm *SpaceEnvironmentMap[Value]) Delete(spaceID string, environmentID strin
 
 	delete(environmentValues, key)
 }
+
+// DeleteEnvironment removes all values owned by this environment in the space.
+func (sm *SpaceEnvironmentMap[Value]) DeleteEnvironment(spaceID, environmentID string) {
+	delete(sm.m[spaceID], environmentID)
+}

@@ -4,7 +4,6 @@ import (
 	"regexp"
 	"testing"
 
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -14,11 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:paralleltest
 func TestAccPersonalAccessTokenResourceLifecycle(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -74,11 +73,11 @@ func TestAccPersonalAccessTokenResourceLifecycle(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 
@@ -97,11 +96,11 @@ func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccPersonalAccessTokenResourceImportNotFound(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	personalAccessTokenID := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 

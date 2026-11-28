@@ -12,7 +12,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -32,8 +31,7 @@ const (
 func TestAccAppSigningSecretResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",
@@ -110,8 +108,7 @@ func TestAccAppSigningSecretResourceRejectsInvalidValueBeforeContentfulMutation(
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{Name: "Test App"})
 
 			var putCount atomic.Int64
@@ -145,8 +142,7 @@ resource "contentful_app_signing_secret" "test" {
 func TestAccAppSigningSecretResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"organization_id":      config.StringVariable("organization-id"),
@@ -223,8 +219,7 @@ func TestAccAppSigningSecretResourceImport(t *testing.T) {
 func TestAccAppSigningSecretResourceImportBlockWritesConfiguredValue(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.SetAppDefinition("organization-id", "app-definition-id", cm.AppDefinitionData{
 		Name: "Test App",

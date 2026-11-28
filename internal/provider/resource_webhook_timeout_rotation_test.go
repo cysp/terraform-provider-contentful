@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -26,8 +25,7 @@ func TestAccWebhookResourceIgnoredWriteOnlyBasicPasswordOnTimeoutUpdate(t *testi
 	// The framework inherits TF_VAR_* separately for planning and saved-plan apply.
 	t.Setenv(variable, original)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	recorder := &taxonomyRequestBodyRecorder{next: server}
 	adapter := &mutationJSONResponseAdapter{delegate: recorder}

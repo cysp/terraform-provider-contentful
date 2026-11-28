@@ -8,15 +8,13 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAccContentTypeResourceValidationRecovery(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetContentType("space", "master", "type", cm.ContentTypeRequestData{
 		Name: "Type", Description: cm.NewOptNilString(""), DisplayField: "field",
 		Fields: []cm.ContentTypeRequestDataFieldsItem{{ID: "field", Name: "Field", Type: "Symbol", Localized: cm.NewOptBool(false), Required: cm.NewOptBool(false), Disabled: cm.NewOptBool(false), Omitted: cm.NewOptBool(false), DefaultValue: []byte("[]")}},

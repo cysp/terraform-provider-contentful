@@ -72,7 +72,7 @@ func (r *environmentAliasResource) Create(ctx context.Context, req resource.Crea
 	params := cm.CreateOrUpdateEnvironmentAliasParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		EnvironmentAliasID: plan.EnvironmentAliasID.ValueString(),
-		XContentfulVersion: version,
+		XContentfulVersion: cm.NewOptInt(version),
 	}
 
 	request, requestDiags := plan.ToEnvironmentAliasData(ctx)
@@ -212,7 +212,7 @@ func (r *environmentAliasResource) Update(ctx context.Context, req resource.Upda
 	params := cm.CreateOrUpdateEnvironmentAliasParams{
 		SpaceID:            plan.SpaceID.ValueString(),
 		EnvironmentAliasID: plan.EnvironmentAliasID.ValueString(),
-		XContentfulVersion: version,
+		XContentfulVersion: cm.NewOptInt(version),
 	}
 
 	response, err := r.providerData.client.CreateOrUpdateEnvironmentAlias(ctx, &request, params)

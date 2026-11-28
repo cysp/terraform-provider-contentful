@@ -37,8 +37,7 @@ const taxonomyAcceptanceOrganizationID = "2zuSjSO4A0e6GKBrhJRe2m"
 func TestAccTaxonomyResourcesLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	suffix := acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
 	ids := taxonomyLifecycleIDs{
@@ -367,8 +366,7 @@ resource "contentful_taxonomy_concept_scheme" "test" {
 func TestAccTaxonomyResourcesRecoverFromDeletion(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	base := config.Variables{
 		"organization_id":   config.StringVariable("organization-id"),
@@ -448,8 +446,7 @@ func TestAccTaxonomyResourcesRecoverFromUnexpectedResponses(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			mutator := &taxonomyResponseMutator{next: server}
 			recorder := &taxonomyRequestBodyRecorder{next: mutator}
@@ -578,8 +575,7 @@ func TestAccTaxonomyApplySurvivesResponseOwnedCascade(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			hook := &taxonomyRequestHook{next: server}
 			recorder := &taxonomyRequestBodyRecorder{next: hook}
@@ -654,8 +650,7 @@ func TestAccTaxonomyResourcesRejectResponseIdentityRetargeting(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			mutator := &taxonomyResponseMutator{next: server}
 			recorder := &taxonomyRequestBodyRecorder{next: mutator}
@@ -722,8 +717,7 @@ func TestAccTaxonomyConceptResourcePreservesExplicitEmptyLabelMapsAgainstCanonic
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 			base := taxonomyConceptEmptyLabelMapsConfig("Chair")
@@ -812,8 +806,7 @@ func TestAccTaxonomyConceptResourceProjectsOutOfBandLabelLocalesByOwnership(t *t
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.config},
@@ -870,8 +863,7 @@ func TestAccTaxonomyResourcesSurfaceVersionConflicts(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			hook := &taxonomyRequestHook{next: server}
 			testAccMockedResource(t, hook, resource.TestCase{Steps: []resource.TestStep{
@@ -960,8 +952,7 @@ func TestAccTaxonomyResourcesRecoverRemoteStateAfterMutationMismatch(t *testing.
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			if test.prepareRemote != nil {
 				require.NoError(t, test.prepareRemote(t.Context(), server))
@@ -1025,8 +1016,7 @@ func TestAccTaxonomyResourcesAllowConcurrentDeletion(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			hook := &taxonomyRequestHook{next: server}
 			testAccMockedResource(t, hook, resource.TestCase{Steps: []resource.TestStep{
@@ -1070,8 +1060,7 @@ func TestAccTaxonomyResourcesSurfaceReadFailures(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			failer := &taxonomyResponseFailure{next: server}
 			testAccMockedResource(t, failer, resource.TestCase{Steps: []resource.TestStep{
@@ -1119,8 +1108,7 @@ func TestAccTaxonomyResourcesDoNotGETInsideUpdate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			recorder := &taxonomyRequestRecorder{next: server}
 			testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
@@ -1166,8 +1154,7 @@ func TestAccTaxonomyTaintedReplacementFetchesMissingDeleteVersion(t *testing.T) 
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 			testAccMockedResource(t, recorder, resource.TestCase{
@@ -1219,8 +1206,7 @@ func TestAccTaxonomyTaintedReplacementPreservesDeleteVersionLock(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			hook := &taxonomyRequestHook{next: server}
 			recorder := &taxonomyRequestBodyRecorder{next: hook}
@@ -1285,8 +1271,7 @@ func TestAccTaxonomyTaintedReplacementHandlesMissingResource(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 			testAccMockedResource(t, recorder, resource.TestCase{
@@ -1356,8 +1341,7 @@ func TestAccTaxonomyCreateRequestPreservesCollectionOwnership(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 			testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{{Config: test.config}}})
@@ -1382,15 +1366,14 @@ func TestAccTaxonomyCreateRequestPreservesCollectionOwnership(t *testing.T) {
 func TestAccTaxonomyConceptResourceImportProjectsNonemptyLabelMaps(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	request := cm.TaxonomyConceptRequest{
 		PrefLabel:    cm.LocalizedString{"en-US": "Furniture"},
 		AltLabels:    cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-US": {"Furnishings"}}),
 		HiddenLabels: cm.NewOptLocalizedStringList(cm.LocalizedStringList{"en-US": {"Household goods"}}),
 	}
-	_, err = server.Handler().PutTaxonomyConcept(t.Context(), &request, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture"})
+	_, err := server.Handler().PutTaxonomyConcept(t.Context(), &request, cm.PutTaxonomyConceptParams{OrganizationID: "organization-id", TaxonomyConceptID: "furniture"})
 	require.NoError(t, err)
 
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{{
@@ -1719,8 +1702,7 @@ func TestAccTaxonomyReadIdentityFailuresRetainPriorState(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			mutator := &taxonomyResponseMutator{next: server}
 
@@ -1782,8 +1764,7 @@ func TestAccTaxonomyExplicitEmptyLocalizedMapsRemainStable(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 
@@ -1853,8 +1834,7 @@ func TestAccTaxonomyImportRemoteNullThenConfiguresEmptyLocalizedMap(t *testing.T
 		t.Run(name, func(t *testing.T) {
 			parallelWhenMocked(t)
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			require.NoError(t, test.seed(server))
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 

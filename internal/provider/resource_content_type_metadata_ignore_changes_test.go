@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"testing"
 
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -22,8 +21,7 @@ func TestAccContentTypeResourceMetadataIgnoreChanges(t *testing.T) {
 		t.Run(ignored, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "environment")
 			handler := &contentTypeActivationTestHandler{delegate: server}
 
@@ -76,8 +74,7 @@ resource "contentful_content_type" "test" {
 func TestAccContentTypeResourceOmittedTaxonomyDoesNotAuthorizeContradictoryDraft(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 
@@ -128,8 +125,7 @@ func TestAccContentTypeResourceOmittedTaxonomyDoesNotAuthorizeContradictoryDraft
 func TestAccContentTypeResourceContradictoryDraftRevokesPendingActivation(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	handler.failActivation.Store(true)

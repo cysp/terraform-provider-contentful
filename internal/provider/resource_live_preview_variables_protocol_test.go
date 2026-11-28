@@ -510,8 +510,7 @@ func TestLivePreviewVariablesReadFeedsTheNextUpdateVersion(t *testing.T) {
 func TestLivePreviewVariablesUpdateCanRecreateAnAbsentDocument(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	var requests atomic.Int64

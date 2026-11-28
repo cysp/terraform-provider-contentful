@@ -7,17 +7,46 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
+// App requests use the target selected during authorization, even if the alias
+// moves before dispatch. Other callers resolve the address under the handler lock.
+func (ts *Handler) requestEnvironmentID(ctx context.Context, spaceID, environmentID string) string {
+	if target, ok := ctx.Value(authorizedEnvironmentKey{}).(string); ok {
+		return target
+	}
+
+	return ts.resolveEnvironmentAlias(spaceID, environmentID)
+}
+
+func (ts *Handler) resolveEnvironmentAlias(spaceID, environmentID string) string {
+	if alias := ts.environmentAliases.Get(spaceID, environmentID); alias != nil {
+		return alias.Environment.Sys.ID
+	}
+
+	return environmentID
+}
+
 //nolint:ireturn
 func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.EnvironmentAliasData, params cm.CreateOrUpdateEnvironmentAliasParams) (cm.CreateOrUpdateEnvironmentAliasRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	environment := ts.environments.Get(params.SpaceID, data.Environment.Sys.ID)
-	if environment == nil {
-		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
+	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
+	if environmentAlias == nil && !ts.hasMasterEnvironment(params.SpaceID) {
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
-	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
+	if ts.environments.Get(params.SpaceID, params.EnvironmentAliasID) != nil {
+		return NewContentfulManagementErrorStatusCodeConflict(nil, nil), nil
+	}
+
+	if environmentAlias == nil && !ts.hasMasterEnvironmentAlias(params.SpaceID) {
+		return NewContentfulManagementErrorStatusCode(http.StatusForbidden, "EnvironmentAliasNotOptedIn", new("This space has not opted into the environment aliases feature"), nil), nil
+	}
+
+	if ts.environments.Get(params.SpaceID, data.Environment.Sys.ID) == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+	}
+
 	if environmentAlias == nil {
 		environmentAlias := NewEnvironmentAliasFromEnvironmentAliasData(params.SpaceID, params.EnvironmentAliasID, *data)
 		ts.environmentAliases.Set(params.SpaceID, params.EnvironmentAliasID, &environmentAlias)
@@ -28,7 +57,8 @@ func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.En
 		}), nil
 	}
 
-	if params.XContentfulVersion != environmentAlias.Sys.Version {
+	version, versionSet := params.XContentfulVersion.Get()
+	if !versionSet || version != environmentAlias.Sys.Version {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 
@@ -61,6 +91,10 @@ func (ts *Handler) DeleteEnvironmentAlias(_ context.Context, params cm.DeleteEnv
 	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
 	if environmentAlias == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
+	}
+
+	if params.EnvironmentAliasID == "master" {
+		return NewContentfulManagementErrorStatusCodeValidationFailed(new("Cannot delete the master environment alias"), nil), nil
 	}
 
 	ts.environmentAliases.Delete(params.SpaceID, params.EnvironmentAliasID)

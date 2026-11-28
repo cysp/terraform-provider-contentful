@@ -31,7 +31,7 @@ func NewContentfulManagementServer(opts ...ServerOption) (*Server, error) {
 		handler,
 		cm.WithNotFound(notFoundHandler),
 		cm.WithErrorHandler(errorHandler),
-		cm.WithMiddleware(handler.routeEnvironmentRequest),
+		cm.WithMiddleware(handler.authorizeAppRequest),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)

@@ -12,16 +12,18 @@ func (ts *Handler) GetAppInstallation(ctx context.Context, params cm.GetAppInsta
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	if ts.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
-	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
+	appInstallation := ts.appInstallations.Get(params.SpaceID, environmentID, params.AppDefinitionID)
 	if appInstallation == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"AppInstallation does not exist."`))), nil
 	}
 
-	response := projectAppInstallation(ctx, *appInstallation)
+	response := projectAppInstallation(*appInstallation, params.EnvironmentID)
 	if _, ok := ctx.Value(appAccessTokenContextKey{}).(cm.CreateAppAccessTokenParams); ok {
 		return snapshotResponse(&response), nil
 	}
@@ -34,7 +36,9 @@ func (ts *Handler) PutAppInstallation(ctx context.Context, req *cm.AppInstallati
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	if ts.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
@@ -43,7 +47,7 @@ func (ts *Handler) PutAppInstallation(ctx context.Context, req *cm.AppInstallati
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("AppDefinition not found"), nil)), nil
 	}
 
-	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
+	appInstallation := ts.appInstallations.Get(params.SpaceID, environmentID, params.AppDefinitionID)
 
 	parameters, validation, err := appInstallationParameters(*req, *definition, appInstallation)
 	if err != nil {
@@ -56,12 +60,12 @@ func (ts *Handler) PutAppInstallation(ctx context.Context, req *cm.AppInstallati
 
 	fields := cm.AppInstallationData{Parameters: parameters}
 	if appInstallation == nil {
-		newAppInstallation := NewAppInstallationFromFields(params.SpaceID, params.EnvironmentID, params.AppDefinitionID, fields)
-		ts.appInstallations.Set(params.SpaceID, params.EnvironmentID, params.AppDefinitionID, &newAppInstallation)
+		newAppInstallation := NewAppInstallationFromFields(params.SpaceID, environmentID, params.AppDefinitionID, fields)
+		ts.appInstallations.Set(params.SpaceID, environmentID, params.AppDefinitionID, &newAppInstallation)
 
 		return snapshotResponse(&cm.AppInstallationStatusCode{
 			StatusCode: http.StatusOK,
-			Response:   projectAppInstallation(ctx, newAppInstallation),
+			Response:   projectAppInstallation(newAppInstallation, params.EnvironmentID),
 		}), nil
 	}
 
@@ -74,29 +78,29 @@ func (ts *Handler) PutAppInstallation(ctx context.Context, req *cm.AppInstallati
 
 	return snapshotResponse(&cm.AppInstallationStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   projectAppInstallation(ctx, *response),
+		Response:   projectAppInstallation(*response, params.EnvironmentID),
 	}), nil
 }
 
-func projectAppInstallation(ctx context.Context, installation cm.AppInstallation) cm.AppInstallation {
-	if addressed, ok := ctx.Value(addressedEnvironmentKey{}).(string); ok {
-		installation.Sys.Environment.Sys.ID = addressed
-	}
+func projectAppInstallation(installation cm.AppInstallation, environmentID string) cm.AppInstallation {
+	installation.Sys.Environment.Sys.ID = environmentID
 
 	return installation
 }
 
 //nolint:ireturn
-func (ts *Handler) DeleteAppInstallation(_ context.Context, params cm.DeleteAppInstallationParams) (cm.DeleteAppInstallationRes, error) {
+func (ts *Handler) DeleteAppInstallation(ctx context.Context, params cm.DeleteAppInstallationParams) (cm.DeleteAppInstallationRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	appInstallation := ts.appInstallations.Get(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	appInstallation := ts.appInstallations.Get(params.SpaceID, environmentID, params.AppDefinitionID)
 	if appInstallation == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"AppInstallation does not exist."`))), nil
 	}
 
-	ts.appInstallations.Delete(params.SpaceID, params.EnvironmentID, params.AppDefinitionID)
+	ts.appInstallations.Delete(params.SpaceID, environmentID, params.AppDefinitionID)
 
 	return snapshotResponse(&cm.NoContent{}), nil
 }

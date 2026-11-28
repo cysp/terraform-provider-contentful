@@ -43,8 +43,9 @@ without applying request validators or defaults to computed output.
 
 Content Type response environment links must echo the requested address.
 A different link is diagnosed as unsupported response identity, even when it
-may identify an alias target. The [endpoint evidence](../research/configuration-discovery.md)
-does not establish Content Type response-link behavior through aliases.
+may identify an alias target. A [recorded CMA detail GET](../research/environment-aliases.md#entry-and-content-type-detail-reads)
+supports this check for the singular data source. The plural data source applies
+the same check to each item. Collection response links through aliases remain unverified.
 
 Environment and Environment Alias use the same generated HTTP operations and
 entity decoders as their managed counterparts. Data-source schemas and timeouts

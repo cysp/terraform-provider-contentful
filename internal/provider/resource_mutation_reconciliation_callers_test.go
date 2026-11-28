@@ -14,7 +14,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
@@ -53,8 +52,7 @@ func replaceEditorInterfaceResponseLayout(groupID string) func(map[string]any) {
 func TestAccEditorInterfaceResourceUpdateConsistencyErrorRetainsResponseState(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetContentType("space", "master", "article", cm.ContentTypeRequestData{Name: "Article"})
 	server.SetEditorInterface("space", "master", "article", cm.EditorInterfaceData{
 		EditorLayout: cm.NewOptNilEditorInterfaceEditorLayoutItemArray([]cm.EditorInterfaceEditorLayoutItem{
@@ -100,8 +98,7 @@ func TestAccEditorInterfaceResourceUpdateConsistencyErrorRetainsResponseState(t 
 func TestAccEditorInterfaceResourceCreateConsistencyErrorRetainsStateAndRequiresImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetContentType("space", "master", "article", cm.ContentTypeRequestData{Name: "Article"})
 	server.SetEditorInterface("space", "master", "article", cm.EditorInterfaceData{})
 
@@ -140,8 +137,7 @@ func TestAccEditorInterfaceResourceCreateConsistencyErrorRetainsStateAndRequires
 func TestAccRoleResourceConsistencyErrorsRetainResponseState(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	adapter := &mutationJSONResponseAdapter{delegate: server}

@@ -10,28 +10,32 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) GetLivePreviewVariables(_ context.Context, params cm.GetLivePreviewVariablesParams) (cm.GetLivePreviewVariablesRes, error) {
+func (ts *Handler) GetLivePreviewVariables(ctx context.Context, params cm.GetLivePreviewVariablesParams) (cm.GetLivePreviewVariablesRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	if ts.environments.Get(params.SpaceID, environmentID) == nil {
 		return livePreviewVariablesEnvironmentNotFound(params.EnvironmentID)
 	}
 
-	variables := ts.livePreviewVariables.Get(params.SpaceID, params.EnvironmentID)
+	variables := ts.livePreviewVariables.Get(params.SpaceID, environmentID)
 	if variables == nil {
 		return snapshotResponse(livePreviewVariablesError(http.StatusNotFound, cm.ErrorSysIDNotFound, "The resource could not be found.")), nil
 	}
 
-	return snapshotResponse(variables), nil
+	return livePreviewVariablesResponse(*variables, params.EnvironmentID), nil
 }
 
 //nolint:ireturn
-func (ts *Handler) PutLivePreviewVariables(_ context.Context, req *cm.LivePreviewVariablesData, params cm.PutLivePreviewVariablesParams) (cm.PutLivePreviewVariablesRes, error) {
+func (ts *Handler) PutLivePreviewVariables(ctx context.Context, req *cm.LivePreviewVariablesData, params cm.PutLivePreviewVariablesParams) (cm.PutLivePreviewVariablesRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	if ts.environments.Get(params.SpaceID, environmentID) == nil {
 		return livePreviewVariablesEnvironmentNotFound(params.EnvironmentID)
 	}
 
@@ -41,7 +45,7 @@ func (ts *Handler) PutLivePreviewVariables(_ context.Context, req *cm.LivePrevie
 
 	version := 1
 
-	if variables := ts.livePreviewVariables.Get(params.SpaceID, params.EnvironmentID); variables != nil {
+	if variables := ts.livePreviewVariables.Get(params.SpaceID, environmentID); variables != nil {
 		if params.XContentfulVersion != variables.Sys.Version {
 			return snapshotResponse(livePreviewVariablesError(http.StatusConflict, cm.ErrorSysIDVersionMismatch, "The given version value is not the current one")), nil
 		}
@@ -61,28 +65,36 @@ func (ts *Handler) PutLivePreviewVariables(_ context.Context, req *cm.LivePrevie
 	variables := &cm.LivePreviewVariables{
 		Sys: cm.LivePreviewVariablesSys{
 			Space:       cm.NewSpaceLink(params.SpaceID),
-			Environment: cm.NewEnvironmentLink(params.EnvironmentID),
+			Environment: cm.NewEnvironmentLink(environmentID),
 			Version:     version,
 		},
 		Variables: normalized,
 	}
-	ts.livePreviewVariables.Set(params.SpaceID, params.EnvironmentID, variables)
+	ts.livePreviewVariables.Set(params.SpaceID, environmentID, variables)
 
-	return snapshotResponse(variables), nil
+	return livePreviewVariablesResponse(*variables, params.EnvironmentID), nil
 }
 
 //nolint:ireturn
-func (ts *Handler) DeleteLivePreviewVariables(_ context.Context, params cm.DeleteLivePreviewVariablesParams) (cm.DeleteLivePreviewVariablesRes, error) {
+func (ts *Handler) DeleteLivePreviewVariables(ctx context.Context, params cm.DeleteLivePreviewVariablesParams) (cm.DeleteLivePreviewVariablesRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	if ts.environments.Get(params.SpaceID, environmentID) == nil {
 		return livePreviewVariablesEnvironmentNotFound(params.EnvironmentID)
 	}
 
-	ts.livePreviewVariables.Delete(params.SpaceID, params.EnvironmentID)
+	ts.livePreviewVariables.Delete(params.SpaceID, environmentID)
 
 	return snapshotResponse(&cm.NoContent{}), nil
+}
+
+func livePreviewVariablesResponse(variables cm.LivePreviewVariables, environmentID string) *cm.LivePreviewVariables {
+	variables.Sys.Environment.Sys.ID = environmentID
+
+	return snapshotResponse(&variables)
 }
 
 func livePreviewVariablesError(statusCode int, id, message string) *cm.LivePreviewVariablesErrorStatusCode {

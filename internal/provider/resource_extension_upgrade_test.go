@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	testingresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -72,13 +71,12 @@ func TestAccExtensionResourceRegistryV0062UpgradeDoesNotMutateSources(t *testing
 func testAccRegistryV0062ExtensionSourceUpgrade(t *testing.T, source registryV0062ExtensionSourceCase, refresh bool) {
 	t.Helper()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	extensionID := "registry-v0062-" + strings.ReplaceAll(source.name, " ", "-")
 	name := "Registry v0.0.62 " + source.name
-	_, err = server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
+	_, err := server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
 		Extension: cm.ExtensionExtension{
 			Name:       name,
 			Src:        source.src,

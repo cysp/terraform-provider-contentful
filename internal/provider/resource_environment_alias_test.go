@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -23,10 +22,9 @@ import (
 func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
-	server.RegisterSpaceEnvironment("space-id", "master")
+	targetID := server.RegisterMasterEnvironmentAlias("space-id")
 	server.RegisterSpaceEnvironment("space-id", "staging")
 
 	environmentAliasID := "acctest-" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -40,7 +38,7 @@ func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 	configVariables1 := maps.Clone(configVariables)
 
 	configVariables2 := maps.Clone(configVariables)
-	configVariables2["target_environment_id"] = config.StringVariable("master")
+	configVariables2["target_environment_id"] = config.StringVariable(targetID)
 
 	testAccMockedResource(t, server, resource.TestCase{
 		CheckDestroy: func(_ *terraform.State) error {
@@ -83,13 +81,9 @@ func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
-	server.RegisterSpaceEnvironment("space-id", "master-1970-01-01")
-	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData("space-id", "master", cm.EnvironmentAliasData{
-		Environment: cm.NewEnvironmentLink("master-1970-01-01"),
-	}))
+	server.RegisterMasterEnvironmentAlias("space-id")
 
 	configVariables := config.Variables{
 		"space_id":                  config.StringVariable("space-id"),
@@ -136,6 +130,19 @@ func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 					plancheck.ExpectResourceAction("contentful_environment_alias.test", plancheck.ResourceActionNoop),
 				}},
 			},
+			{
+				// The permanent master alias stays in Contentful after import.
+				Config: `
+removed {
+  from = contentful_environment_alias.test
+  lifecycle {
+    destroy = false
+  }
+}
+`,
+			},
 		},
 	})
+
+	assert.Zero(t, mutations.Load(), "the permanent alias must survive the test")
 }

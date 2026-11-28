@@ -8,15 +8,13 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAccEditorInterfaceResourceValidationRecovery(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetEditorInterface("space", "master", "type", cm.EditorInterfaceData{
 		Controls: cm.NewOptNilEditorInterfaceControlsItemArray([]cm.EditorInterfaceControlsItem{{FieldId: "field", Settings: []byte("[]")}}),
 	})

@@ -9,15 +9,13 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAccAppActionResourceParameterValidationRecovery(t *testing.T) {
 	t.Parallel()
 	runtime := newTerraformTestRuntime(t)
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 	result, err := server.Handler().CreateAppAction(t.Context(), &cm.AppActionCreateData{Name: "Action", Category: "Custom", Type: "endpoint", URL: cm.NewOptString("https://example.invalid/action"), Parameters: []byte("[]")}, cm.CreateAppActionParams{OrganizationID: "org", AppDefinitionID: "app"})
 	require.NoError(t, err)

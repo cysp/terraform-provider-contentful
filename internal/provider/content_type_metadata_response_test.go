@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -48,8 +47,7 @@ func TestContentTypeMetadataTaxonomyResponsePreservesUnknownLinkTypeAsKnownSenti
 func TestContentTypeMetadataTaxonomyResponseUnknownLinkTypeIsRejectedAtHTTPBoundary(t *testing.T) {
 	t.Parallel()
 
-	contentfulServer, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	contentfulServer := newTestCMAServer(t)
 	contentfulServer.RegisterSpaceEnvironment("space", "environment")
 	contentfulServer.SetContentType("space", "environment", "content-type", cm.ContentTypeRequestData{
 		Name:   "Content type",

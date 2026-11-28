@@ -8,35 +8,41 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) GetTag(_ context.Context, params cm.GetTagParams) (cm.GetTagRes, error) {
+func (ts *Handler) GetTag(ctx context.Context, params cm.GetTagParams) (cm.GetTagRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	tag := ts.tags.Get(params.SpaceID, params.EnvironmentID, params.TagID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	tag := ts.tags.Get(params.SpaceID, environmentID, params.TagID)
 	if tag == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Tag not found"), nil)), nil
 	}
 
-	return snapshotResponse(tag), nil
+	response := projectTagResponse(*tag, params.EnvironmentID)
+
+	return snapshotResponse(&response), nil
 }
 
 //nolint:ireturn
-func (ts *Handler) PutTag(_ context.Context, req *cm.TagRequest, params cm.PutTagParams) (cm.PutTagRes, error) {
+func (ts *Handler) PutTag(ctx context.Context, req *cm.TagRequest, params cm.PutTagParams) (cm.PutTagRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	if ts.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
-	tag := ts.tags.Get(params.SpaceID, params.EnvironmentID, params.TagID)
+	tag := ts.tags.Get(params.SpaceID, environmentID, params.TagID)
 	if tag == nil {
-		newTag := NewTagFromRequest(params.SpaceID, params.EnvironmentID, params.TagID, req)
-		ts.tags.Set(params.SpaceID, params.EnvironmentID, params.TagID, &newTag)
+		newTag := NewTagFromRequest(params.SpaceID, environmentID, params.TagID, req)
+		ts.tags.Set(params.SpaceID, environmentID, params.TagID, &newTag)
 
 		return snapshotResponse(&cm.TagStatusCode{
 			StatusCode: http.StatusCreated,
-			Response:   newTag,
+			Response:   projectTagResponse(newTag, params.EnvironmentID),
 		}), nil
 	}
 
@@ -49,21 +55,29 @@ func (ts *Handler) PutTag(_ context.Context, req *cm.TagRequest, params cm.PutTa
 
 	return snapshotResponse(&cm.TagStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *tag,
+		Response:   projectTagResponse(*tag, params.EnvironmentID),
 	}), nil
 }
 
 //nolint:ireturn
-func (ts *Handler) DeleteTag(_ context.Context, params cm.DeleteTagParams) (cm.DeleteTagRes, error) {
+func (ts *Handler) DeleteTag(ctx context.Context, params cm.DeleteTagParams) (cm.DeleteTagRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	tag := ts.tags.Get(params.SpaceID, params.EnvironmentID, params.TagID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	tag := ts.tags.Get(params.SpaceID, environmentID, params.TagID)
 	if tag == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Tag not found"), nil)), nil
 	}
 
-	ts.tags.Delete(params.SpaceID, params.EnvironmentID, params.TagID)
+	ts.tags.Delete(params.SpaceID, environmentID, params.TagID)
 
 	return snapshotResponse(&cm.NoContent{}), nil
+}
+
+func projectTagResponse(tag cm.Tag, environmentID string) cm.Tag {
+	tag.Sys.Environment.Sys.ID = environmentID
+
+	return tag
 }
