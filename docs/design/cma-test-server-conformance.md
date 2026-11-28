@@ -77,6 +77,12 @@ a concrete `master`, before seeding children to be read through `master`. Seed
 those children under the returned concrete ID. `SetSpace` seeds the Space
 document for discovery. `SetSpaceEnablements` seeds only the enablements.
 
+Creating a custom alias requires a `master` alias with a concrete target in
+the same Space. With a concrete `master`, a PUT at a free alias ID returns
+HTTP 403 with `sys.id = EnvironmentAliasNotOptedIn` before target lookup, as
+[observed in the example Space](../research/environment-aliases.md#custom-alias-creation-before-opt-in).
+The fake models opt-in independently of subscription limits.
+
 The fake reserves Environment and Environment Alias IDs in the same namespace
 within a Space. A PUT using an ID occupied by the other kind returns HTTP 409
 with `sys.id = Conflict` and preserves both collections. This models an ID

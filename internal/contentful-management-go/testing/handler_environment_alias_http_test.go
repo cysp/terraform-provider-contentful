@@ -21,6 +21,7 @@ type aliasTestResponse struct {
 	Environment cm.EnvironmentLink  `json:"environment"`
 	Parameters  json.RawMessage     `json:"parameters"`
 	Name        string              `json:"name"`
+	Message     string              `json:"message"`
 	Items       []aliasTestResponse `json:"items"`
 }
 
@@ -201,6 +202,26 @@ func TestMasterEnvironmentAliasDeletion(t *testing.T) {
 	require.Equal(t, "master-1970-01-01", listed.Items[0].Sys.ID)
 }
 
+func TestEnvironmentAliasCreationRequiresOptIn(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+	server.RegisterSpaceEnvironment("space", "master")
+
+	const aliases = "space/environment_aliases"
+
+	for _, target := range []string{"master", "missing"} {
+		body := testJSON(cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink(target)})
+		rejected := aliasRequest(t, server, http.MethodPut, aliases+"/editorial", "1", body, http.StatusForbidden)
+		require.Equal(t, "EnvironmentAliasNotOptedIn", rejected.Sys.ID)
+		require.Equal(t, "This space has not opted into the environment aliases feature", rejected.Message)
+	}
+
+	aliasRequest(t, server, http.MethodGet, aliases+"/editorial", "", "", http.StatusNotFound)
+	require.Empty(t, aliasRequest(t, server, http.MethodGet, aliases, "", "", http.StatusOK).Items)
+}
+
 func TestSpaceParentRequiresConcreteMasterOrLocalAliasTarget(t *testing.T) {
 	t.Parallel()
 
@@ -209,15 +230,24 @@ func TestSpaceParentRequiresConcreteMasterOrLocalAliasTarget(t *testing.T) {
 	server.SetSpace(cm.Space{Sys: cm.SpaceSys{ID: "space"}})
 	server.RegisterSpaceEnvironment("space", "unrelated")
 	server.SetSpaceEnablements("space", cm.SpaceEnablementData{})
+
+	const aliasPath = "space/environment_aliases/editorial"
+
+	body := testJSON(cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink("unrelated")})
+	aliasRequest(t, server, http.MethodPut, aliasPath, "1", body, http.StatusNotFound)
 	aliasRequest(t, server, http.MethodGet, "space/roles", "", "", http.StatusNotFound)
 
 	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData("space", "master", cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink("blue")}))
 	server.RegisterSpaceEnvironment("other", "blue")
+	aliasRequest(t, server, http.MethodPut, aliasPath, "1", body, http.StatusNotFound)
 	aliasRequest(t, server, http.MethodGet, "space/roles", "", "", http.StatusNotFound)
 	aliasRequest(t, server, http.MethodGet, "space/environments", "", "", http.StatusNotFound)
 
 	server.RegisterSpaceEnvironment("space", "blue")
 	aliasRequest(t, server, http.MethodGet, "space/roles", "", "", http.StatusOK)
+	alias := aliasRequest(t, server, http.MethodPut, aliasPath, "1", body, http.StatusCreated)
+	require.Equal(t, cm.NewEnvironmentLink("unrelated"), alias.Environment)
+
 	created := aliasRequest(t, server, http.MethodPut, "space/environments/sandbox", "", testJSON(map[string]string{"name": "Sandbox"}), http.StatusCreated)
 	require.Equal(t, "sandbox", created.Sys.ID)
 }

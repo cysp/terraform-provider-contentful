@@ -30,16 +30,23 @@ func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.En
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	environment := ts.environments.Get(params.SpaceID, data.Environment.Sys.ID)
-	if environment == nil {
-		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
+	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
+	if environmentAlias == nil && !ts.hasMasterEnvironment(params.SpaceID) {
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil), nil
 	}
 
 	if ts.environments.Get(params.SpaceID, params.EnvironmentAliasID) != nil {
 		return NewContentfulManagementErrorStatusCodeConflict(nil, nil), nil
 	}
 
-	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
+	if environmentAlias == nil && !ts.hasMasterEnvironmentAlias(params.SpaceID) {
+		return NewContentfulManagementErrorStatusCode(http.StatusForbidden, "EnvironmentAliasNotOptedIn", new("This space has not opted into the environment aliases feature"), nil), nil
+	}
+
+	if ts.environments.Get(params.SpaceID, data.Environment.Sys.ID) == nil {
+		return NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil), nil
+	}
+
 	if environmentAlias == nil {
 		environmentAlias := NewEnvironmentAliasFromEnvironmentAliasData(params.SpaceID, params.EnvironmentAliasID, *data)
 		ts.environmentAliases.Set(params.SpaceID, params.EnvironmentAliasID, &environmentAlias)

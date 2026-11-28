@@ -91,6 +91,31 @@ document and check its target and version. For each GET, record HTTP status,
 link and any alias metadata. Keeping the resource IDs fixed makes it possible to
 compare the two environment links without retaining customer content.
 
+## Custom alias creation before opt-in
+
+On 2026-11-28 (UTC), the same example Space had a concrete `master` and zero
+aliases. Both the Environment and Environment Alias detail endpoints returned
+404 for a freshly generated custom ID. Two PUTs to
+`/spaces/{space}/environment_aliases/{custom-id}` sent an Environment link and
+`X-Contentful-Version: 1`.
+
+| Requested target | Target Environment GET | Alias PUT | Error `sys.id` |
+| --- | --- | --- | --- |
+| Concrete `master` | 200 | 403 | `EnvironmentAliasNotOptedIn` |
+| A fresh, missing Environment ID | 404 | 403 | `EnvironmentAliasNotOptedIn` |
+
+Both responses had the message `This space has not opted into the environment aliases feature`.
+After each PUT, the alias collection still returned 200 with zero items, both
+the custom and `master` alias GETs returned 404, and `master` remained a concrete
+Environment. The response to a PUT at the reserved `master` ID remains unverified.
+
+A Space GET with `include=sys.license` returned 200 and identified the product
+as `Intro Space`. The license response contained no numeric alias allowance.
+Contentful lists one alias (`master`) for plans without custom aliases and
+three (`master` plus two custom aliases) for plans with them. The pre-opt-in
+responses do not establish this Space's allowance after opt-in.
+[Contentful technical limits](https://www.contentful.com/developers/docs/platform/technical-limits/)
+
 ## Interpretation and limits
 
 The alias document supplies the target relationship; the sampled child responses

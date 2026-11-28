@@ -126,10 +126,10 @@ func (h *Handler) registerSpaceEnvironment(spaceID, environmentID, status string
 }
 
 func (h *Handler) hasMasterEnvironment(spaceID string) bool {
-	if h.environments.Get(spaceID, "master") != nil {
-		return true
-	}
+	return h.environments.Get(spaceID, "master") != nil || h.hasMasterEnvironmentAlias(spaceID)
+}
 
+func (h *Handler) hasMasterEnvironmentAlias(spaceID string) bool {
 	alias := h.environmentAliases.Get(spaceID, "master")
 
 	return alias != nil && h.environments.Get(spaceID, alias.Environment.Sys.ID) != nil

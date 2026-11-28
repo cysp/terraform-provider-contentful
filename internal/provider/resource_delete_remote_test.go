@@ -58,7 +58,7 @@ environment_id = "@name@"
 name = "@name@"`, remotePath: "/spaces/space/environments/{environment_id}", version: ""},
 		{resourceType: "environment_alias", attributes: `space_id = "space"
 environment_alias_id = "@name@"
-target_environment_id = "master"`, remotePath: "/spaces/space/environment_aliases/{environment_alias_id}", version: ""},
+target_environment_id = "@target_environment_id@"`, remotePath: "/spaces/space/environment_aliases/{environment_alias_id}", version: ""},
 		{resourceType: "extension", attributes: `space_id = "space"
 environment_id = "master"
 extension_id = "@name@"
@@ -118,7 +118,12 @@ topics = ["Entry.publish"]`, remotePath: "/spaces/space/webhook_definitions/{web
 
 			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 			require.NoError(t, err)
-			server.RegisterSpaceEnvironment("space", "master")
+
+			environmentID := "master"
+			if test.resourceType == "environment_alias" {
+				environmentID = server.RegisterMasterEnvironmentAlias("space")
+				test.attributes = strings.ReplaceAll(test.attributes, "@target_environment_id@", environmentID)
+			}
 
 			for _, id := range []string{"target", "sibling", "types"} {
 				server.SetAppDefinition("organization", id, cm.AppDefinitionData{Name: id})
@@ -127,7 +132,7 @@ topics = ["Entry.publish"]`, remotePath: "/spaces/space/webhook_definitions/{web
 			server.SetResourceProvider("organization", "types", cm.ResourceProviderRequest{
 				Sys: cm.NewResourceProviderRequestSys("provider"), Type: cm.ResourceProviderRequestTypeFunction, Function: cm.NewFunctionLink("function"),
 			})
-			server.SetContentType("space", "master", "entry-type", cm.ContentTypeRequestData{Name: "Entry", Fields: []cm.ContentTypeRequestDataFieldsItem{}})
+			server.SetContentType("space", environmentID, "entry-type", cm.ContentTypeRequestData{Name: "Entry", Fields: []cm.ContentTypeRequestDataFieldsItem{}})
 			recorder := &remoteDeleteRecorder{next: server}
 
 			keys := map[string]testAccAppKeyJWKData{}
