@@ -9,6 +9,7 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -227,6 +228,12 @@ func (p *ContentfulProvider) DataSources(_ context.Context) []func() datasource.
 		NewSpaceDataSource,
 		NewSpacesDataSource,
 		NewTeamsDataSource,
+	}
+}
+
+func (p *ContentfulProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
+	return []func() ephemeral.EphemeralResource{
+		NewAppJWTEphemeralResource,
 	}
 }
 
