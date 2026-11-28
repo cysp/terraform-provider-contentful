@@ -195,8 +195,9 @@ data "contentful_environment_status_ready" "test" {
 	assert.Equal(t, []string{"inProgress"}, server.StatusesServed())
 }
 
+//nolint:paralleltest
 func TestAccEnvironmentStatusReadyDataSourceNotFound(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 

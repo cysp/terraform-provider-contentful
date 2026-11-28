@@ -13,8 +13,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:paralleltest
 func TestAccPersonalAccessTokenResourceLifecycle(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -72,8 +73,9 @@ func TestAccPersonalAccessTokenResourceLifecycle(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -94,8 +96,9 @@ func TestAccPersonalAccessTokenResourceInvalidScopes(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccPersonalAccessTokenResourceImportNotFound(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 

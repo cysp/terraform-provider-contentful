@@ -116,8 +116,9 @@ func TestAccEntryResourceImport(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccEntryResourceImportNotFound(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -147,8 +148,9 @@ func TestAccEntryResourceImportNotFound(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccEntryResourceCreateWithID(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -176,8 +178,9 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccEntryResourceUpdate(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -273,8 +276,9 @@ resource "contentful_entry" "test" {
 	}}})
 }
 
+//nolint:paralleltest
 func TestAccEntryResourceDeleted(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -373,8 +377,9 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccEntryResourceMissingFields(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -440,7 +445,6 @@ func checkJSONEqual(expected string, actual string) error {
 	return nil
 }
 
-//nolint:dupl
 func TestAccEntryResourceMetadataConcepts(t *testing.T) {
 	t.Parallel()
 
@@ -489,9 +493,9 @@ func TestAccEntryResourceMetadataConcepts(t *testing.T) {
 	})
 }
 
-//nolint:dupl
+//nolint:paralleltest
 func TestAccEntryResourceMetadataTags(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 

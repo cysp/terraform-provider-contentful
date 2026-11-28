@@ -15,8 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+//nolint:paralleltest
 func TestAccEntryListResourceQuery(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -149,8 +150,9 @@ func TestAccEntryListResourceQuery(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccEntryListResourceNotFoundEnvironment(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 

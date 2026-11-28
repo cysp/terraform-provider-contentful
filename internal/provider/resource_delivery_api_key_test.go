@@ -15,8 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
+//nolint:paralleltest
 func TestAccDeliveryAPIKeyResourceLifecycle(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -87,8 +88,9 @@ func TestAccDeliveryAPIKeyResourceLifecycle(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccDeliveryAPIKeyResourceImportNotFound(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 

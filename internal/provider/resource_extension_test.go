@@ -37,8 +37,9 @@ var (
 	errMissingExtensionPut         = errors.New("no extension PUT request was recorded")
 )
 
+//nolint:paralleltest
 func TestAccExtensionResourceLifecycle(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 

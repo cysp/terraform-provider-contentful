@@ -38,8 +38,9 @@ const contentTypeListResourceConfig = `
 	}
 `
 
+//nolint:paralleltest
 func TestAccContentTypeListResourceQuery(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -193,8 +194,9 @@ func TestAccContentTypeListResourceIncludesUnpublished(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccContentTypeListResourceNotFoundEnvironment(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 

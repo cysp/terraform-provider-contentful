@@ -21,8 +21,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:paralleltest
 func TestAccContentTypeResourceImport(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -190,8 +191,9 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccContentTypeResourceImportNotFound(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -220,8 +222,9 @@ func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -241,8 +244,9 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccContentTypeResourceCreate(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -273,8 +277,9 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccContentTypeResourceUpdate(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
@@ -350,8 +355,9 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
@@ -830,8 +836,9 @@ func TestAccContentTypeResourceUpdateResourceLinks(t *testing.T) {
 	})
 }
 
+//nolint:paralleltest
 func TestAccContentTypeResourceDeleted(t *testing.T) {
-	t.Parallel()
+	parallelWhenMocked(t)
 
 	server := newTestCMAServer(t)
 
