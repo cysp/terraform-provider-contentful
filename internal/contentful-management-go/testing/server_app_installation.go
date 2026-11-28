@@ -13,7 +13,6 @@ func (s *Server) SetAppInstallation(spaceID, environmentID, appDefinitionID stri
 }
 
 // StoredAppInstallation returns a copy of the mock server's unredacted representation.
-// CMA responses still redact Secret values according to the current App Definition.
 func (s *Server) StoredAppInstallation(spaceID, environmentID, appDefinitionID string) (cm.AppInstallation, bool) {
 	s.h.mu.Lock()
 	defer s.h.mu.Unlock()

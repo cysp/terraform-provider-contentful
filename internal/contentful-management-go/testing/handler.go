@@ -40,6 +40,7 @@ type Handler struct {
 	appEventSubscriptions          map[[2]string]*cm.AppEventSubscription
 
 	appInstallations cm.SpaceEnvironmentMap[*cm.AppInstallation]
+	appAccessTokens  map[string]issuedAppAccessToken
 
 	livePreviewVariables cm.SpaceMap[*cm.LivePreviewVariables]
 
@@ -89,6 +90,7 @@ func NewHandler() *Handler {
 		appSigningSecrets:              make(map[string]*cm.AppSigningSecret),
 		appEventSubscriptions:          make(map[[2]string]*cm.AppEventSubscription),
 		appInstallations:               cm.NewSpaceEnvironmentMap[*cm.AppInstallation](),
+		appAccessTokens:                make(map[string]issuedAppAccessToken),
 		livePreviewVariables:           cm.NewSpaceMap[*cm.LivePreviewVariables](),
 		contentTypes:                   cm.NewSpaceEnvironmentMap[*cm.ContentType](),
 		contentTypePublications:        cm.NewSpaceEnvironmentMap[*contentTypePublicationSnapshot](),

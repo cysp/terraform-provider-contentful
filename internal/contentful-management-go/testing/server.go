@@ -10,8 +10,7 @@ import (
 type Server struct {
 	server *cm.Server
 
-	h   *Handler
-	sec *SecurityHandler
+	h *Handler
 
 	rateLimiter *secondRateLimiter
 }
@@ -27,13 +26,12 @@ func NewContentfulManagementServer(opts ...ServerOption) (*Server, error) {
 	handler := NewHandler()
 	handler.omitEntryMutationResponseFields = cfg.omitEntryMutationResponseFields
 
-	securityHandler := NewSecurityHandler()
-
 	server, err := cm.NewServer(
 		handler,
-		securityHandler,
+		handler,
 		cm.WithNotFound(notFoundHandler),
 		cm.WithErrorHandler(errorHandler),
+		cm.WithMiddleware(handler.routeEnvironmentRequest),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
@@ -47,17 +45,12 @@ func NewContentfulManagementServer(opts ...ServerOption) (*Server, error) {
 	return &Server{
 		server:      server,
 		h:           handler,
-		sec:         securityHandler,
 		rateLimiter: rateLimiter,
 	}, nil
 }
 
 func (s *Server) Handler() *Handler {
 	return s.h
-}
-
-func (s *Server) SecurityHandler() *SecurityHandler {
-	return s.sec
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

@@ -257,8 +257,10 @@ absence verified.
 The [shared test server](../../../internal/contentful-management-go/testing/app_installation.go)
 models these PAT parameter and deletion rules, with
 [HTTP conformance tests](../../../internal/contentful-management-go/testing/handler_app_installation_test.go)
-using explicit expected values. Its scope excludes App Identity authorization,
-complete response metadata, defaults, and validation of every declaration type.
+using explicit expected values. Complete response metadata, defaults and
+validation of every declaration type remain outside its scope.
+For reads with an app access token, see the
+[mock's App Identity permissions](../../design/cma-test-server-conformance.md#app-access-tokens).
 
 ### Remaining boundaries
 

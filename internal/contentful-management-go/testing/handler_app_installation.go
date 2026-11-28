@@ -8,7 +8,7 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) GetAppInstallation(_ context.Context, params cm.GetAppInstallationParams) (cm.GetAppInstallationRes, error) {
+func (ts *Handler) GetAppInstallation(ctx context.Context, params cm.GetAppInstallationParams) (cm.GetAppInstallationRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -21,11 +21,16 @@ func (ts *Handler) GetAppInstallation(_ context.Context, params cm.GetAppInstall
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, []byte(`"AppInstallation does not exist."`))), nil
 	}
 
-	return appInstallationResponse(appInstallation, ts.appDefinitions[params.AppDefinitionID])
+	response := projectAppInstallation(ctx, *appInstallation)
+	if _, ok := ctx.Value(appAccessTokenContextKey{}).(cm.CreateAppAccessTokenParams); ok {
+		return snapshotResponse(&response), nil
+	}
+
+	return appInstallationResponse(&response, ts.appDefinitions[params.AppDefinitionID])
 }
 
 //nolint:ireturn
-func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallationData, params cm.PutAppInstallationParams) (cm.PutAppInstallationRes, error) {
+func (ts *Handler) PutAppInstallation(ctx context.Context, req *cm.AppInstallationData, params cm.PutAppInstallationParams) (cm.PutAppInstallationRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -56,7 +61,7 @@ func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallation
 
 		return snapshotResponse(&cm.AppInstallationStatusCode{
 			StatusCode: http.StatusOK,
-			Response:   newAppInstallation,
+			Response:   projectAppInstallation(ctx, newAppInstallation),
 		}), nil
 	}
 
@@ -69,8 +74,16 @@ func (ts *Handler) PutAppInstallation(_ context.Context, req *cm.AppInstallation
 
 	return snapshotResponse(&cm.AppInstallationStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *response,
+		Response:   projectAppInstallation(ctx, *response),
 	}), nil
+}
+
+func projectAppInstallation(ctx context.Context, installation cm.AppInstallation) cm.AppInstallation {
+	if addressed, ok := ctx.Value(addressedEnvironmentKey{}).(string); ok {
+		installation.Sys.Environment.Sys.ID = addressed
+	}
+
+	return installation
 }
 
 //nolint:ireturn

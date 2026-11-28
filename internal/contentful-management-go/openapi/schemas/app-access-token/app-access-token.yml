@@ -1,0 +1,14 @@
+AppAccessToken:
+  type: object
+  required: [sys, token]
+  properties:
+    sys:
+      type: object
+      required: [expiresAt]
+      properties:
+        expiresAt:
+          type: string
+          format: date-time
+    token:
+      type: string
+      minLength: 1

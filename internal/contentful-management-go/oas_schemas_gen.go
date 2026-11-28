@@ -258,6 +258,46 @@ func (s *ApiKeySysType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/AppAccessToken
+type AppAccessToken struct {
+	Sys   AppAccessTokenSys `json:"sys"`
+	Token string            `json:"token"`
+}
+
+// GetSys returns the value of Sys.
+func (s *AppAccessToken) GetSys() AppAccessTokenSys {
+	return s.Sys
+}
+
+// GetToken returns the value of Token.
+func (s *AppAccessToken) GetToken() string {
+	return s.Token
+}
+
+// SetSys sets the value of Sys.
+func (s *AppAccessToken) SetSys(val AppAccessTokenSys) {
+	s.Sys = val
+}
+
+// SetToken sets the value of Token.
+func (s *AppAccessToken) SetToken(val string) {
+	s.Token = val
+}
+
+type AppAccessTokenSys struct {
+	ExpiresAt time.Time `json:"expiresAt"`
+}
+
+// GetExpiresAt returns the value of ExpiresAt.
+func (s *AppAccessTokenSys) GetExpiresAt() time.Time {
+	return s.ExpiresAt
+}
+
+// SetExpiresAt sets the value of ExpiresAt.
+func (s *AppAccessTokenSys) SetExpiresAt(val time.Time) {
+	s.ExpiresAt = val
+}
+
 // Merged schema.
 // Ref: #/AppAction
 type AppAction struct {
@@ -1916,6 +1956,31 @@ func (s *AppInstallationSysType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+type AppJWT struct {
+	Token string
+	Roles []string
+}
+
+// GetToken returns the value of Token.
+func (s *AppJWT) GetToken() string {
+	return s.Token
+}
+
+// GetRoles returns the value of Roles.
+func (s *AppJWT) GetRoles() []string {
+	return s.Roles
+}
+
+// SetToken sets the value of Token.
+func (s *AppJWT) SetToken(val string) {
+	s.Token = val
+}
+
+// SetRoles sets the value of Roles.
+func (s *AppJWT) SetRoles(val []string) {
+	s.Roles = val
 }
 
 // Merged schema.
@@ -3718,6 +3783,14 @@ func (s *ContentTypeSysType) UnmarshalText(data []byte) error {
 	}
 }
 
+type CreateAppAccessTokenCreated AppAccessToken
+
+func (*CreateAppAccessTokenCreated) createAppAccessTokenRes() {}
+
+type CreateAppAccessTokenOK AppAccessToken
+
+func (*CreateAppAccessTokenOK) createAppAccessTokenRes() {}
+
 // Merged schema.
 // Ref: #/EditorInterface
 type EditorInterface struct {
@@ -5353,6 +5426,7 @@ func (s *ErrorStatusCode) SetResponse(val ApplicationJSONError) {
 }
 
 func (*ErrorStatusCode) activateContentTypeRes()            {}
+func (*ErrorStatusCode) createAppAccessTokenRes()           {}
 func (*ErrorStatusCode) createAppActionRes()                {}
 func (*ErrorStatusCode) createAppDefinitionRes()            {}
 func (*ErrorStatusCode) createAppKeyRes()                   {}

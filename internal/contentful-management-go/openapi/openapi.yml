@@ -216,6 +216,10 @@ components:
       type: http
       scheme: bearer
       bearerFormat: Contentful Management API Access Token
+    appJWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   responses:
     no-content:
       description: No content
@@ -1535,6 +1539,31 @@ paths:
           $ref: "#/components/responses/no-content"
         401:
           $ref: "#/components/responses/unauthorized"
+        default:
+          $ref: "#/components/responses/error"
+  /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}/access_tokens:
+    parameters:
+      - $ref: "#/components/parameters/space_id"
+      - $ref: "#/components/parameters/environment_id"
+      - $ref: "#/components/parameters/app_definition_id"
+    post:
+      operationId: createAppAccessToken
+      summary: Issue an access token for an app installation
+      security:
+        - appJWT: []
+      responses:
+        200:
+          description: App access token
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-access-token/app-access-token.yml#/AppAccessToken"
+        201:
+          description: App access token created
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/app-access-token/app-access-token.yml#/AppAccessToken"
         default:
           $ref: "#/components/responses/error"
   /spaces/{space_id}/environments/{environment_id}/content_types:
