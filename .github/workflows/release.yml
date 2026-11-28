@@ -16,6 +16,7 @@ jobs:
       group: release
       queue: max
     permissions:
+      actions: read
       contents: write
       id-token: write
       attestations: write
@@ -29,6 +30,37 @@ jobs:
         run: |
           [[ "$GITHUB_REF" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
           test "v$(jq -r '."."' .release-please-manifest.json)" = "$GITHUB_REF_NAME"
+
+      - name: Require successful CI for the tagged commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          api="repos/$GITHUB_REPOSITORY/actions"
+          # A manual run's head_branch omits the ref type. The local reusable test
+          # workflow records the fully qualified ref inherited from ci.yml.
+          run_ids=$(gh api --paginate "$api/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&per_page=100" |
+            jq -r '.workflow_runs[] | select(
+              (.event == "push" and .head_branch == "main") or
+              (.event == "workflow_dispatch" and any(.referenced_workflows[]?;
+                .path == (env.GITHUB_REPOSITORY + "/.github/workflows/test.yml@" + env.GITHUB_SHA) and
+                (.ref == "refs/heads/main" or .ref == env.GITHUB_REF)))
+            ) | .id')
+
+          for run_id in $run_ids; do
+            # Rerunning release creation alone leaves the successful ci job in
+            # an earlier attempt. Use the latest execution of that job.
+            gate=$(gh api --paginate "$api/runs/$run_id/jobs?filter=all&per_page=100" |
+              jq -rs '[.[].jobs[] | select(.name == "ci")] | max_by(.run_attempt)
+                | select(.conclusion == "success") | .html_url')
+            if [[ -n "$gate" ]]; then
+              echo "Verified CI for $GITHUB_SHA: $gate"
+              exit 0
+            fi
+          done
+
+          echo "::error::No successful ci job for $GITHUB_SHA on main or $GITHUB_REF. Run ci.yml on the release tag before retrying."
+          exit 1
 
       - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:

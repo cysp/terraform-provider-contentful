@@ -47,12 +47,16 @@ Only release PRs merged into `main` can publish, including hotfixes. The `ci` ga
 | GitHub publication failed or its response was lost | Inspect the release: retry only if still a draft. If published, check the Registry instead of rebuilding. |
 | Registry indexing | Investigate ingestion separately; preserve the published GitHub release. |
 
-Before a manual publisher dispatch, resolve the version tag to its exact
-commit and confirm the CI dependencies listed above succeeded for it. Use the
-original CI run, or dispatch `ci.yml` on the tag and wait for success. Manual
-publisher dispatch does not enforce this prerequisite. Also restore any missing
-draft with its name equal to the tag, no prerelease flag, and the approved PR's
-notes: GoReleaser can create a draft but cannot restore those notes.
+The publisher checks that the aggregate `ci` job passed for the tagged commit
+on `main` or in a manual CI run on that tag. A later release-creation or
+dispatch failure leaves that validation usable. If the publisher cannot find
+a successful gate, dispatch `ci.yml` on the release tag and wait for the gate
+to pass. Tags created before this check use their tagged workflow. Verify the
+same prerequisite manually when recovering those releases.
+
+Before a manual publisher dispatch, restore any missing draft with its name
+equal to the tag, no prerelease flag, and the approved PR's notes. GoReleaser
+can create a draft but cannot restore those notes.
 
 Then dispatch the publisher, substituting the unpublished version's existing tag:
 
