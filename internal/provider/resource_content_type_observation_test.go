@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -18,8 +17,7 @@ import (
 func TestAccContentTypeResourceTimeoutOnlyUpdateDoesNotMutate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	handler := &contentTypeActivationTestHandler{delegate: server}
@@ -88,8 +86,7 @@ func TestAccContentTypeResourceTimeoutOnlyUpdateDoesNotMutate(t *testing.T) {
 func TestAccContentTypeResourceUnknownMetadataFinalPlanHandlesIndependentActivationDrift(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	handler := &contentTypeActivationTestHandler{delegate: server}
@@ -144,8 +141,7 @@ func TestAccContentTypeResourceUnknownMetadataFinalPlanHandlesIndependentActivat
 func TestAccContentTypeResourceManagedDraftTimeoutUpdateMutatesOnce(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	handler := &contentTypeActivationTestHandler{delegate: server}
@@ -194,8 +190,7 @@ func TestAccContentTypeResourceManagedDraftTimeoutUpdateMutatesOnce(t *testing.T
 func TestAccContentTypeResourceTimeoutChangeLeavesExternalDeactivationObservational(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	handler := &contentTypeActivationTestHandler{delegate: server}
@@ -248,8 +243,7 @@ func TestAccContentTypeResourceTimeoutChangeLeavesExternalDeactivationObservatio
 func TestAccContentTypeResourceReconcilesExternalDraftBeforeActivation(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	handler := &contentTypeActivationTestHandler{delegate: server}
@@ -335,8 +329,7 @@ func TestAccContentTypeResourceReconcilesExternalDraftBeforeActivation(t *testin
 func TestAccContentTypeResourceLeavesExternalPendingDraftObservational(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("external-pending-no-drift")
@@ -396,8 +389,7 @@ func TestAccContentTypeResourceLeavesExternalPendingDraftObservational(t *testin
 func TestAccContentTypeResourceImportUnpublishedDoesNotActivate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	contentTypeID := "import-unpublished"

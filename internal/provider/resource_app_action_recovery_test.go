@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -39,8 +38,7 @@ func TestAccAppActionResourceRecoveryState(t *testing.T) {
 		t.Run(mutation.name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 
 			var (
@@ -199,8 +197,7 @@ func TestAccAppActionResourceAmbiguousMutation(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 			fault := &appActionResponseFault{t: t, next: server, method: test.method, truncate: test.truncate}
 			planned := strings.Replace(actionLegacyConfig, `name = "Action"`, `name = "Planned"`, 1)

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -28,8 +27,7 @@ import (
 func TestAccEntryResourceLegacyStateDoesNotAuthorizePublication(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetEntry("space", "environment", "article", "entry", cm.EntryRequest{
 		Fields:   cm.NewOptEntryFields(cm.EntryFields{"managed": []byte(testJSON(map[string]any{"en-US": "one"}))}),
 		Metadata: cm.NewOptEntryMetadata(cm.EntryMetadata{Concepts: []cm.TaxonomyConceptLink{}, Tags: []cm.TagLink{}}),

@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,8 +20,7 @@ import (
 func TestAccWebhookResourceMixedEmptyBasicCredentials(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	recorder := &taxonomyRequestBodyRecorder{next: server}
 	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
@@ -253,8 +251,7 @@ func TestAccWebhookResourceUnknownBasicPasswordSelection(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "master")
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 
@@ -294,8 +291,7 @@ func TestAccWebhookResourceUnknownHeaderValueSelection(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "master")
 			recorder := &taxonomyRequestBodyRecorder{next: server}
 
@@ -371,8 +367,7 @@ resource "terraform_data" "choice" { input = false }
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "master")
 			testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.prior},
@@ -483,8 +478,7 @@ resource "terraform_data" "prerequisite" { input = "ready" }
 func TestAccWebhookResourcePlanEmptyUsernameWithWriteOnlyPassword(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	recorder := &taxonomyRequestBodyRecorder{next: server}
 	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{

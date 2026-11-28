@@ -15,7 +15,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -56,10 +55,9 @@ func TestAccAppEventSubscriptionResourceInvalidTarget(t *testing.T) {
 func TestAccAppEventSubscriptionResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
-	_, err = server.Handler().PutAppEventSubscription(t.Context(), &cm.AppEventSubscriptionData{
+	_, err := server.Handler().PutAppEventSubscription(t.Context(), &cm.AppEventSubscriptionData{
 		Topics: []string{"Entry.publish", "Asset.publish"}, TargetUrl: cm.NewOptString("https://example.invalid/events"),
 	}, cm.PutAppEventSubscriptionParams{OrganizationID: "organization", AppDefinitionID: "app"})
 	require.NoError(t, err)
@@ -281,10 +279,9 @@ func TestAccAppEventSubscriptionResourceExistingSingleton(t *testing.T) {
 		t.Run(strconv.FormatBool(importFirst), func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
-			_, err = server.Handler().PutAppEventSubscription(t.Context(), &cm.AppEventSubscriptionData{Topics: []string{"Entry.save"}, TargetUrl: cm.NewOptString("https://example.invalid/previous")}, cm.PutAppEventSubscriptionParams{OrganizationID: "organization", AppDefinitionID: "app"})
+			_, err := server.Handler().PutAppEventSubscription(t.Context(), &cm.AppEventSubscriptionData{Topics: []string{"Entry.save"}, TargetUrl: cm.NewOptString("https://example.invalid/previous")}, cm.PutAppEventSubscriptionParams{OrganizationID: "organization", AppDefinitionID: "app"})
 			require.NoError(t, err)
 
 			var putCount atomic.Int64
@@ -312,8 +309,7 @@ func TestAccAppEventSubscriptionResourceExistingSingleton(t *testing.T) {
 func TestAccAppEventSubscriptionResourceParentDisappears(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
 
 	var putCount atomic.Int64
@@ -345,8 +341,7 @@ func TestAccAppEventSubscriptionResourceRecoveryState(t *testing.T) {
 		t.Run(strconv.FormatBool(update), func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
 
 			var contradict atomic.Bool
@@ -417,8 +412,7 @@ func TestAccAppEventSubscriptionResourceParentReplacement(t *testing.T) {
 		t.Run(strconv.FormatBool(createBeforeDestroy), func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
 			server.SetAppDefinition("other", "replacement", cm.AppDefinitionData{Name: "Replacement"})
 

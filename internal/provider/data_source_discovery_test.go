@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -32,8 +31,7 @@ func discoveryAcceptanceFixture(t *testing.T, name string) []byte {
 func TestAccDiscoveryDataSourcesComposition(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	var space cm.Space
 	require.NoError(t, json.Unmarshal(discoveryAcceptanceFixture(t, "space"), &space))

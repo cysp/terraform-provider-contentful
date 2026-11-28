@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -21,8 +20,7 @@ import (
 func TestAccContentTypeResourceDraftRateLimitRetriesSameRequestBeforeActivation(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("draft-rate-limit")
@@ -75,8 +73,7 @@ func TestAccContentTypeResourceDraftRateLimitRetriesSameRequestBeforeActivation(
 func TestAccContentTypeResourceActivationRateLimitRetriesSameVersion(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("activation-rate-limit")
@@ -129,8 +126,7 @@ func TestAccContentTypeResourceActivationRateLimitRetriesSameVersion(t *testing.
 func TestAccContentTypeResourceDraftPutRaceDoesNotRetryAgainstNewerVersion(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	handler := &contentTypeActivationTestHandler{delegate: server}
@@ -186,8 +182,7 @@ func TestAccContentTypeResourceDraftPutRaceDoesNotRetryAgainstNewerVersion(t *te
 func TestAccContentTypeResourceChangedDraftVersionMismatchRevokesPendingAuthority(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	handler := &contentTypeActivationTestHandler{delegate: server}
@@ -246,8 +241,7 @@ func TestAccContentTypeResourceChangedDraftVersionMismatchRevokesPendingAuthorit
 func TestAccContentTypeResourceActivationRaceDoesNotPublishInterveningDraft(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	handler := &contentTypeActivationTestHandler{delegate: server}
@@ -342,8 +336,7 @@ func TestAccContentTypeResourceActivationRaceDoesNotPublishInterveningDraft(t *t
 func TestAccContentTypeResourceCreateRetriesRateLimit(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	handler.rateLimitPut.Store(true)
@@ -372,8 +365,7 @@ func TestAccContentTypeResourceCreateRetriesRateLimit(t *testing.T) {
 func TestAccContentTypeResourceActivationRateLimitThenVersionMismatchRevokesAuthority(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	handler := &contentTypeActivationTestHandler{delegate: server}
 	variables := contentTypeActivationConfigVariables("rate-limit-then-conflict")

@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -23,8 +22,7 @@ import (
 func TestAccAppActionResourceSpecifiedID(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 
 	var (
@@ -100,8 +98,7 @@ func TestAccAppActionResourceSpecifiedID(t *testing.T) {
 func TestAccAppActionResourceEndpointSpecifiedIDPassThrough(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 
 	var (
@@ -147,10 +144,9 @@ func TestAccAppActionResourceEndpointSpecifiedIDPassThrough(t *testing.T) {
 func TestAccAppActionResourceSpecifiedIDCreateWithoutPreflight(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
-	_, err = server.Handler().CreateAppAction(t.Context(), &cm.AppActionCreateData{
+	_, err := server.Handler().CreateAppAction(t.Context(), &cm.AppActionCreateData{
 		ID: cm.NewOptString("chosenAction"), Name: "Existing", Category: "Custom", Type: "function-invocation",
 		Function: cm.NewOptFunctionLink(cm.NewFunctionLink("existingFunction")), Parameters: []byte(testJSON([]any{})),
 	}, cm.CreateAppActionParams{OrganizationID: "org", AppDefinitionID: "app"})
@@ -189,8 +185,7 @@ func TestAccAppActionResourceSpecifiedIDCreateWithoutPreflight(t *testing.T) {
 func TestAccAppActionResourceAddSpecifiedID(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{

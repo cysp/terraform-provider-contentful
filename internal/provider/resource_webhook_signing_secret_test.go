@@ -136,8 +136,7 @@ func webhookSigningSecretStateChecks(value knownvalue.Check) []statecheck.StateC
 func TestAccWebhookSigningSecretResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	setTestWebhookSigningSecret(t, server, "space", strings.Repeat("z", 64))
 	recorder := &webhookSigningSecretRecorder{handler: server}
@@ -187,8 +186,7 @@ func TestAccWebhookSigningSecretResourceImport(t *testing.T) {
 			t.Run(fmt.Sprintf("%s/ignore=%t", mode, ignore), func(t *testing.T) {
 				t.Parallel()
 
-				server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-				require.NoError(t, err)
+				server := newTestCMAServer(t)
 				server.RegisterSpaceEnvironment("space", "master")
 				setTestWebhookSigningSecret(t, server, "space", strings.Repeat("z", 64))
 				recorder := &webhookSigningSecretRecorder{handler: server}
@@ -238,8 +236,7 @@ func TestAccWebhookSigningSecretResourceImport(t *testing.T) {
 func TestAccWebhookSigningSecretResourceDisappearsAndReplacesScope(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	server.RegisterSpaceEnvironment("other", "master")
 	recorder := &webhookSigningSecretRecorder{handler: server}
@@ -263,8 +260,7 @@ func TestAccWebhookSigningSecretResourceDisappearsAndReplacesScope(t *testing.T)
 func TestAccWebhookSigningSecretResourceAmbiguousUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	var fail atomic.Bool

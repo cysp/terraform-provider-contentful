@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -59,8 +58,7 @@ func (h *editorInterfaceRequestRecorder) Requests() []string {
 func TestAccEditorInterfaceResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -122,8 +120,7 @@ func TestAccEditorInterfaceResourceImport(t *testing.T) {
 func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -155,8 +152,7 @@ func TestAccEditorInterfaceResourceImportNotFound(t *testing.T) {
 func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -179,8 +175,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundEnvironment(t *testing.T) {
 func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -202,8 +197,7 @@ func TestAccEditorInterfaceResourceCreateNotFoundContentType(t *testing.T) {
 func TestAccEditorInterfaceResourceCreateManagesInitialInterface(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestData{Name: "Author"})
 	server.SetEditorInterface("0p38pssr0fi3", "test", "author", cm.EditorInterfaceData{})
@@ -223,8 +217,7 @@ func TestAccEditorInterfaceResourceCreateManagesInitialInterface(t *testing.T) {
 func TestAccEditorInterfaceResourceCreateAfterContentTypeUpdateUsesVersionOffset(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	handler := &editorInterfaceRequestRecorder{next: server}
@@ -254,8 +247,7 @@ func TestAccEditorInterfaceResourceCreateAfterContentTypeUpdateUsesVersionOffset
 func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":        config.StringVariable("0p38pssr0fi3"),
@@ -324,8 +316,7 @@ func TestAccEditorInterfaceResourceUpdate(t *testing.T) {
 func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -383,8 +374,7 @@ func TestAccEditorInterfaceResourceUpdateWithContentType(t *testing.T) {
 func TestAccEditorInterfaceResourceUpdateWithContentTypeMultipleSpaceEnvironments(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("space-a", "environment-a-a")
 	server.RegisterSpaceEnvironment("space-a", "environment-a-b")

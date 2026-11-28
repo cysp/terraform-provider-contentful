@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -12,14 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAccTeamResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	identity := statecheck.CompareValue(compare.ValuesSame())
 
@@ -59,8 +56,7 @@ func TestAccTeamResourceLifecycle(t *testing.T) {
 func TestAccTeamResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.SetTeam("2zuSjSO4A0e6GKBrhJRe2m", "team-id", cm.TeamData{
 		Name:        "Test Team",
@@ -104,8 +100,7 @@ resource "contentful_team" "test" {
 func TestAccTeamResourceImportUpdateUsesDefaultDescription(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.SetTeam("2zuSjSO4A0e6GKBrhJRe2m", "team-id", cm.TeamData{
 		Name:        "Test Team",
@@ -146,8 +141,7 @@ resource "contentful_team" "test" {
 func TestAccTeamResourceImportNullDescriptionUsesDefault(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.SetTeam("2zuSjSO4A0e6GKBrhJRe2m", "team-id", cm.TeamData{
 		Name:        "Test Team",

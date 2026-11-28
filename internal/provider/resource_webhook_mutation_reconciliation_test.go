@@ -7,14 +7,12 @@ import (
 	"regexp"
 	"testing"
 
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func webhookMutationConfig(name, filterType string, ignoreFilters bool) string {
@@ -43,8 +41,7 @@ resource "contentful_webhook" "test" {
 func TestAccWebhookResourceConsistencyErrorsRetainResponseState(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	adapter := &mutationJSONResponseAdapter{delegate: server}
@@ -98,8 +95,7 @@ func TestAccWebhookResourceUpdateIdentityMismatchClearsVersion(t *testing.T) {
 
 	const address = "contentful_webhook.test"
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	adapter := &mutationJSONResponseAdapter{delegate: server}
 	testAccMockedResource(t, adapter, resource.TestCase{
@@ -135,8 +131,7 @@ func TestAccWebhookResourceUpdateIdentityMismatchClearsVersion(t *testing.T) {
 func TestAccWebhookResourceUnsupportedResponsePropertiesPreventFalseConvergence(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	adapter := &mutationJSONResponseAdapter{delegate: server}
@@ -179,8 +174,7 @@ func TestAccWebhookResourceUnsupportedResponsePropertiesPreventFalseConvergence(
 func TestAccWebhookResourceMutationReconciliationUsesEffectivePlanWithIgnoreChanges(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
@@ -215,8 +209,7 @@ func TestAccWebhookResourceMutationReconciliationUsesEffectivePlanWithIgnoreChan
 func TestAccWebhookResourceKnownDefaultContradictionRetainsResponseState(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	adapter := &mutationJSONResponseAdapter{delegate: server}

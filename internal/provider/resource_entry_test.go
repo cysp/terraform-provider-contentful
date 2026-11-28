@@ -30,8 +30,7 @@ var (
 func TestAccEntryResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -120,8 +119,7 @@ func TestAccEntryResourceImport(t *testing.T) {
 func TestAccEntryResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -152,8 +150,7 @@ func TestAccEntryResourceImportNotFound(t *testing.T) {
 func TestAccEntryResourceCreateWithID(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -182,8 +179,7 @@ func TestAccEntryResourceCreateWithID(t *testing.T) {
 func TestAccEntryResourceUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -259,9 +255,7 @@ func TestAccEntryResourceUpdate(t *testing.T) {
 func TestAccEntryResourceRejectsOmittedNonemptyMutationFields(t *testing.T) {
 	t.Parallel()
 
-	server, _ := cmt.NewContentfulManagementServer(
-		cmt.WithOmittedEntryMutationResponseFields(), cmt.WithRateLimitPerSecond(1000),
-	)
+	server := newTestCMAServer(t, cmt.WithOmittedEntryMutationResponseFields())
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{{
@@ -282,8 +276,7 @@ resource "contentful_entry" "test" {
 func TestAccEntryResourceDeleted(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -383,8 +376,7 @@ func TestAccEntryResourceDeleted(t *testing.T) {
 func TestAccEntryResourceMissingFields(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -452,8 +444,7 @@ func checkJSONEqual(expected string, actual string) error {
 func TestAccEntryResourceMetadataConcepts(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -502,8 +493,7 @@ func TestAccEntryResourceMetadataConcepts(t *testing.T) {
 func TestAccEntryResourceMetadataTags(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 

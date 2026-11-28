@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -20,8 +19,7 @@ func TestAccWebhookResourceRefreshStateWithoutVersion(t *testing.T) {
 	// The fixture was imported with v0.1.0. Attach the provider under test at the same source address.
 	t.Setenv(resource.EnvTfAccProviderNamespace, "cysp")
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	fields := cm.WebhookDefinitionData{

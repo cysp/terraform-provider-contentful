@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -263,8 +262,7 @@ func TestAccAppActionResourceIgnoreCategory(t *testing.T) {
 func TestAccAppActionResourceDisappears(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 	testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 		{Config: actionLegacyConfig},
@@ -311,8 +309,7 @@ func TestAccAppActionResourceTimeoutOnly(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -344,8 +341,7 @@ func TestAccAppActionResourceTimeoutOnly(t *testing.T) {
 func TestAccAppActionResourceScopeReplacement(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	scopes := []struct{ organization, definition string }{
 		{"org", "app"}, {"org", "other-app"}, {"other-org", "third-app"},
@@ -403,8 +399,7 @@ func TestAccAppActionResourceInvalidUpdate(t *testing.T) {
 			lifecycle := "\n lifecycle { ignore_changes = [" + test.ignored + "] }\n}"
 			config := strings.Replace(test.initial, "\n}", lifecycle, 1)
 			update := strings.Replace(test.update, "\n}", lifecycle, 1)
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 
 			var writes atomic.Int64
@@ -436,8 +431,7 @@ func TestAccAppActionResourceInvalidUpdate(t *testing.T) {
 func TestAccAppActionResourceCategoryReplacement(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 	server.SetAppDefinition("org", "other-app", cm.AppDefinitionData{Name: "Other App"})
 
@@ -475,8 +469,7 @@ func TestAccAppActionResourceTriggeredReplacement(t *testing.T) {
 			t.Run(test.name+"/"+order.name, func(t *testing.T) {
 				t.Parallel()
 
-				server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-				require.NoError(t, err)
+				server := newTestCMAServer(t)
 				server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 
 				var (
@@ -515,8 +508,7 @@ func TestAccAppActionResourceTriggeredReplacement(t *testing.T) {
 func TestAccAppActionResourceBuiltinParameters(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 
 	const discovery = `
@@ -581,8 +573,7 @@ func TestAccAppActionResourceCategoryDrift(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 			testAccMockedResource(t, server, resource.TestCase{Steps: []resource.TestStep{
 				{Config: test.config},
@@ -656,8 +647,7 @@ resource "terraform_data" "definition" {
 func TestAccAppActionResourceInvalidResolvedInput(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("org", "app", cm.AppDefinitionData{Name: "App"})
 
 	var writes atomic.Int64

@@ -268,8 +268,7 @@ func TestAccContentTypeResourceSpecifiedIDCollisionDoesNotMutateActivateOrAdopt(
 func newContentTypeSpecifiedIDFixture(t *testing.T) (*cmt.Server, *contentTypeMutationRecorder) {
 	t.Helper()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	return server, &contentTypeMutationRecorder{delegate: server}

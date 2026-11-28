@@ -24,8 +24,7 @@ import (
 var errUnexpectedRegistryV0062UpgradeEvidence = errors.New("unexpected Registry v0.0.62 upgrade evidence")
 
 func TestAccContentTypeResourceRegistryV0062ImportRemainsObservational(t *testing.T) {
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	contentTypeID := "registry-v0062-import"

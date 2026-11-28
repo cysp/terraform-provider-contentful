@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -24,8 +23,7 @@ const testAccPersonalAccessTokenResourceAddress = "contentful_personal_access_to
 func TestAccPersonalAccessTokenResourceMockTimeoutUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	counter := &personalAccessTokenMutationCounter{handler: server}
 	idSame := statecheck.CompareValue(compare.ValuesSame())
@@ -97,8 +95,7 @@ func TestAccPersonalAccessTokenResourceMockTimeoutUpdate(t *testing.T) {
 func TestAccPersonalAccessTokenResourceMockImportedTimeoutUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	const importedResourceName = "terraform-provider-contentful-acctest-imported-timeouts"
 

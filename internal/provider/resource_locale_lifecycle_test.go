@@ -23,8 +23,7 @@ func TestAccLocaleResourceLifecycle(t *testing.T) {
 		localeID        = "imported-locale"
 	)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	server.SetLocale(cmt.NewLocaleFromData("space", "environment", "default-locale", cm.LocaleData{
 		Name: "English (United States)", Code: "en-US", FallbackCode: cm.NewNilStringNull(),

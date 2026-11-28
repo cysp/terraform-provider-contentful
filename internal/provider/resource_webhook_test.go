@@ -59,8 +59,7 @@ func TestAccWebhookResourceTopicsValidation(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "master")
 
 			counter := &webhookCreateCounter{next: server}
@@ -100,8 +99,7 @@ func (c *webhookCreateCounter) ServeHTTP(responseWriter http.ResponseWriter, req
 func TestAccWebhookResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
@@ -147,8 +145,7 @@ func TestAccWebhookResourceImport(t *testing.T) {
 func TestAccWebhookResourceOmittedAndEmptyHeaders(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	imported := cm.WebhookDefinitionRequestHeader{Key: "X-Imported", Secret: cm.NewOptBool(true), Value: cm.NewOptNilString("imported-secret")}
@@ -239,8 +236,7 @@ func TestAccWebhookResourceOmittedAndEmptyHeaders(t *testing.T) {
 func TestAccWebhookResourceConfiguredSecretHeaders(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 
 	imported := cm.WebhookDefinitionData{
@@ -359,8 +355,7 @@ resource "terraform_data" "flag" {
 func TestAccWebhookResourceCreateWithNullHeaderValue(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer()
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	recorder := &webhookWriteRecorder{next: server}
 	testAccMockedResource(t, recorder, resource.TestCase{Steps: []resource.TestStep{
@@ -454,8 +449,7 @@ func (r *webhookWriteRecorder) requirePut(t *testing.T, writeNumber int, version
 func TestAccWebhookResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
@@ -485,8 +479,7 @@ func TestAccWebhookResourceImportNotFound(t *testing.T) {
 func TestAccWebhookResourceLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -611,8 +604,7 @@ func checkWebhookVersionMatchesContentful(t *testing.T, server *cmt.Server) reso
 func TestAccWebhookResourceHeaderSecretFlagPlanning(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	recorder := &taxonomyRequestBodyRecorder{next: server}
 

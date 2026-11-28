@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/go-faster/jx"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -15,8 +14,7 @@ import (
 func TestAccEntryResourceImportedPendingDraftIsNotPublished(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 	server.SetEntry("space", "environment", "article", "entry", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{"managed": jx.Raw(testJSON(map[string]any{"en-US": "one"}))}),

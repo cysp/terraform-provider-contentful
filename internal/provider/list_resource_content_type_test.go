@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -42,8 +41,7 @@ const contentTypeListResourceConfig = `
 func TestAccContentTypeListResourceQuery(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -155,8 +153,7 @@ func TestAccContentTypeListResourceQuery(t *testing.T) {
 func TestAccContentTypeListResourceIncludesUnpublished(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetContentType("0p38pssr0fi3", "master", "unpublished", cm.ContentTypeRequestData{
 		Name:         "Unpublished",
 		DisplayField: "title",
@@ -199,8 +196,7 @@ func TestAccContentTypeListResourceIncludesUnpublished(t *testing.T) {
 func TestAccContentTypeListResourceNotFoundEnvironment(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),

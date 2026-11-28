@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,8 +24,7 @@ func TestAccExtensionResourceConfigurationValidationRecovery(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			runtime := newTerraformTestRuntime(t)
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "master")
 			result, err := server.Handler().PutExtension(t.Context(), &cm.ExtensionData{Extension: test.remote}, cm.PutExtensionParams{SpaceID: "space", EnvironmentID: "master", ExtensionID: "extension"})
 			require.NoError(t, err)

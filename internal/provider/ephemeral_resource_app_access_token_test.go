@@ -206,8 +206,7 @@ func appAccessTokenTestEntries(t *testing.T, server *cmt.Server) []cm.Entry {
 func appAccessTokenTestServer(t *testing.T, defaultLocale string, keys ...*rsa.PublicKey) *cmt.Server {
 	t.Helper()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "Test app"})
 
 	for _, key := range keys {

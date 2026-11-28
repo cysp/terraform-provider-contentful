@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -23,8 +22,7 @@ import (
 func TestAccAppDefinitionResourceLifecycle(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
@@ -105,8 +103,7 @@ resource "contentful_app_definition" "test" {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			var mutationCount atomic.Int64
 
@@ -132,8 +129,7 @@ resource "contentful_app_definition" "test" {
 func TestAccAppDefinitionResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),
@@ -177,8 +173,7 @@ func TestAccAppDefinitionResourceImport(t *testing.T) {
 func TestAccAppDefinitionResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"organization_id": config.StringVariable("2zuSjSO4A0e6GKBrhJRe2m"),

@@ -116,8 +116,7 @@ topics = ["Entry.publish"]`, remotePath: "/spaces/space/webhook_definitions/{web
 		t.Run(test.resourceType, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			environmentID := "master"
 			if test.resourceType == "environment_alias" {

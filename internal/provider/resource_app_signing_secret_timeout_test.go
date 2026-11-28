@@ -24,8 +24,7 @@ import (
 func TestAccAppSigningSecretResourceTimeoutUpdatesPreserveRemoteRotation(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
 
 	initialValue, rotatedValue := strings.Repeat("a", 64), strings.Repeat("c", 64)
@@ -108,8 +107,7 @@ lifecycle { ignore_changes = [value] }
 func TestAccAppSigningSecretResourceImportedTimeoutUpdatePreservesNullValue(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.SetAppDefinition("organization", "app", cm.AppDefinitionData{Name: "App"})
 	server.SetAppSigningSecret("organization", "app", cm.AppSigningSecretRequestData{Value: strings.Repeat("b", 64)})
 	recorder := &appSigningSecretPutRecorder{handler: server}

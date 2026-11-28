@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -23,8 +22,7 @@ import (
 func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	targetID := server.RegisterMasterEnvironmentAlias("space-id")
 	server.RegisterSpaceEnvironment("space-id", "staging")
@@ -83,8 +81,7 @@ func TestAccEnvironmentAliasResourceLifecycle(t *testing.T) {
 func TestAccEnvironmentAliasResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterMasterEnvironmentAlias("space-id")
 

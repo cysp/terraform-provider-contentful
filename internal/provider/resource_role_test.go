@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
-	cmt "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go/testing"
 	. "github.com/cysp/terraform-provider-contentful/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -31,8 +30,7 @@ import (
 func TestAccRoleResourceImport(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
@@ -66,8 +64,7 @@ func TestAccRoleResourceImport(t *testing.T) {
 func TestAccRoleResourceImportNotFound(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id": config.StringVariable("0p38pssr0fi3"),
@@ -96,8 +93,7 @@ func TestAccRoleResourceImportNotFound(t *testing.T) {
 func TestAccRoleResourceCreateUpdateDelete(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
 	var (
@@ -272,8 +268,7 @@ func TestRoleUpdateRequestConversionErrorStopsBeforeMutation(t *testing.T) {
 func TestAccRoleResourceDeleted(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 
@@ -312,8 +307,7 @@ func TestAccRoleResourceDeleted(t *testing.T) {
 func TestAccRoleResourceImportedVersionUsedForUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "master")
 	server.SetRole("0p38pssr0fi3", "imported", cm.RoleData{Name: "Test"})
 	response, err := server.Handler().GetRole(t.Context(), cm.GetRoleParams{SpaceID: "0p38pssr0fi3", RoleID: "imported"})

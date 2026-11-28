@@ -40,8 +40,7 @@ var (
 func TestAccExtensionResourceLifecycle(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -113,8 +112,7 @@ func TestAccExtensionResourceLifecycle(t *testing.T) {
 func TestAccExtensionResourceExtensionIDChangeRequiresReplacement(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	config := func(extensionID string) string {
@@ -232,8 +230,7 @@ func testContentfulExtensionSources(
 func TestAccExtensionResourceExplicitEmptySrcdocReachesContentful(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	testAccMockedResource(t, server, resource.TestCase{
@@ -291,8 +288,7 @@ func TestAccExtensionResourceRejectsInvalidSourcesBeforeContentful(t *testing.T)
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 
 			var requestCount atomic.Int64
 
@@ -354,13 +350,12 @@ func TestAccExtensionResourcePreservesImportedSourceOnUpdate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-			require.NoError(t, err)
+			server := newTestCMAServer(t)
 			server.RegisterSpaceEnvironment("space", "environment")
 
 			extensionID := "imported-" + strings.ReplaceAll(name, " ", "-")
 			params := cm.PutExtensionParams{SpaceID: "space", EnvironmentID: "environment", ExtensionID: extensionID}
-			_, err = server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
+			_, err := server.Handler().PutExtension(t.Context(), &cm.ExtensionData{
 				Extension: cm.ExtensionExtension{
 					Name:       "Imported",
 					Src:        test.initialSrc,
@@ -482,8 +477,7 @@ func (r *extensionPutRecorder) checkLastSource(wantKey string) resource.TestChec
 func TestAccExtensionResourceResolvedDependencyValueReachesContentful(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "environment")
 
 	const resolvedSrcdoc = "<!doctype html><title>resolved during apply</title>"

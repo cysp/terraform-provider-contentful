@@ -24,8 +24,7 @@ import (
 func TestAccContentTypeResourceImport(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -84,8 +83,7 @@ func TestAccContentTypeResourceImport(t *testing.T) {
 func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.SetContentType("0p38pssr0fi3", "test", "author", cm.ContentTypeRequestData{
 		Name:         "Author",
@@ -195,8 +193,7 @@ func TestAccContentTypeResourceImportWithTaxonomy(t *testing.T) {
 func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -226,8 +223,7 @@ func TestAccContentTypeResourceImportNotFound(t *testing.T) {
 func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	configVariables := config.Variables{
 		"space_id":       config.StringVariable("0p38pssr0fi3"),
@@ -248,8 +244,7 @@ func TestAccContentTypeResourceCreateNotFoundEnvironment(t *testing.T) {
 func TestAccContentTypeResourceCreate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -281,8 +276,7 @@ func TestAccContentTypeResourceCreate(t *testing.T) {
 func TestAccContentTypeResourceUpdate(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -359,8 +353,7 @@ func TestAccContentTypeResourceUpdate(t *testing.T) {
 func TestAccContentTypeResourceRemovePublishedField(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -530,8 +523,7 @@ func contentTypeMockRemoteVersionCheck(
 func TestAccContentTypeResourceUpdateMetadata(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -641,8 +633,7 @@ func contentTypeMetadataWithoutAnnotationsStateChecks() []statecheck.StateCheck 
 func TestAccContentTypeResourceTaxonomyDrift(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
 	contentTypeID := "acctest_" + acctest.RandStringFromCharSet(8, "abcdefghijklmnopqrstuvwxyz")
@@ -753,8 +744,7 @@ func contentTypeTaxonomyConceptScheme(id string) cm.ContentTypeMetadataTaxonomyI
 func TestAccContentTypeResourceRemoveAnnotationsMetadata(t *testing.T) {
 	parallelWhenMocked(t)
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -802,8 +792,7 @@ func TestAccContentTypeResourceRemoveAnnotationsMetadata(t *testing.T) {
 func TestAccContentTypeResourceUpdateResourceLinks(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 
@@ -844,8 +833,7 @@ func TestAccContentTypeResourceUpdateResourceLinks(t *testing.T) {
 func TestAccContentTypeResourceDeleted(t *testing.T) {
 	t.Parallel()
 
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 
 	server.RegisterSpaceEnvironment("0p38pssr0fi3", "test")
 

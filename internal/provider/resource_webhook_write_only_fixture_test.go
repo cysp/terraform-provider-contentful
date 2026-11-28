@@ -234,8 +234,7 @@ func readWebhookRecoveryInstance(t *testing.T, runtime *terraformTestRuntime) we
 func newWebhookRecoveryFixture(t *testing.T) (*terraformTestRuntime, *webhookSecretRecoveryFixture) {
 	t.Helper()
 	runtime := newTerraformTestRuntime(t)
-	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
-	require.NoError(t, err)
+	server := newTestCMAServer(t)
 	server.RegisterSpaceEnvironment("space", "master")
 	fixture := &webhookSecretRecoveryFixture{server: server}
 	httpServer := httptest.NewServer(fixture)
