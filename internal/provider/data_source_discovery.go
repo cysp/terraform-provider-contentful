@@ -32,7 +32,7 @@ func (discoveryIDValidator) ValidateString(_ context.Context, req validator.Stri
 
 func requireDiscoveryID(attributePath path.Path, value types.String) diag.Diagnostics {
 	if value.IsNull() || value.IsUnknown() {
-		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(attributePath, "Unresolved lookup ID", "The lookup ID must be known and non-null before reading Contentful.")}
+		return diag.Diagnostics{diag.NewAttributeErrorDiagnostic(attributePath, "Unresolved lookup ID", "Supply a known, non-null ID.")}
 	}
 
 	if !validDiscoveryID(value.ValueString()) {
