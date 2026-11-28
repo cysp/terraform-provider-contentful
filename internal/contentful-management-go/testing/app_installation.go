@@ -25,9 +25,7 @@ func UpdateAppInstallationFromFields(appInstallation *cm.AppInstallation, appIns
 	appInstallation.Parameters = slices.Clone(appInstallationFields.Parameters)
 }
 
-// These rules model the PAT observations in
-// docs/research/app-framework/secret-installation-parameters.md. They do not model
-// App Identity authorization, defaults, or every parameter declaration type.
+// See docs/research/app-framework/secret-installation-parameters.md for the observed validation rules.
 func validateAppInstallationParameters(req cm.AppInstallationData, declarations []cm.AppDefinitionParameter) (map[string]json.RawMessage, map[string]any) {
 	if len(req.Parameters) == 0 {
 		return nil, nil

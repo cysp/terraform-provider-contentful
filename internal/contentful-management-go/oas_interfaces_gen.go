@@ -5,6 +5,10 @@ type ActivateContentTypeRes interface {
 	activateContentTypeRes()
 }
 
+type CreateAppAccessTokenRes interface {
+	createAppAccessTokenRes()
+}
+
 type CreateAppActionRes interface {
 	createAppActionRes()
 }

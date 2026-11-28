@@ -55,6 +55,30 @@ Wrong-organization requests and children whose App Definition is absent return
 the fake's rejection precedence remain fixture conventions, not live observations.
 Use distinct Resource Provider IDs and valid mappings when testing cross-parent access so that the response isolates the parent-scope check.
 
+### App access tokens
+
+The fake verifies RS256 app JWTs against the app definition's registered public
+keys. A `kid` selects a single key. Without it, the fake tries each registered
+key. It follows [Contentful's JWT requirements](https://www.contentful.com/developers/docs/references/content-management-api/app-access-token/),
+including `typ: JWT`, a required `iat`, and at most ten minutes between `iat` and
+`exp`. For an installed app, the exchange returns HTTP 201 and an opaque bearer
+token with its own ten-minute expiry.
+
+Within the installation's space and environment, the mock grants the implemented
+Content Type, Editor Interface, Entry, Tag and Locale operations. It also permits
+reading the app's own installation, including its Secret parameters. Updating or
+deleting the installation returns HTTP 403. Reading an App Definition returns
+404, and reading a Space or Environment returns 401. Other operations are denied
+by default. For these environment resources, app and management requests through
+an alias use the same target. Each request resolves the target once, and app
+authorization uses that target. Locale and App Installation responses echo the
+[addressed environment](../research/environment-aliases.md#direct-read-observations).
+
+See the [App Identity permission observations](../research/app-framework/identity.md#app-access-token-permissions)
+for the operations exercised against Contentful. Locale writes follow the
+published App Identity permissions. The test account rejected Locale creation
+with both credentials.
+
 ### Locales
 
 [Locale research](../research/locales.md) separates published constraints from

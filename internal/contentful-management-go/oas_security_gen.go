@@ -15,6 +15,8 @@ import (
 type SecurityHandler interface {
 	// HandleAccessToken handles accessToken security.
 	HandleAccessToken(ctx context.Context, operationName OperationName, t AccessToken) (context.Context, error)
+	// HandleAppJWT handles appJWT security.
+	HandleAppJWT(ctx context.Context, operationName OperationName, t AppJWT) (context.Context, error)
 }
 
 func findAuthorization(h http.Header, prefix string) (string, bool) {
@@ -169,6 +171,32 @@ func GetRolesForAccessToken(operation string) []string {
 	return result
 }
 
+// operationRolesAppJWT is a private map storing roles per operation.
+var operationRolesAppJWT = map[string][]string{
+	CreateAppAccessTokenOperation: []string{},
+}
+
+// GetRolesForAppJWT returns the required roles for the given operation.
+//
+// This is useful for authorization scenarios where you need to know which roles
+// are required for an operation.
+//
+// Example:
+//
+//	requiredRoles := GetRolesForAppJWT(AddPetOperation)
+//
+// Returns nil if the operation has no role requirements or if the operation is unknown.
+func GetRolesForAppJWT(operation string) []string {
+	roles, ok := operationRolesAppJWT[operation]
+	if !ok {
+		return nil
+	}
+	// Return a copy to prevent external modification
+	result := make([]string, len(roles))
+	copy(result, roles)
+	return result
+}
+
 func (s *Server) securityAccessToken(ctx context.Context, operationName OperationName, req *http.Request) (context.Context, bool, error) {
 	var t AccessToken
 	token, ok := findAuthorization(req.Header, "Bearer")
@@ -186,16 +214,43 @@ func (s *Server) securityAccessToken(ctx context.Context, operationName Operatio
 	return rctx, true, err
 }
 
+func (s *Server) securityAppJWT(ctx context.Context, operationName OperationName, req *http.Request) (context.Context, bool, error) {
+	var t AppJWT
+	token, ok := findAuthorization(req.Header, "Bearer")
+	if !ok {
+		return ctx, false, nil
+	}
+	t.Token = token
+	t.Roles = operationRolesAppJWT[operationName]
+	rctx, err := s.sec.HandleAppJWT(ctx, operationName, t)
+	if errors.Is(err, ogenerrors.ErrSkipServerSecurity) {
+		return nil, false, nil
+	} else if err != nil {
+		return nil, false, err
+	}
+	return rctx, true, err
+}
+
 // SecuritySource is provider of security values (tokens, passwords, etc.).
 type SecuritySource interface {
 	// AccessToken provides accessToken security value.
 	AccessToken(ctx context.Context, operationName OperationName, client *Client) (AccessToken, error)
+	// AppJWT provides appJWT security value.
+	AppJWT(ctx context.Context, operationName OperationName, client *Client) (AppJWT, error)
 }
 
 func (s *Client) securityAccessToken(ctx context.Context, operationName OperationName, req *http.Request) error {
 	t, err := s.sec.AccessToken(ctx, operationName, s)
 	if err != nil {
 		return errors.Wrap(err, "security source \"AccessToken\"")
+	}
+	req.Header.Set("Authorization", "Bearer "+t.Token)
+	return nil
+}
+func (s *Client) securityAppJWT(ctx context.Context, operationName OperationName, req *http.Request) error {
+	t, err := s.sec.AppJWT(ctx, operationName, s)
+	if err != nil {
+		return errors.Wrap(err, "security source \"AppJWT\"")
 	}
 	req.Header.Set("Authorization", "Bearer "+t.Token)
 	return nil

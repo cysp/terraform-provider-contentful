@@ -14,7 +14,13 @@ import (
 )
 
 func errorHandler(ctx context.Context, w http.ResponseWriter, r *http.Request, err error) {
-	if _, ok := errors.AsType[*ogenerrors.SecurityError](err); ok {
+	if errors.Is(err, errAppAccessDenied) {
+		_ = WriteContentfulManagementErrorResponse(w, http.StatusForbidden, "AccessDenied", nil, nil)
+
+		return
+	}
+
+	if _, ok := errors.AsType[*ogenerrors.SecurityError](err); ok || errors.Is(err, ErrAccessTokenInvalid) {
 		message := "The access token you sent could not be found or is invalid."
 		_ = WriteContentfulManagementErrorResponse(w, http.StatusUnauthorized, "AccessTokenInvalid", &message, nil)
 

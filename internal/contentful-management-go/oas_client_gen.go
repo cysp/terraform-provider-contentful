@@ -87,6 +87,12 @@ type Invoker interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
 	ActivateContentType(ctx context.Context, params ActivateContentTypeParams, options ...RequestOption) (ActivateContentTypeRes, error)
+	// CreateAppAccessToken invokes createAppAccessToken operation.
+	//
+	// Issue an access token for an app installation.
+	//
+	// POST /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}/access_tokens
+	CreateAppAccessToken(ctx context.Context, params CreateAppAccessTokenParams, options ...RequestOption) (CreateAppAccessTokenRes, error)
 	// CreateAppAction invokes createAppAction operation.
 	//
 	// POST /organizations/{organization_id}/app_definitions/{app_definition_id}/actions
@@ -929,6 +935,157 @@ func (c *Client) sendActivateContentType(ctx context.Context, params ActivateCon
 	}
 
 	result, err := decodeActivateContentTypeResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// CreateAppAccessToken invokes createAppAccessToken operation.
+//
+// Issue an access token for an app installation.
+//
+// POST /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}/access_tokens
+func (c *Client) CreateAppAccessToken(ctx context.Context, params CreateAppAccessTokenParams, options ...RequestOption) (CreateAppAccessTokenRes, error) {
+	res, err := c.sendCreateAppAccessToken(ctx, params, options...)
+	return res, err
+}
+
+func (c *Client) sendCreateAppAccessToken(ctx context.Context, params CreateAppAccessTokenParams, requestOptions ...RequestOption) (res CreateAppAccessTokenRes, err error) {
+
+	var reqCfg requestConfig
+	reqCfg.setDefaults(c.baseClient)
+	for _, o := range requestOptions {
+		o(&reqCfg)
+	}
+
+	u := c.serverURL
+	if override := reqCfg.ServerURL; override != nil {
+		u = override
+	}
+	u = uri.Clone(u)
+	var pathParts [7]string
+	pathParts[0] = "/spaces/"
+	{
+		// Encode "space_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "space_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.SpaceID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/environments/"
+	{
+		// Encode "environment_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "environment_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.EnvironmentID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/app_installations/"
+	{
+		// Encode "app_definition_id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "app_definition_id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.AppDefinitionID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	pathParts[6] = "/access_tokens"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+
+			switch err := c.securityAppJWT(ctx, CreateAppAccessTokenOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"AppJWT\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	if err := reqCfg.onRequest(r); err != nil {
+		return res, errors.Wrap(err, "edit request")
+	}
+
+	resp, err := reqCfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	if err := reqCfg.onResponse(resp); err != nil {
+		return res, errors.Wrap(err, "edit response")
+	}
+
+	result, err := decodeCreateAppAccessTokenResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

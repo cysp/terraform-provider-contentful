@@ -7,6 +7,7 @@ type OperationName = string
 
 const (
 	ActivateContentTypeOperation            OperationName = "ActivateContentType"
+	CreateAppAccessTokenOperation           OperationName = "CreateAppAccessToken"
 	CreateAppActionOperation                OperationName = "CreateAppAction"
 	CreateAppDefinitionOperation            OperationName = "CreateAppDefinition"
 	CreateAppKeyOperation                   OperationName = "CreateAppKey"

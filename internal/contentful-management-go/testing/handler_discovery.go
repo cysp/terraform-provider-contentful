@@ -50,12 +50,21 @@ func (h *Handler) resolveEnvironmentAlias(spaceID, environmentID string) string 
 	return environmentID
 }
 
+func (h *Handler) localeEnvironmentIDs(ctx context.Context, spaceID, environmentID string) (string, string) {
+	if addressed, ok := ctx.Value(addressedEnvironmentKey{}).(string); ok {
+		return environmentID, addressed
+	}
+
+	return h.resolveEnvironmentAlias(spaceID, environmentID), environmentID
+}
+
 //nolint:ireturn
-func (h *Handler) GetLocale(_ context.Context, params cm.GetLocaleParams) (cm.GetLocaleRes, error) {
+func (h *Handler) GetLocale(ctx context.Context, params cm.GetLocaleParams) (cm.GetLocaleRes, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	environmentID := h.resolveEnvironmentAlias(params.SpaceID, params.EnvironmentID)
+	environmentID, addressedID := h.localeEnvironmentIDs(ctx, params.SpaceID, params.EnvironmentID)
+
 	if h.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
@@ -65,7 +74,7 @@ func (h *Handler) GetLocale(_ context.Context, params cm.GetLocaleParams) (cm.Ge
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
-	result := projectLocaleResponse(*locale, params.EnvironmentID)
+	result := projectLocaleResponse(*locale, addressedID)
 
 	return snapshotResponse(&result), nil
 }
@@ -160,11 +169,12 @@ func (h *Handler) GetEnvironmentAliases(_ context.Context, params cm.GetEnvironm
 }
 
 //nolint:ireturn
-func (h *Handler) GetLocales(_ context.Context, params cm.GetLocalesParams) (cm.GetLocalesRes, error) {
+func (h *Handler) GetLocales(ctx context.Context, params cm.GetLocalesParams) (cm.GetLocalesRes, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	environmentID := h.resolveEnvironmentAlias(params.SpaceID, params.EnvironmentID)
+	environmentID, addressedID := h.localeEnvironmentIDs(ctx, params.SpaceID, params.EnvironmentID)
+
 	if h.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
@@ -186,7 +196,7 @@ func (h *Handler) GetLocales(_ context.Context, params cm.GetLocalesParams) (cm.
 
 	items := make([]cm.Locale, 0, end-start)
 	for _, value := range values[start:end] {
-		item := projectLocaleResponse(*value, params.EnvironmentID)
+		item := projectLocaleResponse(*value, addressedID)
 		items = append(items, item)
 	}
 

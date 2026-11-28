@@ -14,6 +14,12 @@ type Handler interface {
 	//
 	// PUT /spaces/{space_id}/environments/{environment_id}/content_types/{content_type_id}/published
 	ActivateContentType(ctx context.Context, params ActivateContentTypeParams) (ActivateContentTypeRes, error)
+	// CreateAppAccessToken implements createAppAccessToken operation.
+	//
+	// Issue an access token for an app installation.
+	//
+	// POST /spaces/{space_id}/environments/{environment_id}/app_installations/{app_definition_id}/access_tokens
+	CreateAppAccessToken(ctx context.Context, params CreateAppAccessTokenParams) (CreateAppAccessTokenRes, error)
 	// CreateAppAction implements createAppAction operation.
 	//
 	// POST /organizations/{organization_id}/app_definitions/{app_definition_id}/actions
