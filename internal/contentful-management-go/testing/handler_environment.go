@@ -17,6 +17,10 @@ func (ts *Handler) CreateOrUpdateEnvironment(_ context.Context, req *cm.Environm
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Space not found"), nil)), nil
 	}
 
+	if ts.environmentAliases.Get(params.SpaceID, params.EnvironmentID) != nil {
+		return NewContentfulManagementErrorStatusCodeConflict(nil, nil), nil
+	}
+
 	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
 	if environment == nil {
 		environment := NewEnvironmentFromEnvironmentData(params.SpaceID, params.EnvironmentID, "ready", *req)

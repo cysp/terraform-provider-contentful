@@ -35,6 +35,10 @@ func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.En
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
+	if ts.environments.Get(params.SpaceID, params.EnvironmentAliasID) != nil {
+		return NewContentfulManagementErrorStatusCodeConflict(nil, nil), nil
+	}
+
 	environmentAlias := ts.environmentAliases.Get(params.SpaceID, params.EnvironmentAliasID)
 	if environmentAlias == nil {
 		environmentAlias := NewEnvironmentAliasFromEnvironmentAliasData(params.SpaceID, params.EnvironmentAliasID, *data)

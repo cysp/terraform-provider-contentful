@@ -77,6 +77,11 @@ a concrete `master`, before seeding children to be read through `master`. Seed
 those children under the returned concrete ID. `SetSpace` seeds the Space
 document for discovery. `SetSpaceEnablements` seeds only the enablements.
 
+The fake reserves Environment and Environment Alias IDs in the same namespace
+within a Space. A PUT using an ID occupied by the other kind returns HTTP 409
+with `sys.id = Conflict` and preserves both collections. This models an ID
+collision. The exact live CMA response to either PUT is unverified.
+
 [alias-targets]: https://www.contentful.com/developers/docs/references/content-management-api/environment-aliases/#creating-environment-aliases
 [master-deletion]: https://www.contentful.com/developers/docs/concepts/multiple-environments/#environments-technical-limitations
 

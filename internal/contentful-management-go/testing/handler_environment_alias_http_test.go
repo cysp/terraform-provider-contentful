@@ -18,9 +18,10 @@ type aliasTestResponse struct {
 		Environment cm.EnvironmentLink `json:"environment"`
 		Version     int                `json:"version"`
 	} `json:"sys"`
-	Parameters json.RawMessage     `json:"parameters"`
-	Name       string              `json:"name"`
-	Items      []aliasTestResponse `json:"items"`
+	Environment cm.EnvironmentLink  `json:"environment"`
+	Parameters  json.RawMessage     `json:"parameters"`
+	Name        string              `json:"name"`
+	Items       []aliasTestResponse `json:"items"`
 }
 
 func aliasRequest(t *testing.T, server *cmt.Server, method, path, version, body string, status int) aliasTestResponse {
@@ -219,4 +220,36 @@ func TestSpaceParentRequiresConcreteMasterOrLocalAliasTarget(t *testing.T) {
 	aliasRequest(t, server, http.MethodGet, "space/roles", "", "", http.StatusOK)
 	created := aliasRequest(t, server, http.MethodPut, "space/environments/sandbox", "", testJSON(map[string]string{"name": "Sandbox"}), http.StatusCreated)
 	require.Equal(t, "sandbox", created.Sys.ID)
+}
+
+func TestEnvironmentAndAliasIDsCannotCollide(t *testing.T) {
+	t.Parallel()
+
+	aliasBody := testJSON(cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink("master-1970-01-01")})
+
+	for _, test := range []struct {
+		name, path, version, body string
+	}{
+		{name: "create environment at alias ID", path: "space/environments/master", body: testJSON(map[string]string{"name": "New"})},
+		{name: "update environment at alias ID", path: "space/environments/active", version: "1", body: testJSON(map[string]string{"name": "Renamed"})},
+		{name: "create alias at environment ID", path: "space/environment_aliases/staging", version: "0", body: aliasBody},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+			require.NoError(t, err)
+			server.RegisterMasterEnvironmentAlias("space")
+			server.RegisterSpaceEnvironment("space", "staging")
+			server.RegisterSpaceEnvironment("other", "active")
+			aliasRequest(t, server, http.MethodPut, "space/environment_aliases/active", "0", aliasBody, http.StatusCreated)
+
+			environments := aliasRequest(t, server, http.MethodGet, "space/environments", "", "", http.StatusOK)
+			aliases := aliasRequest(t, server, http.MethodGet, "space/environment_aliases", "", "", http.StatusOK)
+			conflict := aliasRequest(t, server, http.MethodPut, test.path, test.version, test.body, http.StatusConflict)
+			require.Equal(t, "Conflict", conflict.Sys.ID)
+			require.Equal(t, environments.Items, aliasRequest(t, server, http.MethodGet, "space/environments", "", "", http.StatusOK).Items)
+			require.Equal(t, aliases.Items, aliasRequest(t, server, http.MethodGet, "space/environment_aliases", "", "", http.StatusOK).Items)
+		})
+	}
 }
