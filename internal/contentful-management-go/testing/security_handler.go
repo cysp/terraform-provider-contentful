@@ -17,7 +17,7 @@ type issuedAppAccessToken struct {
 type (
 	appAccessTokenContextKey struct{}
 	appJWTContextKey         struct{}
-	addressedEnvironmentKey  struct{}
+	authorizedEnvironmentKey struct{}
 )
 
 const ValidAccessToken = "CFPAT-12345"
@@ -49,14 +49,14 @@ func (*Handler) HandleAppJWT(ctx context.Context, _ cm.OperationName, bearer cm.
 	return context.WithValue(ctx, appJWTContextKey{}, bearer.Token), nil
 }
 
-func (h *Handler) routeEnvironmentRequest(req middleware.Request, next middleware.Next) (middleware.Response, error) {
+func (h *Handler) authorizeAppRequest(req middleware.Request, next middleware.Next) (middleware.Response, error) {
 	installation, asApp := req.Context.Value(appAccessTokenContextKey{}).(cm.CreateAppAccessTokenParams)
 
+	if !asApp {
+		return next(req)
+	}
+
 	switch req.OperationName {
-	case cm.PutAppInstallationOperation, cm.DeleteAppInstallationOperation:
-		if asApp {
-			return middleware.Response{}, errAppAccessDenied
-		}
 	case cm.GetAppInstallationOperation,
 		cm.GetLocalesOperation, cm.GetLocaleOperation, cm.CreateLocaleOperation, cm.PutLocaleOperation, cm.DeleteLocaleOperation,
 		cm.GetContentTypesOperation, cm.GetContentTypeOperation, cm.PutContentTypeOperation, cm.DeleteContentTypeOperation,
@@ -66,10 +66,6 @@ func (h *Handler) routeEnvironmentRequest(req middleware.Request, next middlewar
 		cm.PublishEntryOperation, cm.UnpublishEntryOperation,
 		cm.GetTagOperation, cm.PutTagOperation, cm.DeleteTagOperation:
 	default:
-		if !asApp {
-			return next(req)
-		}
-
 		return denyAppOperation(req.OperationName)
 	}
 
@@ -87,12 +83,11 @@ func (h *Handler) routeEnvironmentRequest(req middleware.Request, next middlewar
 	h.mu.Unlock()
 
 	app, hasApp := req.Params.Path("app_definition_id")
-	if asApp && (spaceID != installation.SpaceID || target != installation.EnvironmentID || (hasApp && app != installation.AppDefinitionID)) {
+	if spaceID != installation.SpaceID || target != installation.EnvironmentID || (hasApp && app != installation.AppDefinitionID) {
 		return middleware.Response{}, errAppAccessDenied
 	}
 
-	req.SetContext(context.WithValue(req.Context, addressedEnvironmentKey{}, environmentID))
-	req.Params[middleware.ParameterKey{Name: "environment_id", In: "path"}] = target
+	req.SetContext(context.WithValue(req.Context, authorizedEnvironmentKey{}, target))
 
 	return next(req)
 }

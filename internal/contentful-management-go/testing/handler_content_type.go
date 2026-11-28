@@ -15,15 +15,17 @@ import (
 type contentTypePublicationSnapshot map[string]bool
 
 //nolint:ireturn
-func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesParams) (cm.GetContentTypesRes, error) {
+func (ts *Handler) GetContentTypes(ctx context.Context, params cm.GetContentTypesParams) (cm.GetContentTypesRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	if ts.environments.Get(params.SpaceID, params.EnvironmentID) == nil {
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	if ts.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
 
-	contentTypes := ts.contentTypes.List(params.SpaceID, params.EnvironmentID)
+	contentTypes := ts.contentTypes.List(params.SpaceID, environmentID)
 
 	skip := params.Skip.Or(0)
 	if skip < 0 {
@@ -37,7 +39,7 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 
 	items := make([]cm.ContentType, 0, len(contentTypes))
 	for _, ct := range contentTypes {
-		items = append(items, *ct)
+		items = append(items, projectContentTypeResponse(*ct, params.EnvironmentID))
 	}
 
 	slices.SortFunc(items, func(a, b cm.ContentType) int {
@@ -59,24 +61,30 @@ func (ts *Handler) GetContentTypes(_ context.Context, params cm.GetContentTypesP
 }
 
 //nolint:ireturn
-func (ts *Handler) GetContentType(_ context.Context, params cm.GetContentTypeParams) (cm.GetContentTypeRes, error) {
+func (ts *Handler) GetContentType(ctx context.Context, params cm.GetContentTypeParams) (cm.GetContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	contentType := ts.contentTypes.Get(params.SpaceID, environmentID, params.ContentTypeID)
 	if contentType == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil)), nil
 	}
 
-	return snapshotResponse(contentType), nil
+	response := projectContentTypeResponse(*contentType, params.EnvironmentID)
+
+	return snapshotResponse(&response), nil
 }
 
 //nolint:ireturn
-func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestData, params cm.PutContentTypeParams) (cm.PutContentTypeRes, error) {
+func (ts *Handler) PutContentType(ctx context.Context, req *cm.ContentTypeRequestData, params cm.PutContentTypeParams) (cm.PutContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	environment := ts.environments.Get(params.SpaceID, params.EnvironmentID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	environment := ts.environments.Get(params.SpaceID, environmentID)
 	if environment == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("Environment not found"), nil)), nil
 	}
@@ -85,14 +93,14 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeValidationFailed(new("Validation error"), nil)), nil
 	}
 
-	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	contentType := ts.contentTypes.Get(params.SpaceID, environmentID, params.ContentTypeID)
 	if contentType == nil {
-		newContentType := NewContentTypeFromRequestFields(params.SpaceID, params.EnvironmentID, params.ContentTypeID, *req)
-		ts.contentTypes.Set(params.SpaceID, params.EnvironmentID, params.ContentTypeID, &newContentType)
+		newContentType := NewContentTypeFromRequestFields(params.SpaceID, environmentID, params.ContentTypeID, *req)
+		ts.contentTypes.Set(params.SpaceID, environmentID, params.ContentTypeID, &newContentType)
 
 		return snapshotResponse(&cm.ContentTypeStatusCode{
 			StatusCode: http.StatusCreated,
-			Response:   newContentType,
+			Response:   projectContentTypeResponse(newContentType, params.EnvironmentID),
 		}), nil
 	}
 
@@ -104,7 +112,7 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 	if contentType.Sys.PublishedVersion.IsSet() {
 		publicationSnapshot := ts.contentTypePublications.Get(
 			params.SpaceID,
-			params.EnvironmentID,
+			environmentID,
 			params.ContentTypeID,
 		)
 		if removesNonOmittedPublishedField(publicationSnapshot, req.Fields) {
@@ -119,16 +127,18 @@ func (ts *Handler) PutContentType(_ context.Context, req *cm.ContentTypeRequestD
 
 	return snapshotResponse(&cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *contentType,
+		Response:   projectContentTypeResponse(*contentType, params.EnvironmentID),
 	}), nil
 }
 
 //nolint:ireturn
-func (ts *Handler) DeleteContentType(_ context.Context, params cm.DeleteContentTypeParams) (cm.DeleteContentTypeRes, error) {
+func (ts *Handler) DeleteContentType(ctx context.Context, params cm.DeleteContentTypeParams) (cm.DeleteContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	contentType := ts.contentTypes.Get(params.SpaceID, environmentID, params.ContentTypeID)
 	if contentType == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil)), nil
 	}
@@ -137,19 +147,21 @@ func (ts *Handler) DeleteContentType(_ context.Context, params cm.DeleteContentT
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("Cannot delete published"), nil)), nil
 	}
 
-	ts.contentTypes.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
-	ts.contentTypePublications.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
-	ts.editorInterfaces.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	ts.contentTypes.Delete(params.SpaceID, environmentID, params.ContentTypeID)
+	ts.contentTypePublications.Delete(params.SpaceID, environmentID, params.ContentTypeID)
+	ts.editorInterfaces.Delete(params.SpaceID, environmentID, params.ContentTypeID)
 
 	return snapshotResponse(&cm.NoContent{}), nil
 }
 
 //nolint:ireturn
-func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateContentTypeParams) (cm.ActivateContentTypeRes, error) {
+func (ts *Handler) ActivateContentType(ctx context.Context, params cm.ActivateContentTypeParams) (cm.ActivateContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	contentType := ts.contentTypes.Get(params.SpaceID, environmentID, params.ContentTypeID)
 	if contentType == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil)), nil
 	}
@@ -160,14 +172,14 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 
 	publishContentType(contentType, time.Now().UTC())
 
-	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	editorInterface := ts.editorInterfaces.Get(params.SpaceID, environmentID, params.ContentTypeID)
 	if editorInterface == nil {
-		newEditorInterface := NewDefaultEditorInterface(params.SpaceID, params.EnvironmentID, params.ContentTypeID, contentType.Fields)
-		ts.editorInterfaces.Set(params.SpaceID, params.EnvironmentID, params.ContentTypeID, &newEditorInterface)
+		newEditorInterface := NewDefaultEditorInterface(params.SpaceID, environmentID, params.ContentTypeID, contentType.Fields)
+		ts.editorInterfaces.Set(params.SpaceID, environmentID, params.ContentTypeID, &newEditorInterface)
 	} else {
 		previousPublicationSnapshot := ts.contentTypePublications.Get(
 			params.SpaceID,
-			params.EnvironmentID,
+			environmentID,
 			params.ContentTypeID,
 		)
 
@@ -176,14 +188,14 @@ func (ts *Handler) ActivateContentType(_ context.Context, params cm.ActivateCont
 
 	ts.contentTypePublications.Set(
 		params.SpaceID,
-		params.EnvironmentID,
+		environmentID,
 		params.ContentTypeID,
 		newContentTypePublicationSnapshot(contentType.Fields),
 	)
 
 	return snapshotResponse(&cm.ContentTypeStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *contentType,
+		Response:   projectContentTypeResponse(*contentType, params.EnvironmentID),
 	}), nil
 }
 
@@ -224,11 +236,13 @@ func removesNonOmittedPublishedField(
 }
 
 //nolint:ireturn
-func (ts *Handler) DeactivateContentType(_ context.Context, params cm.DeactivateContentTypeParams) (cm.DeactivateContentTypeRes, error) {
+func (ts *Handler) DeactivateContentType(ctx context.Context, params cm.DeactivateContentTypeParams) (cm.DeactivateContentTypeRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	contentType := ts.contentTypes.Get(params.SpaceID, environmentID, params.ContentTypeID)
 	if contentType == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil)), nil
 	}
@@ -241,7 +255,15 @@ func (ts *Handler) DeactivateContentType(_ context.Context, params cm.Deactivate
 	contentType.Sys.PublishedAt.Reset()
 	contentType.Sys.Version++
 
-	ts.editorInterfaces.Delete(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	ts.editorInterfaces.Delete(params.SpaceID, environmentID, params.ContentTypeID)
 
-	return snapshotResponse(contentType), nil
+	response := projectContentTypeResponse(*contentType, params.EnvironmentID)
+
+	return snapshotResponse(&response), nil
+}
+
+func projectContentTypeResponse(contentType cm.ContentType, environmentID string) cm.ContentType {
+	contentType.Sys.Environment.Sys.ID = environmentID
+
+	return contentType
 }

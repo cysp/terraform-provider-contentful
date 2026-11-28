@@ -39,7 +39,10 @@ func TestAccEntryResourceImport(t *testing.T) {
 		"entry_id":       config.StringVariable("entry"),
 	}
 
-	server.SetEntry("0p38pssr0fi3", "test", "test", "entry", cm.EntryRequest{
+	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData("0p38pssr0fi3", "test", cm.EnvironmentAliasData{
+		Environment: cm.NewEnvironmentLink("target"),
+	}))
+	server.SetEntry("0p38pssr0fi3", "target", "test", "entry", cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{"foo": []byte(testJSON("bar"))}),
 		Metadata: cm.NewOptEntryMetadata(cm.EntryMetadata{
 			Concepts: []cm.TaxonomyConceptLink{},
@@ -89,6 +92,10 @@ func TestAccEntryResourceImport(t *testing.T) {
 				ImportState:        true,
 				ImportStateId:      "0p38pssr0fi3/test/entry",
 				ImportStatePersist: true,
+				ImportStateCheck: testAccImportAttributes(map[string]string{
+					"id":             "0p38pssr0fi3/test/entry",
+					"environment_id": "test",
+				}),
 			},
 			{
 				PreConfig:       recorder.reset,
@@ -99,7 +106,7 @@ func TestAccEntryResourceImport(t *testing.T) {
 				}},
 				Check: func(*terraform.State) error {
 					requireNoEntryMutations(t, recorder)
-					entry := getTestEntryForIDs(t, server, "0p38pssr0fi3", "test", "entry")
+					entry := getTestEntryForIDs(t, server, "0p38pssr0fi3", "target", "entry")
 					require.Positive(t, entry.Sys.Version)
 					require.False(t, entry.Sys.PublishedVersion.IsSet())
 

@@ -7,6 +7,24 @@ import (
 	cm "github.com/cysp/terraform-provider-contentful/internal/contentful-management-go"
 )
 
+// App requests use the target selected during authorization, even if the alias
+// moves before dispatch. Other callers resolve the address under the handler lock.
+func (ts *Handler) requestEnvironmentID(ctx context.Context, spaceID, environmentID string) string {
+	if target, ok := ctx.Value(authorizedEnvironmentKey{}).(string); ok {
+		return target
+	}
+
+	return ts.resolveEnvironmentAlias(spaceID, environmentID)
+}
+
+func (ts *Handler) resolveEnvironmentAlias(spaceID, environmentID string) string {
+	if alias := ts.environmentAliases.Get(spaceID, environmentID); alias != nil {
+		return alias.Environment.Sys.ID
+	}
+
+	return environmentID
+}
+
 //nolint:ireturn
 func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.EnvironmentAliasData, params cm.CreateOrUpdateEnvironmentAliasParams) (cm.CreateOrUpdateEnvironmentAliasRes, error) {
 	ts.mu.Lock()

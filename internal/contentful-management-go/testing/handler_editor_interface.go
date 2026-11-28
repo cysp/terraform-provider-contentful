@@ -8,29 +8,35 @@ import (
 )
 
 //nolint:ireturn
-func (ts *Handler) GetEditorInterface(_ context.Context, params cm.GetEditorInterfaceParams) (cm.GetEditorInterfaceRes, error) {
+func (ts *Handler) GetEditorInterface(ctx context.Context, params cm.GetEditorInterfaceParams) (cm.GetEditorInterfaceRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	editorInterface := ts.editorInterfaces.Get(params.SpaceID, environmentID, params.ContentTypeID)
 	if editorInterface == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("EditorInterface not found"), nil)), nil
 	}
 
-	return snapshotResponse(editorInterface), nil
+	response := projectEditorInterfaceResponse(*editorInterface, params.EnvironmentID)
+
+	return snapshotResponse(&response), nil
 }
 
 //nolint:ireturn
-func (ts *Handler) PutEditorInterface(_ context.Context, req *cm.EditorInterfaceData, params cm.PutEditorInterfaceParams) (cm.PutEditorInterfaceRes, error) {
+func (ts *Handler) PutEditorInterface(ctx context.Context, req *cm.EditorInterfaceData, params cm.PutEditorInterfaceParams) (cm.PutEditorInterfaceRes, error) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	contentType := ts.contentTypes.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	environmentID := ts.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
+
+	contentType := ts.contentTypes.Get(params.SpaceID, environmentID, params.ContentTypeID)
 	if contentType == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(new("ContentType not found"), nil)), nil
 	}
 
-	editorInterface := ts.editorInterfaces.Get(params.SpaceID, params.EnvironmentID, params.ContentTypeID)
+	editorInterface := ts.editorInterfaces.Get(params.SpaceID, environmentID, params.ContentTypeID)
 	if editorInterface == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeBadRequest(new("The content type you sent could not be found or was not activated."), nil)), nil
 	}
@@ -43,6 +49,12 @@ func (ts *Handler) PutEditorInterface(_ context.Context, req *cm.EditorInterface
 
 	return snapshotResponse(&cm.EditorInterfaceStatusCode{
 		StatusCode: http.StatusOK,
-		Response:   *editorInterface,
+		Response:   projectEditorInterfaceResponse(*editorInterface, params.EnvironmentID),
 	}), nil
+}
+
+func projectEditorInterfaceResponse(editorInterface cm.EditorInterface, environmentID string) cm.EditorInterface {
+	editorInterface.Sys.Environment.Sys.ID = environmentID
+
+	return editorInterface
 }

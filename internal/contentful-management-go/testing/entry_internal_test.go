@@ -20,7 +20,9 @@ func TestProjectEntryResponseDoesNotMutateStoredEntry(t *testing.T) {
 	}
 	entry := NewEntryFromRequest("space", "environment", "content-type", "entry", &request)
 
-	response := projectEntryResponse(entry)
+	response := projectEntryResponse(entry, "alias")
+	assert.Equal(t, "environment", entry.Sys.Environment.Sys.ID)
+	assert.Equal(t, "alias", response.Sys.Environment.Sys.ID)
 
 	assert.Contains(t, entry.Fields.Value, "empty")
 	assert.JSONEq(t, testJSON(nil), string(entry.Fields.Value["raw-null"]))
@@ -33,7 +35,7 @@ func TestProjectEntryResponseDoesNotMutateStoredEntry(t *testing.T) {
 	onlyRawNull := NewEntryFromRequest("space", "environment", "content-type", "raw-null-entry", &cm.EntryRequest{
 		Fields: cm.NewOptEntryFields(cm.EntryFields{"raw-null": jx.Raw(testJSON(nil))}),
 	})
-	onlyRawNullResponse := projectEntryResponse(onlyRawNull)
+	onlyRawNullResponse := projectEntryResponse(onlyRawNull, "alias")
 
 	assert.JSONEq(t, testJSON(nil), string(onlyRawNull.Fields.Value["raw-null"]))
 	assert.False(t, onlyRawNullResponse.Fields.IsSet())

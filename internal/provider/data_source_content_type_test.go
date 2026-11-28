@@ -23,8 +23,10 @@ func TestAccContentTypeDataSourcesComposition(t *testing.T) {
 
 	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
 	require.NoError(t, err)
-	server.RegisterSpaceEnvironment("space", "master")
-	server.SetContentType("space", "master", "article", cm.ContentTypeRequestData{
+	server.SetEnvironmentAlias(cmt.NewEnvironmentAliasFromEnvironmentAliasData("space", "master", cm.EnvironmentAliasData{
+		Environment: cm.NewEnvironmentLink("target"),
+	}))
+	server.SetContentType("space", "target", "article", cm.ContentTypeRequestData{
 		Name:         "Article",
 		DisplayField: "title",
 		Fields: []cm.ContentTypeRequestDataFieldsItem{{

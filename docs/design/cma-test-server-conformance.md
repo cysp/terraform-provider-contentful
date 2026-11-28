@@ -40,6 +40,27 @@ storage; callers must not mutate that storage while the server retains it.
 
 A passing mock test establishes how the provider behaves against that fixture. For a claim about Contentful, use the published contract or the scoped service observations linked under the endpoint.
 
+### Environment aliases
+
+Each child request resolves its environment address once. An app request uses
+the target selected during authorization, even if the alias moves before the
+handler runs. Management requests and direct handler calls resolve the address
+while holding the handler lock.
+Parent checks, version checks, reads, writes and lifecycle side effects use the
+selected concrete environment in that Space. Each returned child's own
+`sys.environment.sys.id` carries the address from the request, including in
+collection items and mutation responses. Stored fixtures keep their concrete
+environment identity. An Environment read through an alias has its own
+`sys.aliasedEnvironment` link, and an EnvironmentAlias document identifies its
+target in its top-level `environment` link.
+
+This applies to Entries, Content Types, Editor Interfaces, Locales, Tags, UI
+Extensions, App Installations and Live Preview Variables. The
+[alias research](../research/environment-aliases.md) records which response
+shapes have been observed. Applying the same child projection to the remaining
+operations is a fixture inference. A later request observes a retarget
+immediately in the fake. Service propagation time is unverified.
+
 ### App Definition parent scope
 
 The [App Framework endpoint map](../research/app-framework/README.md#api-inventory)
@@ -69,10 +90,7 @@ Content Type, Editor Interface, Entry, Tag and Locale operations. It also permit
 reading the app's own installation, including its Secret parameters. Updating or
 deleting the installation returns HTTP 403. Reading an App Definition returns
 404, and reading a Space or Environment returns 401. Other operations are denied
-by default. For these environment resources, app and management requests through
-an alias use the same target. Each request resolves the target once, and app
-authorization uses that target. Locale and App Installation responses echo the
-[addressed environment](../research/environment-aliases.md#direct-read-observations).
+by default. App requests follow the shared [environment alias routing](#environment-aliases).
 
 See the [App Identity permission observations](../research/app-framework/identity.md#app-access-token-permissions)
 for the operations exercised against Contentful. Locale writes follow the
@@ -93,10 +111,8 @@ DELETE return the observed 500. Rejected writes preserve values and versions.
 Fallback checks reject missing/cyclic targets, non-null default fallbacks, and
 referenced-target renames/deletion. Delivery-disabled nondefault targets are
 rejected; the observed default exception is retained. Exact errors for unprobed
-nondefault restrictions are fixture conventions. Alias mutations reuse the
-existing Locale read routing; echoing the addressed environment in mutation
-responses is inferred from reads, not live mutation evidence. Parent deletion
-removes Locale fixtures. Reads require an existing parent environment.
+nondefault restrictions are fixture conventions. Reads require an existing
+parent environment.
 Positive pagination and zero-limit defaulting are modeled; ID ordering remains
 a fixture convention.
 
@@ -491,7 +507,7 @@ BMP/astral examples; combining-sequence and grapheme semantics remain unverified
 Missing-parent PUT/DELETE and cleanup after environment deletion are mock lifecycle
 conventions, not observations from the variables probes.
 
-Alias routing, response update metadata, HEAD, trailing-slash GET, and service-style
+Response update metadata, HEAD, trailing-slash GET, and service-style
 404 responses for POST/PATCH and the space-level route are not modeled. Generated
 handler errors use ordinary JSON, including conflicts; independent client fixtures
 cover vendor-JSON decoding. Whole non-object request bodies receive generated

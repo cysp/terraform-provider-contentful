@@ -42,29 +42,12 @@ func (h *Handler) GetSpace(_ context.Context, params cm.GetSpaceParams) (cm.GetS
 	return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 }
 
-func (h *Handler) resolveEnvironmentAlias(spaceID, environmentID string) string {
-	if alias := h.environmentAliases.Get(spaceID, environmentID); alias != nil {
-		return alias.Environment.Sys.ID
-	}
-
-	return environmentID
-}
-
-func (h *Handler) localeEnvironmentIDs(ctx context.Context, spaceID, environmentID string) (string, string) {
-	if addressed, ok := ctx.Value(addressedEnvironmentKey{}).(string); ok {
-		return environmentID, addressed
-	}
-
-	return h.resolveEnvironmentAlias(spaceID, environmentID), environmentID
-}
-
 //nolint:ireturn
 func (h *Handler) GetLocale(ctx context.Context, params cm.GetLocaleParams) (cm.GetLocaleRes, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	environmentID, addressedID := h.localeEnvironmentIDs(ctx, params.SpaceID, params.EnvironmentID)
-
+	environmentID := h.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
 	if h.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
@@ -74,7 +57,7 @@ func (h *Handler) GetLocale(ctx context.Context, params cm.GetLocaleParams) (cm.
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
 
-	result := projectLocaleResponse(*locale, addressedID)
+	result := projectLocaleResponse(*locale, params.EnvironmentID)
 
 	return snapshotResponse(&result), nil
 }
@@ -173,8 +156,7 @@ func (h *Handler) GetLocales(ctx context.Context, params cm.GetLocalesParams) (c
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	environmentID, addressedID := h.localeEnvironmentIDs(ctx, params.SpaceID, params.EnvironmentID)
-
+	environmentID := h.requestEnvironmentID(ctx, params.SpaceID, params.EnvironmentID)
 	if h.environments.Get(params.SpaceID, environmentID) == nil {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeNotFound(nil, nil)), nil
 	}
@@ -196,7 +178,7 @@ func (h *Handler) GetLocales(ctx context.Context, params cm.GetLocalesParams) (c
 
 	items := make([]cm.Locale, 0, end-start)
 	for _, value := range values[start:end] {
-		item := projectLocaleResponse(*value, addressedID)
+		item := projectLocaleResponse(*value, params.EnvironmentID)
 		items = append(items, item)
 	}
 
