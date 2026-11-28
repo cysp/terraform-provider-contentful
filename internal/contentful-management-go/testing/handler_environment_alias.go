@@ -57,7 +57,8 @@ func (ts *Handler) CreateOrUpdateEnvironmentAlias(_ context.Context, data *cm.En
 		}), nil
 	}
 
-	if params.XContentfulVersion != environmentAlias.Sys.Version {
+	version, versionSet := params.XContentfulVersion.Get()
+	if !versionSet || version != environmentAlias.Sys.Version {
 		return snapshotResponse(NewContentfulManagementErrorStatusCodeVersionMismatch(nil, nil)), nil
 	}
 

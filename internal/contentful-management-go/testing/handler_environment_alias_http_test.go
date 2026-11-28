@@ -211,15 +211,46 @@ func TestEnvironmentAliasCreationRequiresOptIn(t *testing.T) {
 
 	const aliases = "space/environment_aliases"
 
-	for _, target := range []string{"master", "missing"} {
-		body := testJSON(cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink(target)})
-		rejected := aliasRequest(t, server, http.MethodPut, aliases+"/editorial", "1", body, http.StatusForbidden)
-		require.Equal(t, "EnvironmentAliasNotOptedIn", rejected.Sys.ID)
-		require.Equal(t, "This space has not opted into the environment aliases feature", rejected.Message)
+	for _, version := range []string{"", "1"} {
+		for _, target := range []string{"master", "missing"} {
+			body := testJSON(cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink(target)})
+			rejected := aliasRequest(t, server, http.MethodPut, aliases+"/editorial", version, body, http.StatusForbidden)
+			require.Equal(t, "EnvironmentAliasNotOptedIn", rejected.Sys.ID)
+			require.Equal(t, "This space has not opted into the environment aliases feature", rejected.Message)
+		}
 	}
 
 	aliasRequest(t, server, http.MethodGet, aliases+"/editorial", "", "", http.StatusNotFound)
 	require.Empty(t, aliasRequest(t, server, http.MethodGet, aliases, "", "", http.StatusOK).Items)
+}
+
+func TestEnvironmentAliasVersionHeader(t *testing.T) {
+	t.Parallel()
+
+	server, err := cmt.NewContentfulManagementServer(cmt.WithRateLimitPerSecond(1000))
+	require.NoError(t, err)
+
+	targetID := server.RegisterMasterEnvironmentAlias("space")
+	server.RegisterSpaceEnvironment("space", "staging")
+
+	const path = "space/environment_aliases/editorial"
+
+	initial := testJSON(cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink(targetID)})
+	staging := testJSON(cm.EnvironmentAliasData{Environment: cm.NewEnvironmentLink("staging")})
+	created := aliasRequest(t, server, http.MethodPut, path, "", initial, http.StatusCreated)
+	require.Equal(t, 1, created.Sys.Version)
+	require.Equal(t, cm.NewEnvironmentLink(targetID), created.Environment)
+
+	updated := aliasRequest(t, server, http.MethodPut, path, "1", staging, http.StatusOK)
+	require.Equal(t, 2, updated.Sys.Version)
+	require.Equal(t, cm.NewEnvironmentLink("staging"), updated.Environment)
+
+	for _, version := range []string{"", "1"} {
+		rejected := aliasRequest(t, server, http.MethodPut, path, version, initial, http.StatusConflict)
+		require.Equal(t, "VersionMismatch", rejected.Sys.ID)
+	}
+
+	require.Equal(t, updated, aliasRequest(t, server, http.MethodGet, path, "", "", http.StatusOK))
 }
 
 func TestSpaceParentRequiresConcreteMasterOrLocalAliasTarget(t *testing.T) {

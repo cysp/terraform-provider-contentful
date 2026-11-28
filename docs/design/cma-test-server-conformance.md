@@ -83,6 +83,12 @@ HTTP 403 with `sys.id = EnvironmentAliasNotOptedIn` before target lookup, as
 [observed in the example Space](../research/environment-aliases.md#custom-alias-creation-before-opt-in).
 The fake models opt-in independently of subscription limits.
 
+A caller can omit `X-Contentful-Version` when creating an alias. Retargeting
+an existing alias requires its current version. The fake returns HTTP 409
+`VersionMismatch` for an absent or stale version on update.
+[CMA alias PUT reference](https://www.contentful.com/developers/docs/references/content-management-api/environment-aliases/create-or-update-an-environment-alias/)
+· [SDK creation and update requests](https://github.com/contentful/contentful-management.js/blob/883e2b9dc1c76413d5c24e45f74243da699071e4/lib/adapters/REST/endpoints/environment-alias.ts#L47-L72)
+
 The fake reserves Environment and Environment Alias IDs in the same namespace
 within a Space. A PUT using an ID occupied by the other kind returns HTTP 409
 with `sys.id = Conflict` and preserves both collections. This models an ID
