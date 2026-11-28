@@ -3,12 +3,12 @@
 page_title: "contentful_app_key Resource - terraform-provider-contentful"
 subcategory: ""
 description: |-
-  Manages a Contentful App Key from public key material you supply. The corresponding private key is not sent to Contentful or stored by this resource.
+  Manages a Contentful App Key from public key material you supply. The corresponding private key is not sent to Contentful or stored by this resource. To generate a new key pair and prepare its public JWK for registration, follow Contentful's 4096-bit RSA example https://www.contentful.com/developers/docs/references/content-management-api/app-keys/.
 ---
 
 # contentful_app_key (Resource)
 
-Manages a Contentful App Key from public key material you supply. The corresponding private key is not sent to Contentful or stored by this resource.
+Manages a Contentful App Key from public key material you supply. The corresponding private key is not sent to Contentful or stored by this resource. To generate a new key pair and prepare its public JWK for registration, follow [Contentful's 4096-bit RSA example](https://www.contentful.com/developers/docs/references/content-management-api/app-keys/).
 
 ## Example Usage
 
